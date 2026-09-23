@@ -7,9 +7,9 @@
 Pick what you're wearing and the sheet shows you every value, how much it changed and which
 charm changed it. Then take that build into a fight.
 
-[**Open the calculator**](https://betorzdev.github.io/hollownest-calculator/)
+[**Open the calculator**](https://betorzdev.github.io/hallownest-calculator/)
 &nbsp;·&nbsp; [Full guide](docs/guide.md)
-&nbsp;·&nbsp; [Report a wrong number](https://github.com/betorzdev/hollownest-calculator/issues)
+&nbsp;·&nbsp; [Report a wrong number](https://github.com/betorzdev/hallownest-calculator/issues)
 
 <br>
 

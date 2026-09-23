@@ -22,7 +22,7 @@ const cut = (s, n) => (s.length > n ? s.slice(0, n - 1) + '…' : s);
 async function load() {
   if (!fs.existsSync(FILE)) {
     console.error('downloading ' + DUMP + ' → ' + path.relative(process.cwd(), FILE));
-    const res = await fetch(DUMP, { headers: { 'User-Agent': 'hollownest-calculator (game-text.js)' } });
+    const res = await fetch(DUMP, { headers: { 'User-Agent': 'hallownest-calculator (game-text.js)' } });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     fs.writeFileSync(FILE, Buffer.from(await res.arrayBuffer()));
   }
