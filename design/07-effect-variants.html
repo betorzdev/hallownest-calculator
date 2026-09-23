@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hidden effects: variants</title>
+<!-- Design material, not part of the site. It's the whole site, for real (engine, CSS,
+     sprites and your build), with a new block below the charm band, where the
+     "last change" used to be: what the equipped charms do that doesn't show in the figures
+     above (seeing the map, thorns when taking damage, companions…). Three variants; ?v=a|b|c picks one.
+     It shares localStorage with index.html: whatever you equip here stays in your build.
+     The <base> points at the root so that js/app.js's "assets/…" paths work as they are.
+     B · Plates was chosen on 22 September 2026 and is already on the site (renderEffects() in
+     js/app.js, D.CHARM_EFFECTS in js/data.js): this page stays as a record, and hides the
+     real block so the three can still be seen. -->
+<base href="../">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Spectral:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+/* ════ The mockup's bar: none of this goes into the site ═════════════════════════════════ */
+.inv-effects { display: none; }   /* the block the site already paints: here the three are compared */
+.mk-bar {
+  position: fixed; z-index: 90; left: 50%; top: var(--sp-2); transform: translateX(-50%);
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--sp-1) var(--sp-3);
+  max-width: calc(100vw - var(--sp-4)); padding: var(--sp-2) var(--sp-3);
+  background: color-mix(in oklab, var(--scene-bg) 92%, transparent); border: 1px solid var(--line-panel);
+  font-family: var(--font-num); font-size: var(--fs-xs); color: var(--muted);
+  box-shadow: var(--shadow-md);
+}
+.mk-bar b { color: var(--label); font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; font-size: var(--fs-2xs); }
+.mk-bar button { padding: var(--sp-1) var(--sp-2); border: 1px solid var(--line-ctl); color: var(--ink-2); background: none; font: inherit; cursor: pointer; }
+.mk-bar button[aria-pressed="true"] { color: var(--ink-strong); border-color: var(--accent-line); background: var(--picked); }
+.mk-bar button:hover { color: var(--accent); }
+.mk-sep { width: 1px; align-self: stretch; background: var(--line); }
+
+/* ════ → css/app.css: the effects you can't see ═════════════════════════════════════════
+   Common to the three variants. The block goes inside the sheet, after the charms' black
+   band. The figures, in bone and in the sans; the prose, in the serif; no accent at all. */
+.hfx { margin-top: var(--sp-8); }
+.hfx-head { display: flex; align-items: baseline; gap: var(--sp-3); flex-wrap: wrap; }
+.hfx-hint { font-family: var(--font-body); font-size: var(--fs-sm); letter-spacing: 0; text-transform: none; font-weight: 400; color: var(--muted); }
+.hfx-empty { font-size: var(--fs-sm); color: var(--muted); font-style: italic; }
+.hfx .v { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; color: var(--ink-strong); letter-spacing: 0; white-space: nowrap; }
+.hfx .v .u { font-size: 0.78em; font-weight: 400; color: var(--muted); }
+.hfx .is-bad :is(.fxA-text, .fxB-name, .fxB-note, .v), .hfx .fxC-item.is-bad { color: var(--bad); }
+.hfx .is-na { color: var(--muted); font-style: italic; }
+/* Where it comes from: the charm (or both, if it's a synergy), overlapping like two medals. */
+.hfx-src { display: inline-flex; flex-shrink: 0; }
+.hfx-src img { width: 26px; height: 26px; object-fit: contain; }
+.hfx-src img + img { margin-left: -9px; }
+/* The plates' light, the same as the spells' and the arts'. */
+.hfx-lit { position: relative; isolation: isolate; display: grid; place-items: center; }
+.hfx-lit::before { content: ''; position: absolute; z-index: -1; inset: -14% -6%; background: var(--halo-plate); }
+
+/* ── A · When it happens: grouped by the moment it triggers, each effect with its artwork ── */
+.fxA { columns: 2 340px; column-gap: var(--sp-12); }
+.fxA-group { break-inside: avoid; margin-bottom: var(--sp-6); }
+.fxA-when {
+  display: flex; align-items: center; gap: var(--sp-2);
+  font-family: var(--font-num); text-transform: uppercase; letter-spacing: 0.09em; font-size: var(--fs-2xs); font-weight: 600;
+  color: var(--tint); padding-bottom: var(--sp-2); border-bottom: 1px solid var(--inv-line); margin-bottom: var(--sp-2);
+}
+.fxA-glyph { width: 30px; height: 22px; }
+.fxA-glyph::before { inset: -40% -20%; }
+.fxA-glyph img { max-width: 30px; max-height: 22px; width: auto; height: auto; object-fit: contain; }
+.fxA-list { list-style: none; margin: 0; padding: 0; }
+.fxA-list li { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: var(--sp-3); align-items: center; padding: var(--sp-2) 0; }
+.fxA-art { width: 64px; height: 56px; }
+.fxA-art > img { max-width: 58px; max-height: 50px; width: auto; height: auto; object-fit: contain; }
+.fxA-art .hfx-src { position: absolute; right: -4px; bottom: -4px; }
+.fxA-art .hfx-src img { width: 22px; height: 22px; }
+.fxA-art .hfx-src img + img { margin-left: -8px; }
+.fxA-text { font-size: var(--fs-md); line-height: 1.4; color: var(--ink-2); }
+
+/* ── B · Plates: each effect with its artwork, like spells and arts ─────────────────────── */
+.fxB { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: var(--sp-6) var(--sp-4); }
+.fxB-plate { display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; min-width: 0; }
+.fxB-art { width: 100%; height: 96px; margin-bottom: var(--sp-2); }
+.fxB-art > img { max-width: min(128px, 86%); max-height: 84px; width: auto; height: auto; object-fit: contain; }
+.fxB-art .hfx-src { position: absolute; right: calc(50% - 62px); bottom: -2px; }
+.fxB-art .hfx-src img { width: 28px; height: 28px; }
+.fxB-name { font-size: var(--fs-sm); line-height: 1.25; color: var(--ink); }
+.fxB-val { font-size: var(--fs-xl); line-height: 1.1; }
+.fxB-note { font-size: var(--fs-xs); line-height: 1.3; color: var(--muted); }
+.fxB-when { font-family: var(--font-num); text-transform: uppercase; letter-spacing: 0.09em; font-size: var(--fs-2xs); font-weight: 600; color: var(--label); margin-top: var(--sp-1); }
+
+/* ── C · Frieze: one row per moment, the effects in line ───────────────────────────────── */
+.fxC { display: grid; grid-template-columns: max-content minmax(0, 1fr); column-gap: var(--sp-8); }
+.fxC-when, .fxC-items { padding: var(--sp-3) 0; border-top: 1px solid var(--inv-line); }
+.fxC-when {
+  display: flex; align-items: center; gap: var(--sp-3);
+  font-family: var(--font-num); text-transform: uppercase; letter-spacing: 0.09em; font-size: var(--fs-2xs); font-weight: 600; color: var(--tint);
+}
+.fxC-when .hfx-lit { width: 44px; height: 30px; }
+.fxC-when .hfx-lit img { max-width: 42px; max-height: 28px; width: auto; height: auto; object-fit: contain; }
+.fxC-items { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-8); font-size: var(--fs-sm); color: var(--ink-2); }
+.fxC-item { display: inline-flex; align-items: center; gap: var(--sp-2); }
+.fxC-item .hfx-src img { width: 24px; height: 24px; }
+
+@container inv (max-width: 559px) {
+  .fxA-list li { grid-template-columns: 52px minmax(0, 1fr); }
+  .fxA-art { width: 52px; height: 46px; }
+  .fxA-art > img { max-width: 48px; max-height: 42px; }
+  .fxA-text { font-size: var(--fs-sm); }
+  .fxB { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-6) var(--sp-2); }
+  .fxB-art { height: 76px; }
+  .fxB-art > img { max-height: 64px; }
+  .fxB-val { font-size: var(--fs-lg); }
+  .fxC { grid-template-columns: minmax(0, 1fr); }
+  .fxC-items { border-top: 0; padding-top: 0; }
+}
+</style>
+</head>
+<body>
+<div class="mk-bar" id="mk-bar"></div>
+<div class="page">
+  <div class="shell">
+    <div class="topbar" id="topbar"></div>
+    <header class="masthead" id="masthead"></header>
+    <div id="guide"></div>
+    <section class="panel" id="panel" aria-label="Stat sheet"></section>
+    <div class="minihud" id="minihud" hidden aria-hidden="true"></div>
+    <div id="banner"></div>
+    <section class="gear" id="gear" aria-label="Gear"></section>
+    <section class="gear fight" id="fight" aria-label="Combat"></section>
+    <footer class="foot" id="foot"></footer>
+  </div>
+</div>
+<div class="overcharm-fx" id="overcharm-fx" hidden aria-hidden="true"></div>
+<aside class="inspector" id="inspector" hidden aria-live="polite"></aside>
+<div class="toast" id="toast" hidden></div>
+<dialog class="tablet" id="tablet" aria-labelledby="tablet-title" tabindex="-1"></dialog>
+<button type="button" class="hj-fab" id="hj-fab" data-act="hjOpen" aria-haspopup="dialog">
+  <img src="assets/hunter/book.png" alt="" width="98" height="112"><span class="hj-fab-num"></span>
+</button>
+<dialog class="hj" id="hj-dialog" aria-labelledby="hj-title" tabindex="-1"></dialog>
+<script>
+/* With the <base> at the root, js/app.js's replaceState('#…') would point at another path and
+   throws over file://. It's resolved against this page. Only the mockup needs it. */
+(() => {
+  const rs = history.replaceState.bind(history);
+  history.replaceState = (s, t, url) => rs(s, t, typeof url === 'string' && url.startsWith('#') ? location.pathname + location.search + url : url);
+})();
+</script>
+<script src="js/i18n.js"></script>
+<script src="js/data.js"></script>
+<script src="js/enemies.js"></script>
+<script src="js/journal.js"></script>
+<script src="js/pantheons.js"></script>
+<script src="js/hall.js"></script>
+<script src="js/hunter.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/fight.js"></script>
+<script src="js/codec.js"></script>
+<script src="js/app.js"></script>
+<script>
+(() => {
+  'use strict';
+  const E = HK.engine, C = HK.codec, D = HK.data, I = HK.i18n;
+  const esc = (s) => String(s).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+  const pick = (o) => (o && typeof o === 'object' ? (o[I.current] !== undefined ? o[I.current] : o.es) : o);
+  const charmArt = (id) => 'assets/charms/' + id + '.png';
+
+  /* ── The moments: when each effect triggers, with a picture from the game ────────────── */
+  const WHEN = [
+    { id: 'side',    es: 'Siempre contigo',        en: 'Always with you',     art: 'assets/hud/knight.png' },
+    { id: 'strike',  es: 'Al golpear',             en: 'When you strike',     art: 'assets/arts/great.png' },
+    { id: 'hit',     es: 'Al recibir daño',        en: 'When you take damage', art: 'assets/hud/mask.png' },
+    { id: 'focus',   es: 'Al concentrarte',        en: 'When you focus',      art: 'assets/abilities/focus.png' },
+    { id: 'move',    es: 'Al moverte',             en: 'On the move',         art: 'assets/abilities/cloak1.png' },
+    { id: 'dream',   es: 'Con el Aguijón Onírico', en: 'With the Dream Nail', art: 'assets/abilities/dream1.png' },
+    { id: 'explore', es: 'Explorando',             en: 'Exploring',           art: 'assets/effects/map.png' },
+    { id: 'fall',    es: 'Si caes',                en: 'If you fall',         art: 'assets/knight/shade.png' },
+  ];
+  const WHEN_BY_ID = Object.fromEntries(WHEN.map((w) => [w.id, w]));
+
+  /* ── The effects ──────────────────────────────────────────────────────────────────────
+     charm: the charm that gives it · when: the moment · art: its artwork if the game has it
+     (if not, the charm's) · stat: where the figure comes from · val(S, st): the figure by hand,
+     if it isn't the stat's · line: the sentence, with {v} where the figure goes · note: the
+     plate's short note · show(S, st): whether it shows (by default, if the charm is equipped). */
+  const EFFECTS = [
+    // Always with you
+    { charm: 'dreamshield', when: 'side', stat: 'nail.dreamshield',
+      title: { es: 'Escudo Onírico', en: 'Dreamshield' },
+      line: { es: 'Un escudo gira a tu alrededor: {v} por choque, y detiene proyectiles', en: 'A shield circles you: {v} per contact, and it stops projectiles' },
+      note: { es: 'gira a tu alrededor', en: 'circles around you' } },
+    { charm: 'weaversong', when: 'side', art: 'assets/effects/weaverling.png', stat: 'pet.weaverling',
+      title: { es: 'Tejedoras', en: 'Weaverlings' },
+      line: { es: 'Tres tejedoras atacan por {v} cada una', en: 'Three Weaverlings attack for {v} each' },
+      note: { es: 'tres, cada una', en: 'three, each' },
+      // With Grubsong, they also give soul: it goes on the same line, with its medal.
+      extra: { stat: 'pet.weaverlingSoul', show: (S) => S.stats['pet.weaverlingSoul'].value > 0, val: (S) => '+' + S.stats['pet.weaverlingSoul'].value,
+               line: { es: ', y cada golpe te da {v} de alma', en: ', and each hit gives you {v} soul' },
+               note: { es: '{v} de alma por golpe', en: '{v} soul per hit' } } },
+    { charm: 'grimmchild', when: 'side', art: 'assets/effects/grimmchild.png', stat: 'pet.grimmchild',
+      title: { es: 'Niño de Grimm', en: 'Grimmchild' },
+      line: { es: 'Dispara bolas de fuego de {v} cada 1,8 s', en: 'It shoots fireballs that deal {v}, every 1.8 s' },
+      note: { es: 'cada 1,8 s', en: 'every 1.8 s' } },
+    { charm: 'womb', when: 'side', art: 'assets/effects/hatchling.png', stat: 'pet.hatchling',
+      title: { es: 'Crías', en: 'Hatchlings' },
+      line: { es: 'Crías que se lanzan por {v}; cada una cuesta 8 de alma', en: 'Hatchlings that charge for {v}; each costs 8 soul' },
+      note: { es: '8 de alma cada una', en: '8 soul each' } },
+    { charm: 'crest', when: 'side', stat: 'pet.crestCloud',
+      title: { es: 'Nube tóxica', en: 'Toxic cloud' },
+      line: { es: 'Dejas nubes tóxicas de {v} de daño', en: 'You leave toxic clouds that deal {v}' },
+      note: { es: 'a tu paso', en: 'in your wake' } },
+    { charm: 'kingsoul', when: 'side', stat: 'soul.passive', val: () => '+4',
+      title: { es: 'Alma', en: 'Soul' },
+      line: { es: 'Ganas {v} de alma cada 2 s', en: 'You gain {v} soul every 2 s' },
+      note: { es: 'cada 2 s', en: 'every 2 s' } },
+    // On hitting
+    { charm: 'elegy', when: 'strike', stat: 'nail.elegy',
+      title: { es: 'Rayos', en: 'Beams' },
+      line: { es: 'Con la vida completa, el aguijón dispara rayos de {v}', en: 'At full health, your nail fires beams that deal {v}' },
+      note: { es: 'con la vida completa', en: 'at full health' } },
+    { charm: 'fury', when: 'strike', val: (S, st) => fmtStatRich(E.compute({ ...st, hp: 1 }, I.current).stats['nail.damage']),
+      title: { es: 'Con 1 máscara', en: 'At 1 mask' },
+      line: { es: 'Con 1 máscara, el aguijón pega {v}', en: 'At 1 mask, your nail hits for {v}' },
+      note: { es: 'daño del aguijón', en: 'nail damage' } },
+    { charm: 'glory', when: 'strike', art: 'assets/arts/great.png', stat: 'nail.artCharge',
+      title: { es: 'Carga de artes', en: 'Art charge' },
+      line: { es: 'Las artes del aguijón se cargan en {v}', en: 'Nail Arts charge in {v}' },
+      note: { es: '1,35 s sin él', en: '1.35 s without it' } },
+    { charm: 'heavy', when: 'strike', stat: 'nail.knockback', val: () => '+75' + (I.current === 'es' ? ' %' : '%'),
+      title: { es: 'Empuje', en: 'Knockback' },
+      line: { es: 'Los enemigos salen despedidos un {v} más lejos', en: 'Enemies are knocked back {v} further' },
+      note: { es: 'más lejos', en: 'further' } },
+    { charm: 'steady', when: 'strike',
+      title: { es: 'Sin retroceso', en: 'No recoil' },
+      line: { es: 'No retrocedes al golpear con el aguijón', en: 'You no longer recoil when your nail hits' },
+      note: { es: 'al golpear', en: 'when you hit' } },
+    // On taking damage
+    { charm: 'thorns', when: 'hit', art: 'assets/effects/thorns.png', stat: 'nail.thorns',
+      title: { es: 'Espinas', en: 'Thorns' },
+      line: { es: 'Brotan espinas: {v} de daño a tu alrededor', en: 'Thorns burst out: {v} damage around you' },
+      note: { es: 'hasta 2 golpes', en: 'up to 2 hits' } },
+    { charm: 'grubsong', when: 'hit', art: 'assets/effects/grub.png', stat: 'soul.onHit', val: (S) => '+' + S.stats['soul.onHit'].value,
+      title: { es: 'Alma', en: 'Soul' },
+      line: { es: 'Ganas {v} de alma', en: 'You gain {v} soul' },
+      note: { es: 'al recibir daño', en: 'when damaged' } },
+    { charm: 'stalwart', when: 'hit', stat: 'health.iframes',
+      title: { es: 'Invulnerable', en: 'Invulnerable' },
+      line: { es: 'Eres invulnerable {v} (1,3 s sin ella) y retrocedes menos', en: 'You stay invulnerable for {v} (1.3 s without it) and recoil less' },
+      note: { es: '1,3 s sin ella', en: '1.3 s without it' } },
+    { charm: 'melody', when: 'hit', stat: 'health.carefreeAvg',
+      title: { es: 'Bloqueo', en: 'Block' },
+      line: { es: 'Bloquea el golpe un {v} de las veces, y más cuantos más recibes', en: 'Blocks the hit {v} of the time, and more the more you are hit' },
+      note: { es: 'de media', en: 'on average' } },
+    { charm: 'hiveblood', when: 'hit', art: 'assets/hud/hiveblood.png', artJoni: 'assets/hud/hiveblood-joni.png', stat: 'health.hivebloodRegen',
+      title: { es: 'Regeneración', en: 'Regeneration' },
+      line: { es: 'Recuperas la última máscara tras {v} sin recibir daño', en: 'Your last lost mask comes back after {v} without damage' },
+      note: { es: 'sin recibir daño', en: 'without damage' } },
+    // On focusing
+    { charm: 'spore', when: 'focus', stat: 'heal.spore',
+      title: { es: 'Esporas', en: 'Spores' },
+      line: { es: 'Sueltas una nube de esporas: {v} de daño', en: 'You release a spore cloud: {v} damage' },
+      note: { es: 'durante 4,1 s', en: 'over 4.1 s' } },
+    { charm: 'baldur', when: 'focus', art: 'assets/hud/baldur.png', stat: 'health.baldurBlocks',
+      title: { es: 'Coraza', en: 'Shell' },
+      line: { es: 'Una coraza para {v} golpes; se repara al descansar', en: 'A shell blocks {v} hits; it repairs when you rest' },
+      note: { es: 'golpes bloqueados', en: 'hits blocked' } },
+    { charm: 'unn', when: 'focus', stat: 'move.unnSpeed',
+      title: { es: 'Forma de babosa', en: 'Slug form' },
+      line: { es: 'Te mueves mientras te curas, a {v}', en: 'You move while you heal, at {v}' },
+      note: { es: 'mientras te curas', en: 'while healing' } },
+    { charm: 'joni', when: 'focus', art: 'assets/abilities/focus.png', bad: true,
+      title: { es: 'Sin curación', en: 'No healing' },
+      line: { es: 'No puedes curarte con Concentración', en: 'You cannot heal with Focus' },
+      note: { es: 'Bendición de Joni', en: "Joni's Blessing" } },
+    // On moving
+    { charm: 'dashmaster', when: 'move', art: 'assets/abilities/cloak1.png', stat: 'move.dashCooldown',
+      title: { es: 'Avance rápido', en: 'Dash' },
+      line: { es: 'Avanzas rápidamente cada {v}, también hacia abajo', en: 'You dash every {v}, downwards too' },
+      note: { es: 'también hacia abajo', en: 'downwards too' } },
+    { charm: 'sprintmaster', when: 'move', stat: 'move.run',
+      title: { es: 'Carrera', en: 'Running' },
+      line: { es: 'Corres a {v} (8,3 sin él)', en: 'You run at {v} (8.3 without it)' },
+      note: { es: '8,3 u/s sin él', en: '8.3 u/s without it' } },
+    { charm: 'sharpshadow', when: 'move', art: 'assets/abilities/cloak2.png', stat: 'nail.sharpShadow',
+      title: { es: 'Avance sombrío', en: 'Shadow Dash' },
+      line: { es: 'El avance rápido sombrío corta por {v} y llega un 40 % más lejos', en: 'Your Shadow Dash cuts for {v} and reaches 40% further' },
+      note: { es: 'y llega más lejos', en: 'and reaches further' } },
+    // With the Dream Nail
+    { charm: 'wielder', when: 'dream', art: 'assets/abilities/dream1.png', stat: 'soul.dreamNail',
+      title: { es: 'Alma onírica', en: 'Dream soul' },
+      line: { es: 'Cada golpe da {v} de alma y carga en 1,1 s; más Esencia', en: 'Each hit gives {v} soul and it charges in 1.1 s; more Essence' },
+      note: { es: 'carga en 1,1 s', en: 'charges in 1.1 s' } },
+    // Exploring
+    { charm: 'compass', when: 'explore', art: 'assets/effects/map.png',
+      title: { es: 'Tu posición', en: 'Your position' },
+      line: { es: 'Ves dónde estás al abrir el mapa', en: 'You see where you are when you open the map' },
+      note: { es: 'en el mapa', en: 'on the map' } },
+    { charm: 'swarm', when: 'explore', art: 'assets/effects/geo.png',
+      title: { es: 'Geo automático', en: 'Auto geo' },
+      line: { es: 'Un enjambre te recoge el geo suelto', en: 'A swarm picks up loose geo for you' },
+      note: { es: 'el geo suelto', en: 'loose geo' } },
+    { charm: ['fgreed', 'ugreed'], when: 'explore', art: 'assets/effects/geo.png', val: () => '+20' + (I.current === 'es' ? ' %' : '%'),
+      title: { es: 'Más geo', en: 'More geo' },
+      line: { es: 'Los enemigos sueltan un {v} más de geo', en: 'Enemies drop {v} more geo' },
+      note: { es: 'de los enemigos', en: 'from enemies' } },
+    { charm: 'crest', when: 'explore', val: () => '20' + (I.current === 'es' ? ' %' : '%'),
+      title: { es: 'Descuento', en: 'Discount' },
+      line: { es: 'Comepiernas te rebaja un {v}', en: 'Leg Eater takes {v} off' },
+      note: { es: 'en Comepiernas', en: 'at Leg Eater' } },
+    { charm: 'voidheart', when: 'explore',
+      title: { es: 'El Vacío, en paz', en: 'The Void at peace' },
+      line: { es: 'Las criaturas del Vacío dejan de atacarte', en: 'Void creatures stop attacking you' },
+      note: { es: 'criaturas del Vacío', en: 'Void creatures' } },
+  ];
+
+  /* The fragile ones, together: a single line with all the ones that break. */
+  function fragileEffect(st) {
+    const ids = st.charms.filter((id) => D.CHARM_BY_ID[id] && D.CHARM_BY_ID[id].fragile);
+    if (!ids.length) return null;
+    const names = new Intl.ListFormat(I.current, { type: 'conjunction' }).format(ids.map((id) => pick(D.CHARM_BY_ID[id])));
+    return {
+      charms: ids, when: 'fall', art: 'assets/knight/shade.png', bad: true,
+      title: { es: ids.length === 1 ? 'Se rompe' : 'Se rompen', en: ids.length === 1 ? 'It breaks' : 'They break' },
+      lineText: { es: (ids.length === 1 ? 'Se rompe ' : 'Se rompen ') + names + '; Comepiernas los arregla', en: names + (ids.length === 1 ? ' breaks' : ' break') + '; Leg Eater repairs them' },
+      note: { es: names, en: names },
+    };
+  }
+
+  /* ── Formatting: js/app.js's (fmtStatRich), copied ───────────────────────────────────── */
+  const NF = (d) => I.nf(d);
+  const pctSpace = () => (I.current === 'es' ? ' %' : '%');
+  function fmtValue(v, fmt, approx) {
+    let s;
+    switch (fmt) {
+      case 'int': s = NF(0).format(v); break;
+      case 'dec1': s = NF(1).format(v); break;
+      case 'dec2': s = NF(2).format(v); break;
+      case 'sec': s = NF(3).format(v) + ' s'; break;
+      case 'pct': s = NF(1).format(v) + pctSpace(); break;
+      case 'mult': s = '×' + NF(2).format(v); break;
+      case 'speed': s = NF(1).format(v) + ' u/s'; break;
+      default: s = String(v);
+    }
+    return (approx ? '~' : '') + s;
+  }
+  function fmtStatRich(s) {
+    const raw = fmtValue(s.value, s.fmt, s.approx);
+    const unit = s.fmt === 'sec' ? ' s' : s.fmt === 'speed' ? ' u/s' : s.fmt === 'pct' ? pctSpace() : '';
+    if (!unit) return esc(raw);
+    return esc(raw.slice(0, raw.length - unit.length)) + '<i class="u">' + esc(unit) + '</i>';
+  }
+
+  /* ── What shows with the current build ────────────────────────────────────────────────── */
+  function currentState() {
+    const build = location.hash.replace(/^#/, '').split('&').filter((p) => p && !/^lang=/.test(p)).join('&');
+    return C.decode(build);
+  }
+
+  function effectsFor(st) {
+    const S = E.compute(st, I.current);
+    const has = (id) => st.charms.includes(id);
+    const list = [];
+    for (const fx of EFFECTS) {
+      const ids = Array.isArray(fx.charm) ? fx.charm : [fx.charm];
+      const charm = ids.find(has);
+      if (!charm) continue;
+      if (fx.show && !fx.show(S, st)) continue;
+      const stat = fx.stat ? S.stats[fx.stat] : null;
+      const extra = fx.extra && S.stats[fx.extra.stat].applies && fx.extra.show(S) ? fx.extra : null;
+      // A synergy active in its figure adds the other charm's medal.
+      const synOf = (s) => s && s.contribs.find((c) => c.active && c.source.startsWith('synergy:') && c.charms && c.charms.includes(charm));
+      const syn = synOf(stat) || (extra && synOf(S.stats[extra.stat]));
+      const charms = syn ? [charm, ...syn.charms.filter((x) => x !== charm)] : [charm];
+      const na = stat && !stat.applies;
+      const v = na ? '' : fx.val ? fx.val(S, st) : stat && stat.fmt !== 'flag' ? fmtStatRich(stat) : '';
+      const art = fx.artJoni && has('joni') ? fx.artJoni : fx.art;
+      list.push({ ...fx, art, charms, v, na, reason: na ? stat.reason : '', ev: extra ? extra.val(S) : '', extra });
+    }
+    const frag = fragileEffect(st);
+    if (frag) list.push(frag);
+    const order = WHEN.map((w) => w.id);
+    return list.sort((a, b) => order.indexOf(a.when) - order.indexOf(b.when));
+  }
+
+  const T = {
+    head: { es: 'Efectos', en: 'Effects' },
+    hint: { es: 'lo que hacen tus amuletos y no sale en las cifras', en: "what your charms do that the numbers don't show" },
+    none: { es: 'Todo lo que hacen tus amuletos ya está en las cifras de arriba.', en: 'Everything your charms do is already in the numbers above.' },
+    with: { es: 'con', en: 'with' },
+  };
+
+  const withV = (text, v) => esc(pick(text)).replace('{v}', `<span class="v">${v}</span>`);
+  const lineHtml = (fx) => {
+    if (fx.lineText) return esc(pick(fx.lineText));
+    if (fx.na) return `${esc(pick(fx.title))}: <span class="is-na">${esc(fx.reason)}</span>`;
+    return withV(fx.line, fx.v) + (fx.extra ? withV(fx.extra.line, fx.ev) : '');
+  };
+  const noteHtml = (fx) => (fx.na ? esc(fx.reason) : fx.extra ? withV(fx.extra.note, fx.ev) : esc(pick(fx.note)));
+  const srcHtml = (fx) => `<span class="hfx-src" title="${esc(fx.charms.map((id) => pick(D.CHARM_BY_ID[id])).join(' + '))}">${fx.charms.map((id) => `<img src="${charmArt(id)}" alt="">`).join('')}</span>`;
+
+  /* A · grouped by moment */
+  function renderA(list) {
+    const groups = WHEN.map((w) => ({ w, items: list.filter((fx) => fx.when === w.id) })).filter((g) => g.items.length);
+    return `<div class="fxA">${groups.map(({ w, items }) => `<section class="fxA-group">
+        <h3 class="fxA-when"><span class="fxA-glyph hfx-lit"><img src="${w.art}" alt=""></span>${esc(pick(w))}</h3>
+        <ul class="fxA-list">${items.map((fx) => {
+          const art = fx.art || charmArt(fx.charms[0]);
+          const badge = fx.art || fx.charms.length > 1 ? srcHtml(fx) : '';
+          return `<li class="${fx.bad ? 'is-bad' : ''}">
+            <span class="fxA-art hfx-lit"><img src="${art}" alt="">${badge}</span>
+            <span class="fxA-text">${lineHtml(fx)}</span>
+          </li>`;
+        }).join('')}</ul>
+      </section>`).join('')}</div>`;
+  }
+
+  /* B · one plate per effect */
+  function renderB(list) {
+    return `<div class="fxB">${list.map((fx) => {
+      const art = fx.art || charmArt(fx.charms[0]);
+      const badge = fx.art || fx.charms.length > 1 ? srcHtml(fx) : '';
+      const full = lineHtml(fx).replace(/<[^>]+>/g, '');
+      return `<div class="fxB-plate ${fx.bad ? 'is-bad' : ''}" title="${full}">
+        <span class="fxB-art hfx-lit"><img src="${art}" alt="">${badge}</span>
+        <span class="fxB-name">${esc(pick(fx.title))}</span>
+        ${fx.v ? `<span class="fxB-val v">${fx.v}</span>` : ''}
+        <span class="fxB-note ${fx.na ? 'is-na' : ''}">${noteHtml(fx)}</span>
+        <span class="fxB-when">${esc(pick(WHEN_BY_ID[fx.when]))}</span>
+      </div>`;
+    }).join('')}</div>`;
+  }
+
+  /* C · one row per moment */
+  function renderC(list) {
+    const groups = WHEN.map((w) => ({ w, items: list.filter((fx) => fx.when === w.id) })).filter((g) => g.items.length);
+    return `<div class="fxC">${groups.map(({ w, items }) => `
+      <div class="fxC-when"><span class="hfx-lit"><img src="${w.art}" alt=""></span>${esc(pick(w))}</div>
+      <div class="fxC-items">${items.map((fx) => `<span class="fxC-item ${fx.bad ? 'is-bad' : ''}">${srcHtml(fx)}<span>${esc(pick(fx.title))}${fx.v ? ` <span class="v">${fx.v}</span>` : ''}${fx.ev ? ` · <span class="v">${fx.ev}</span>` : ''}${fx.na ? ` <span class="is-na">· ${esc(fx.reason)}</span>` : ''}</span></span>`).join('')}</div>`).join('')}
+    </div>`;
+  }
+
+  const RENDER = { a: renderA, b: renderB, c: renderC };
+  const q = new URLSearchParams(location.search);
+  let variant = RENDER[q.get('v')] ? q.get('v') : 'a';
+
+  function blockHtml() {
+    const st = currentState();
+    if (!st.charms.length) return '';
+    const list = effectsFor(st);
+    const body = list.length ? RENDER[variant](list) : `<p class="hfx-empty">${esc(pick(T.none))}</p>`;
+    return `<div class="block-head hfx-head">${esc(pick(T.head))}<span class="hfx-hint">${esc(pick(T.hint))}</span></div>${body}`;
+  }
+
+  /* After each repaint of the sheet, the block goes after the charm band. */
+  const panel = document.getElementById('panel');
+  function inject() {
+    const band = panel.querySelector('.inv-band');
+    if (!band) return;
+    let box = panel.querySelector('.hfx');
+    if (!box) { box = document.createElement('div'); box.className = 'hfx'; band.after(box); }
+    box.innerHTML = blockHtml();
+  }
+  new MutationObserver(() => { if (!panel.querySelector('.hfx')) inject(); }).observe(panel, { childList: true });
+  window.addEventListener('hashchange', inject);
+  inject();
+
+  /* The bar: variant and a few builds to try. */
+  const BUILDS = [
+    ['mix', 'thorns,grubsong,elegy,dreamshield,weaversong,compass'],
+    ['def', 'thorns,grubsong,stalwart,baldur,hiveblood'],
+    ['pets', 'weaversong,grimmchild,womb,crest,spore,compass'],
+    ['move', 'dashmaster,sprintmaster,sharpshadow,wielder,swarm,ugreed,voidheart'],
+    ['frag', 'fstrength,fheart,fgreed,glory,heavy,steady'],
+  ];
+  const bar = document.getElementById('mk-bar');
+  function paintBar() {
+    const lang = I.current;
+    bar.innerHTML = `<b>Variant</b>
+      ${[['a', 'A · When it happens'], ['b', 'B · Plates'], ['c', 'C · Frieze']].map(([k, l]) => `<button type="button" data-v="${k}" aria-pressed="${variant === k}">${l}</button>`).join('')}
+      <span class="mk-sep"></span><b>Build</b>
+      ${BUILDS.map(([k, ids]) => `<button type="button" data-build="${ids}">${k}</button>`).join('')}`;
+  }
+  bar.addEventListener('click', (ev) => {
+    const b = ev.target.closest('button');
+    if (!b) return;
+    if (b.dataset.v) {
+      variant = b.dataset.v;
+      const u = new URL(location.href); u.searchParams.set('v', variant);
+      history.replaceState(null, '', u.pathname + u.search + u.hash);
+      paintBar(); inject();
+    }
+    if (b.dataset.build) {
+      const st = C.normalize({ ...C.PRESETS.max, charms: b.dataset.build.split(','), hp: 0 });
+      location.hash = C.encode(st) + (I.current === 'es' ? '&lang=es' : '');
+    }
+  });
+  paintBar();
+})();
+</script>
+</body>
+</html>

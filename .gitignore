@@ -1,0 +1,17 @@
+# Editors
+.idea/
+.vscode/
+
+# Claude Code: each machine's local settings
+.claude/settings.local.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# In case there are dependencies one day
+node_modules/
+
+# The game's full text dump (Team Cherry's): tools/game-text.js and tools/fetch-journal.js
+# download it again, pinned to patch 1.5.12620, the first time they need it
+kb/data/all_text.json

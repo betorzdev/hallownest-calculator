@@ -1,0 +1,276 @@
+/* css/tokens.css — Hollow: design tokens.
+   The palette comes from the mockup: Hallownest's blue-black, Cinzel for labels,
+   Spectral for text, zero radii and corner brackets.
+   Every colour, type and spacing value comes from here.
+
+   Three decisions worth reading before touching anything:
+
+   1. The page background is traced from the game's menu (#16203a against the #203050
+      measured: three degrees of hue). It isn't touched.
+   2. The accent is NOT "the blue of soul": measured on our own sprites, soul is white
+      (assets/hud/soul.png = #ECECEC, 0% saturation) and the game's saturated cyan is
+      lifeblood (#63BDD7). So the accent no longer decorates data: it only marks what
+      responds to the finger (focus, hover, equipped). The figures go in bone, like the
+      game's HUD. That closes the open decision in design/00-system.md §3 without having
+      to choose a palette: the accent is left with a single job.
+   3. Numbers don't go in Cinzel. Cinzel is a Roman capital with no real lowercase
+      —it replaces it with small caps—, which is why "0.891 s" came out as "0.891 ꜱ". Every
+      number goes in --font-num, a system sans with tabular figures. It's the deliberate
+      departure from the game, which never had to align a column of damage. */
+/* The three typefaces travel with the site (assets/fonts/, Google Fonts' Latin subset):
+   opened with a double click and offline, it looks the same. Cinzel is variable: one file for 400–900. */
+@font-face { font-family: 'Cinzel'; font-style: normal; font-weight: 400 900; font-display: swap;
+  src: url('../assets/fonts/cinzel.woff2') format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Spectral'; font-style: normal; font-weight: 300; font-display: swap;
+  src: url('../assets/fonts/spectral-300.woff2') format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Spectral'; font-style: italic; font-weight: 300; font-display: swap;
+  src: url('../assets/fonts/spectral-300-italic.woff2') format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Spectral'; font-style: normal; font-weight: 400; font-display: swap;
+  src: url('../assets/fonts/spectral-400.woff2') format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Spectral'; font-style: normal; font-weight: 500; font-display: swap;
+  src: url('../assets/fonts/spectral-500.woff2') format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Spectral'; font-style: normal; font-weight: 600; font-display: swap;
+  src: url('../assets/fonts/spectral-600.woff2') format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Patrick Hand SC'; font-style: normal; font-weight: 400; font-display: swap;
+  src: url('../assets/fonts/patrick-hand-sc.woff2') format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+
+:root {
+  --font-display: 'Cinzel', 'Trajan Pro', Georgia, 'Times New Roman', serif;
+  --font-body: 'Spectral', Georgia, 'Times New Roman', serif;
+  /* The Hunter's hand: his Journal notes are handwritten and in capitals (design/02 §4, the
+     book's two voices). Only there. */
+  --font-hand: 'Patrick Hand SC', 'Segoe Print', 'Bradley Hand', cursive;
+  /* System sans: zero network bytes, and its figures are already tabular out of the box
+     (Arial, Helvetica, Roboto, Segoe UI and DejaVu share a digit width). */
+  --font-num: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+              'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif;
+
+  /* Background and surfaces.
+     Depth is built downwards —the field sinks, the sheet stays— so as not to raise the
+     overall brightness: that way all the ink still passes AA. */
+  --bg: #06080d;
+  --page-bg: radial-gradient(1100px 620px at 50% -180px, #16203a 0%, #0b101b 55%, #06080d 100%);
+  --panel: linear-gradient(180deg, #141c30 0%, #0d1421 100%);
+  --block: #111828;         /* raised surface: blocks and inner panels */
+  --card: #080c15;          /* sunken surface: fields, cells, wells */
+  --card-idle: #161e31;     /* interactive piece at rest, raised above the block */
+  --card-on: #1c2743;       /* the same, selected */
+  --ctl: #151d2e;
+  --well: #05070c;
+
+  /* Lines */
+  --line-panel: #2b3552;
+  --line: #222c42;
+  --line-card: #232e44;
+  --line-row: #1a2233;
+  --line-ctl: #2b3550;
+  --well-line: #253048;
+  --bracket: #4a5f85;
+
+  /* Ink. Four steps and each with a job; all pass AA (min. 4.7:1) on the six surfaces
+     above. The old --faint (3.2:1) is merged into --muted: if two greys can't be told
+     apart, they're the same grey with two names. */
+  --ink-strong: #f7f9fd;    /* figures and titles */
+  --ink: #f0f2f8;           /* body */
+  --ink-2: #a7b0c6;         /* secondary */
+  --label: #9aa4be;         /* small-caps labels */
+  --muted: #8891ad;         /* notes, captions, supporting text */
+  --ink-idle: #b3bccf;
+
+  /* Accent: interactive things only. See note 2 in the header. */
+  --accent: #9ec6ea;
+  --accent-line: #6d8cb6;
+  --accent-ink: #a8cdee;
+  --accent-soft: rgba(158, 198, 234, 0.14);
+  --glow: 0 0 22px -8px #9ec6ea;
+
+  /* Round wells for the icons */
+  --medal: #0d1626;
+  --medal-line: #5f7ca6;
+  --medal-off: #0c111c;
+  --medal-off-line: #28324a;
+  --medal-off-ink: #8791ab;
+
+  /* HUD */
+  --mask: #dfe6f2;
+  --mask-line: #f2f5fa;
+  --mask-empty: #2a3247;
+  --lifeblood: #2d5f72;
+  --lifeblood-line: #7ec8de;
+  --soul-well: #0b1019;                   /* the empty container, under the soul */
+  --soul-rim: #2a3247;                    /* its edge */
+  --hud-frame: #d9dce6;                   /* the HUD's frame: bone stroke, like the game's */
+
+  /* Your side of the arena is a scene from the game: an almost black field, a cold spotlight
+     behind the Knight (without it, his body and his Shade, which are black, can't be seen) and
+     the foreground as a pure black silhouette, which is how the game paints what's in front of
+     you (design/02-hollow-knight.md, §2). */
+  --scene-bg: #04060b;
+  --scene-glow: rgba(116, 142, 196, 0.26);
+  --scene-glow-low: rgba(116, 142, 196, 0.1);  /* the same spotlight, off: you've fallen */
+  --scene-floor: #000;
+  --scene-flash: rgba(236, 240, 248, 0.34);    /* the flash when taking a hit */
+  --focus-glow: rgba(242, 244, 250, 0.85);     /* Focus's white glow */
+  --void-wisp: #000;                           /* the black smoke of the last mask */
+
+  /* Notches: the glowing dot from the game's charm screen.
+     Measured from the wiki's video: used #f4f6f8, free #32363e, overcharm magenta. */
+  --notch-used: #f4f6f8;
+  --notch-used-glow: rgba(226, 236, 252, 0.5);
+  --notch-free: #5f6987;     /* raised from #39415a (1.75:1) to 3:1 on every surface (WCAG 1.4.11) */
+  --notch-core: #5b6480;
+  --notch-over: #d14ec4;
+  --notch-over-glow: rgba(209, 78, 196, 0.62);
+  /* The grid's preview (css: .notch.is-pending): the notch you would take, with the ring in the
+     colour of a used one (or of overcharm) and the centre at half tone; and how long it takes to breathe. */
+  --notch-pending-fill: color-mix(in oklab, var(--notch-used) 14%, transparent);
+  --notch-over-pending-fill: color-mix(in oklab, var(--notch-over) 22%, transparent);
+  --dur-pending: 1100ms;
+
+  /* Overcharm: the game's magenta, not the mockup's wine. */
+  --over-bg: #2a1030;
+  --over-line: #6d2a68;
+  --over-ink: #e79ade;
+  --over-ink-2: #d9bcd7;
+  --over-ambient: rgba(186, 58, 174, 0.30);
+  --over-ambient-soft: rgba(150, 44, 142, 0.13);
+
+  /* The game's violet when you overcharm (the notches turn from white to purple). */
+  --overcharm-core: rgba(255, 255, 255, 0.95);
+  --overcharm-glow: rgba(240, 150, 228, 0.72);
+  --overcharm-edge: rgba(150, 44, 142, 0.42);
+  /* The same hit, in Godhome's gold, when picking the fourth binding (all four at once). */
+  --bindall-core: rgba(255, 250, 236, 0.95);
+  --bindall-glow: rgba(247, 217, 167, 0.72);
+  --bindall-edge: rgba(153, 116, 100, 0.42);
+
+  /* Traffic light for the deltas and conditional notices */
+  --good: #7fc7a0;
+  --good-soft: rgba(127, 199, 160, 0.14);
+  --bad: #e2705f;
+  --bad-soft: rgba(226, 112, 95, 0.14);
+  --cond: #ccbe9c;
+  --notice-bg: #1a1710;
+  --notice-line: #3b3422;
+
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 18px 54px rgba(0, 0, 0, 0.62);
+
+  /* Typography: seven steps and two scaled ones.
+     No half pixels on purpose: nobody tells 13 from 13.5, and that difference only
+     spends a decision and leaves a misaligned edge. */
+  --fs-2xs: 11px;     /* small-caps labels, units, badges */
+  --fs-xs: 13px;      /* dense cells, notes under a figure */
+  --fs-sm: 14px;      /* secondary interface */
+  --fs-md: 16px;      /* body ← base */
+  --fs-lg: 18px;      /* prose, lead paragraph */
+  --fs-xl: 24px;      /* block titles, medium figures */
+  --fs-2xl: 34px;     /* large figures */
+  --fs-brand: clamp(1.5rem, 1rem + 1.2vw, 2.125rem);     /* 24 → 34 px: the title, in the one-row header */
+  --fs-hero: clamp(3.5rem, 2.2rem + 4vw, 5.5rem);        /* 56 → 88 px */
+  /* The names on the Hall's tablet, with its four columns. In the game, 26 px at 1920 wide,
+     and the list measures 65.3 times that; here it's read inside the Hall's frame, so it
+     comes from its width (cqi, the tablet is a container): the list fills it as on the
+     game's screen, and never below --fs-md. Everything else on the tablet is measured in
+     multiples of this. */
+  --fs-tablet: clamp(var(--fs-md), 1.53cqi, 26px);
+
+  /* Spacing: eight steps, deliberately non-linear (4/8/12/16/20/24 gives adjacent values
+     that can't be told apart). */
+  --sp-half: 2px;          /* the hairline between a figure and its note, or two halves of a slot */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+
+  /* Motion: ~250 ms to respond to the finger, ~400 ms for a fade, no bounce.
+     The game doesn't have a single transition with overshoot. */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast: 120ms;
+  --dur: 250ms;
+  --dur-slow: 400ms;
+  /* For what fades by itself, without anyone touching it: starts and fades out softly, with no cut. */
+  --ease-fade: cubic-bezier(0.45, 0, 0.55, 1);
+
+  --page-max: 1216px;
+  --page-pad: var(--sp-8);
+  /* What the screen bar stuck at the top takes up: whatever gets focused or skipped to stays below it. */
+  --sticky-h: 64px;
+  --measure: 68ch;    /* maximum measure for long prose */
+
+  /* Godhome: the only area of the game with an inverted palette, dark silhouettes on gold
+     (design/02-hollow-knight.md, measured: accent #F7D9A7 / #CBA182, mid-tones #997464).
+     The Hall of Gods statues are almost black sculptures with a transparent background:
+     on the page's blue-black they vanish, so they carry a light behind them. It's a light,
+     not a box: a radial halo centred under the statue's body and faded to transparent, so
+     the surface underneath shows (--card on the grid, --well on the plaque, --block on the
+     Idol). Three intensities: lit (the chosen one, the one under your finger, the plaque),
+     at rest, and off (the ones the filter dims, the Idol not yet won). The pedestal is a
+     rule of --godhome-line underneath.
+     It's the niche's background, not an accent: --accent still marks what's interactive. */
+  --godhome: #f7d9a7;
+  --godhome-2: #cba182;
+  --godhome-line: #997464;
+  --godhome-ink: #20181a;
+  --godhome-glow: rgba(247, 217, 167, 0.55);   /* the halo for all four bindings at once (the icon measured: #f1e0bd) */
+  --godhome-light: radial-gradient(70% 78% at 50% 76%, var(--godhome) 0%, var(--godhome-2) 34%, var(--godhome-line) 60%, transparent 92%);
+  --godhome-light-rest: radial-gradient(70% 78% at 50% 76%, var(--godhome-2) 0%, var(--godhome-line) 42%, transparent 88%);
+  --godhome-light-off: radial-gradient(64% 64% at 50% 78%, var(--godhome-line) 0%, transparent 68%);
+
+  /* One tint per section: the system of the game's map screen (design/00-system.md §3),
+     black with each region in a pale, desaturated tint, all above 12:1.
+     It goes on section titles, corner brackets and ornaments; never on a figure or on
+     what responds to the finger, which still belongs to the accent. */
+  --tint-sheet: #d5ddfd;      /* City of Tears: Charms, Your game and the guide */
+  --tint-combat: #f8cffc;     /* Crystal Peak: combat */
+  --tint-godhome: var(--godhome);   /* the Hall of Gods and the Pantheons */
+  --tint-journal: #bce6f4;    /* Fungal Wastes: the Hunter's Journal (in the study, "Enemies") */
+
+  /* The sheet is the game's Inventory screen: almost pure black, like the arena's scene, and
+     its spells and arts as plates with their light behind. The light is white, because soul
+     is white; what you haven't learnt stays dark, like a Hall statue without its own. */
+  --inv-bg: var(--scene-bg);
+  --halo-plate: radial-gradient(closest-side, rgba(236, 236, 236, 0.2), rgba(236, 236, 236, 0.06) 58%, transparent);
+  --halo-plate-off: radial-gradient(closest-side, rgba(150, 164, 196, 0.2), transparent 78%);
+  --mote: rgba(226, 232, 245, 0.7);    /* the dust motes from the main menu */
+  --dur-flash: 900ms;                   /* the glow of a figure that just changed */
+  --dur-delta: 4s;                      /* how long your last change's chip stays in view */
+  /* What's touched on that black goes unboxed: on hover, a veil of ink; the chosen one, a
+     veil of the accent with its rule (--accent-line). Used by Your game and combat. */
+  --veil: color-mix(in oklab, var(--ink) 5%, transparent);
+  --picked: color-mix(in oklab, var(--accent) 8%, transparent);
+
+  /* The Hall's entrance tablet. Its screen dims the room almost to black (measured on
+     "Screenshot HK Hall of Gods 03": #000 around the list), which here is the black of the
+     Hall's frame (--inv-bg): it has no veil of its own. In front of each name, the radiant
+     symbol glows with a warm halo: #F8F7C4 at the centre, faded to black at ~0.3 times its
+     diameter. */
+  --radiant-glow: brightness(1.2) drop-shadow(0 0 3px rgba(250, 247, 196, 0.95)) drop-shadow(0 0 9px rgba(250, 240, 180, 0.6));
+  /* With no symbol, the game's empty ring: unsaturated grey, dot and ring, and the ring
+     lighter on the outside. Measured on a screenshot of a half-finished game, averaging its 43
+     marks: the dot reaches 64 of 255 and the ring goes from 38 inside to 58 outside. */
+  --tablet-empty-dot: #444444;
+  --tablet-empty-ring-in: #262626;
+  --tablet-empty-ring: #3a3a3a;
+
+  /* Your game's Hunter's Journal. What you haven't encountered is shadowed: the list's medallion,
+     grey and dim, and the page's portrait, a silhouette that barely separates from the black. */
+  --hj-unseen-medal: grayscale(1) brightness(0.42);
+  --hj-unseen-art: brightness(0) invert(0.2);
+  /* The open book: the spine is a rule in the tint, and the light of the two pages rises towards it.
+     The undeciphered notes, blurred ink. */
+  --hj-spine: color-mix(in oklab, var(--tint-journal) 30%, transparent);
+  --hj-leaf: color-mix(in oklab, var(--tint-journal) 7%, transparent);
+  --hj-sealed: blur(2.5px);
+
+  /* The charms you haven't found in your game: colourless and half-lit, like the Journal
+     medallions you haven't seen. Each one's relief can still be read; a flat silhouette
+     made them all look the same. */
+  --charm-missing-art: grayscale(1) brightness(0.38);
+
+  color-scheme: dark;
+}

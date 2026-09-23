@@ -1,0 +1,1586 @@
+[
+ {
+  "name": "Absolute Radiance",
+  "kind": "Boss",
+  "health": "Stages 1,2,3,4,6 respectively: 400+450+300+750+281 | Total: 2181",
+  "location": "Pantheon of Hallownest",
+  "drops": "Embrace the Void ending",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Aluba",
+  "kind": "Enemy",
+  "health": "1",
+  "location": "",
+  "drops": "None",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Ambloom",
+  "kind": "Enemy",
+  "health": "12",
+  "location": "",
+  "drops": "2-3 geo",
+  "journal": "15",
+  "tactics": true
+ },
+ {
+  "name": "Armoured Squit",
+  "kind": "Enemy",
+  "health": "40 | [Godmaster] 26 (Spawned by Ascended/Radiant Collector)",
+  "location": "",
+  "drops": "None",
+  "journal": "15",
+  "tactics": true
+ },
+ {
+  "name": "Aspid Hatchling",
+  "kind": "Enemy",
+  "health": "5",
+  "location": "",
+  "drops": "None",
+  "journal": "30",
+  "tactics": true
+ },
+ {
+  "name": "Aspid Hunter",
+  "kind": "Enemy",
+  "health": "15",
+  "location": "",
+  "drops": "6-8 geo | None (Spawned by the Collector)",
+  "journal": "20",
+  "tactics": true
+ },
+ {
+  "name": "Aspid Mother",
+  "kind": "Enemy",
+  "health": "20",
+  "location": "",
+  "drops": "10-12 geo",
+  "journal": "15",
+  "tactics": true
+ },
+ {
+  "name": "Baldur",
+  "kind": "Enemy",
+  "health": "15",
+  "location": "",
+  "drops": "4-5 geo | None (Spawned by the Collector)",
+  "journal": "20",
+  "tactics": true
+ },
+ {
+  "name": "Battle Obble",
+  "kind": "Enemy",
+  "health": "70",
+  "location": "",
+  "drops": "None",
+  "journal": "15",
+  "tactics": true
+ },
+ {
+  "name": "Belfly",
+  "kind": "Enemy",
+  "health": "5",
+  "location": "",
+  "drops": "None",
+  "journal": "15",
+  "tactics": true
+ },
+ {
+  "name": "Bluggsac",
+  "kind": "Enemy",
+  "health": "20",
+  "location": "",
+  "drops": "Rancid Egg",
+  "journal": "5",
+  "tactics": true
+ },
+ {
+  "name": "Boofly",
+  "kind": "Enemy",
+  "health": "40",
+  "location": "",
+  "drops": "8-10 geo",
+  "journal": "20",
+  "tactics": true
+ },
+ {
+  "name": "Broken Vessel",
+  "kind": "Boss",
+  "health": "525",
+  "location": "Ancient Basin",
+  "drops": "Monarch Wings",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Brooding Mawlek",
+  "kind": "Boss",
+  "health": "300",
+  "location": "Forgotten Crossroads | Trial of the Fool",
+  "drops": "Mask Shard (Forgotten Crossroads)",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Brothers Oro & Mato",
+  "kind": "Boss",
+  "health": "500 (Oro, First Phase) | 600 + 1000 (Oro + Mato, Second Phase) | Total: 2100",
+  "location": "Pantheon of the Master",
+  "drops": "",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Carver Hatcher",
+  "kind": "Enemy",
+  "health": "35",
+  "location": "",
+  "drops": "25-32 geo",
+  "journal": "15",
+  "tactics": true
+ },
+ {
+  "name": "Charged Lumafly",
+  "kind": "Enemy",
+  "health": "-",
+  "location": "",
+  "drops": "None",
+  "journal": "Entry",
+  "tactics": true
+ },
+ {
+  "name": "Corpse Creeper",
+  "kind": "Enemy",
+  "health": "18 | 15 (After transformation)",
+  "location": "",
+  "drops": "10-12 geo",
+  "journal": "15",
+  "tactics": true
+ },
+ {
+  "name": "Cowardly Husk",
+  "kind": "Enemy",
+  "health": "20",
+  "location": "",
+  "drops": "9-15 geo",
+  "journal": "25",
+  "tactics": true
+ },
+ {
+  "name": "Crawlid",
+  "kind": "Enemy",
+  "health": "8",
+  "location": "",
+  "drops": "2-3 geo",
+  "journal": "0",
+  "tactics": true
+ },
+ {
+  "name": "Crystal Crawler",
+  "kind": "Enemy",
+  "health": "15",
+  "location": "",
+  "drops": "8-10 geo",
+  "journal": "15",
+  "tactics": true
+ },
+ {
+  "name": "Crystal Guardian",
+  "kind": "Boss",
+  "health": "280",
+  "location": "Crystal Peak",
+  "drops": "385-462 geo | Access to Central Bench",
+  "journal": "<abbr title=\"Shared with the Enraged Guardian\">2</abbr>",
+  "tactics": true
+ },
+ {
+  "name": "Crystal Hunter",
+  "kind": "Enemy",
+  "health": "25",
+  "location": "",
+  "drops": "7-13 geo",
+  "journal": "20",
+  "tactics": true
+ },
+ {
+  "name": "Crystallised Husk",
+  "kind": "Enemy",
+  "health": "35",
+  "location": "",
+  "drops": "20-27 geo",
+  "journal": "15",
+  "tactics": true
+ },
+ {
+  "name": "Death Loodle",
+  "kind": "Enemy",
+  "health": "45",
+  "location": "",
+  "drops": "None",
+  "journal": "15",
+  "tactics": true
+ },
+ {
+  "name": "Deephunter",
+  "kind": "Enemy",
+  "health": "18",
+  "location": "",
+  "drops": "7-13 geo",
+  "journal": "20",
+  "tactics": true
+ },
+ {
+  "name": "Deepling",
+  "kind": "Enemy",
+  "health": "15",
+  "location": "",
+  "drops": "None",
+  "journal": "25",
+  "tactics": true
+ },
+ {
+  "name": "Dirtcarver",
+  "kind": "Enemy",
+  "health": "20",
+  "location": "",
+  "drops": "6-12 geo",
+  "journal": "35",
+  "tactics": true
+ },
+ {
+  "name": "Dung Defender",
+  "kind": "Boss",
+  "health": "700 / 750 / 800 / 850 / 900 | (Nail upgrades 0/1/2/3/4)",
+  "location": "Royal Waterways",
+  "drops": "Defender's Crest | Access to Isma's Grove",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Duranda",
+  "kind": "Enemy",
+  "health": "30",
+  "location": "",
+  "drops": "4-5 geo",
+  "journal": "8",
+  "tactics": true
+ },
+ {
+  "name": "Durandoo",
+  "kind": "Enemy",
+  "health": "30",
+  "location": "",
+  "drops": "6-8 geo",
+  "journal": "8",
+  "tactics": true
+ },
+ {
+  "name": "Elder Baldur",
+  "kind": "Enemy",
+  "health": "60",
+  "location": "",
+  "drops": "50-60 geo",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Elder Hu",
+  "kind": "Boss",
+  "health": "250/420/550/600/650 | (Nail upgrades 0/1/2/3/4)",
+  "location": "Fungal Wastes",
+  "drops": "100 Essence",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Enraged Guardian",
+  "kind": "Boss",
+  "health": "450/450/500/550/600 | (Nail: 0/1/2/3/4)",
+  "location": "Crystal Peak",
+  "drops": "550-660 geo | Mask Shard",
+  "journal": "<abbr title=\"Shared with the Crystal Guardian\">2</abbr>",
+  "tactics": true
+ },
+ {
+  "name": "Entombed Husk",
+  "kind": "Enemy",
+  "health": "45",
+  "location": "",
+  "drops": "15-21 geo",
+  "journal": "10",
+  "tactics": true
+ },
+ {
+  "name": "Failed Champion",
+  "kind": "Boss",
+  "health": "360 (Armour) | 40 (Maggot), 60 first stagger | Minimum total to kill: | 3 armour stages (360x3) + 4 head stages (60 & 40x3) = 1260",
+  "location": "Forgotten Crossroads",
+  "drops": "300 Essence",
+  "journal": "",
+  "tactics": true
+ },
+ {
+  "name": "False Knight",
+  "kind": "Boss",
+  "health": "65 (Armour) | 40 (Maggot) | Minimum total to kill: | 3 armour stages (65x3) + 4 head stages (40x4) = 355",
+  "location": "Forgotten Crossroads",
+  "drops": "City Crest | 200 geo",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Fluke Larva",
+  "kind": "Enemy",
+  "health": "1",
+  "location": "",
+  "drops": "None",
+  "journal": "",
+  "tactics": false
+ },
+ {
+  "name": "Flukefey",
+  "kind": "Enemy",
+  "health": "13 | [Godmaster] 35 (First 6 for Ascended/Radiant Flukemarm)",
+  "location": "",
+  "drops": "None",
+  "journal": "15",
+  "tactics": true
+ },
+ {
+  "name": "Flukemarm",
+  "kind": "Boss",
+  "health": "350",
+  "location": "Royal Waterways",
+  "drops": "Flukenest",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Flukemon",
+  "kind": "Enemy",
+  "health": "55 Total: | 25 (Whole), 15 (Per Half)",
+  "location": "",
+  "drops": "12-16 geo | (6-8 geo per half)",
+  "journal": "20",
+  "tactics": true
+ },
+ {
+  "name": "Flukemunga",
+  "kind": "Enemy",
+  "health": "150",
+  "location": "",
+  "drops": "23-30 geo",
+  "journal": "8",
+  "tactics": true
+ },
+ {
+  "name": "Folly",
+  "kind": "Enemy",
+  "health": "13",
+  "location": "",
+  "drops": "5-6 geo | None (Colosseum of Fools, Spawned by Soul Warrior)",
+  "journal": "15",
+  "tactics": true
+ },
+ {
+  "name": "Fool Eater",
+  "kind": "Enemy",
+  "health": "16",
+  "location": "",
+  "drops": "9-11 geo",
+  "journal": "15",
+  "tactics": true
+ },
+ {
+  "name": "Fungified Husk",
+  "kind": "Enemy",
+  "health": "15",
+  "location": "",
+  "drops": "5-6 geo",
+  "journal": "10",
+  "tactics": true
+ },
+ {
+  "name": "Fungling",
+  "kind": "Enemy",
+  "health": "10",
+  "location": "",
+  "drops": "2-3 geo",
+  "journal": "30",
+  "tactics": true
+ },
+ {
+  "name": "Fungoon",
+  "kind": "Enemy",
+  "health": "15",
+  "location": "",
+  "drops": "6-8 geo",
+  "journal": "20",
+  "tactics": true
+ },
+ {
+  "name": "Furious Vengefly",
+  "kind": "Enemy",
+  "health": "40",
+  "location": "",
+  "drops": "20-26 geo | None (Colosseum of Fools)",
+  "journal": "15",
+  "tactics": true
+ },
+ {
+  "name": "Galien",
+  "kind": "Boss",
+  "health": "230/368/479/570/640 | (Nail upgrades 0/1/2/3/4)",
+  "location": "Deepnest",
+  "drops": "200 Essence",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Garpede",
+  "kind": "Enemy",
+  "health": "-",
+  "location": "",
+  "drops": "None",
+  "journal": "Entry",
+  "tactics": true
+ },
+ {
+  "name": "Glimback",
+  "kind": "Enemy",
+  "health": "35",
+  "location": "",
+  "drops": "6-8 geo",
+  "journal": "15",
+  "tactics": true
+ },
+ {
+  "name": "Gluttonous Husk",
+  "kind": "Enemy",
+  "health": "30",
+  "location": "",
+  "drops": "11-18 geo",
+  "journal": "25",
+  "tactics": true
+ },
+ {
+  "name": "Goam",
+  "kind": "Enemy",
+  "health": "-",
+  "location": "",
+  "drops": "None",
+  "journal": "Entry",
+  "tactics": true
+ },
+ {
+  "name": "God Tamer",
+  "kind": "Boss",
+  "health": "600 (Tamer) | 450 (Beast) | Total: 1050",
+  "location": "Trial of the Fool | Pantheon of the Sage",
+  "drops": "Trial of the Fool rewards",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Gorb",
+  "kind": "Boss",
+  "health": "200/320/416/500/570 | (Nail upgrades 0/1/2/3/4)",
+  "location": "Howling Cliffs",
+  "drops": "100 Essence",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Gorgeous Husk",
+  "kind": "Enemy",
+  "health": "220",
+  "location": "",
+  "drops": "420-504 geo",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Great Hopper",
+  "kind": "Enemy",
+  "health": "130",
+  "location": "",
+  "drops": "30-56 geo None (Colosseum of Fools)",
+  "journal": "10",
+  "tactics": true
+ },
+ {
+  "name": "Great Husk Sentry",
+  "kind": "Enemy",
+  "health": "170",
+  "location": "",
+  "drops": "50-80 geo",
+  "journal": "10",
+  "tactics": true
+ },
+ {
+  "name": "Great Nailsage Sly",
+  "kind": "Boss",
+  "health": "800 (First Phase) | 250 (Second Phase) | Total: 1050",
+  "location": "Pantheon of the Sage",
+  "drops": "",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Grey Prince Zote",
+  "kind": "Boss",
+  "health": "1200-1500 (+100 per fight for the first 4 fights)",
+  "location": "Dirtmouth",
+  "drops": "300 Essence (First Defeat) | Golden Zote Statue (Tenth Defeat)",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Grimmkin Master",
+  "kind": "Enemy",
+  "health": "75 / 120 / 180 / 210 / 240 | (Nail 0/1/2/3/4)",
+  "location": "",
+  "drops": "Flame (for Grimmchild)",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Grimmkin Nightmare",
+  "kind": "Enemy",
+  "health": "100 / 180 / 240 / 280 / 320 | (Nail 0/1/2/3/4)",
+  "location": "",
+  "drops": "Flame (for Grimmchild)",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Grimmkin Novice",
+  "kind": "Enemy",
+  "health": "50 / 90 / 120 / 140 / 160 | (Nail 0/1/2/3/4)",
+  "location": "",
+  "drops": "Flame (for Grimmchild)",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Grub Mimic",
+  "kind": "Enemy",
+  "health": "45",
+  "location": "",
+  "drops": "None",
+  "journal": "5",
+  "tactics": true
+ },
+ {
+  "name": "Gruz Mother",
+  "kind": "Boss",
+  "health": "90 | 140 (Trial of the Warrior)",
+  "location": "Forgotten Crossroads | Trial of the Warrior",
+  "drops": "50 geo | Trial of the Warrior rewards (Colosseum of Fools)",
+  "journal": "3",
+  "tactics": true
+ },
+ {
+  "name": "Gruzzer",
+  "kind": "Enemy",
+  "health": "8",
+  "location": "",
+  "drops": "2-3 geo | None (Spawned by Gruz Mother)",
+  "journal": "25",
+  "tactics": true
+ },
+ {
+  "name": "Gulka",
+  "kind": "Enemy",
+  "health": "10",
+  "location": "",
+  "drops": "6-8 geo",
+  "journal": "15",
+  "tactics": true
+ },
+ {
+  "name": "Heavy Fool",
+  "kind": "Enemy",
+  "health": "90",
+  "location": "",
+  "drops": "None",
+  "journal": "20",
+  "tactics": true
+ },
+ {
+  "name": "Heavy Sentry",
+  "kind": "Enemy",
+  "health": "35",
+  "location": "",
+  "drops": "10-16 geo",
+  "journal": "20",
+  "tactics": true
+ },
+ {
+  "name": "Hive Guardian",
+  "kind": "Enemy",
+  "health": "100",
+  "location": "",
+  "drops": "25-32 geo",
+  "journal": "12",
+  "tactics": true
+ },
+ {
+  "name": "Hive Knight",
+  "kind": "Boss",
+  "health": "800 / 800 / 800 / 850 / 920 | (Nail upgrades 0/1/2/3/4)",
+  "location": "The Hive",
+  "drops": "Hiveblood",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Hive Soldier",
+  "kind": "Enemy",
+  "health": "65",
+  "location": "",
+  "drops": "15-22 geo",
+  "journal": "15",
+  "tactics": true
+ },
+ {
+  "name": "Hiveling",
+  "kind": "Enemy",
+  "health": "[Lifeblood]18",
+  "location": "",
+  "drops": "None",
+  "journal": "30",
+  "tactics": true
+ },
+ {
+  "name": "Hopper",
+  "kind": "Enemy",
+  "health": "50",
+  "location": "",
+  "drops": "16-23 geo None (Colosseum of Fools)",
+  "journal": "25",
+  "tactics": true
+ },
+ {
+  "name": "Hopping Zoteling",
+  "kind": "Enemy",
+  "health": "20 (Grey Prince Zote fight) | [Godmaster] 60 (The Eternal Ordeal)",
+  "location": "",
+  "drops": "None",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Hornet Protector",
+  "kind": "Boss",
+  "health": "225",
+  "location": "Greenpath",
+  "drops": "Mothwing Cloak",
+  "journal": "2",
+  "tactics": true
+ },
+ {
+  "name": "Hornet Sentinel",
+  "kind": "Boss",
+  "health": "700",
+  "location": "Kingdom's Edge",
+  "drops": "King's Brand",
+  "journal": "2",
+  "tactics": true
+ },
+ {
+  "name": "Husk Bully",
+  "kind": "Enemy",
+  "health": "15",
+  "location": "",
+  "drops": "3-4 geo",
+  "journal": "35",
+  "tactics": true
+ },
+ {
+  "name": "Husk Dandy",
+  "kind": "Enemy",
+  "health": "20",
+  "location": "",
+  "drops": "9-15 geo",
+  "journal": "25",
+  "tactics": true
+ },
+ {
+  "name": "Husk Guard",
+  "kind": "Enemy",
+  "health": "70",
+  "location": "",
+  "drops": "45-54 geo",
+  "journal": "6",
+  "tactics": true
+ },
+ {
+  "name": "Husk Hive",
+  "kind": "Enemy",
+  "health": "60",
+  "location": "",
+  "drops": "16-23 geo",
+  "journal": "10",
+  "tactics": true
+ },
+ {
+  "name": "Husk Hornhead",
+  "kind": "Enemy",
+  "health": "15",
+  "location": "",
+  "drops": "4-5 geo",
+  "journal": "35",
+  "tactics": true
+ },
+ {
+  "name": "Husk Miner",
+  "kind": "Enemy",
+  "health": "25",
+  "location": "",
+  "drops": "10-12 geo",
+  "journal": "20",
+  "tactics": true
+ },
+ {
+  "name": "Husk Sentry",
+  "kind": "Enemy",
+  "health": "25/28/28/28/28 | (Nail upgrades 0/1/2/3/4)",
+  "location": "",
+  "drops": "10-16 geo",
+  "journal": "25",
+  "tactics": true
+ },
+ {
+  "name": "Husk Warrior",
+  "kind": "Enemy",
+  "health": "15",
+  "location": "",
+  "drops": "6-8 geo",
+  "journal": "10",
+  "tactics": true
+ },
+ {
+  "name": "Hwurmp",
+  "kind": "Enemy",
+  "health": "25",
+  "location": "",
+  "drops": "5-6 geo",
+  "journal": "20",
+  "tactics": true
+ },
+ {
+  "name": "Infected Balloon",
+  "kind": "Enemy",
+  "health": "15 | 1 (Broken Vessel, Lost Kin, [Godmaster] Winged Nosk)",
+  "location": "",
+  "drops": "5-6 geo None (Broken Vessel, Lost Kin, [Godmaster] Winged Nosk)",
+  "journal": "10",
+  "tactics": true
+ },
+ {
+  "name": "Kingsmould",
+  "kind": "Enemy",
+  "health": "170",
+  "location": "",
+  "drops": "None",
+  "journal": "2",
+  "tactics": true
+ },
+ {
+  "name": "Lance Sentry",
+  "kind": "Enemy",
+  "health": "25",
+  "location": "",
+  "drops": "12-18 geo",
+  "journal": "25",
+  "tactics": true
+ },
+ {
+  "name": "Leaping Husk",
+  "kind": "Enemy",
+  "health": "15",
+  "location": "",
+  "drops": "3-4 geo",
+  "journal": "35",
+  "tactics": true
+ },
+ {
+  "name": "Lesser Mawlek",
+  "kind": "Enemy",
+  "health": "60",
+  "location": "",
+  "drops": "18-25 geo None (Colosseum of Fools)",
+  "journal": "10",
+  "tactics": true
+ },
+ {
+  "name": "Lifeseed",
+  "kind": "Enemy",
+  "health": "1",
+  "location": "",
+  "drops": "1 Lifeblood Mask",
+  "journal": "10",
+  "tactics": true
+ },
+ {
+  "name": "Lightseed",
+  "kind": "Enemy",
+  "health": "1",
+  "location": "",
+  "drops": "None",
+  "journal": "20",
+  "tactics": true
+ },
+ {
+  "name": "Little Weaver",
+  "kind": "Enemy",
+  "health": "30",
+  "location": "",
+  "drops": "17-24 geo",
+  "journal": "20",
+  "tactics": true
+ },
+ {
+  "name": "Loodle",
+  "kind": "Enemy",
+  "health": "30",
+  "location": "",
+  "drops": "9-11 geo",
+  "journal": "15",
+  "tactics": true
+ },
+ {
+  "name": "Lost Kin",
+  "kind": "Boss",
+  "health": "1200",
+  "location": "Ancient Basin",
+  "drops": "400 Essence",
+  "journal": "",
+  "tactics": true
+ },
+ {
+  "name": "Maggot",
+  "kind": "Enemy",
+  "health": "1",
+  "location": "",
+  "drops": "2-3 geo",
+  "journal": "2",
+  "tactics": true
+ },
+ {
+  "name": "Mantis Lords",
+  "kind": "Boss",
+  "health": "210 (First Phase) | 160 + 160 = 320 (Second Phase) | Total: 530",
+  "location": "Mantis Village",
+  "drops": "Deepnest Lower Entrance | In village treasury: | Mark of Pride | Hallownest Seal | 620 geo | Bench",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Mantis Petra",
+  "kind": "Enemy",
+  "health": "45",
+  "location": "",
+  "drops": "12-18 geo | None (Colosseum of Fools)",
+  "journal": "16",
+  "tactics": true
+ },
+ {
+  "name": "Mantis Traitor",
+  "kind": "Enemy",
+  "health": "74",
+  "location": "",
+  "drops": "22-30 geo",
+  "journal": "15",
+  "tactics": true
+ },
+ {
+  "name": "Mantis Warrior",
+  "kind": "Enemy",
+  "health": "20",
+  "location": "",
+  "drops": "12-18 geo",
+  "journal": "25",
+  "tactics": true
+ },
+ {
+  "name": "Mantis Youth",
+  "kind": "Enemy",
+  "health": "15",
+  "location": "",
+  "drops": "5-6 geo",
+  "journal": "25",
+  "tactics": true
+ },
+ {
+  "name": "Markoth",
+  "kind": "Boss",
+  "health": "250/400/520/624/705 | (Nail upgrades 0/1/2/3/4)",
+  "location": "Kingdom's Edge",
+  "drops": "250 Essence",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Marmu",
+  "kind": "Boss",
+  "health": "200/320/416/500/570 | (Nail upgrades 0/1/2/3/4)",
+  "location": "Queen's Gardens",
+  "drops": "150 Essence",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Maskfly",
+  "kind": "Enemy",
+  "health": "1",
+  "location": "",
+  "drops": "None",
+  "journal": "15",
+  "tactics": true
+ },
+ {
+  "name": "Massive Moss Charger",
+  "kind": "Boss",
+  "health": "100",
+  "location": "Greenpath",
+  "drops": "300-365 geo",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Mawlurk",
+  "kind": "Enemy",
+  "health": "135",
+  "location": "",
+  "drops": "25-32 geo",
+  "journal": "10",
+  "tactics": true
+ },
+ {
+  "name": "Menderbug",
+  "kind": "Enemy",
+  "health": "1",
+  "location": "",
+  "drops": "None",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Mistake",
+  "kind": "Enemy",
+  "health": "13",
+  "location": "",
+  "drops": "3-4 geo None (Colosseum of Fools)",
+  "journal": "25",
+  "tactics": true
+ },
+ {
+  "name": "Moss Charger",
+  "kind": "Enemy",
+  "health": "15",
+  "location": "",
+  "drops": "8-10 geo",
+  "journal": "15",
+  "tactics": true
+ },
+ {
+  "name": "Moss Knight",
+  "kind": "Enemy",
+  "health": "50",
+  "location": "",
+  "drops": "40-51 geo",
+  "journal": "8",
+  "tactics": true
+ },
+ {
+  "name": "Mosscreep",
+  "kind": "Enemy",
+  "health": "10",
+  "location": "",
+  "drops": "2-3 geo",
+  "journal": "30",
+  "tactics": true
+ },
+ {
+  "name": "Mossfly",
+  "kind": "Enemy",
+  "health": "15 | 10 (Outside of Overgrown Mound)",
+  "location": "",
+  "drops": "2-3 geo",
+  "journal": "25",
+  "tactics": true
+ },
+ {
+  "name": "Mosskin",
+  "kind": "Enemy",
+  "health": "15",
+  "location": "",
+  "drops": "3-4 geo",
+  "journal": "25",
+  "tactics": true
+ },
+ {
+  "name": "Mossy Vagabond",
+  "kind": "Enemy",
+  "health": "25",
+  "location": "",
+  "drops": "8-10 geo",
+  "journal": "10 or Entry",
+  "tactics": true
+ },
+ {
+  "name": "Myla",
+  "kind": "Enemy",
+  "health": "20",
+  "location": "",
+  "drops": "10 geo",
+  "journal": "",
+  "tactics": false
+ },
+ {
+  "name": "Nightmare King Grimm",
+  "kind": "Boss",
+  "health": "1500",
+  "location": "Dirtmouth | Hall of Gods | Pantheon of Hallownest",
+  "drops": "Grimmchild Lv4",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "No Eyes",
+  "kind": "Boss",
+  "health": "200/320/416/500/570 | (Nail upgrades 0/1/2/3/4)",
+  "location": "Stone Sanctuary",
+  "drops": "200 Essence",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Nosk",
+  "kind": "Boss",
+  "health": "680",
+  "location": "Deepnest",
+  "drops": "Pale Ore",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Obble",
+  "kind": "Enemy",
+  "health": "10",
+  "location": "",
+  "drops": "4-5 geo",
+  "journal": "20",
+  "tactics": true
+ },
+ {
+  "name": "Oblobbles",
+  "kind": "Boss",
+  "health": "260 + 260 (First Phase) | up to 300 (Second Phase) | Total: 560-620",
+  "location": "Trial of the Conqueror",
+  "drops": "Trial of the Conqueror Rewards",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Ooma",
+  "kind": "Enemy",
+  "health": "1",
+  "location": "",
+  "drops": "5-6 geo",
+  "journal": "12",
+  "tactics": true
+ },
+ {
+  "name": "Paintmaster Sheo",
+  "kind": "Boss",
+  "health": "950",
+  "location": "Pantheon of the Artist",
+  "drops": "",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Pale Lurker",
+  "kind": "Enemy",
+  "health": "200/240/290/340/400 | (Nail: 0/1/2/3/4)",
+  "location": "",
+  "drops": "Simple Key",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Pilflip",
+  "kind": "Enemy",
+  "health": "30",
+  "location": "",
+  "drops": "5-6 geo",
+  "journal": "20",
+  "tactics": true
+ },
+ {
+  "name": "Primal Aspid",
+  "kind": "Enemy",
+  "health": "35 | [Godmaster] 26 (Spawned by Ascended/Radiant Collector)",
+  "location": "",
+  "drops": "6-8 geo | None (Colosseum of Fools, [Godmaster] Spawned by Ascended/Radiant Collector)",
+  "journal": "25",
+  "tactics": true
+ },
+ {
+  "name": "Pure Vessel",
+  "kind": "Boss",
+  "health": "1600",
+  "location": "Pantheon of the Knight",
+  "drops": "",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Royal Retainer",
+  "kind": "Enemy",
+  "health": "5",
+  "location": "",
+  "drops": "None",
+  "journal": "10",
+  "tactics": true
+ },
+ {
+  "name": "Shade",
+  "kind": "Enemy",
+  "health": "Nail Damage x ([max HP at death / 2]rounded down)",
+  "location": "",
+  "drops": "All Geo lost on most recent death and repairs soul meter",
+  "journal": "0",
+  "tactics": true
+ },
+ {
+  "name": "Shadow Creeper (Hollow Knight)",
+  "kind": "Enemy",
+  "health": "20",
+  "location": "",
+  "drops": "2-3 geo",
+  "journal": "20",
+  "tactics": true
+ },
+ {
+  "name": "Shardmite",
+  "kind": "Enemy",
+  "health": "15",
+  "location": "",
+  "drops": "2-3 geo",
+  "journal": "15",
+  "tactics": true
+ },
+ {
+  "name": "Sharp Baldur",
+  "kind": "Enemy",
+  "health": "65 | [Godmaster] 26 (Spawned by Ascended/Radiant Collector)",
+  "location": "",
+  "drops": "None",
+  "journal": "20",
+  "tactics": true
+ },
+ {
+  "name": "Shielded Fool",
+  "kind": "Enemy",
+  "health": "65",
+  "location": "",
+  "drops": "None",
+  "journal": "25",
+  "tactics": true
+ },
+ {
+  "name": "Shrumal Ogre",
+  "kind": "Enemy",
+  "health": "80",
+  "location": "",
+  "drops": "45-56 geo",
+  "journal": "8",
+  "tactics": true
+ },
+ {
+  "name": "Shrumal Warrior",
+  "kind": "Enemy",
+  "health": "20",
+  "location": "",
+  "drops": "8-14 geo",
+  "journal": "20",
+  "tactics": true
+ },
+ {
+  "name": "Shrumeling",
+  "kind": "Enemy",
+  "health": "5",
+  "location": "",
+  "drops": "None",
+  "journal": "20",
+  "tactics": true
+ },
+ {
+  "name": "Sibling",
+  "kind": "Enemy",
+  "health": "20",
+  "location": "",
+  "drops": "None",
+  "journal": "25",
+  "tactics": true
+ },
+ {
+  "name": "Sisters of Battle",
+  "kind": "Boss",
+  "health": "500 (First Phase) | 750 + 750 + 750 = 2250 (Second Phase) | Total: 2750",
+  "location": "Pantheon of Hallownest",
+  "drops": "",
+  "journal": "",
+  "tactics": true
+ },
+ {
+  "name": "Slobbering Husk",
+  "kind": "Enemy",
+  "health": "30",
+  "location": "",
+  "drops": "17-25 geo",
+  "journal": "15",
+  "tactics": true
+ },
+ {
+  "name": "Soul Master",
+  "kind": "Boss",
+  "health": "275 (First Phase) | 110 (Second Phase) | Total: 385",
+  "location": "Soul Sanctum",
+  "drops": "Desolate Dive | 380 geo",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Soul Twister",
+  "kind": "Enemy",
+  "health": "35",
+  "location": "",
+  "drops": "25-32 geo None (Colosseum of Fools)",
+  "journal": "20",
+  "tactics": true
+ },
+ {
+  "name": "Soul Tyrant",
+  "kind": "Boss",
+  "health": "900 (First Phase) | 350 (Second Phase) | Total: 1250",
+  "location": "Soul Sanctum",
+  "drops": "300 Essence",
+  "journal": "",
+  "tactics": true
+ },
+ {
+  "name": "Soul Warrior",
+  "kind": "Boss",
+  "health": "180 | 300 (Elegant Key room)",
+  "location": "Soul Sanctum | Trial of the Fool",
+  "drops": "200-245 geo (Soul Sanctum Main) | 200-245 geo + Shade Soul (Elegant Key room)",
+  "journal": "2",
+  "tactics": true
+ },
+ {
+  "name": "Spiny Husk",
+  "kind": "Enemy",
+  "health": "44",
+  "location": "",
+  "drops": "12-18 geo",
+  "journal": "20",
+  "tactics": true
+ },
+ {
+  "name": "Sporg",
+  "kind": "Enemy",
+  "health": "25",
+  "location": "",
+  "drops": "3-4 geo",
+  "journal": "20",
+  "tactics": true
+ },
+ {
+  "name": "Squit",
+  "kind": "Enemy",
+  "health": "10",
+  "location": "",
+  "drops": "5-6 geo",
+  "journal": "25",
+  "tactics": true
+ },
+ {
+  "name": "Stalking Devout",
+  "kind": "Enemy",
+  "health": "100",
+  "location": "",
+  "drops": "43-75 geo",
+  "journal": "15",
+  "tactics": true
+ },
+ {
+  "name": "Sturdy Fool",
+  "kind": "Enemy",
+  "health": "80",
+  "location": "",
+  "drops": "None",
+  "journal": "25",
+  "tactics": true
+ },
+ {
+  "name": "The Collector",
+  "kind": "Boss",
+  "health": "750/750/750/800/850 | (Nail: 0/1/2/3/4)",
+  "location": "Tower of Love",
+  "drops": "Collector's Map | 3 Grubs",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "The Hollow Knight",
+  "kind": "Boss",
+  "health": "Phases 1-3 respectively: | 250+350+400 | Total: 1000 | + 250 (Heals for Fourth Phase) | Final Total: 1250",
+  "location": "Temple of the Black Egg",
+  "drops": "The Hollow Knight | ending | Sealed Siblings ending",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "The Hunter",
+  "kind": "Boss",
+  "health": "",
+  "location": "",
+  "drops": "",
+  "journal": "",
+  "tactics": false
+ },
+ {
+  "name": "The Radiance",
+  "kind": "Boss",
+  "health": "Stages 1-4 respectively: 350+400+250+700 | Total: 1700",
+  "location": "Temple of the Black Egg",
+  "drops": "Dream No More ending",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Tiktik",
+  "kind": "Enemy",
+  "health": "8",
+  "location": "",
+  "drops": "2-3 geo",
+  "journal": "30",
+  "tactics": true
+ },
+ {
+  "name": "Tiso",
+  "kind": "Boss",
+  "health": "",
+  "location": "",
+  "drops": "",
+  "journal": "",
+  "tactics": false
+ },
+ {
+  "name": "Traitor Lord",
+  "kind": "Boss",
+  "health": "800",
+  "location": "Queen's Gardens",
+  "drops": "Access to the White Lady",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Troupe Master Grimm",
+  "kind": "Boss",
+  "health": "800 / 800 / 800 / 930 / 1000 | (Nail 0/1/2/3/4)",
+  "location": "Dirtmouth",
+  "drops": "Charm Notch | Grimmchild Lv3",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Uoma",
+  "kind": "Enemy",
+  "health": "1",
+  "location": "",
+  "drops": "None",
+  "journal": "20",
+  "tactics": true
+ },
+ {
+  "name": "Uumuu",
+  "kind": "Boss",
+  "health": "300",
+  "location": "Teacher's Archives",
+  "drops": "Access to Monomon the Teacher",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Vengefly",
+  "kind": "Enemy",
+  "health": "8",
+  "location": "",
+  "drops": "3-4 geo | None (Spawned by Vengefly King in [Godmaster] Godhome; Spawned by the Collector)",
+  "journal": "45",
+  "tactics": true
+ },
+ {
+  "name": "Vengefly King",
+  "kind": "Boss",
+  "health": "55 | 100 (Trial of the Warrior)",
+  "location": "Greenpath | Trial of the Warrior | Hall of Gods",
+  "drops": "65-78 geo | None (Trial of the Warrior)",
+  "journal": "2",
+  "tactics": true
+ },
+ {
+  "name": "Violent Husk",
+  "kind": "Enemy",
+  "health": "40",
+  "location": "",
+  "drops": "15-22 geo",
+  "journal": "15",
+  "tactics": true
+ },
+ {
+  "name": "Void Tendrils (Hollow Knight)",
+  "kind": "Enemy",
+  "health": "-",
+  "location": "",
+  "drops": "None",
+  "journal": "Entry",
+  "tactics": true
+ },
+ {
+  "name": "Volatile Gruzzer",
+  "kind": "Enemy",
+  "health": "40",
+  "location": "",
+  "drops": "15-21 geo | None (Colosseum of Fools)",
+  "journal": "15",
+  "tactics": true
+ },
+ {
+  "name": "Volatile Mosskin",
+  "kind": "Enemy",
+  "health": "15",
+  "location": "",
+  "drops": "5-6 geo",
+  "journal": "25",
+  "tactics": true
+ },
+ {
+  "name": "Volatile Zoteling",
+  "kind": "Enemy",
+  "health": "30",
+  "location": "",
+  "drops": "None",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Volt Twister",
+  "kind": "Enemy",
+  "health": "80",
+  "location": "",
+  "drops": "None",
+  "journal": "6",
+  "tactics": true
+ },
+ {
+  "name": "Wandering Husk",
+  "kind": "Enemy",
+  "health": "15",
+  "location": "",
+  "drops": "3-4 geo",
+  "journal": "35",
+  "tactics": true
+ },
+ {
+  "name": "Watcher Knight",
+  "kind": "Boss",
+  "health": "6 x 220 / 220 / 220 / 240 / 260 | Total: 1320 / 1320 / 1320 / 1440 / 1560 | (Nail 0/1/2/3/4)",
+  "location": "Watcher's Spire",
+  "drops": "655 geo | Hallownest Seal | Access to Lurien the Watcher",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "White Defender",
+  "kind": "Boss",
+  "health": "1600",
+  "location": "Royal Waterways | Hall of Gods | Pantheon of the Knight",
+  "drops": "300 Essence (First Defeat) | [Lifeblood] Dung-Statue of the Knight (Fifth Defeat)",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Winged Fool",
+  "kind": "Enemy",
+  "health": "70",
+  "location": "",
+  "drops": "None",
+  "journal": "25",
+  "tactics": true
+ },
+ {
+  "name": "Winged Nosk",
+  "kind": "Boss",
+  "health": "750",
+  "location": "Pantheon of Hallownest",
+  "drops": "",
+  "journal": "",
+  "tactics": true
+ },
+ {
+  "name": "Winged Sentry",
+  "kind": "Enemy",
+  "health": "25",
+  "location": "",
+  "drops": "12-18 geo",
+  "journal": "30",
+  "tactics": true
+ },
+ {
+  "name": "Winged Zoteling",
+  "kind": "Enemy",
+  "health": "20 (Grey Prince Zote fight) | [Godmaster] 60 (The Eternal Ordeal)",
+  "location": "",
+  "drops": "None",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Wingmould (Hollow Knight)",
+  "kind": "Enemy",
+  "health": "999 (Resets after every hit)",
+  "location": "",
+  "drops": "None",
+  "journal": "10",
+  "tactics": true
+ },
+ {
+  "name": "Xero",
+  "kind": "Boss",
+  "health": "200/320/416/500/570 | (Nail upgrades 0/1/2/3/4)",
+  "location": "Resting Grounds",
+  "drops": "100 Essence",
+  "journal": "1",
+  "tactics": true
+ },
+ {
+  "name": "Zote the Mighty",
+  "kind": "Boss",
+  "health": "200",
+  "location": "",
+  "drops": "Trial of the Warrior rewards",
+  "journal": "1",
+  "tactics": false
+ }
+]

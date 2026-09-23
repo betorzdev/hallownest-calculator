@@ -1,0 +1,142 @@
+[
+ {
+  "boss": "Absolute Radiance",
+  "hits": "-",
+  "combo": "-",
+  "combo_window": "-",
+  "desc": "Absolute Radiance's stagger is based on her health, and she staggers two times at two pred"
+ },
+ {
+  "boss": "Broken Vessel",
+  "hits": "13",
+  "combo": "9",
+  "combo_window": "<1s per hit",
+  "desc": "Broken Vessel faces upwards, lightly shaking; their head being weighed down by the sac of "
+ },
+ {
+  "boss": "Dung Defender",
+  "hits": "16, 1 (Descending Dark/Desolate Dive)",
+  "combo": "8",
+  "combo_window": "<1s per hit}}\n\n<hr />\n\n{{#ev:youtube|https://www.youtube.com/watch?v=zc4clbeUSDs|300|right}}\nAt the beginning of the fight, try to dodge the balls as best as possible. When he stops to conjure the two balls of dung, stand next to him, hit him once, step back when he throws the ball, step forward to hit him again and quickly step back when he throws the second one. This is the safest way to damage him with the [[Nail]]. His thrown dung balls cannot be destroyed by the Knight's Nail in one hit. However, they can be destroyed by any [[Spells]].\n\nTowards the end of the fight, he uses his attacks more frequently, particularly the Burst attack. Staying against the left side of the arena is almost completely safe as he always attempts to re-emerge from the ground close to the Knight. The balls bounce off of the wall, giving a safe spot to damage him.\n\nDuring the Burst attack, if the Knight uses the [[Desolate Dive]]/[[Descending Dark]] Spell while he is burrowing, he is knocked out of the ground and stunned for a few seconds. This is especially useful during the Zeal Attack, where usually he does not perform it again. This is an opportune time to use a [[Nail Art]] or a Spell against him, as he goes right back to attacking as soon as he is hit.\n\nStanding in a corner while he throws his dung balls typically provides lengthy opportunities to heal.\n\nThere is a glitch where if the Knight staggers Dung Defender at the moment he bursts from the ground, he falls beneath the arena. This is not a soft-lock, however, as he returns to the arena the next time he burrows into the ground for his Burst attack.\n\n{{HK CP Header|Godmaster}}\n\n{{HK GM Boss",
+  "desc": "Dung Defender falls over onto his back flailing his limbs."
+ },
+ {
+  "boss": "Failed Champion",
+  "hits": "-",
+  "combo": "-",
+  "combo_window": "-",
+  "desc": "Failed Champion's stagger is based on his health, and Failed Champion is staggered every t"
+ },
+ {
+  "boss": "False Knight",
+  "hits": "-",
+  "combo": "-",
+  "combo_window": "-",
+  "desc": "False Knight's stagger is based on his health, and False Knight is staggered every time th"
+ },
+ {
+  "boss": "Great Nailsage Sly",
+  "hits": "15",
+  "combo": "11",
+  "combo_window": "<1.5s per hit",
+  "desc": "Sly is knocked away from his Nail- landing a small varied distance away from him. After th"
+ },
+ {
+  "boss": "Grey Prince Zote",
+  "hits": "17/18/19 in fights 1/2/3+",
+  "combo": "14/15/16 in fights 1/2/3+",
+  "combo_window": "<1s per hit",
+  "desc": "Grey Prince Zote falls onto his back, flailing about."
+ },
+ {
+  "boss": "Hive Knight",
+  "hits": "17",
+  "combo": "12",
+  "combo_window": "<1.5s per hit",
+  "desc": "Hive Knight collapses onto the ground, softly murmuring."
+ },
+ {
+  "boss": "Hornet Protector",
+  "hits": "11",
+  "combo": "6",
+  "combo_window": "<2s per hit",
+  "desc": "Hornet Protector leans over and pauses, breathing heavily."
+ },
+ {
+  "boss": "Hornet Sentinel",
+  "hits": "13",
+  "combo": "7",
+  "combo_window": "<2s per hit",
+  "desc": "Hornet Sentinel leans over and pauses, breathing heavily."
+ },
+ {
+  "boss": "Lost Kin",
+  "hits": "13",
+  "combo": "7",
+  "combo_window": "<2s per hit",
+  "desc": "Lost Kin faces upwards lightly shaking; its head being weighed down by the sac of Lightsee"
+ },
+ {
+  "boss": "Nightmare King Grimm",
+  "hits": "14",
+  "combo": "12",
+  "combo_window": "<1s per hit",
+  "desc": "Nightmare King Grimm's stagger is unique as he disperses into a swarm of bats resembling t"
+ },
+ {
+  "boss": "Paintmaster Sheo",
+  "hits": "12",
+  "combo": "9",
+  "combo_window": "<1s per hit",
+  "desc": "Sheo takes a knee and plants a fist into the ground."
+ },
+ {
+  "boss": "Pure Vessel",
+  "hits": "12",
+  "combo": "9",
+  "combo_window": "<1s per hit",
+  "desc": "Pure Vessel stumbles and takes a knee."
+ },
+ {
+  "boss": "Soul Master",
+  "hits": "9",
+  "combo": "7",
+  "combo_window": "<1s per hit",
+  "desc": "Soul Master \"deflates\" mid-air, gasping and leaking SOUL."
+ },
+ {
+  "boss": "Soul Tyrant",
+  "hits": "19",
+  "combo": "10",
+  "combo_window": "<1s per hit",
+  "desc": "Soul Tyrant \"deflates\" mid-air, gasping and leaking Soul."
+ },
+ {
+  "boss": "The Collector",
+  "hits": "14",
+  "combo": "11",
+  "combo_window": "<2s per hit",
+  "desc": "The Collector leans over clutching its body and dripping void, silently chuckling."
+ },
+ {
+  "boss": "The Hollow Knight",
+  "hits": "13",
+  "combo": "9",
+  "combo_window": "<1s per hit",
+  "desc": "Hollow Knight stumbles and takes a knee."
+ },
+ {
+  "boss": "The Radiance",
+  "hits": "-",
+  "combo": "-",
+  "combo_window": "-",
+  "desc": "Radiance's stagger is based on her health, and she staggers two times at two predetermined"
+ },
+ {
+  "boss": "Troupe Master Grimm",
+  "hits": "14",
+  "combo": "12",
+  "combo_window": "<1s per hit",
+  "desc": "Grimm's stagger is unique as he disperses into a swarm of bats resembling the Grimmchild t"
+ }
+]

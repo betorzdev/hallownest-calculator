@@ -1,0 +1,196 @@
+<!doctype html><html><head><meta charset="utf-8"><title>debug</title>
+<style>html,body{margin:0;background:#07090e}iframe{border:0;display:block}</style></head><body>
+<script src="js/data.js"></script>
+<script src="js/hall.js"></script>
+<script src="js/journal.js"></script>
+<script src="js/hunter.js"></script>
+<script src="js/pantheons.js"></script>
+<script>
+/* Debug page for screenshots: sets the prefs in localStorage and opens the site inside an
+   iframe of the requested width (below 500 px headless capture crops if --window-size is
+   used directly).
+   ?w=390&h=2200&top=2450&lang=en&detail=1&guide=1&view=charms|game|fight&foe=false-knight&hash=%23v%3D1...
+   The screen: &view=; &fight=1 or &tab= already mean Combat. It also goes in the iframe's hash,
+   because a link with a build and no "view=" opens Charms.
+   Hall of Gods: &tab=hall&statue=<id> picks the statue, &hdiff=at|asra|radiant fights at it,
+   &marks=at|asra|radiant|all|mix seeds the won symbols (mix: a bit of everything) and
+   &pick=1 taps the statue, which on mobile opens its plaque; &tablet=1 reads the entrance
+   tablet in place of the grid (&tablettop=<px>, the same as &top, scrolls the page up after
+   opening it to see further down the list). &read=<id> opens that page of the
+   Hunter's Journal.
+   Your scene mid-fight: &hits=3&take=2&focus=1&freeze=5000 (see below); &info=spell:dd,foe opens
+   those arena explanations.
+   Pantheons: &tab=pantheon opens the tab (&binds=all|nail,soul picks the bindings); &run=master&room=5&masks=3&lb=3&cocoon=3&over=dead
+   seeds a half-done run (with a strong build) to capture the timeline and the rooms.
+   Your game's Hunter's Journal: &journal=1 (or &view=journal) opens its screen (with an h of one
+   screen, e.g. 900: its list and its page measure the window), &jread=<id> reads that entry, &jfilter=unseen|seen|done
+   presses that list tab, &jseed=mix|seen|ready|mark|<n> seeds the game (mix: a bit of everything; seen:
+   all encountered; ready: the 146 complete; mark: and the Hunter's Mark; <n>: n encountered), and
+   &jmark=none|seen|done presses that state on the entry being read (the game's notice shows) and
+   &jtop=<px> (the same as &top) scrolls the screen up to see further down. With &marks=radiant, the Idol on Radiant. */
+const q = new URLSearchParams(location.search);
+const w = Number(q.get('w') || 1280);
+const h = Number(q.get('h') || 6000);
+const offsetY = Number(q.get('top') || 0);   /* 'top' clashes with window.top */
+const view = q.get('view') || (q.get('journal') === '1' ? 'journal' : q.get('fight') === '1' || q.get('tab') ? 'fight' : 'charms');
+localStorage.setItem('hollow.prefs', JSON.stringify({
+  lang: q.get('lang') || 'en', langChosen: true,
+  compare: 'base', open: [], view,
+  detailOpen: q.get('detail') === '1',
+  guideSeen: q.get('guide') !== '1',
+  foeId: q.get('foe') || '',
+  hallId: q.get('statue') || 'gruz-mother',
+  hallDiff: q.get('hdiff') || '',
+  fightTab: q.get('tab') || 'combat',
+  cocoon: Number(q.get('cocoon') || 0),
+  /* &binds=all or &binds=nail,soul: the bindings chosen on the choose-a-pantheon screen. */
+  bindings: Object.fromEntries(['nail', 'shell', 'charms', 'soul'].map((k) =>
+    [k, q.get('binds') === 'all' || (q.get('binds') || '').split(',').includes(k)])),
+}));
+localStorage.removeItem('hollow.run');
+localStorage.removeItem('hollow.hall');
+localStorage.removeItem('hollow.journal');
+localStorage.removeItem('hollow.owned');
+/* The lifeblood door: &bdone=<n> marks the first n bindings (pantheon by pantheon, in the
+   order nail, shell, charms, soul) and &ball=knight,sage the ones done with all four at once. */
+localStorage.removeItem('hollow.bindings');
+if (q.get('bdone') || q.get('ball')) {
+  const P = HK.pantheons;
+  let dr = P.normalizeDoor(null);
+  const n = Number(q.get('bdone') || 0);
+  for (let i = 0; i < n; i++) dr = P.toggleBind(dr, P.PANTHEONS[Math.floor(i / 4)].id, P.BINDS[i % 4]);
+  for (const id of (q.get('ball') || '').split(',').filter(Boolean)) dr = P.toggleAll(dr, id);
+  localStorage.setItem('hollow.bindings', JSON.stringify(dr));
+}
+/* Charms found: &owned=<n> marks the first n of the inventory (without it, the maximum). */
+if (q.get('owned')) localStorage.setItem('hollow.owned', JSON.stringify(HK.data.CHARMS.slice(0, Number(q.get('owned'))).map((c) => c.id)));
+/* &ownlist=a,b,c: the exact collection, with the slot states (fheart-broken, white-fragment…). */
+if (q.get('ownlist')) localStorage.setItem('hollow.owned', JSON.stringify(q.get('ownlist').split(',')));
+if (q.get('jseed')) {
+  const H = HK.hunter, seed = q.get('jseed');
+  let b = {};
+  const req = H.BOOK.filter((r) => !r.optional && !r.start);
+  if (seed === 'mix') H.BOOK.forEach((r, i) => {
+    if (i % 4 === 1) b = H.encounter(b, r.id);
+    if (i % 4 === 2) b = H.complete(b, r.id);
+    if (i % 4 === 3) b = H.step(H.encounter(b, r.id), r.id, -3);
+  });
+  else if (seed === 'seen') for (const r of H.BOOK) b = H.encounter(b, r.id);
+  else if (seed === 'ready' || seed === 'mark') { for (const r of req) b = H.complete(b, r.id); if (seed === 'mark') b = H.complete(b, H.MARK); }
+  else for (const r of req.slice(0, Math.max(0, Number(seed) - 2))) b = H.encounter(b, r.id);
+  localStorage.setItem('hollow.journal', JSON.stringify(b));
+}
+if (q.get('marks')) {
+  const m = q.get('marks'), diffs = HK.hall.DIFFS;
+  const mix = (i) => diffs.slice(0, i % 4);
+  localStorage.setItem('hollow.hall', JSON.stringify(Object.fromEntries(HK.hall.STATUES.map((s, i) =>
+    [s.id, m === 'all' ? diffs : m === 'mix' ? mix(i) : diffs.includes(m) ? [m] : []]))));
+}
+if (q.get('run')) {
+  localStorage.setItem('hollow.run', JSON.stringify({
+    pantheon: q.get('run'), room: Number(q.get('room') || 0), over: q.get('over') || null,
+    bindings: { nail: q.get('bnail') === '1', shell: false, charms: false, soul: false },
+    cocoon: Number(q.get('cocoon') || 0),
+    build: { nail: 4, masks: 9, vessels: 3, notches: 11, spells: { vs: 2, dd: 2, hw: 2 },
+             arts: { cyclone: true, dash: true, great: true }, charms: ['ustrength', 'quickslash'] },
+    masks: Number(q.get('masks') || 9), lbCharm: 0, lbCocoon: Number(q.get('lb') || 0), soul: 99,
+    rest: {}, log: [],
+    // &cleared=0,1,2 says which ones are cleared; without it, all the ones before the current one.
+    ...(q.get('cleared') !== null ? { cleared: q.get('cleared').split(',').filter(Boolean).map(Number) } : {}),
+  }));
+}
+const f = document.createElement('iframe');
+f.src = 'index.html' + (q.get('hash') ? q.get('hash') + (view !== 'charms' ? '&view=' + view : '') : '');
+f.style.width = w + 'px';
+f.style.height = h + 'px';
+/* Scrolling with scrollTo doesn't repaint in headless mode: the document is moved up with a
+   negative margin, which does go into the reflow and therefore into the capture. */
+f.addEventListener('load', () => {
+  if (offsetY) f.contentDocument.documentElement.style.marginTop = -offsetY + 'px';
+  // &read=<id> opens the Journal, if it isn't open, and reads that page (hovering: tapping it would pick it).
+  if (q.get('read')) {
+    const doc = f.contentDocument;
+    if (!doc.querySelector('.journal')) { const b = doc.querySelector('[data-act="picker"]'); if (b) b.click(); }
+    const row = doc.querySelector('.jr-row[data-id="' + q.get('read') + '"]');
+    if (row) row.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+  }
+  // &pick=1 taps the chosen statue: on mobile that's what opens its plaque.
+  if (q.get('pick') === '1') {
+    const ped = f.contentDocument.querySelector('.ped-btn.is-on');
+    if (ped) ped.click();
+    if (offsetY) f.contentDocument.documentElement.style.marginTop = -offsetY + 'px';
+  }
+  // &tablet=1 opens the Hall's tablet; since scrolling doesn't repaint, the page is moved up.
+  if (q.get('tablet') === '1') {
+    const b = f.contentDocument.querySelector('[data-act="tablet"]');
+    if (b) b.click();
+    f.contentWindow.scrollTo(0, 0);
+    const y = Number(q.get('tablettop') || offsetY);
+    if (y) f.contentDocument.documentElement.style.marginTop = -y + 'px';
+  }
+  // &journal=1 opens your game's Journal; &jread, &jfilter and &jtop, see above.
+  if (view === 'journal') {
+    const doc = f.contentDocument;
+    if (doc.getElementById('hj').hidden) doc.querySelector('#nav-hj').click();
+    if (q.get('jread')) { const r = doc.querySelector('.hj-row[data-id="' + q.get('jread') + '"]'); if (r) r.click(); }
+    if (q.get('jfilter')) { const c = doc.querySelector('[data-act="hjShowState"][data-value="' + q.get('jfilter') + '"]'); if (c) c.click(); }
+    if (q.get('jmark')) { const b = doc.querySelector('.hj-state [data-value="' + q.get('jmark') + '"]'); if (b) b.click(); }
+    // &jbulk=1 opens "Mark in bulk"; &jpick=id,id picks those rows with their checkbox.
+    if (q.get('jbulk')) { const b = doc.querySelector('[data-act="hjBulk"]'); if (b) b.click(); }
+    for (const id of (q.get('jpick') || '').split(',').filter(Boolean)) { const c = doc.querySelector('.hj-pick[data-id="' + id + '"]'); if (c) c.click(); }
+    if (q.get('jtop')) doc.documentElement.style.marginTop = -Number(q.get('jtop')) + 'px';
+  }
+  // ?open=<id> focuses that charm on the grid: its detail shows alongside, to see it in a screenshot.
+  const open = q.get('open');
+  if (open) {
+    const tile = f.contentDocument.querySelector('#panel .quick-grid .qc[data-id="' + open + '"]');
+    if (tile) tile.focus();
+  }
+  /* ?hover=<id> hovers that charm: the detail and the preview on the figures. Mouse only,
+     so the capture needs --blink-settings=primaryHoverType=2,primaryPointerType=4,
+     availableHoverTypes=2,availablePointerTypes=4 (see debug-hover.html). */
+  const hover = q.get('hover');
+  if (hover) {
+    const tile = f.contentDocument.querySelector('#panel .quick-grid .qc[data-id="' + hover + '"]');
+    if (tile) tile.dispatchEvent(new f.contentWindow.MouseEvent('mouseover', { bubbles: true }));
+  }
+  /* Your side of the arena mid-fight: ?hits=<n> hits n times with the nail, ?take=<n> lets
+     the enemy hit you n times with its first attack (or ?focus=<n> you focus), and
+     ?freeze=<ms> freezes the scene's animations at that instant: with 5000 all the ones from
+     a single hit have finished and you can see how it ends up. */
+  const clickN = (sel, n) => {
+    for (let i = 0; i < n; i++) { const b = f.contentDocument.querySelector(sel); if (b && !b.disabled) b.click(); }
+  };
+  clickN('[data-act="hit"][data-id="nail"]', Number(q.get('hits') || 0));
+  clickN('.move-foe', Number(q.get('take') || 0));
+  clickN('[data-act="hit"][data-id="focus"]', Number(q.get('focus') || 0));
+  // ?info=spell:dd,foe opens those arena explanations: an attack's "?" or the enemy side's.
+  for (const id of (q.get('info') || '').split(',').filter(Boolean)) clickN(`[data-act="help"][data-id="${id}"]`, 1);
+  // ?click=restCocoon,restSit presses those buttons (by their data-act) in that order.
+  for (const act of (q.get('click') || '').split(',').filter(Boolean)) clickN(`[data-act="${act}"]`, 1);
+  if (q.get('freeze') !== null) {
+    const st = f.contentDocument.createElement('style');
+    st.textContent = `.kscene, .kscene *, .kscene::before, .kscene::after, #panel .hud * { animation-delay: -${Number(q.get('freeze'))}ms !important; animation-play-state: paused !important; }`;
+    f.contentDocument.head.appendChild(st);
+  }
+  // ?fx=<ms> freezes the overcharm flash at that instant of the animation; with &fxgold=1,
+  // the one for all four bindings at once (in gold, with &tab=pantheon&binds=all).
+  const fx = q.get('fx');
+  if (fx !== null) {
+    const d = f.contentDocument;
+    const layer = d.getElementById('overcharm-fx');
+    const gold = q.get('fxgold') === '1';
+    d.documentElement.classList.add(gold ? 'is-binding-all' : 'is-overcharming');
+    layer.classList.toggle('is-gold', gold);
+    d.querySelector('.page').classList.add('is-quaking');
+    layer.hidden = false;
+    layer.classList.add('is-on');
+    for (const node of [layer, d.querySelector('.page')]) {
+      node.style.animationPlayState = 'paused';
+      node.style.animationDelay = '-' + Number(fx) + 'ms';
+    }
+  }
+});
+document.body.appendChild(f);
+</script>
+</body></html>

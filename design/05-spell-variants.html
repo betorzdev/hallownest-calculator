@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spell impacts: variants</title>
+<!-- Design material, not part of the site: compares five ways of choosing how many of a
+     spell's impacts land in the arena. It uses the real tokens, CSS and sprites. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Spectral:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap">
+<link rel="stylesheet" href="../css/tokens.css">
+<link rel="stylesheet" href="../css/app.css">
+<style>
+  body { background: var(--bg); }
+  .wrap { max-width: 1840px; margin: 0 auto; padding: var(--sp-6) var(--sp-4) var(--sp-16); }
+  .intro { max-width: 760px; margin-bottom: var(--sp-6); color: var(--ink-2); font-size: var(--fs-sm); }
+  .intro h1 { font-family: var(--font-display); font-size: var(--fs-xl); color: var(--ink-strong); letter-spacing: 0.08em; margin-bottom: var(--sp-3); }
+  .intro p + p { margin-top: var(--sp-2); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 330px)); gap: var(--sp-6) var(--sp-6); align-items: start; }
+  .variant h2 { font-family: var(--font-display); font-size: var(--fs-sm); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-strong); }
+  .variant .why { font-size: var(--fs-xs); color: var(--muted); margin: var(--sp-1) 0 var(--sp-3); min-height: 5.2em; }
+  .variant .why b { color: var(--ink-2); font-weight: 500; }
+  .variant .moveset { gap: var(--sp-2); }
+  .foot-note { margin-top: var(--sp-2); font-size: var(--fs-2xs); color: var(--muted); font-style: italic; }
+
+  /* The card (.vcard: .card already belongs to the site), when it carries controls inside, can't be a button: it's a block with a
+     cast button (the whole top row) and the controls below. Same look as .move. */
+  .vcard { background: var(--card-idle); border: 1px solid var(--line-card); }
+  .vcard > .cast { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; align-items: center; gap: 2px var(--sp-3);
+    width: 100%; text-align: left; padding: var(--sp-2) var(--sp-3); min-height: 44px; }
+  .vcard > .cast:hover { background: var(--card-on); }
+  .vcard .move-art { grid-row: 1 / span 2; }
+  .vcard .move-cost { grid-column: 2 / -1; }
+  .vcard .ctl { padding: 0 var(--sp-3) var(--sp-2) calc(56px + var(--sp-3) * 2); }
+
+  /* A. The current one */
+  .a-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-1); padding-left: var(--sp-3); }
+  .a-chip, .a-btn { min-height: 32px; padding: 0 var(--sp-2); border: 1px solid var(--line-card); background: var(--card-idle); font-size: var(--fs-2xs); color: var(--muted); }
+  .a-chip[aria-pressed="true"] { border-color: var(--accent-line); color: var(--ink); }
+  .a-btn { width: 32px; padding: 0; font-family: var(--font-num); font-size: var(--fs-sm); color: var(--ink); }
+  .a-val { font-size: var(--fs-2xs); color: var(--ink-2); }
+
+  /* B. Notches: the game's dot, lit if the impact lands */
+  .b-dots { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--sp-1) var(--sp-2); }
+  .b-dot { display: grid; justify-items: center; gap: 2px; padding: 2px; min-width: 24px; }
+  .b-dot .notch { width: 17px; height: 17px; }
+  .b-dot .notch.is-free::before { width: 10px; height: 10px; }
+  .b-dot small { font-family: var(--font-num); font-size: var(--fs-2xs); color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .b-dot.is-off small { color: var(--muted); text-decoration: line-through; }
+  .b-dot:hover .notch.is-free::before { border-color: var(--accent-line); }
+  .b-dots.is-small .b-dot { min-width: 0; padding: 1px; }
+  .b-dots.is-small .notch { width: 13px; height: 13px; }
+  .b-dots.is-small .notch.is-free::before { width: 8px; height: 8px; }
+  .b-side { font-size: var(--fs-2xs); color: var(--muted); margin-left: var(--sp-1); }
+  .b-side button { color: var(--muted); padding: 2px var(--sp-1); }
+  .b-side button[aria-pressed="true"] { color: var(--ink); text-decoration: underline; text-decoration-color: var(--accent-line); text-underline-offset: 3px; }
+
+  /* C. Segments: each outcome is its own cast button, like "Blocked" and "♪ Negated" */
+  .c-card { display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-flow: column; grid-auto-columns: auto; }
+  .c-card .move { border-right: 0; }
+  .c-seg { display: grid; place-items: center; align-content: center; gap: 0; min-width: 46px; padding: 0 var(--sp-2);
+    background: var(--card-idle); border: 1px solid var(--line-card); border-left: 1px dashed var(--line-card); }
+  .c-seg:last-child { border-right: 1px solid var(--line-card); }
+  .c-seg:hover { background: var(--card-on); border-color: var(--accent-line); }
+  .c-seg b { font-family: var(--font-num); font-size: var(--fs-sm); color: var(--ink-strong); font-variant-numeric: tabular-nums; }
+  .c-seg i { font-style: normal; font-size: var(--fs-2xs); color: var(--muted); }
+
+  /* D. Collapsed: the state on the card, the controls when it's opened */
+  .d-toggle { color: var(--muted); font-size: var(--fs-2xs); }
+  .d-toggle:hover { color: var(--ink); }
+  .d-toggle .chev { vertical-align: middle; }
+  .d-panel { display: grid; gap: var(--sp-2); padding: var(--sp-2) var(--sp-3) var(--sp-3); border-top: 1px dashed var(--line-card); }
+  .d-line { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); font-size: var(--fs-xs); color: var(--ink-2); }
+  .d-seg { display: inline-flex; }
+  .d-seg button { min-height: 32px; min-width: 32px; padding: 0 var(--sp-2); border: 1px solid var(--line-card); margin-left: -1px;
+    font-family: var(--font-num); font-size: var(--fs-xs); color: var(--muted); font-variant-numeric: tabular-nums; }
+  .d-seg button[aria-pressed="true"] { background: var(--card-on); color: var(--ink-strong); border-color: var(--accent-line); position: relative; }
+
+  /* E. Chromeless text: the impacts are their own numbers, and they're tapped */
+  .e-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--sp-2); font-size: var(--fs-xs); color: var(--muted); }
+  .e-num { font-family: var(--font-num); font-variant-numeric: tabular-nums; color: var(--ink-2); padding: 4px 2px; border-bottom: 1px dotted var(--line-ctl, #3a4561); }
+  .e-num[aria-pressed="false"] { color: var(--muted); text-decoration: line-through; opacity: 0.7; }
+  .e-num:hover { color: var(--ink); border-bottom-color: var(--accent-line); }
+  .e-word { color: var(--muted); padding: 4px 2px; }
+  .e-word[aria-pressed="true"] { color: var(--ink); border-bottom: 1px solid var(--accent-line); }
+  .e-sep { color: var(--line-card); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="intro">
+    <h1>Spell impacts</h1>
+    <p>Five ways of saying how many of a spell's impacts land, over the same four cases:
+      <b>Shade Soul</b> against Broken Vessel (it can hit it twice), <b>Descending
+      Dark</b> (three parts and the side of the 1st burst), <b>Abyss Shriek</b>
+      (four equal bursts) and <b>Shade Soul with Flukenest</b> (sixteen flukes).</p>
+    <p>They all work: touch the controls and the button's damage changes. The numbers are the
+      site's; so are the CSS, the tokens and the sprites.</p>
+  </div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+'use strict';
+/* The four cases, with the impacts the engine gives (js/engine.js, `impacts`). */
+const SPELLS = [
+  { key: 'vs', name: 'Shade Soul', art: 'vs2', cost: 33, note: 'against Broken Vessel',
+    impacts: [{ id: 'bolt', label: 'Projectile', v: 30, count: 1, twice: true }] },
+  { key: 'dd', name: 'Descending Dark', art: 'dd2', cost: 33,
+    impacts: [{ id: 'dive', label: 'Dive', v: 15, count: 1 }, { id: 'burst1', label: '1st burst', v: 35, alt: 30, count: 1 }, { id: 'burst2', label: '2nd burst', v: 15, count: 1 }] },
+  { key: 'hw', name: 'Abyss Shriek', art: 'hw2', cost: 33,
+    impacts: [{ id: 'burst', label: 'Bursts', v: 20, count: 4 }] },
+  { key: 'fl', name: 'Shade Soul', art: 'vs2', cost: 33, note: 'with Flukenest',
+    impacts: [{ id: 'fluke', label: 'Flukes', v: 4, count: 16 }] },
+];
+const n0 = (sel, im) => (typeof sel[im.id] === 'number' ? sel[im.id] : im.count);
+const val = (sel, im) => (im.alt && sel.side === 'right' ? im.alt : im.v);
+const total = (sp, sel) => sp.impacts.reduce((t, im) => t + n0(sel, im) * val(sel, im), 0);
+const landed = (sp, sel) => sp.impacts.reduce((t, im) => t + n0(sel, im), 0);
+const of = (sp) => sp.impacts.reduce((t, im) => t + im.count, 0);
+const art = (k) => `<span class="move-art"><img src="../assets/spells/${k}.png" alt=""></span>`;
+const name = (sp) => sp.name + (sp.note ? ` <span style="color:var(--muted);font-size:var(--fs-2xs)">${sp.note}</span>` : '');
+// To compare a half-way state: Abyss Shriek with 3 of 4 in all of them, and D's panel open on Descending Dark.
+const state = { a: { hw: { burst: 3 } }, b: { hw: { burst: 3 } }, d: { hw: { burst: 3 } }, e: { hw: { burst: 3 } }, d_open: { ddd: true } };
+
+/* The usual cast button (A, C) or the top row of a card (B, D, E). */
+const castRow = (sp, sel, extra = '') => `<button type="button" class="cast">${art(sp.art)}
+  <span class="move-name">${name(sp)}</span><span class="move-num">${total(sp, sel)}</span>
+  <span class="move-cost">−${sp.cost} soul${extra}</span></button>`;
+
+const VARIANTS = [
+  { id: 'a', title: 'A · The current one',
+    why: 'A row of bordered chips under the button. <b>It reads</b>, but it adds a box per impact and breaks the system\'s rule: "chromeless text; colour is kept for what costs something".',
+    card(sp, sel) {
+      const parts = [];
+      for (const im of sp.impacts) {
+        const n = n0(sel, im);
+        if (im.count > 1) parts.push(`<button class="a-btn" data-op="${im.id}:-1">−</button><span class="a-val">${n} of ${im.count} ${im.label.toLowerCase()}</span><button class="a-btn" data-op="${im.id}:+1">+</button>`);
+        else if (im.twice) parts.push(`<button class="a-chip" data-op="${im.id}:twice" aria-pressed="${n === 2}">Hits twice · ${im.v * 2}</button>`);
+        else {
+          parts.push(`<button class="a-chip" data-op="${im.id}:toggle" aria-pressed="${n > 0}">${im.label} ${val(sel, im)}</button>`);
+          if (im.alt) parts.push(`<button class="a-chip" data-op="${im.id}:left" aria-pressed="${sel.side !== 'right'}">left</button><button class="a-chip" data-op="${im.id}:right" aria-pressed="${sel.side === 'right'}">right</button>`);
+        }
+      }
+      return `<button type="button" class="move has-art">${art(sp.art)}<span class="move-name">${name(sp)}</span><span class="move-num">${total(sp, sel)}</span><span class="move-cost">−${sp.cost} soul</span></button>
+        <div class="a-row">${parts.join('')}</div>`;
+    } },
+  { id: 'b', title: 'B · Notches',
+    why: 'One notch dot per impact, inside the card: <b>the game\'s language</b> and the same gesture as the health masks (tap the third and three land; the last, all of them). Lit lands; a ring, not. Each impact\'s figure goes below.',
+    card(sp, sel) {
+      const dots = [];
+      let small = false;
+      for (const im of sp.impacts) {
+        const n = n0(sel, im);
+        if (im.count > 1) {
+          small = im.count > 8;
+          for (let i = 0; i < im.count; i++) dots.push(`<button class="b-dot${i < n ? '' : ' is-off'}" data-op="${im.id}:set:${i + 1}" title="${i + 1} of ${im.count}"><i class="notch${i < n ? '' : ' is-free'}"></i>${small ? '' : `<small>${im.v}</small>`}</button>`);
+        } else if (im.twice) {
+          dots.push(`<button class="b-dot" data-op="${im.id}:set:1"><i class="notch"></i><small>${im.v}</small></button>`);
+          dots.push(`<button class="b-dot${n === 2 ? '' : ' is-off'}" data-op="${im.id}:twice" title="Hits twice"><i class="notch${n === 2 ? '' : ' is-free'}"></i><small>×2</small></button>`);
+        } else {
+          dots.push(`<button class="b-dot${n ? '' : ' is-off'}" data-op="${im.id}:toggle" title="${im.label}"><i class="notch${n ? '' : ' is-free'}"></i><small>${val(sel, im)}</small></button>`);
+        }
+      }
+      const alt = sp.impacts.find((im) => im.alt);
+      const side = alt ? `<span class="b-side"><button data-op="${alt.id}:left" aria-pressed="${sel.side !== 'right'}">left</button>·<button data-op="${alt.id}:right" aria-pressed="${sel.side === 'right'}">right</button></span>` : '';
+      const cnt = small ? `<small style="font-size:var(--fs-2xs);color:var(--ink-2);margin-left:var(--sp-1)">${landed(sp, sel)} of ${of(sp)}</small>` : '';
+      return `<div class="vcard">${castRow(sp, sel)}<div class="ctl"><div class="b-dots${small ? ' is-small' : ''}">${dots.join('')}${side}${cnt}</div></div></div>`;
+    } },
+  { id: 'c', title: 'C · Segments',
+    why: 'Each outcome is <b>its own cast button</b>, attached to the card, like "Blocked" and "♪ Negated" on the enemy\'s attacks. One tap, one spell, no state to remember. But only a handful fit: the flukes go in fours and Descending Dark, by side.',
+    card(sp) {
+      const im = sp.impacts[0];
+      let segs = [];
+      if (sp.key === 'hw') segs = [3, 2, 1].map((k) => [k * im.v, `${k} of 4`]);
+      if (sp.key === 'fl') segs = [12, 8, 4].map((k) => [k * im.v, `${k}`]);
+      if (sp.key === 'vs') segs = [[60, '×2']];
+      if (sp.key === 'dd') segs = [[60, 'right'], [50, 'no dive']];
+      const main = total(sp, {});
+      return `<div class="c-card"><button type="button" class="move has-art">${art(sp.art)}<span class="move-name">${name(sp)}</span><span class="move-num">${main}</span><span class="move-cost">−${sp.cost} soul${sp.key === 'dd' ? ' · left' : ''}</span></button>
+        ${segs.map(([d, l]) => `<button type="button" class="c-seg"><b>${d}</b><i>${l}</i></button>`).join('')}</div>`;
+    } },
+  { id: 'd', title: 'D · Collapsed',
+    why: 'The card is the usual one and <b>only says the state</b> ("4 of 4 bursts ▾"). Tapping it opens segmented controls below, and it closes again. The column doesn\'t grow if you don\'t use it; it costs one more tap when you do.',
+    card(sp, sel, key) {
+      const open = !!(state.d_open && state.d_open[key]);
+      const parts = sp.impacts.map((im) => {
+        const n = n0(sel, im);
+        if (im.count > 1) {
+          const opts = im.count > 8 ? [16, 12, 8, 4, 0] : Array.from({ length: im.count + 1 }, (_, i) => im.count - i);
+          return `<div class="d-line"><span>${im.label}</span><span class="d-seg">${opts.map((k) => `<button data-op="${im.id}:set:${k}" aria-pressed="${n === k}">${k}</button>`).join('')}</span></div>`;
+        }
+        if (im.twice) return `<div class="d-line"><span>Hits</span><span class="d-seg"><button data-op="${im.id}:set:1" aria-pressed="${n === 1}">once</button><button data-op="${im.id}:set:2" aria-pressed="${n === 2}">twice</button></span></div>`;
+        const onoff = `<span class="d-seg"><button data-op="${im.id}:set:1" aria-pressed="${n === 1}">${val(sel, im)}</button><button data-op="${im.id}:set:0" aria-pressed="${n === 0}">no</button></span>`;
+        const side = im.alt ? `<span class="d-seg"><button data-op="${im.id}:left" aria-pressed="${sel.side !== 'right'}">left</button><button data-op="${im.id}:right" aria-pressed="${sel.side === 'right'}">right</button></span>` : '';
+        return `<div class="d-line"><span>${im.label}</span><span style="display:flex;gap:var(--sp-2)">${side}${onoff}</span></div>`;
+      }).join('');
+      const summary = sp.impacts.length === 1 && sp.impacts[0].twice
+        ? (n0(sel, sp.impacts[0]) === 2 ? 'hits twice' : 'hits once')
+        : `${landed(sp, sel)} of ${of(sp)} ${sp.key === 'dd' ? 'parts' : sp.impacts[0].label.toLowerCase()}`;
+      return `<div class="vcard">${castRow(sp, sel)}<div class="ctl" style="padding-top:0"><button class="d-toggle" data-open="${key}">${summary} <svg class="chev ${open ? 'up' : ''}" width="10" height="7" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 1.5 L6 6 L11 1.5"/></svg></button></div>
+        ${open ? `<div class="d-panel">${parts}</div>` : ''}</div>`;
+    } },
+  { id: 'e', title: 'E · Chromeless text',
+    why: 'No boxes: <b>the impacts are their own figures</b>, with a dotted underline because they\'re tapped. Struck through, it doesn\'t land. The quietest and the one that best follows the system; on mobile, the small numbers need good aim.',
+    card(sp, sel) {
+      const bits = [];
+      for (const im of sp.impacts) {
+        const n = n0(sel, im);
+        if (im.count > 8) bits.push(`<span>flukes</span><button class="e-num" data-op="${im.id}:-1">−</button><span style="color:var(--ink-2)">${n} of ${im.count}</span><button class="e-num" data-op="${im.id}:+1">+</button>`);
+        else if (im.count > 1) {
+          bits.push('<span>bursts</span>');
+          for (let i = 0; i < im.count; i++) bits.push(`<button class="e-num" data-op="${im.id}:set:${i < n && i === n - 1 ? i : i + 1}" aria-pressed="${i < n}">${im.v}</button>`);
+        } else if (im.twice) {
+          bits.push(`<span>hits</span><button class="e-word" data-op="${im.id}:set:1" aria-pressed="${n === 1}">once</button><span class="e-sep">·</span><button class="e-word" data-op="${im.id}:set:2" aria-pressed="${n === 2}">twice</button>`);
+        } else {
+          if (bits.length) bits.push('<span class="e-sep">·</span>');
+          bits.push(`<span>${im.label.toLowerCase()}</span>`);
+          if (im.alt) bits.push(`<button class="e-num" data-op="${im.id}:${sel.side === 'right' ? 'left' : 'right'}" aria-pressed="${n > 0}">${sel.side === 'right' ? 'right 30' : 'left 35'}</button><button class="e-word" data-op="${im.id}:toggle" aria-pressed="${n === 0}" style="font-size:var(--fs-2xs)">no</button>`);
+          else bits.push(`<button class="e-num" data-op="${im.id}:toggle" aria-pressed="${n > 0}">${im.v}</button>`);
+        }
+      }
+      return `<div class="vcard">${castRow(sp, sel)}<div class="ctl"><div class="e-line">${bits.join('')}</div></div></div>`;
+    } },
+];
+
+function paint() {
+  document.getElementById('grid').innerHTML = VARIANTS.map((v) => {
+    const st = state[v.id] || (state[v.id] = {});
+    const cards = SPELLS.map((sp) => `<div data-v="${v.id}" data-s="${sp.key}">${v.card(sp, st[sp.key] || {}, v.id + sp.key)}</div>`).join('');
+    return `<section class="variant"><h2>${v.title}</h2><p class="why">${v.why}</p><div class="moveset">${cards}</div></section>`;
+  }).join('');
+}
+
+document.addEventListener('click', (ev) => {
+  const openBtn = ev.target.closest('[data-open]');
+  if (openBtn) { state.d_open = state.d_open || {}; state.d_open[openBtn.dataset.open] = !state.d_open[openBtn.dataset.open]; paint(); return; }
+  const b = ev.target.closest('[data-op]');
+  if (!b) return;
+  const holder = b.closest('[data-v]');
+  const sp = SPELLS.find((x) => x.key === holder.dataset.s);
+  const st = state[holder.dataset.v];
+  const sel = st[sp.key] || (st[sp.key] = {});
+  const [id, op, arg] = b.dataset.op.split(':');
+  const im = sp.impacts.find((x) => x.id === id);
+  const cur = n0(sel, im);
+  if (op === 'left' || op === 'right') sel.side = op;
+  else if (op === 'toggle') sel[id] = cur > 0 ? 0 : im.count;
+  else if (op === 'twice') sel[id] = cur === 2 ? 1 : 2;
+  else if (op === 'set') {
+    const k = Number(arg);
+    // Like the masks: tapping the last lit one when it's already the cap turns one off (and the first, all of them).
+    sel[id] = holder.dataset.v === 'b' && k === cur && im.count > 1 ? k - 1 : k;
+  } else sel[id] = Math.max(0, Math.min(im.count, cur + Number(op)));
+  paint();
+});
+paint();
+</script>
+</body>
+</html>

@@ -1,0 +1,266 @@
+[
+ {
+  "boss": "Gruz Mother Slumbering god of fertility",
+  "clue": "\"I sleep amongst winding roads\"",
+  "hp_attuned_ascended": "650 / 945",
+  "notes": "The ground is replaced with 3 smaller platforms and 4 spike pits on Ascended difficulty or above."
+ },
+ {
+  "boss": "Vengefly King Vicious god of territories",
+  "clue": "\"I keep guard above a verdant land\"",
+  "hp_attuned_ascended": "450 / 430 (right) 735 (left)",
+  "notes": "One more Vengefly King spawns opposite to the side of the other Vengefly King on Ascended difficulty or above."
+ },
+ {
+  "boss": "Brooding Mawlek Lonely god of the nest",
+  "clue": "\"I call out to no one, hidden by roads and highways\"",
+  "hp_attuned_ascended": "1050 / 1050 (Pantheon of Hallownest: 750)",
+  "notes": "The middle platform disappears on Ascended difficulty or above."
+ },
+ {
+  "boss": "False Knight Angry god of the downtrodden",
+  "clue": "\"I protect the weak in the heart of the crossroads\"",
+  "hp_attuned_ascended": "260*3 / 560*3",
+  "notes": "The arena is larger than in the base game, no difficulty differences."
+ },
+ {
+  "boss": "Failed Champion Baleful god of regrets",
+  "clue": "",
+  "hp_attuned_ascended": "360*3 / 600*3",
+  "notes": "The arena appears to be about the same size, no difficulty differences."
+ },
+ {
+  "boss": "Hornet Protector God protector of a fading land",
+  "clue": "\"I watch over lush pathways and distant ash-swept graves\"",
+  "hp_attuned_ascended": "900 / 1250",
+  "notes": "The arena appears to be about the same size, no difficulty differences."
+ },
+ {
+  "boss": "Hornet Sentinel God protector of a fading land",
+  "clue": "",
+  "hp_attuned_ascended": "800 / 1200",
+  "notes": "The arena appears to be about the same size, no difficulty differences."
+ },
+ {
+  "boss": "Massive Moss Charger Restless god of those who band together",
+  "clue": "\"Together we hunt in paths overgrown with green\"",
+  "hp_attuned_ascended": "480 / 850",
+  "notes": "Same arena as the base game fight, no difficulty differences."
+ },
+ {
+  "boss": "Flukemarm Alluring god of motherhood",
+  "clue": "\"I lie within a maze of pipes\"",
+  "hp_attuned_ascended": "500 / 900",
+  "notes": "Arena is missing top left platform compared to base game fight. First 6 Flukefeys have more Health on Ascended difficulty or above."
+ },
+ {
+  "boss": "Mantis Lords Noble sister gods of combat",
+  "clue": "\"We watch over a village of warriors\"",
+  "hp_attuned_ascended": "400 (350 stage 2) ~ 500 (600 stage 2)",
+  "notes": "Same arena as the base game fight, no difficulty differences."
+ },
+ {
+  "boss": "Sisters of Battle Revered gods of a proud tribe",
+  "clue": "",
+  "hp_attuned_ascended": "500 (750 stage 2) ~ 600 (950 stage 2)",
+  "notes": "Same arena as the Mantis Lords fight, face all three lords in phase 2."
+ },
+ {
+  "boss": "Oblobble Lover gods of faith and devotion",
+  "clue": "\"Together we are chained in a strange colosseum\"",
+  "hp_attuned_ascended": "450 (650 stage 2) ~ 750 (750 stage 2)",
+  "notes": "Same arena as the base game fight, no difficulty differences."
+ },
+ {
+  "boss": "Hive Knight Watchful god of duty",
+  "clue": "\"I guard the heart of the hive for my Queen\"",
+  "hp_attuned_ascended": "850 / 1300",
+  "notes": "Same arena as the base game fight but does not start the fight off with the Swarm Release attack. Starts in Phase 3 Ascended difficulty or above."
+ },
+ {
+  "boss": "Broken Vessel Broken shell of an empty god",
+  "clue": "\"I sleep in the deep caves below the world\"",
+  "hp_attuned_ascended": "700 / 1000",
+  "notes": "Same arena as the base game fight, no difficulty differences."
+ },
+ {
+  "boss": "Lost Kin Lost god of the Abyss",
+  "clue": "",
+  "hp_attuned_ascended": "1200 / 1650",
+  "notes": "Same arena as the base game fight, no difficulty differences."
+ },
+ {
+  "boss": "Nosk Everchanging god of the faceless",
+  "clue": "\"I wait patiently in a dark nest of predators\"",
+  "hp_attuned_ascended": "680 / 980",
+  "notes": "Same arena as the base game fight, the middle platform dissappears on Ascended difficulty or above."
+ },
+ {
+  "boss": "Winged Nosk Deceptive god assuming a protector's form",
+  "clue": "",
+  "hp_attuned_ascended": "750 / 1050",
+  "notes": "Same arena as the base Pantheon fight, no difficulty differences."
+ },
+ {
+  "boss": "The Collector Joyful god of protection",
+  "clue": "\"I lurk at the peak of a forsaken tower\"",
+  "hp_attuned_ascended": "900 / 1200",
+  "notes": "Same arena as the base game fight. Spawns Primal Aspids, Sharp Baldurs and Armoured Squits instead of its usual roster on Ascended difficulty and above. These enemies have a health of 26. Drops only 1 jar at a time during Phase 1 on Ascended difficulty and above."
+ },
+ {
+  "boss": "God Tamer Gallant god of the arena",
+  "clue": "\"I wait, weapon in hand, within the colosseum\"",
+  "hp_attuned_ascended": "750 (both) ~ 1000 (both)",
+  "notes": "Same arena as the base game fight, no difficulty differences."
+ },
+ {
+  "boss": "Crystal Guardian Shining god of greed",
+  "clue": "\"I rest amongst crystals and strange machinery\"",
+  "hp_attuned_ascended": "650 / 900",
+  "notes": "The arena is much larger than the base game fight, spikes are now added to the top half of both walls of the arena. Starts the fight with a random attack."
+ },
+ {
+  "boss": "Enraged Guardian Shining god of greed",
+  "clue": "",
+  "hp_attuned_ascended": "650 / 1250",
+  "notes": "Arena is smaller with spikes now added to the top half of both walls of the arena. Starts the fight with the Laser Beam attack and then a random attack."
+ },
+ {
+  "boss": "Uumuu Uncanny god of knowledge",
+  "clue": "\"I sleep submerged in the depths of the archive\"",
+  "hp_attuned_ascended": "350 / 700",
+  "notes": "A green fog appears on the bottom of the arena that damages the Knight if they fall into it on Ascended difficulty or above. The boss also summons Oomas that must be utilized in order to break its membrane."
+ },
+ {
+  "boss": "Traitor Lord Treacherous god of anger",
+  "clue": "\"I defile the gardens of false royalty\"",
+  "hp_attuned_ascended": "800 / 1300",
+  "notes": "The arena is much larger than the base game fight, no difficulty differences."
+ },
+ {
+  "boss": "Grey Prince Zote False god conjured by the lonely",
+  "clue": "\"I serve my Queen inside her dreams\"",
+  "hp_attuned_ascended": "1400 / 1400",
+  "notes": "Arena appears wider than base game, no difficulty differences."
+ },
+ {
+  "boss": "Soul Warrior Haunted god of the sanctum",
+  "clue": "\"I haunt the halls of a sanctum\"",
+  "hp_attuned_ascended": "750 / 1000",
+  "notes": "Starts spawning Follies on Ascended difficulty or above."
+ },
+ {
+  "boss": "Soul Master Covetous god of soul",
+  "clue": "\"Immortal, I rule the Sanctum\"",
+  "hp_attuned_ascended": "600 (350 phase 2) ~ 900 (600 phase 2)",
+  "notes": "Same arena as the base game fight, no difficulty differences."
+ },
+ {
+  "boss": "Soul Tyrant Frenzied god of mortality",
+  "clue": "",
+  "hp_attuned_ascended": "900 (350 phase 2) ~ 1200 (650 phase 2)",
+  "notes": "Same arena as the base game fight, no difficulty differences."
+ },
+ {
+  "boss": "Dung Defender Kindly god of bravery and honour",
+  "clue": "\"I protect the pipeways of the kingdom\"",
+  "hp_attuned_ascended": "800 / 1100",
+  "notes": "Same arena as the base game fight, no difficulty differences."
+ },
+ {
+  "boss": "White Defender Kindly god of bravery and honour",
+  "clue": "",
+  "hp_attuned_ascended": "1600 / 1600",
+  "notes": "Same arena as the base game fight, no difficulty differences."
+ },
+ {
+  "boss": "Watcher Knight Sentinel gods of the spire",
+  "clue": "\"We lie dormant, guarding the Spire's peak\"",
+  "hp_attuned_ascended": "350 (each) ~ 600 (each)",
+  "notes": "Same arena as the base game fight, no difficulty differences."
+ },
+ {
+  "boss": "No Eyes Dreamborn god of fear and relief",
+  "clue": "\"I lie dreaming in a silent sanctuary\"",
+  "hp_attuned_ascended": "570 / 800",
+  "notes": "Platforms are re-arranged, and thorns fill the arena on Ascended difficulty or above."
+ },
+ {
+  "boss": "Marmu Dreamborn god of gardens",
+  "clue": "\"I lie dreaming patiently in a garden\"",
+  "hp_attuned_ascended": "416 / 600",
+  "notes": "Arena is shrunk down and boxed off with thorns on all three sides on Ascended difficulty or above."
+ },
+ {
+  "boss": "Xero Dreamborn god of faith and betrayal",
+  "clue": "\"I lie dreaming amongst peaceful graves\"",
+  "hp_attuned_ascended": "650 / 900",
+  "notes": "Ground is replaced by three distanced platforms on Ascended difficulty or above."
+ },
+ {
+  "boss": "Markoth Dreamborn god of meditation and isolation",
+  "clue": "\"I lie dreaming at the edge of the world\"",
+  "hp_attuned_ascended": "650 / 950",
+  "notes": "Arena's ground disappears, and platforms are rearranged on Ascended difficulty or above."
+ },
+ {
+  "boss": "Galien Dreamborn god of heroic hearts",
+  "clue": "\"I lie dreaming in darkness, surrounded by predators\"",
+  "hp_attuned_ascended": "650 / 1000",
+  "notes": "Same arena as the base game fight, no difficulty differences."
+ },
+ {
+  "boss": "Gorb Dreamborn god of the beyond",
+  "clue": "\"I lie dreaming at a wind-blasted peak\"",
+  "hp_attuned_ascended": "650 / 1000",
+  "notes": "Ground is replaced by three platforms on Ascended difficulty or above."
+ },
+ {
+  "boss": "Elder Hu Dreamborn god of travellers and sages",
+  "clue": "\"I lie dreaming in the wastes\"",
+  "hp_attuned_ascended": "600 / 800",
+  "notes": "Same arena as the base game fight, no difficulty differences."
+ },
+ {
+  "boss": "Oro &amp; Mato Loyal brother gods of the nail",
+  "clue": "\"Together we stand at a Pantheon's peak\"",
+  "hp_attuned_ascended": "Oro (500/600) ~ Mato (1000) ~ ~ Oro (800/1000) ~ Mato (1000)",
+  "notes": "Same arena as the Pantheon fight, no difficulty differences."
+ },
+ {
+  "boss": "Paintmaster Sheo Talented god of artists and creators",
+  "clue": "\"I hone my craft at a Pantheon's peak\"",
+  "hp_attuned_ascended": "950 / 1450",
+  "notes": "Same arena as the Pantheon fight, no difficulty differences."
+ },
+ {
+  "boss": "Nailsage Sly Cunning god of opportunity",
+  "clue": "\"I await you at a Pantheon's peak\"",
+  "hp_attuned_ascended": "800/250 ~ 1200/600",
+  "notes": "Same arena as the Pantheon fight, no difficulty differences."
+ },
+ {
+  "boss": "Pure Vessel Mighty god of nothingness",
+  "clue": "\"This empty god stands at a Pantheon's peak\"",
+  "hp_attuned_ascended": "1600 / 1850",
+  "notes": "Same arena as the Pantheon fight, no difficulty differences."
+ },
+ {
+  "boss": "Grimm Travelling god of the troupe",
+  "clue": "\"I await the lighting of the lantern\"",
+  "hp_attuned_ascended": "1000 / 1300",
+  "notes": "Same arena as the base game fight, no difficulty differences."
+ },
+ {
+  "boss": "Nightmare King God of nightmares",
+  "clue": "",
+  "hp_attuned_ascended": "1250 / 1650",
+  "notes": "The arena is now a single platform with the walls of the arena cut off."
+ },
+ {
+  "boss": "Radiance Forgotten god of light",
+  "clue": "",
+  "hp_attuned_ascended": "2181 / 2181",
+  "notes": "Same arena as the Pantheon fight, no difficulty differences, although it is expanded for Absolute Radiance's final phase."
+ }
+]

@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The sheet as the Inventory: variants</title>
+<!-- Design material, not part of the site: the header and the sheet remade as the game's
+     Inventory screen (design/00-system.md; plan approved on 22 September 2026).
+     It uses the real tokens, CSS, engine and sprites: the figures are the real ones.
+     The <base> points at the project root so that the paths of the helpers copied from
+     js/app.js ("assets/…") work as they are. -->
+<base href="../">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Spectral:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+/* ════ The mockup itself: none of this goes into the site ════════════════════════════ */
+body { background: var(--bg); }
+.mk { max-width: 1900px; margin: 0 auto; padding: var(--sp-6) var(--sp-4) var(--sp-16); }
+.mk-intro { max-width: 820px; margin-bottom: var(--sp-6); color: var(--ink-2); font-size: var(--fs-sm); }
+.mk-intro h1 { font-family: var(--font-display); font-size: var(--fs-xl); color: var(--ink-strong); letter-spacing: 0.08em; margin-bottom: var(--sp-3); }
+.mk-intro p + p { margin-top: var(--sp-2); }
+.mk-intro b { color: var(--ink); font-weight: 500; }
+.mk-controls {
+  position: sticky; top: 0; z-index: 50; display: flex; flex-wrap: wrap; gap: var(--sp-3) var(--sp-6); align-items: flex-end;
+  padding: var(--sp-3) 0; margin-bottom: var(--sp-6); background: var(--bg); border-bottom: 1px solid var(--line);
+}
+.mk-ctl { display: flex; flex-direction: column; gap: var(--sp-1); }
+.mk-toggles { display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-4); min-height: 36px; align-items: center; font-size: var(--fs-sm); color: var(--ink-2); }
+.mk-toggles label { display: inline-flex; align-items: center; gap: var(--sp-1); cursor: pointer; }
+.mk-read { font-family: var(--font-num); font-size: var(--fs-xs); color: var(--muted); margin-top: var(--sp-2); font-variant-numeric: tabular-nums; }
+.mk-read b { color: var(--ink); font-weight: 600; }
+.mk-frames { display: flex; flex-wrap: wrap; gap: var(--sp-8); align-items: flex-start; }
+.mk-frame { margin: 0; }
+.mk-frame figcaption { font-family: var(--font-num); font-size: var(--fs-2xs); letter-spacing: 0.09em; text-transform: uppercase; color: var(--label); margin-bottom: var(--sp-2); font-weight: 600; }
+.mk-scaler { position: relative; overflow: hidden; box-shadow: 0 0 0 1px var(--line-panel); }
+.mk-notes { max-width: 820px; margin-top: var(--sp-12); color: var(--ink-2); font-size: var(--fs-sm); }
+.mk-notes h2 { font-family: var(--font-display); font-size: var(--fs-lg); letter-spacing: 0.1em; color: var(--ink-strong); margin: var(--sp-6) 0 var(--sp-2); }
+.mk-notes li { margin: var(--sp-1) 0 0 var(--sp-4); list-style: disc; }
+.mk-notes code { font-size: 0.92em; color: var(--ink); }
+
+/* Each frame is a real page at its width. The container queries below (vp) do here what
+   css/app.css's @media queries do on the site, which don't fire on this page because they
+   look at the window and not at the frame. */
+.vp { position: relative; width: 1440px; background: var(--page-bg), var(--bg); container: vp / inline-size; transform-origin: 0 0; overflow: hidden; }
+.vp.is-narrow { width: 390px; --page-pad: var(--sp-4); }
+.vp .shell { position: relative; z-index: 1; padding-bottom: var(--sp-12); }
+.vp.is-narrow .shell { gap: var(--sp-6); }
+.vp.is-narrow .hero-num { font-size: 3.5rem; }        /* what --fs-hero's clamp() gives at 390 px */
+.vp.is-narrow .title { font-size: 2rem; }              /* likewise --fs-title */
+.mk-fold { position: absolute; left: 0; right: 0; top: 900px; z-index: 20; border-top: 2px dashed var(--over-ink); pointer-events: none; }
+.mk-fold span { position: absolute; right: var(--sp-2); top: var(--sp-1); font-family: var(--font-num); font-size: var(--fs-xs); color: var(--over-ink); background: var(--bg); padding: 0 var(--sp-1); }
+@container vp (max-width: 899px) {
+  .tagline { font-size: var(--fs-md); }
+  .steps { grid-template-columns: minmax(0, 1fr); gap: var(--sp-3); }
+  .guide h2 { padding-right: 104px; }
+  .guide-close { top: var(--sp-3); right: var(--sp-3); }
+}
+@container vp (max-width: 599px) {
+  .topbar { flex-direction: column; align-items: stretch; gap: var(--sp-3); }
+  .langsel { align-self: center; }
+  .top-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-2); }
+  .top-actions .btn { justify-content: center; text-align: center; padding: var(--sp-2) var(--sp-1); font-size: var(--fs-xs); }
+  .gear-title.tabs { flex: 1 1 100%; flex-wrap: nowrap; justify-content: space-between; gap: var(--sp-2); }
+  .tab { min-width: 0; letter-spacing: 0.1em; text-align: center; }
+  .tab-long { display: none; }
+  .tab-short { display: inline; }
+  .gear-head:has(.tabs) > .btn { margin-left: auto; }
+}
+
+/* ════ → css/tokens.css (next to the Godhome block) ═══════════════════════════════════ */
+:root {
+  /* One tint per section, the system of the game's map screen (design/00-system.md §3):
+     black with each region in a pale, desaturated tint, all above 12:1. They go on titles,
+     corner brackets and ornaments; never on figures or on what responds to the finger. */
+  --tint-sheet: #d5ddfd;      /* City of Tears: the sheet, Gear and the guide */
+  --tint-combat: #f8cffc;     /* Crystal Peak: combat */
+  --tint-godhome: var(--godhome);
+  /* The sheet is the Inventory screen: almost pure black, like the arena's scene. */
+  --inv-bg: var(--scene-bg);
+  /* The plates' light: white, because soul is white. Learnt, lit; not learnt, off, like a
+     Hall statue without its light. */
+  --halo-plate: radial-gradient(closest-side, rgba(236, 236, 236, 0.2), rgba(236, 236, 236, 0.06) 58%, transparent);
+  --halo-plate-off: radial-gradient(closest-side, rgba(150, 164, 196, 0.2), transparent 78%);
+  --mote: rgba(226, 232, 245, 0.7);    /* the dust motes from the main menu */
+  --dur-flash: 900ms;                   /* the glow of a figure that just changed */
+}
+
+/* ════ → css/app.css ════════════════════════════════════════════════════════════════════ */
+
+/* Tinted sections. The .bk corner brackets already read --bracket: redefining it is enough. */
+.sec { --tint: var(--tint-sheet); --bracket: color-mix(in oklab, var(--tint) 50%, transparent); }
+.sec-fight { --tint: var(--tint-combat); }
+.sec-fight.is-godhome { --tint: var(--tint-godhome); }
+.vp.no-tint { --tint-sheet: var(--ink-2); --tint-combat: var(--ink-2); --tint-godhome: var(--ink-2); }
+.sec-title {
+  font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.14em;
+  font-weight: 600; font-size: var(--fs-lg); line-height: 1.2; color: var(--tint);
+}
+.gear-head .sec-title { font-size: var(--fs-lg); color: var(--tint); }   /* beats the old .gear-head h2 rule */
+/* The section header's rule, in the tint, with a diamond at its start: the Journal's
+   flourish reduced to the minimum. */
+.sec-head { position: relative; border-bottom-color: color-mix(in oklab, var(--tint) 24%, transparent); }
+.sec-head::after {
+  content: ''; position: absolute; left: 0; bottom: -4px; width: 7px; height: 7px;
+  border: 1px solid color-mix(in oklab, var(--tint) 70%, transparent); background: var(--bg); transform: rotate(45deg);
+}
+/* The combat tabs are its title: same size, the active one in its section's tint.
+   What's interactive is still the accent: the underline and the hover. */
+.sec-head .tab { font-size: var(--fs-lg); letter-spacing: 0.14em; }
+.sec-head .tab.is-on { color: var(--tint); }
+@container vp (max-width: 599px) { .sec-head .tab { font-size: var(--fs-md); letter-spacing: 0.1em; } }
+
+/* The header: the filigree from the Hall's screen (tablet-hdr/ftr, the game's white stroke)
+   above and below instead of the mask and the diamond. In white: over file:// it can't be
+   tinted with mask-image, and the game paints it that way. */
+.masthead.mh-inv { position: relative; gap: var(--sp-2); padding-top: var(--sp-2); }
+.mh-hdr { width: min(540px, 88%); height: auto; opacity: 0.88; }
+.mh-ftr { width: min(300px, 62%); height: auto; opacity: 0.78; }
+.mh-inv .eyebrow { margin-top: calc(var(--sp-1) * -1); }
+.mh-inv .tagline { max-width: 72ch; }
+
+/* The main menu's dust motes: 20, rising slowly. Only with motion. */
+.motes { position: absolute; left: 0; right: 0; top: 0; height: 560px; overflow: hidden; pointer-events: none; z-index: 0; }
+.motes i {
+  position: absolute; left: var(--x); bottom: 0; width: var(--s); height: var(--s); border-radius: 50%;
+  background: var(--mote); box-shadow: 0 0 6px var(--mote); opacity: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .motes i { animation: mote var(--t) linear infinite; animation-delay: var(--d); }
+}
+@keyframes mote {
+  0% { opacity: 0; transform: translate(0, 0); }
+  15%, 80% { opacity: var(--o); }
+  100% { opacity: 0; transform: translate(var(--dx), -540px); }
+}
+
+/* The guide: out goes the brownish notice box; in, the sheet's corner brackets, title and rule. */
+.guide.g-inv { background: transparent; border: 0; padding: var(--sp-6); }
+.guide.g-inv h2 { font-size: var(--fs-lg); letter-spacing: 0.14em; color: var(--tint); margin-bottom: var(--sp-1); }
+.guide.g-inv > .rule { display: block; color: color-mix(in oklab, var(--tint) 45%, transparent); margin-bottom: var(--sp-4); }
+.guide.g-inv .steps .n { width: auto; height: auto; border: 0; font-size: var(--fs-xl); font-weight: 700; line-height: 1; color: var(--tint); }
+.guide.g-inv .steps i { color: var(--ink); }
+@container vp (max-width: 599px) { .guide.g-inv { padding: var(--sp-4); } }
+
+/* ── The sheet: the Inventory screen ─────────────────────────────────────────────────── */
+.panel.inv {
+  container: inv / inline-size;
+  --inv-pad: var(--sp-8);
+  --inv-line: color-mix(in oklab, var(--tint) 13%, transparent);
+  background: var(--inv-bg); border: 0; padding: var(--inv-pad) var(--inv-pad) 0;
+}
+@container vp (max-width: 899px) { .panel.inv { --inv-pad: var(--sp-6); } }
+@container vp (max-width: 599px) { .panel.inv { --inv-pad: var(--sp-4); } }
+.inv-head { display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-4); text-align: center; }
+.inv-head .sec-title { font-size: var(--fs-xl); }
+.inv-head .rule { color: color-mix(in oklab, var(--tint) 50%, transparent); }
+.inv-orn { display: flex; justify-content: center; margin-bottom: var(--sp-2); }
+.inv-hdr { width: min(440px, 86%); height: auto; opacity: 0.85; }
+.inv-ftr { display: block; width: min(260px, 60%); height: auto; opacity: 0.75; margin: var(--sp-6) auto 0; }
+
+/* The arena's HUD, larger. Its fixed px now depend on --orb and --hud-row. */
+.inv-top { display: grid; grid-template-columns: minmax(0, 402px) minmax(0, 1fr); gap: var(--sp-4) var(--sp-8); align-items: center; }
+.inv .hud { --orb: 96px; --pip-h: 36px; --pip-w: calc(var(--pip-h) * 51 / 66); --hud-row: 290px; --mask-gap: 4px; column-gap: var(--sp-3); }
+.inv .hud-side { padding-top: var(--sp-2); }
+.inv .hud-masks { max-width: var(--hud-row); gap: var(--sp-1) var(--mask-gap); }
+.inv .hud-tail { width: calc(var(--hud-row) + 6px); height: auto; aspect-ratio: 230 / 16; }
+.inv .hud-vessels { gap: var(--sp-2); padding-top: 2px; }
+.inv .hud-vessel { width: calc(var(--orb) / 4); height: calc(var(--orb) / 4); }
+.inv .hud-over { left: calc(var(--hud-row) * -0.125); top: calc(var(--orb) * -0.25); width: calc(var(--hud-row) * 1.214); }
+button.hud-mask { padding: 0; border: 0; background: none; cursor: pointer; }
+.inv .hud-mask.is-empty:hover img { filter: brightness(0.55) saturate(0); opacity: 1; }
+.inv-read { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-4) var(--sp-6); padding-left: var(--sp-8); }
+.rd { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.rd .v {
+  font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-2xl); font-weight: 700;
+  line-height: 1.05; color: var(--ink-strong); display: flex; align-items: baseline; gap: var(--sp-2);
+}
+.rd .n { font-size: var(--fs-xs); color: var(--muted); line-height: 1.35; }
+.rd .n em { font-style: normal; color: var(--lifeblood-line); }
+.rd .hint { font-style: italic; }
+
+/* The nail, vertical and large as in the game's Inventory, with the arena's cold spotlight
+   behind it; the damage, next to it; and the six figures, unboxed. */
+.inv-core { --nail-h: 230px; display: grid; grid-template-columns: 120px minmax(0, 250px) minmax(0, 1fr); gap: var(--sp-6) var(--sp-8); align-items: center; margin-top: var(--sp-6); }
+.inv-nail { position: relative; isolation: isolate; height: var(--nail-h); display: flex; justify-content: center; }
+.inv-nail::before {
+  content: ''; position: absolute; z-index: -1; left: 50%; top: 50%; width: 250px; height: 360px; transform: translate(-50%, -50%);
+  background: radial-gradient(closest-side, var(--scene-glow), transparent);
+}
+.inv-nail img { height: var(--nail-h); width: auto; max-width: none; }
+.inv-hero { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; }
+.inv-hero .hero-row { display: flex; align-items: baseline; gap: var(--sp-3); flex-wrap: wrap; }
+.inv-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-8) var(--sp-6); padding-left: var(--sp-8); border-left: 1px solid var(--inv-line); }
+
+/* The deltas, as text: the colour already says whether it's better or worse. */
+.inv .delta, .mini-inv .delta { border: 0; background: none; padding: 0; font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-sm); font-weight: 600; }
+.inv .hero-row .delta { font-size: var(--fs-lg); }
+
+/* The plates: the spell's or the art's artwork on black, frameless, with its light. */
+.inv-plates { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-6) var(--sp-12); margin-top: var(--sp-8); padding-top: var(--sp-6); border-top: 1px solid var(--inv-line); }
+.plates { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-4); }
+.plate { display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; padding: 0 0 var(--sp-2); min-width: 0; }
+.plate-art { position: relative; isolation: isolate; width: 100%; height: 92px; display: grid; place-items: center; margin-bottom: var(--sp-2); }
+.plate-art::before { content: ''; position: absolute; z-index: -1; inset: -8% 2%; background: var(--halo-plate); transition: filter var(--dur) var(--ease); }
+.plate-art img { width: auto; height: auto; max-width: min(150px, 90%); max-height: 76px; object-fit: contain; }
+.plate:not(.is-on) .plate-art::before { background: var(--halo-plate-off); }
+.plate:not(.is-on) .plate-art img { filter: brightness(0); }
+.plate-name { font-size: var(--fs-sm); line-height: 1.25; color: var(--ink); }
+.plate-val { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-xl); font-weight: 700; line-height: 1.1; color: var(--ink-strong); }
+.plate-val .u { font-size: 0.5em; }
+.plate-note { font-size: var(--fs-xs); line-height: 1.3; color: var(--muted); }
+.plate:not(.is-on) .plate-name { color: var(--muted); }
+.plate:hover .plate-name, .plate:focus-visible .plate-name { color: var(--accent); }
+.plate:hover .plate-art::before { filter: brightness(1.5); }
+
+/* The charms, on a full-bleed black band, with the bench ghost behind Equipped
+   (the game's charm screen carries the scene at 6–10%), never behind figures. */
+.inv-band {
+  position: relative; isolation: isolate; display: grid; grid-template-columns: minmax(0, 400px) minmax(0, 1fr);
+  gap: var(--sp-6) var(--sp-8); align-items: start;
+  margin: var(--sp-8) calc(var(--inv-pad) * -1) 0; padding: var(--sp-8) var(--inv-pad);
+  background: var(--well); border-block: 1px solid var(--inv-line);
+}
+.ghost {
+  position: absolute; left: 0; bottom: 0; height: 100%; aspect-ratio: 598 / 379; z-index: -1; pointer-events: none;
+  background: url(assets/knight/bench-ghost.jpg) center bottom / contain no-repeat;
+  mix-blend-mode: screen; filter: brightness(1.5);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 72%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 72%, transparent);
+}
+@container inv (max-width: 559px) { .ghost { display: none; } }
+.inv .last { border-top: 0; margin-top: var(--sp-6); padding-top: 0; }
+.inv .toggle-all { border-top-color: var(--inv-line); }
+
+/* A2 · Two pages: Inventory | Charms, like the game's two pause tabs. */
+.inv-pages { display: grid; grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr); gap: 0 var(--sp-8); }
+.inv-divider { background: linear-gradient(transparent, var(--inv-line) 8%, var(--inv-line) 92%, transparent); }
+.inv-page { position: relative; isolation: isolate; min-width: 0; }
+.inv.is-two .inv-top { grid-template-columns: minmax(0, 1fr); }
+.inv.is-two .inv-read { padding-left: 0; }
+.inv.is-two .inv-core { grid-template-columns: 96px minmax(0, 1fr); }
+.inv.is-two .inv-core { --nail-h: 200px; }
+.inv.is-two .inv-stats { grid-column: 1 / -1; padding-left: 0; border-left: 0; gap: var(--sp-6) var(--sp-4); }
+.inv-page.is-charms { display: flex; flex-direction: column; gap: var(--sp-6); }
+/* What each equipped charm gives: the description panel of the game's charm screen. */
+.inv-fx .fx { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-3) var(--sp-4); }
+.inv-fx .fx-item { background: none; border: 0; padding: 0; }
+.inv-fx .medal { border: 0; background: none; padding: 0; }
+.inv-page.is-charms .ghost {
+  inset: calc(var(--inv-pad) * -1) calc(var(--sp-8) * -1) auto; height: 340px;
+  -webkit-mask-image: linear-gradient(180deg, #000 30%, transparent); mask-image: linear-gradient(180deg, #000 30%, transparent);
+}
+
+@container inv (max-width: 899px) {
+  .inv-pages { grid-template-columns: minmax(0, 1fr); gap: var(--sp-8); }
+  .inv-top { grid-template-columns: minmax(0, 1fr); }
+  .inv-read { padding-left: 0; }
+  .inv-divider { height: 1px; background: linear-gradient(90deg, transparent, var(--inv-line) 8%, var(--inv-line) 92%, transparent); }
+  .inv-core, .inv.is-two .inv-core { grid-template-columns: 96px minmax(0, 1fr); }
+  .inv-core { --nail-h: 200px; }
+  .inv-stats { grid-column: 1 / -1; padding-left: 0; border-left: 0; }
+  .inv-band { grid-template-columns: minmax(0, 1fr); }
+}
+@container inv (max-width: 559px) {
+  .inv .hud { --orb: 64px; --pip-h: 32px; --hud-row: 248px; --mask-gap: 3px; column-gap: var(--sp-2); }
+  .inv-read { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-4); }
+  .rd .v { font-size: var(--fs-xl); }
+  .inv-core, .inv.is-two .inv-core { grid-template-columns: 56px minmax(0, 1fr); gap: var(--sp-6) var(--sp-4); margin-top: var(--sp-6); }
+  .inv-core, .inv.is-two .inv-core { --nail-h: 150px; }
+  .inv-nail::before { width: 160px; height: 230px; }
+  .inv-stats, .inv.is-two .inv-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-6) var(--sp-4); }
+  .inv-plates { grid-template-columns: minmax(0, 1fr); gap: var(--sp-6); }
+  .plates { gap: var(--sp-2); }
+  .plate-art { height: 64px; }
+  .plate-art img { max-height: 54px; max-width: 94%; }
+  .plate-name { font-size: var(--fs-xs); }
+  .plate-val { font-size: var(--fs-lg); }
+  .inv-head .sec-title { font-size: var(--fs-lg); }
+}
+
+/* The numbers that move: the figure that just changed blooms in white and fades
+   (Focus's glow, not the accent); its delta fades in. */
+@keyframes num-flash { from { text-shadow: 0 0 18px var(--focus-glow), 0 0 4px var(--focus-glow); } }
+@keyframes delta-in { from { opacity: 0; } }
+.is-flash .hero-num, .is-flash .val > span:first-child, .is-flash .plate-val,
+.rd.is-flash .v > span:first-child, .mini-inv .is-flash b { animation: num-flash var(--dur-flash) var(--ease); }
+.is-flash .delta { animation: delta-in var(--dur-slow) var(--ease); }
+
+/* The compact mobile bar, with the game's sprites instead of labels. */
+.mini-inv { display: none; }
+.vp.is-narrow .mini-inv {
+  display: flex; position: sticky; top: 0; z-index: 30;
+  margin: 0 calc(var(--page-pad) * -1); padding: var(--sp-2) var(--page-pad);
+  gap: var(--sp-3); justify-content: space-between; align-items: center;
+  background: var(--bg); border-bottom: 1px solid color-mix(in oklab, var(--tint-sheet) 16%, transparent);
+}
+.mini-inv span { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.mini-inv b { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-lg); font-weight: 600; color: var(--ink-strong); }
+.mini-inv em { font-family: var(--font-num); font-style: normal; font-size: var(--fs-xs); color: var(--lifeblood-line); }
+.mini-ico { height: 22px; width: auto; }
+.mini-nail { height: 28px; width: auto; }
+.mini-orb { width: 20px; height: 20px; }
+.mini-inv .notch { width: 16px; height: 16px; }
+.mini-inv .is-over b { color: var(--over-ink); }
+</style>
+</head>
+<body>
+<div class="mk">
+  <header class="mk-intro">
+    <h1>The sheet as the Inventory</h1>
+    <p><b>Decided on 22 September 2026:</b> A1, with the filigree in the header, the motes and the per-section tint. It's already on the site; this page stays as a record of the comparison. The bench ghost was tried on the site, with two different images, and removed because it looked ugly: its switch no longer paints anything.</p>
+    <p>The header and the sheet, remade as the <b>game's Inventory screen</b>: black, filigree, the whole HUD, the nail large and lit, the spells and arts as plates on black and the charms in their band. The figures are the real ones: the mockup loads the engine, and the masks and the charm grid respond to taps.</p>
+    <p><b>A1 · One page</b> stacks everything. <b>A2 · Two pages</b> puts Inventory and Charms side by side, like the game's two pause tabs, and on mobile it stacks just like A1. Equip something to see how the numbers move; the dashed line in the wide frame is the fold of a 1440 × 900 screen.</p>
+  </header>
+
+  <div class="mk-controls" id="controls">
+    <div class="mk-ctl"><span class="lbl">Variant</span><div class="seg" data-ctl="variant"><button type="button" data-v="a1">A1 · One page</button><button type="button" data-v="a2">A2 · Two pages</button></div></div>
+    <div class="mk-ctl"><span class="lbl">Language</span><div class="seg" data-ctl="lang"><button type="button" data-v="en">English</button><button type="button" data-v="es">Español</button></div></div>
+    <div class="mk-ctl"><span class="lbl">Build</span><div class="seg" data-ctl="build"><button type="button" data-v="smoke">Pure Nail + 4</button><button type="button" data-v="joni">Joni at 6 of 15</button><button type="button" data-v="over">Overcharmed</button><button type="button" data-v="base">Base Knight</button></div></div>
+    <div class="mk-ctl"><span class="lbl">Game filigree</span><div class="seg" data-ctl="fili"><button type="button" data-v="masthead">In the header</button><button type="button" data-v="panel">On the sheet</button></div></div>
+    <div class="mk-ctl"><span class="lbl">Optional</span><div class="mk-toggles">
+      <label><input type="checkbox" data-opt="motes" checked> Dust motes</label>
+      <label><input type="checkbox" data-opt="ghost"> Bench ghost (removed)</label>
+      <label><input type="checkbox" data-opt="tint" checked> Per-section tint</label>
+      <label><input type="checkbox" data-opt="guide"> First-use guide</label>
+    </div></div>
+    <div class="mk-ctl"><span class="lbl">Wide frame scale</span><div class="seg" data-ctl="scale"><button type="button" data-v="0.75">75%</button><button type="button" data-v="1">100%</button></div></div>
+  </div>
+
+  <div class="mk-frames">
+    <figure class="mk-frame">
+      <figcaption>1440 px · the 1216 column</figcaption>
+      <div class="mk-scaler" id="wide"></div>
+      <p class="mk-read" id="read"></p>
+    </figure>
+    <figure class="mk-frame">
+      <figcaption>390 px</figcaption>
+      <div class="mk-scaler" id="narrow"></div>
+    </figure>
+  </div>
+
+  <section class="mk-notes">
+    <h2>What goes into the site</h2>
+    <ul>
+      <li>The <code>&lt;style&gt;</code> block marked <b>→ tokens.css</b> and the one marked <b>→ app.css</b>, almost as they are. The <code>@container vp</code> queries belong to the mockup; on the site they're the <code>@media</code> ones already there.</li>
+      <li><code>hudHtml(o, prev)</code>: the HUD comes out of <code>knightSideHtml</code> as a pure function and the arena and the sheet both use it. On the sheet, the masks are still the health control.</li>
+      <li>The flash comes from <code>E.diff</code> in <code>commit()</code>: only what just changed glows, and it doesn't glow again on every repaint.</li>
+      <li>Nothing goes behind a figure: the bench ghost, only behind Equipped. The figures stay in <code>--font-num</code> and the accent, only on what's touched.</li>
+    </ul>
+    <h2>Today's reference</h2>
+    <ul>
+      <li>At 1440 × 900 and without the guide, the first row of figures is at y ≈ 460, the masks at y ≈ 800 and the spells at y ≈ 975, below the fold. The sheet is ~1200 px tall.</li>
+    </ul>
+  </section>
+</div>
+
+<script src="js/i18n.js"></script>
+<script src="js/data.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/codec.js"></script>
+<script>
+(() => {
+  'use strict';
+  const HK = globalThis.HK;
+  const D = HK.data, E = HK.engine, C = HK.codec, I = HK.i18n;
+  const t = (k, v) => I.t(k, v);
+  const pick = (v) => I.pick(v);
+  const hoverable = matchMedia('(hover: hover) and (pointer: fine)');
+  const SPELL_KEYS = ['vs', 'dd', 'hw'];
+  const ART_KEYS = ['cyclone', 'dash', 'great'];
+  const ART_STAT = { cyclone: 'nail.cyclone', dash: 'nail.dashSlash', great: 'nail.greatSlash' };
+  // The game menu's name: «Inventario» on the Spanish wiki ("Controles" page).
+  const INV = { inventory: { es: 'Inventario', en: 'Inventory' } };
+
+  /* ── Mockup state ─────────────────────────────────────────────────────── */
+  const MAX = { nail: 4, masks: 9, vessels: 3, notches: 11, spells: { vs: 2, dd: 2, hw: 2 }, arts: { cyclone: true, dash: true, great: true } };
+  const BUILDS = {
+    smoke: { ...MAX, charms: ['ustrength', 'quickslash', 'fury', 'longnail'] },
+    joni: { ...MAX, charms: ['joni', 'lbheart'], hp: 6 },
+    over: { nail: 2, masks: 6, vessels: 1, notches: 5, spells: { vs: 1, dd: 0, hw: 1 }, arts: { great: true }, charms: ['uheart', 'joni'] },
+    base: {},
+  };
+  const mk = { variant: 'a1', lang: 'en', build: 'smoke', fili: 'masthead', scale: 0.75, motes: true, ghost: false, tint: true, guide: false, tab: 'combat' };
+  // The URL can set any control: ?variant=a2&build=joni&lang=es&fili=panel&guide=1&tab=hall
+  for (const [k, v] of new URLSearchParams(location.search)) {
+    if (!(k in mk)) continue;
+    mk[k] = typeof mk[k] === 'boolean' ? v === '1' : typeof mk[k] === 'number' ? Number(v) : v;
+  }
+  if (!BUILDS[mk.build]) mk.build = 'smoke';
+  for (const box of document.querySelectorAll('[data-opt]')) box.checked = mk[box.dataset.opt];
+  let state = C.normalize(BUILDS[mk.build]);
+  let sheet = null, cmpSheet = null, lastChange = null;
+  let flash = null;          // ids that just changed: they're only painted once
+  let hudPrev = null;        // the last thing the sheet's HUD painted, to animate the change
+  const compareLabel = () => t('vsBase');
+
+  /* ── Copied from js/app.js as is ──────────────────────────────────────── */
+  const esc = (s) => String(s).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+  let NF = {};
+  const rebuildNF = () => { NF = { 0: I.nf(0), 1: I.nf(1), 2: I.nf(2), 3: I.nf(3) }; };
+  const pctSpace = () => (I.current === 'es' ? ' %' : '%');
+  function fmtValue(v, fmt, approx) {
+    if (fmt === 'flag') return v ? t('yes') : t('no');
+    let s;
+    switch (fmt) {
+      case 'int': s = NF[0].format(v); break;
+      case 'dec1': s = NF[1].format(v); break;
+      case 'dec2': s = NF[2].format(v); break;
+      case 'dec3': s = NF[3].format(v); break;
+      case 'sec': s = NF[3].format(v) + ' s'; break;
+      case 'pct': s = NF[1].format(v) + pctSpace(); break;
+      case 'mult': s = '×' + NF[2].format(v); break;
+      case 'speed': s = NF[1].format(v) + ' u/s'; break;
+      default: s = String(v);
+    }
+    return (approx ? '~' : '') + s;
+  }
+  const fmtStat = (s) => fmtValue(s.value, s.fmt, s.approx);
+  function fmtStatRich(s) {
+    if (!s || !s.applies) return '<i class="na">—</i>';
+    if (s.fmt === 'flag') return esc(fmtStat(s));
+    const raw = fmtStat(s);
+    if (s.fmt === 'mult') {
+      const i = raw.indexOf('×');
+      return esc(raw.slice(0, i)) + '<i class="u">×</i>' + esc(raw.slice(i + 1));
+    }
+    const unit = s.fmt === 'sec' ? ' s' : s.fmt === 'speed' ? ' u/s' : s.fmt === 'pct' ? pctSpace() : '';
+    if (!unit) return esc(raw);
+    return esc(raw.slice(0, raw.length - unit.length)) + '<i class="u">' + esc(unit) + '</i>';
+  }
+  const sign = (d) => (d > 0 ? '+' : '−');
+  const masksText = (n) => (n === 1 ? t('maskOne') : t('maskMany', { n }));
+  const vesselsText = (n) => (n === 1 ? t('vesselOne') : t('vesselMany', { n }));
+  const spellArt = (k, lvl, has) => (k === 'vs' && lvl && has('flukenest')
+    ? D.art('spells', has('crest') ? 'fluke-dung' : lvl === 2 ? 'fluke2' : 'fluke')
+    : D.art('spells', lvl === 2 ? k + '2' : k));
+  function fmtDelta(ch) {
+    if (ch.kind === 'gain') return t('dNew');
+    if (ch.kind === 'loss') return t('dGone');
+    if (ch.fmt === 'flag') return ch.after.value ? t('dNowYes') : t('dNowNo');
+    if (ch.fmt === 'mult' && ch.before.value) {
+      const p = (ch.after.value / ch.before.value - 1) * 100;
+      return sign(p) + NF[1].format(Math.abs(p)) + pctSpace();
+    }
+    return sign(ch.delta) + fmtValue(Math.abs(ch.delta), ch.fmt, false);
+  }
+  const goodClass = (good) => (good === true ? 'good' : good === false ? 'bad' : '');
+  function deltaChip(s, cmp, title) {
+    if (!s || !s.applies || !cmp) return '';
+    const ch = E.diff({ stats: { [s.id]: cmp } }, { stats: { [s.id]: s } })[0];
+    if (!ch) return '';
+    return `<span class="delta ${goodClass(ch.good)}" title="${esc(title || t('vsRef'))}: ${esc(cmp.applies ? fmtStat(cmp) : t('notApplicable'))}">${esc(fmtDelta(ch))}</span>`;
+  }
+  const brackets = '<span class="bk tl"></span><span class="bk tr"></span><span class="bk bl"></span><span class="bk br"></span>';
+  const chevron = (up) => `<svg class="chev ${up ? 'up' : ''}" width="12" height="8" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1.5 L6 6 L11 1.5"/></svg>`;
+  const rule = `<svg class="rule" width="220" height="12" viewBox="0 0 220 12" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><path d="M0 6 H92"/><path d="M128 6 H220"/><path d="M110 1 L116 6 L110 11 L104 6 Z"/></svg>`;
+  const hudRing = `<svg class="hud-ring" viewBox="-10 -10 120 120" aria-hidden="true"><path fill-rule="evenodd" d="M104 50A54 54 0 1 0-4 50A54 54 0 1 0 104 50ZM101.3 49.2A50.5 50.5 0 1 1 .3 49.2A50.5 50.5 0 1 1 101.3 49.2Z"/></svg>`;
+  const hudTail = `<svg class="hud-tail" viewBox="0 0 230 16" aria-hidden="true"><path d="M0 5.2C50 3.4 120 8 200 6.1L200 7.5C120 9.6 50 6.6 0 10.4Z"/><path class="hud-curl" d="M199 6.8C210 6 218 8.6 216 12C214 15 208 13.6 210 10.6"/></svg>`;
+
+  function rangeNote() {
+    const names = sheet.stats['nail.range'].contribs
+      .filter((c) => c.active !== false && c.source.startsWith('charm:'))
+      .map((c) => c.label);
+    return names.length ? names.join(' + ') : t('rangeBase');
+  }
+  function twoMaskNote() {
+    const s = sheet.stats;
+    if (!s['health.hitsToDie'].applies) return '';
+    return t('twoMaskHits', { n: Math.ceil(s['health.total'].value / (2 * s['health.damageMult'].value)) });
+  }
+  function heroNote() {
+    const s = sheet.stats;
+    const beam = s['nail.elegy'];
+    if (beam.applies && beam.value) return t('hitElegy', { nail: fmtStat(s['nail.damage']), beam: fmtStat(beam) });
+    if (sheet.flags.fury) return t('hitFury');
+    if (sheet.flags.strength) return t('hitStrength', { charm: pick(D.CHARM_BY_ID[sheet.flags.strength]) });
+    return t('hitNoBonus');
+  }
+  // js/app.js's metric(), with the flash it will carry inside on the site.
+  function metric(id, label, opts = {}) {
+    const s = sheet.stats[id];
+    const c = cmpSheet.stats[id];
+    const value = opts.value !== undefined ? esc(opts.value) : fmtStatRich(s);
+    const note = opts.note !== undefined ? opts.note : '';
+    return `<button type="button" class="metric${F(id)}" data-act="kpi" data-id="${id}" title="${esc(t('goTo', { label: s ? s.label : label }))}">
+      <span class="lbl">${esc(label)}</span>
+      <span class="val"><span>${value}</span>${deltaChip(s, c, compareLabel())}</span>
+      <span class="note">${note}</span>
+    </button>`;
+  }
+  const pageCharms = () => ({
+    st: state, notches: sheet.notches, act: 'quick', eqAct: 'charm', locked: null,
+    info: (id) => ({ equipped: state.charms.includes(id), action: C.charmAction(state, id) }),
+    hint: hoverable.matches ? t('quickHintHover') : t('quickHintTouch'),
+  });
+  function overcharmSplit(ctx = pageCharms()) {
+    const n = ctx.notches;
+    if (!n.overcharmed) return { white: n.used, over: 0 };
+    const last = ctx.st.charms[ctx.st.charms.length - 1];
+    const cost = last ? D.CHARM_BY_ID[last].notches : 0;
+    const over = cost > 0 && n.used - cost <= n.max ? cost : n.used - n.max;
+    return { white: n.used - over, over };
+  }
+  function renderLoadout(ctx = pageCharms()) {
+    const n = ctx.notches;
+    const { white, over } = overcharmSplit(ctx);
+    const slots = Math.max(n.max, n.used);
+    let dots = '';
+    for (let i = 0; i < slots; i++) {
+      const cls = i < white ? 'is-used' : i < white + over ? 'is-over' : 'is-free';
+      dots += `<i class="notch ${cls}"></i>`;
+    }
+    const worn = ctx.st.charms.map((id) => D.CHARM_BY_ID[id]).filter(Boolean);
+    const tiles = worn.map((c) => `<button type="button" class="eq" data-act="${ctx.eqAct}" data-id="${c.id}" ${ctx.locked ? 'aria-disabled="true"' : ''} title="${esc(ctx.locked || t('unequipTitle', { charm: pick(c) }))}">
+      <img src="assets/charms/${c.id}.png" alt="${esc(pick(c))}">
+    </button>`).join('');
+    const slot = !n.overcharmed && n.free > 0 ? '<span class="eq-slot" aria-hidden="true"></span>' : '';
+    return `<div class="loadout">
+      <div class="loadout-block">
+        <div class="block-head">${esc(t('equipped'))}</div>
+        ${worn.length ? `<div class="eq-row">${tiles}${slot}</div>` : `<p class="muted-p">${esc(t('noCharmsYet'))}</p>`}
+      </div>
+      <div class="loadout-block">
+        <div class="block-head">${esc(t('notches'))}<span class="notch-free ${n.overcharmed ? 'is-over' : ''}">${esc(n.overcharmed ? t('overcharmed') : (n.free === 1 ? t('notchesFreeOne') : t('notchesFree', { n: n.free })))}</span></div>
+        <div class="notches">${dots}</div>
+      </div>
+    </div>`;
+  }
+  const QUICK_PER_ROW = 10;
+  const QUICK_SLOTS = D.CHARMS.reduce((slots, c) => {
+    const last = slots[slots.length - 1];
+    if (last && last[0].num === c.num) last.push(c); else slots.push([c]);
+    return slots;
+  }, []);
+  function quickTile(c, half, ctx) {
+    const imp = ctx.info(c.id);
+    const a = imp.action;
+    const cls = ['qc'];
+    if (half) cls.push('qc-half');
+    if (imp.equipped) cls.push('is-on');
+    if (a.action === 'blocked') cls.push('is-locked');
+    if (!imp.equipped && a.overcharm) cls.push('is-over');
+    const title = a.action === 'blocked' ? pick(a.reason)
+      : imp.equipped ? t('unequipTitle', { charm: pick(c) })
+      : a.action === 'swap' ? t('swapTitle', { old: pick(D.CHARM_BY_ID[a.partner]), new: pick(c) })
+      : t('equipTitle', { charm: pick(c) });
+    return `<button type="button" class="${cls.join(' ')}" data-act="${ctx.act}" data-id="${c.id}" aria-pressed="${imp.equipped}" title="${esc(ctx.locked || title)}" ${ctx.locked || a.action === 'blocked' ? 'aria-disabled="true"' : ''}>
+      <img src="assets/charms/${c.id}.png" alt="${esc(pick(c))}" loading="lazy">
+    </button>`;
+  }
+  function quickSlot(slot, ctx) {
+    if (slot.length === 1) return quickTile(slot[0], false, ctx);
+    return `<span class="qslot-pair">${slot.map((c) => quickTile(c, true, ctx)).join('')}</span>`;
+  }
+  function renderQuickCharms(ctx = pageCharms()) {
+    let rows = '';
+    for (let i = 0; i < QUICK_SLOTS.length; i += QUICK_PER_ROW) {
+      rows += `<div class="qrow">${QUICK_SLOTS.slice(i, i + QUICK_PER_ROW).map((s) => quickSlot(s, ctx)).join('')}</div>`;
+    }
+    return `<div class="quick ${ctx.locked ? 'is-locked' : ''}">
+      <div class="block-head">${esc(t('charmsTitle'))}<span class="quick-hint">${esc(ctx.hint)}</span></div>
+      <div class="quick-grid">${rows}</div>
+    </div>`;
+  }
+  function renderLastChange() {
+    if (!lastChange) return '';
+    const list = lastChange.changes.slice(0, 8).map((c) => {
+      const val = c.kind === 'value'
+        ? (c.fmt === 'flag' ? fmtValue(c.after.value, 'flag') : fmtStat(c.before) + ' → ' + fmtStat(c.after))
+        : c.kind === 'gain' ? t('lastNew', { v: fmtStat(c.after) }) : t('lastGone');
+      return `<span>${esc(c.label)} <b class="${goodClass(c.good)}">${esc(val)}</b></span>`;
+    }).join('');
+    const more = lastChange.changes.length > 8 ? `<span class="last-none">${esc(t('lastMore', { n: lastChange.changes.length - 8 }))}</span>` : '';
+    return `<div class="last">
+      <div class="last-title">${esc(lastChange.title)}</div>
+      ${lastChange.changes.length ? `<div class="last-list">${list}${more}</div>` : `<div class="last-none">${esc(t('lastNone'))}</div>`}
+    </div>`;
+  }
+
+  function renderCharmEffects() {
+    const equipped = state.charms.map((id) => D.CHARM_BY_ID[id]).filter(Boolean);
+    const body = equipped.length
+      ? `<div class="fx">${equipped.map((c) => `<div class="fx-item" data-charm="${c.id}">
+          <span class="medal sm"><img src="assets/charms/${c.id}.png" alt=""></span>
+          <span><span class="fx-name">${esc(pick(c))}</span><span class="fx-note">${esc(pick(c.blurb))}</span></span>
+        </div>`).join('')}</div>`
+      : `<p class="muted-p">${esc(t('noCharmsYet'))}</p>`;
+    return `<div class="block-head">${esc(t('charmEffects'))}</div>${body}`;
+  }
+
+  /* ── What's new ───────────────────────────────────────────────────────── */
+  const F = (id) => (flash && flash.has(id) ? ' is-flash' : '');
+
+  /* The HUD, as a pure function: what knightSideHtml paints today between the orb and the shell,
+     without reading or writing anything global. "slot" decides what each mask is: a decorative
+     <span> in the arena, a button on the sheet (the health control). "lbSlots" leaves room for
+     spent lifeblood, which on the sheet has to be pressable again. */
+  function hudHtml(o, prev) {
+    const cut = (v, cap, top, span) => {
+      const f = cap ? v / cap : 0;
+      return (f >= 1 ? 0 : f <= 0 ? 100 : top + (1 - f) * span).toFixed(1) + '%';
+    };
+    const size = D.SOUL.vesselSize;
+    const main = Math.min(o.soul, o.mainMax);
+    const soulWas = prev ? prev.soul : o.soul;
+    const mainWas = Math.min(soulWas, o.mainMax);
+    const level = (now, was, cap, top, span) => {
+      const a = cut(now, cap, top, span), b = cut(was, cap, top, span);
+      return { moving: a !== b ? ' is-moving' : '', style: `--cut:${a};--cut-was:${b}` };
+    };
+    const lo = level(main, mainWas, o.mainMax, 6.2, 86);
+    const orb = `<span class="hud-orb${lo.moving}" style="${lo.style}"${o.orbTitle ? ` title="${esc(o.orbTitle)}"` : ''}>
+        <span class="orb-well"></span><img class="hud-soul" src="${D.art('hud', 'soul-meter')}" alt="">${hudRing}</span>`;
+    const vessels = Array.from({ length: o.vessels }, (_, i) => {
+      const lv = level(o.soul - main - size * i, soulWas - mainWas - size * i, size, 8.9, 82.2);
+      return `<span class="hud-vessel${lv.moving}" style="${lv.style}"><img src="${D.art('hud', 'soul')}" alt=""></span>`;
+    }).join('');
+    const slot = o.slot || ((g, cls, inner) => `<span class="${cls}">${inner}</span>`);
+    const img = (lb) => `<img src="${D.art('hud', lb ? 'mask-lb' : 'mask')}" alt="">`;
+    const state = (on, was) => (on ? (was ? '' : ' is-mending') : (was ? ' is-empty is-breaking' : ' is-empty'));
+    let masks = '', g = 0;
+    for (let i = 0; i < o.maxMasks; i++) {
+      const on = i < o.masks, was = prev ? i < prev.masks : on;
+      masks += slot(g++, 'hud-mask' + state(on, was), img(false), on, false);
+    }
+    const lbSlots = o.lbSlots === undefined ? o.lb : o.lbSlots;
+    for (let i = 0; i < lbSlots; i++) {
+      const on = i < o.lb, was = prev ? i < prev.lb : on;
+      masks += slot(g++, 'hud-mask lb' + state(on, was), img(true), on, true);
+    }
+    return `<div class="hud">
+      ${orb}
+      <div class="hud-side">
+        ${o.over ? `<img class="hud-over" src="assets/knight/overcharm.png" alt="">` : ''}
+        <div class="hud-masks">${masks}</div>
+        ${hudTail}
+        ${vessels ? `<div class="hud-vessels"${o.vesselsTitle ? ` title="${esc(o.vesselsTitle)}"` : ''}>${vessels}</div>` : ''}
+      </div>
+    </div>`;
+  }
+
+  /* The sheet's HUD row: the HUD and, next to it, what it says as figures. Lifeblood is
+     spent first, so what you have left fills the white ones first. */
+  function panelHud() {
+    const s = sheet.stats, c = cmpSheet.stats;
+    const masks = s['health.masks'].value, lb = s['health.lifeblood'].value;
+    const maxHp = masks + lb, hp = sheet.currentHealth;
+    const white = Math.min(hp, masks), lbOn = Math.max(0, hp - masks);
+    const main = s['soul.main'].value, total = s['soul.total'].value;
+    const vessels = Math.round(s['soul.reserve'].value / D.SOUL.vesselSize);
+    const casts = s['soul.castsPerFull'];
+    const now = { masks: white, lb: lbOn, soul: total };
+    const hud = hudHtml({
+      masks: white, maxMasks: masks, lb: lbOn, lbSlots: lb, soul: total, mainMax: main, vessels,
+      over: !!sheet.notches.overcharmed,
+      orbTitle: t('soulMainSoul', { n: main }),
+      vesselsTitle: vessels ? t('soulVesselsTitle', { vessels: vesselsText(vessels), each: D.SOUL.vesselSize }) : '',
+      slot: (gi, cls, inner, on) => {
+        const to = gi + 1 === maxHp ? 0 : gi + 1;
+        return `<button type="button" class="${cls} pip-mask" data-act="hp" data-value="${to}" aria-pressed="${on}" title="${esc(to ? t('hpSetTitle', { n: to }) : t('hpFullTitle'))}">${inner}</button>`;
+      },
+    }, hudPrev);
+    const hpNote = hp === maxHp ? t('hpFull') : t('hpNote', { n: hp, max: maxHp });
+    const hpHint = hoverable.matches ? t('hpHintHover') : t('hpHintTouch');
+    const soulNote = casts.applies
+      ? t('soulCasts', { casts: fmtStat(casts), perHit: fmtStat(s['soul.perHit']) })
+      : t('soulCastsNone', { perHit: fmtStat(s['soul.perHit']) });
+    const read = `<div class="inv-read">
+      <div class="rd${F('health.total')}">
+        <span class="lbl">${esc(t('health'))}</span>
+        <span class="v"><span>${esc(fmtStat(s['health.total']))}</span>${deltaChip(s['health.total'], c['health.total'], compareLabel())}</span>
+        <span class="n">${lb ? `<em>${esc(t('lifebloodNote', { white: masks, lb }))}</em>` : esc(masksText(masks))}</span>
+        <span class="n">${esc(hpNote)} · <span class="hint">${esc(hpHint)}</span></span>
+      </div>
+      <div class="rd${F('soul.total')}">
+        <span class="lbl">${esc(t('soul'))}</span>
+        <span class="v"><span>${esc(fmtStat(s['soul.total']))}</span>${deltaChip(s['soul.total'], c['soul.total'], compareLabel())}</span>
+        <span class="n">${esc(soulNote)}</span>
+      </div>
+    </div>`;
+    return { html: `<div class="inv-top">${hud}${read}</div>`, now };
+  }
+
+  function spellPlates() {
+    return SPELL_KEYS.map((k) => {
+      const sp = D.SPELLS[k];
+      const lvl = state.spells[k];
+      const stat = sheet.stats['spell.' + k];
+      const icon = spellArt(k, lvl, (id) => state.charms.includes(id));
+      const name = lvl ? pick(sp.levels[lvl]) : pick(sp.slot);
+      const note = lvl ? t('soulCost', { n: fmtStat(sheet.stats['soul.spellCost']) }) : t('notLearned');
+      return `<button type="button" class="plate${lvl ? ' is-on' : ''}${F('spell.' + k)}" data-act="kpi" data-id="spell.${k}" title="${esc(t('goTo', { label: name }))}">
+        <span class="plate-art"><img src="${icon}" alt=""></span>
+        <span class="plate-name">${esc(name)}</span>
+        ${lvl ? `<span class="plate-val">${fmtStatRich(stat)}</span>` : ''}
+        <span class="plate-note">${esc(note)}</span>
+      </button>`;
+    }).join('');
+  }
+  function artPlates() {
+    return ART_KEYS.map((k) => {
+      const on = !!state.arts[k];
+      const stat = sheet.stats[ART_STAT[k]];
+      const name = pick(D.ARTS[k]);
+      const formula = (stat.contribs.find((c) => c.op === 'set' && c.text) || {}).text || '';
+      const note = !on ? t('notLearned') : stat.applies ? formula : (stat.reason || '');
+      return `<button type="button" class="plate${on ? ' is-on' : ''}${F(ART_STAT[k])}" data-act="kpi" data-id="${ART_STAT[k]}" title="${esc(t('goTo', { label: name }))}">
+        <span class="plate-art"><img src="${D.art('arts', k)}" alt=""></span>
+        <span class="plate-name">${esc(name)}</span>
+        ${on ? `<span class="plate-val">${fmtStatRich(stat)}</span>` : ''}
+        <span class="plate-note">${esc(note)}</span>
+      </button>`;
+    }).join('');
+  }
+
+  function panelHtml() {
+    const s = sheet.stats;
+    const dmg = s['nail.damage'], heal = s['heal.timePerMask'], burst = s['nail.bestBurst'];
+    const onPanel = mk.fili === 'panel';
+    // One ornament per screen (design/02 §7.3): with the filigree on the sheet, it goes only once, at the top.
+    const hdr = onPanel ? `<div class="inv-orn"><img class="inv-hdr" src="assets/hall/tablet-hdr.png" width="862" height="111" alt=""></div>` : '';
+    const head = (label) => `<header class="inv-head"><h2 class="sec-title">${esc(label)}</h2>${onPanel ? '' : rule}</header>`;
+    const hud = panelHud();
+    const core = `<div class="inv-core">
+        <div class="inv-nail"><img src="${D.art('nails', state.nail)}" alt="" width="80" height="360"></div>
+        <div class="inv-hero${F('nail.damage')}">
+          <div class="lbl">${esc(t('heroLabel'))}</div>
+          <div class="hero-row"><span class="hero-num">${fmtStatRich(dmg)}</span>${deltaChip(dmg, cmpSheet.stats['nail.damage'], compareLabel())}</div>
+          <div class="hero-note">${esc(heroNote())}</div>
+        </div>
+        <div class="inv-stats">
+          ${metric('nail.dps', t('dps'), { note: esc(t('apsNote', { aps: fmtStat(s['nail.aps']) })) })}
+          ${metric('nail.range', t('range'), { note: esc(rangeNote()) })}
+          ${metric('nail.bestBurst', t('bestHit'), { note: esc(burst.applies ? burst.note : t('noBurstYet')) })}
+          ${metric('health.hitsToDie', t('hitsToDie'), { note: esc(twoMaskNote()) })}
+          ${metric('soul.perHit', t('soulPerHit'), { note: esc(t('hitsToHeal', { n: fmtStat(s['soul.hitsPerFocus']) })) })}
+          ${metric('heal.timePerMask', t('healing'), { note: esc(heal.applies ? t('healNote', { masks: masksText(s['heal.masksPerFocus'].value) }) : t('noFocus')) })}
+        </div>
+      </div>`;
+    const plates = `<div class="inv-plates">
+        <div class="plate-group"><div class="block-head">${esc(t('spells'))}</div><div class="plates">${spellPlates()}</div></div>
+        <div class="plate-group"><div class="block-head">${esc(t('arts'))}</div><div class="plates">${artPlates()}</div></div>
+      </div>`;
+    const ghost = mk.ghost ? '<span class="ghost" aria-hidden="true"></span>' : '';
+    const foot = `${renderLastChange()}
+      ${onPanel ? `<img class="inv-ftr" src="assets/hall/tablet-ftr.png" width="520" height="70" alt="">` : ''}
+      <button type="button" class="toggle-all" data-act="detail" aria-expanded="false"><span>${esc(t('seeAll'))}</span>${chevron(false)}</button>`;
+    let body;
+    if (mk.variant === 'a2') {
+      body = `${hdr}<div class="inv-pages">
+          <div class="inv-page">${head(pick(INV.inventory))}${hud.html}${core}</div>
+          <span class="inv-divider" aria-hidden="true"></span>
+          <div class="inv-page is-charms">${ghost}${head(t('charmsTitle'))}${renderLoadout()}${renderQuickCharms()}<div class="inv-fx">${renderCharmEffects()}</div></div>
+        </div>${plates}`;
+    } else {
+      body = `${hdr}${head(pick(INV.inventory))}${hud.html}${core}${plates}
+        <div class="inv-band">${ghost}${renderLoadout()}${renderQuickCharms()}</div>`;
+    }
+    return { html: `<section class="panel inv sec${mk.variant === 'a2' ? ' is-two' : ''}" aria-label="${esc(pick(INV.inventory))}">${brackets}${body}${foot}</section>`, now: hud.now };
+  }
+
+  // 20 motes in fixed places, spread without randomness so that two paints come out the same.
+  const MOTES = Array.from({ length: 20 }, (_, i) => {
+    const r = (n) => { const x = Math.sin(i * 12.9898 + n * 78.233) * 43758.5453; return x - Math.floor(x); };
+    return `<i style="--x:${(r(1) * 100).toFixed(1)}%;--s:${(1 + r(2) * 2.6).toFixed(1)}px;--t:${(16 + r(3) * 14).toFixed(1)}s;--d:${(-r(4) * 30).toFixed(1)}s;--o:${(0.25 + r(5) * 0.5).toFixed(2)};--dx:${((r(6) - 0.5) * 60).toFixed(0)}px"></i>`;
+  }).join('');
+
+  function pageHtml(narrow) {
+    const s = sheet.stats, n = sheet.notches;
+    const onHead = mk.fili === 'masthead';
+    const langBtn = (code, label) => `<button type="button" data-act="lang" data-value="${code}" aria-pressed="${mk.lang === code}">${label}</button>`;
+    const topbar = `<div class="topbar">
+        <div class="langsel" role="group" aria-label="${esc(t('langGroup'))}">${langBtn('en', 'English')}${langBtn('es', 'Español')}</div>
+        <div class="top-actions">
+          <button type="button" class="btn" data-act="preset" data-value="base" title="${esc(t('presetBaseHint'))}">${esc(t('presetBase'))}</button>
+          <button type="button" class="btn" data-act="preset" data-value="max" title="${esc(t('presetMaxHint'))}">${esc(t('presetMax'))}</button>
+          <button type="button" class="btn" data-act="share" title="${esc(t('shareHint'))}">${esc(t('share'))}</button>
+        </div>
+      </div>`;
+    const masthead = `<header class="masthead mh-inv">
+        ${onHead ? `<img class="mh-hdr" src="assets/hall/tablet-hdr.png" width="862" height="111" alt="">` : `<img class="crest" src="${D.art('hud', 'mask')}" alt="" width="52" height="52">`}
+        <div class="eyebrow">${esc(t('eyebrow'))}</div>
+        <h1 class="title">${esc(t('title'))}</h1>
+        ${onHead ? '' : `<div class="rule-wrap">${rule}</div>`}
+        <p class="tagline">${esc(t('tagline'))}</p>
+        ${onHead ? `<img class="mh-ftr" src="assets/hall/tablet-ftr.png" width="520" height="70" alt="">` : ''}
+      </header>`;
+    const EX = [['exNail', ['ustrength', 'fury', 'quickslash']], ['exSpells', ['shaman', 'twister', 'eater']], ['exLifeblood', ['joni', 'lbcore', 'lbheart']]];
+    const guide = mk.guide ? `<section class="guide g-inv sec">
+        ${brackets}
+        <button type="button" class="btn guide-close" data-act="guide-dismiss">${esc(t('guideDismiss'))}</button>
+        <h2>${esc(t('guideTitle'))}</h2>${rule}
+        <ol class="steps">
+          <li><span class="n">1</span><span>${t('guideStep1')}</span></li>
+          <li><span class="n">2</span><span>${t('guideStep2')}</span></li>
+          <li><span class="n">3</span><span>${t('guideStep3')}</span></li>
+        </ol>
+        <div class="examples"><span class="lbl">${esc(t('tryBuild'))}</span>${EX.map(([k, ids]) => `<button type="button" class="example">${ids.map((id) => `<img src="assets/charms/${id}.png" alt="">`).join('')}${esc(t(k))}</button>`).join('')}</div>
+      </section>` : '';
+    const panel = panelHtml();
+    const lb = s['health.lifeblood'].value;
+    const mini = `<div class="mini-inv" aria-hidden="true">
+        <span class="${F('nail.damage').trim()}"><img class="mini-nail" src="${D.art('nails', state.nail)}" alt=""><b>${esc(fmtStat(s['nail.damage']))}</b></span>
+        <span class="${F('health.total').trim()}"><img class="mini-ico" src="${D.art('hud', lb && !s['health.masks'].value ? 'mask-lb' : 'mask')}" alt=""><b>${esc(fmtStat(s['health.total']))}</b>${lb && s['health.masks'].value ? `<em>+${lb}</em>` : ''}</span>
+        <span class="${F('soul.total').trim()}"><img class="mini-orb" src="${D.art('hud', 'soul')}" alt=""><b>${esc(fmtStat(s['soul.total']))}</b></span>
+        <span class="${n.overcharmed ? 'is-over' : ''}"><i class="notch ${n.overcharmed ? 'is-over' : 'is-used'}"></i><b>${n.used}/${n.max}</b></span>
+      </div>`;
+    const banner = n.overcharmed ? `<div class="banner"><span class="banner-tag">${esc(t('overcharmed'))}</span><span class="banner-text">${esc(t('overcharmBanner'))}</span></div>` : '';
+    const count = state.charms.length;
+    const summary = t('gearSummary', { nail: pick(D.NAILS[state.nail]), charms: count === 1 ? t('charmOne') : t('charmMany', { n: count }), used: n.used, max: n.max });
+    const gear = `<section class="gear sec"><div class="gear-head sec-head">
+        <div class="gear-title"><h2 class="sec-title">${esc(t('gear'))}</h2><span class="gear-sum">${esc(summary)}</span></div>
+        <button type="button" class="btn" aria-expanded="false">${esc(t('showGear'))}${chevron(true)}</button>
+      </div></section>`;
+    const tab = (id, key, short) => `<button type="button" role="tab" class="tab ${mk.tab === id ? 'is-on' : ''}" data-act="fightTab" data-value="${id}" aria-selected="${mk.tab === id}">${short
+      ? `<span class="tab-long">${esc(t(key))}</span><span class="tab-short">${esc(t(short))}</span>` : esc(t(key))}</button>`;
+    const sep = '<span class="tab-sep" aria-hidden="true"></span>';
+    const fight = `<section class="gear fight sec sec-fight${mk.tab !== 'combat' ? ' is-godhome' : ''}"><div class="gear-head sec-head">
+        <div class="gear-title tabs" role="tablist">${tab('combat', 'fightTabCombat')}${sep}${tab('hall', 'fightTabHall', 'fightTabHallShort')}${sep}${tab('pantheon', 'fightTabPantheon')}</div>
+        <button type="button" class="btn" aria-expanded="false">${esc(t('showFight'))}${chevron(true)}</button>
+      </div></section>`;
+    return {
+      html: `<div class="vp${narrow ? ' is-narrow' : ''}${mk.tint ? '' : ' no-tint'}">
+        ${mk.motes ? `<div class="motes" aria-hidden="true">${MOTES}</div>` : ''}
+        <div class="shell">${topbar}${masthead}${guide}${panel.html}${narrow ? mini : ''}${banner}${gear}${fight}</div>
+        ${narrow ? '' : '<div class="mk-fold"><span>pliegue a 1440 × 900</span></div>'}
+      </div>`,
+      now: panel.now,
+    };
+  }
+
+  /* ── Painting the two frames ──────────────────────────────────────────── */
+  const wide = document.getElementById('wide'), narrowEl = document.getElementById('narrow');
+  function recompute() {
+    sheet = E.compute(state, mk.lang);
+    cmpSheet = E.compute(C.normalize({ ...C.DEFAULTS, hp: state.hp }), mk.lang);
+  }
+  function paint() {
+    const a = pageHtml(false), b = pageHtml(true);
+    wide.innerHTML = a.html;
+    narrowEl.innerHTML = b.html;
+    hudPrev = a.now;
+    flash = null;
+    const vp = wide.querySelector('.vp');
+    vp.style.transform = mk.scale === 1 ? '' : `scale(${mk.scale})`;
+    wide.style.width = (1440 * mk.scale) + 'px';
+    wide.style.height = (vp.offsetHeight * mk.scale) + 'px';
+    const top = vp.getBoundingClientRect().top;
+    const y = (sel) => { const node = vp.querySelector(sel); return node ? Math.round((node.getBoundingClientRect().top - top) / mk.scale) : '—'; };
+    document.getElementById('read').innerHTML =
+      `Wide frame: HUD at y = <b>${y('.inv-top')}</b> · figures at y = <b>${y('.inv-core')}</b> · plates at y = <b>${y('.inv-plates')}</b> · charms at y = <b>${y('.loadout')}</b> · the sheet measures <b>${Math.round(vp.querySelector('.panel').offsetHeight)}</b> px · fold at y = 900.`;
+    for (const seg of document.querySelectorAll('#controls .seg')) {
+      const key = seg.dataset.ctl;
+      for (const btn of seg.querySelectorAll('button')) btn.setAttribute('aria-pressed', String(String(mk[key]) === btn.dataset.v));
+    }
+  }
+  // A state change: recompute, note the last change and mark what changed.
+  function commit(next, title) {
+    if (!next) return;
+    const prev = sheet;
+    state = next;
+    recompute();
+    const changes = E.diff(prev, sheet);
+    flash = new Set(changes.map((c) => c.id));
+    if (title) lastChange = { title, changes };
+    paint();
+  }
+
+  document.querySelector('.mk-frames').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-act]');
+    if (!b) return;
+    const act = b.dataset.act, id = b.dataset.id;
+    if (act === 'hp') {
+      const n = Number(b.dataset.value);
+      commit(C.set(state, 'hp', n), n ? t('chHp', { n }) : t('chHpFull'));
+    } else if (act === 'quick' || act === 'charm') {
+      const a = C.charmAction(state, id), c = D.CHARM_BY_ID[id];
+      const title = a.action === 'unequip' ? t('chUnequipped', { charm: pick(c) })
+        : a.action === 'swap' ? t('chSwapped', { old: pick(D.CHARM_BY_ID[a.partner]), new: pick(c) }) : t('chEquipped', { charm: pick(c) });
+      commit(C.toggleCharm(state, id), title);
+    } else if (act === 'preset') {
+      commit(C.normalize({ ...C.PRESETS[b.dataset.value], hp: 0 }), t(b.dataset.value === 'max' ? 'chPresetMax' : 'chPresetBase'));
+    } else if (act === 'lang') {
+      mk.lang = b.dataset.value; I.setLang(mk.lang); rebuildNF(); recompute(); paint();
+    } else if (act === 'fightTab') {
+      mk.tab = b.dataset.value; paint();
+    } else if (act === 'guide-dismiss') {
+      mk.guide = false; document.querySelector('[data-opt="guide"]').checked = false; paint();
+    }
+  });
+  document.getElementById('controls').addEventListener('click', (ev) => {
+    const b = ev.target.closest('.seg button');
+    if (!b) return;
+    const key = b.closest('.seg').dataset.ctl, v = b.dataset.v;
+    if (key === 'build') {
+      mk.build = v; lastChange = null; flash = null; state = C.normalize(BUILDS[v]); recompute(); hudPrev = null; paint(); return;
+    }
+    if (key === 'lang') { mk.lang = v; I.setLang(v); rebuildNF(); recompute(); paint(); return; }
+    mk[key] = key === 'scale' ? Number(v) : v;
+    paint();
+  });
+  document.getElementById('controls').addEventListener('change', (ev) => {
+    const o = ev.target.dataset.opt;
+    if (!o) return;
+    mk[o] = ev.target.checked;
+    paint();
+  });
+
+  I.setLang(mk.lang);
+  rebuildNF();
+  recompute();
+  paint();
+  addEventListener('load', paint);   // with the fonts and the sprites already in place, the measurements are the right ones
+})();
+</script>
+</body>
+</html>

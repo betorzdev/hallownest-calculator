@@ -1,0 +1,158 @@
+<!doctype html><html><head><meta charset="utf-8"><title>hover</title></head><body>
+<pre id="out">…</pre>
+<script>
+/* Mouse smoke test: what only happens with a fine pointer (the detail that follows the mouse and
+   the preview on the figures and on the notches). Headless Chrome behaves as touch, so it has to
+   be told it has a mouse:
+     google-chrome --headless=new --allow-file-access-from-files --virtual-time-budget=20000 \
+       --blink-settings=primaryHoverType=2,primaryPointerType=4,availableHoverTypes=2,availablePointerTypes=4 \
+       --dump-dom .../debug-hover.html
+   The mouse events are fired by hand (mouseover/mouseout with their relatedTarget). */
+const log = [];
+const errors = [];
+const ok = (name, cond, extra) => log.push((cond ? 'OK   ' : 'FAIL ') + '  ' + name + (extra ? '  ' + extra : ''));
+const show = () => {
+  document.getElementById('out').textContent =
+    log.concat(errors.length ? ['', 'ERRORS:'].concat(errors) : ['', 'no console errors']).join('\n');
+};
+try { localStorage.clear(); } catch (e) { /* nothing */ }
+const f = document.createElement('iframe');
+f.style.cssText = 'width:1280px;height:900px;border:0';
+f.src = 'index.html#v=1&nail=4&masks=9&vessels=3&notches=11&spells=222&arts=111&charms=ustrength,quickslash&lang=es';
+document.body.appendChild(f);
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+f.addEventListener('load', async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  const q = (sel) => d.querySelector(sel);
+  const txt = (sel) => (q(sel) ? q(sel).textContent.trim() : '(missing)');
+  const tile = (id) => q('#panel .quick-grid .qc[data-id="' + id + '"]');
+  const over = (node, from) => node.dispatchEvent(new w.MouseEvent('mouseover', { bubbles: true, relatedTarget: from || null }));
+  const out = (node, to) => node.dispatchEvent(new w.MouseEvent('mouseout', { bubbles: true, relatedTarget: to || null }));
+  const pv = (id) => txt('#panel .pv[data-pv="' + id + '"]');
+  const previews = () => [...d.querySelectorAll('#panel .pv[data-pv]')].filter((n) => n.textContent).map((n) => n.dataset.pv);
+  const bandHeight = () => Math.round(q('#panel .inv-band').getBoundingClientRect().height);
+  w.addEventListener('error', (e) => errors.push('error in the site: ' + e.message));
+  w.prompt = () => null;
+  try {
+    const finePointer = w.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    ok('the browser has a mouse (--blink-settings)', finePointer);
+    if (!finePointer) { show(); return; }
+    ok('with a mouse, the detail explains the mouse', txt('#charm-detail .detail-hint').startsWith('Pasa el ratón'), txt('#charm-detail'));
+    const band0 = bandHeight();
+
+    // Hovering: the detail shows it, with no button, and the figures say how they would change.
+    over(tile('shaman'));
+    ok('the detail follows the mouse', txt('#charm-detail .insp-name') === 'Piedra de chamán', txt('#charm-detail .insp-name'));
+    ok('the detail carries no button: equipping is a click on the grid', !q('#charm-detail button:not([data-act="detailMore"])'));
+    ok('the strongest hit says how it would end up', pv('nail.bestBurst') === '→ 120', pv('nail.bestBurst'));
+    ok('and its note moves aside without leaving a gap', w.getComputedStyle(q('.metric[data-id="nail.bestBurst"] .note-t')).visibility === 'hidden');
+    ok('only on the figures that change', !pv('nail.dps') && !pv('health.total'), previews().join(','));
+    ok('the slot looks chosen', tile('shaman').classList.contains('is-sel'));
+    ok("the band doesn't change height", bandHeight() === band0, band0 + ' → ' + bandHeight());
+
+    // Between slots the last one stays; on leaving the grid, it goes.
+    out(tile('shaman'), q('#panel .qrow'));
+    ok('in the gap between slots the same one stays', txt('#charm-detail .insp-name') === 'Piedra de chamán' && pv('nail.bestBurst') === '→ 120');
+    out(tile('shaman'), d.body);
+    ok('on leaving the grid the detail and the preview go', !!q('#charm-detail .detail-hint') && !previews().length, previews().join(','));
+
+    // The one you wear: the preview is what would happen on removing it.
+    over(tile('quickslash'));
+    ok('over an equipped one, the preview is removing it', /^→ /.test(pv('nail.dps')) && txt('#charm-detail h3') === 'Efecto en tu build', pv('nail.dps'));
+    out(tile('quickslash'), d.body);
+
+    // A click equips: the figure flashes with its chip and the preview goes until the charm changes.
+    over(tile('shaman'));
+    tile('shaman').click();
+    await wait(40);
+    ok('the click equips', !!q('#panel .qc.is-on[data-id="shaman"]'));
+    ok('and switches off the preview', !previews().length, previews().join(','));
+    ok('the figure flashes with its chip', !!q('.metric.is-flash[data-id="nail.bestBurst"] .delta.is-last'));
+    ok('the detail, now equipped, says "Effect on your build" and still has no button', txt('#charm-detail h3') === 'Efecto en tu build'
+       && !q('#charm-detail button:not([data-act="detailMore"])'), txt('#charm-detail h3'));
+    over(tile('shaman'));
+    ok("moving over the same slot doesn't light it up again", !previews().length);
+    over(tile('longnail'), tile('shaman'));
+    ok('moving to another does', pv('nail.range') !== '' && txt('#charm-detail .insp-name') === 'Largoaguijón', pv('nail.range'));
+    out(tile('longnail'), d.body);
+    ok('on leaving, the detail goes back to the last one pressed', txt('#charm-detail .insp-name') === 'Piedra de chamán');
+
+    // Fury depends on health: at full health, a click wouldn't change those figures.
+    over(tile('fury'));
+    ok('Fury, at full health, has no preview', !previews().length && txt('#charm-detail .insp-state').indexOf('no está activo') >= 0,
+       txt('#charm-detail .insp-state'));
+    out(tile('fury'), d.body);
+
+    // With the full sheet open, the rows it would change light up.
+    q('[data-act="detail"]').click();
+    await wait(40);
+    over(tile('longnail'));
+    ok('with the full sheet open, its rows light up', d.querySelectorAll('#panel .stat.is-hit').length > 0,
+       d.querySelectorAll('#panel .stat.is-hit').length + ' filas');
+    out(tile('longnail'), d.body);
+    ok('and go out on leaving', !q('#panel .stat.is-hit'));
+    const chip = q('#panel .chip[data-charm]');
+    over(chip);
+    ok('hovering a chip lights up its charm on the grid', !!q('#panel .qc.is-hot'));
+    out(chip, d.body);
+    ok('and leaving switches it off', !q('#panel .qc.is-hot'));
+
+    // The notches: with the mouse over it, the row shows the ones the charm would take, before the click.
+    // Here you wear Unbreakable Strength, Quick Slash and Shaman Stone: 9 of 11.
+    const notchRow = () => [...d.querySelectorAll('#panel .inv-band .notches .notch')];
+    const countOf = (sel) => notchRow().filter((n) => n.matches(sel)).length;
+    const freeLabel = () => txt('#panel .inv-band .notch-free');
+    const gridTop = () => Math.round(q('#panel .quick-grid').getBoundingClientRect().top);
+    // u used, o overcharm, p/P pending (white/magenta), l/L going out, · free
+    const notchPattern = () => notchRow().map((n) => {
+      const c = n.classList, m = c.contains('is-over');
+      return c.contains('is-pending') ? (m ? 'P' : 'p') : c.contains('is-leaving') ? (m ? 'L' : 'l') : m ? 'o' : c.contains('is-used') ? 'u' : '·';
+    }).join('');
+    const y0 = gridTop();
+    const ringColor = (n) => w.getComputedStyle(n, '::before').borderTopColor;
+    const freeRing = ringColor(notchRow()[10]);
+    ok('notches: without the mouse, the usual row', notchPattern() === 'uuuuuuuuu··' && freeLabel() === '2 libres', notchPattern() + ' ' + freeLabel());
+    over(tile('longnail'));
+    ok('notches: over a charm, its own come out pending', notchPattern() === 'uuuuuuuuupp', notchPattern());
+    ok('notches: the label says how they would end up', freeLabel() === '2 libres → 0', freeLabel());
+    ok('notches: the pending one is the same size as the others', new Set(notchRow().map((n) => n.getBoundingClientRect().width)).size === 1,
+       [...new Set(notchRow().map((n) => n.getBoundingClientRect().width))].join(','));
+    ok("notches: the pending one is a lit ring, neither the used one's dot nor the free one's ring",
+       w.getComputedStyle(notchRow()[9]).maskImage === 'none' && w.getComputedStyle(notchRow()[0]).maskImage !== 'none' && ringColor(notchRow()[9]) !== freeRing,
+       ringColor(notchRow()[9]) + ' / ' + freeRing);
+    over(tile('deepfocus'), tile('longnail'));
+    ok('notches: if it would overcharm you, pending in magenta and the row grows', notchPattern() === 'uuuuuuuuuPPPP', notchPattern());
+    ok('notches: and the label warns in magenta', freeLabel() === '2 libres → sobrecarga' && !!q('#panel .notch-free .nf-to.is-over'), freeLabel());
+    ok("notches: the grid doesn't move", gridTop() === y0, y0 + ' → ' + gridTop());
+    over(tile('quickslash'), tile('deepfocus'));
+    ok('notches: over one you wear, its own go out', notchPattern() === 'uuuuuulll··' && freeLabel() === '2 libres → 5', notchPattern() + ' ' + freeLabel());
+    over(tile('fstrength'), tile('quickslash'));
+    ok("notches: a partner swap moves the partner's notches to the new one, without growing", notchPattern() === 'uuuuuuppp··', notchPattern());
+    ok("notches: if the free ones don't change, the label has no arrow", freeLabel() === '2 libres', freeLabel());
+    out(tile('fstrength'), d.body);
+    ok('notches: on leaving the grid, the usual row', notchPattern() === 'uuuuuuuuu··' && freeLabel() === '2 libres', notchPattern() + ' ' + freeLabel());
+    over(tile('grimmchild'));
+    tile('grimmchild').click();
+    await wait(40);
+    ok('notches: the click switches off the preview', notchPattern() === 'uuuuuuuuuuu' && freeLabel() === '0 libres', notchPattern() + ' ' + freeLabel());
+    over(tile('melody'), tile('grimmchild'));
+    ok('notches: Carefree Melody in place of Grimmchild would overcharm you', notchPattern() === 'uuuuuuuuuPPP' && freeLabel() === '0 libres → sobrecarga', notchPattern() + ' ' + freeLabel());
+    tile('melody').click();
+    await wait(40);
+    ok("notches: and equipped, the row is the overcharm one", notchPattern() === 'uuuuuuuuuooo', notchPattern());
+    over(tile('grimmchild'), tile('melody'));
+    ok('notches: back to Grimmchild, two pending and one going out', notchPattern() === 'uuuuuuuuuppL' && freeLabel() === 'Sobrecarga → 0 libres', notchPattern() + ' ' + freeLabel());
+    over(tile('longnail'), tile('grimmchild'));
+    ok('notches: a locked charm has no preview', notchPattern() === 'uuuuuuuuuooo' && freeLabel() === 'Sobrecarga', notchPattern() + ' ' + freeLabel());
+    over(tile('melody'), tile('longnail'));
+    ok('notches: removing the one that overcharms you switches off the magenta ones', notchPattern() === 'uuuuuuuuuLLL' && freeLabel() === 'Sobrecarga → 2 libres', notchPattern() + ' ' + freeLabel());
+    out(tile('melody'), d.body);
+    ok('notches: and on leaving, they come back', notchPattern() === 'uuuuuuuuuooo', notchPattern());
+  } catch (e) {
+    errors.push('exception in the test: ' + e.message);
+  }
+  show();
+});
+</script>
+</body></html>

@@ -1,0 +1,18 @@
+{
+  "name": "hollownest-calculator",
+  "version": "1.0.0",
+  "description": "How the Hollow Knight Knight's stats change with each charm and upgrade.",
+  "private": true,
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "icons": "node tools/fetch-icons.js",
+    "serve": "python3 -m http.server 8000",
+    "enemies": "node tools/fetch-enemies.js",
+    "pantheon": "node tools/fetch-pantheon.js",
+    "hall": "node tools/fetch-hall.js",
+    "journal": "node tools/fetch-journal.js",
+    "knight": "node tools/fetch-knight.js",
+    "artpack": "node tools/artpack.js",
+    "text": "node tools/game-text.js"
+  }
+}

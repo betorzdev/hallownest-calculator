@@ -1,0 +1,425 @@
+{
+ "Trial_of_the_Warrior": [
+  [
+   "Wave 1",
+   [
+    "Shielded Fool, left",
+    "Shielded Fool, left + Shielded Fool, right",
+    "Sharp Baldur, left + Sharp Baldur, right"
+   ]
+  ],
+  [
+   "Wave 2",
+   [
+    "Transition: 5 platforms rise up.",
+    "Sharp Baldur x2, left + Sharp Baldur, top centre + Sharp Baldur, bottom centre + Sharp Baldur, top right +"
+   ]
+  ],
+  [
+   "Wave 3",
+   [
+    "Transition: The platforms go away, returning the arena to its original state.",
+    "Sturdy Fool, centre",
+    "Sturdy Fool, left + Sturdy Fool, right"
+   ]
+  ],
+  [
+   "Wave 4",
+   [
+    "Transition: 3 platforms rise up.",
+    "Primal Aspid, left + Primal Aspid, right"
+   ]
+  ],
+  [
+   "Wave 5",
+   [
+    "Transition: 2 more platforms rise up and spikes cover the floor.",
+    "Primal Aspid, top left + Primal Aspid, top right"
+   ]
+  ],
+  [
+   "Wave 6",
+   [
+    "Transition: The 5 individual platforms go away and are replaced with two double platforms on the left and right and one triple platform in the centre.",
+    "Sturdy Fool, top left + Sturdy Fool, top right +",
+    "Defeating one enemy spawns the next row.",
+    "Sturdy Fool, centre"
+   ]
+  ],
+  [
+   "Wave 7",
+   [
+    "Transition: The triple platform is replaced with a quadruple platform. The double platforms go away. Two more quadruple platforms spring up to create 3 levels. Primal Aspid, bottom left + Primal Aspid, top right",
+    "Defeating one enemy spawns the next row.",
+    "Sharp Baldur, centre of middle platform",
+    "Defeating one enemy spawns the next row.",
+    "Sharp Baldur, centre of bottom platform",
+    "Transition: Platforms drop away until there's only a double platform.",
+    "Vengefly x2, left + Vengefly x2, right",
+    "Vengefly King, top right",
+    "This Vengefly King will never summon more Vengeflies and will just repeatedly dive at the Knight."
+   ]
+  ],
+  [
+   "Wave 9",
+   [
+    "Transition: The platforms and spikes go away, returning the arena to its original state.",
+    "Sturdy Fool, left + Sturdy Fool, right",
+    "Defeating one enemy spawns the next row.",
+    "Shielded Fool, centre",
+    "Defeating one enemy spawns the next row.",
+    "Primal Aspid, centre",
+    "Defeating one enemy spawns the next row.",
+    "Shielded Fool, left",
+    "Defeating one enemy spawns the next row.",
+    "Sturdy Fool, right",
+    "Defeating one enemy spawns the next row.",
+    "Primal Aspid, left",
+    "Sharp Baldur, right"
+   ]
+  ],
+  [
+   "Wave 10",
+   [
+    "Transition: The ceiling drops down to about 10% the height of the arena.",
+    "Sharp Baldur, left",
+    "Sharp Baldur, right",
+    "Sharp Baldur, left"
+   ]
+  ],
+  [
+   "Wave 11",
+   [
+    "Transition: The ceiling rises to about 50% the height of the arena.",
+    "Volatile Gruzzer, left + Volatile Gruzzer, right",
+    "Volatile Gruzzer, left + Volatile Gruzzer, right + Volatile Gruzzer, centre",
+    "Gruz Mother, left + Gruz Mother, right"
+   ]
+  ],
+  [
+   "Wave 12",
+   [
+    "Transition: The ceiling rises, returning the arena to its original state.",
+    "Zote the Mighty",
+    "After Zote is defeated once, or before he is rescued from Deepnest, the trial does not have this wave. == Achievements == {{Achievement|Warrior}} {{HK Nav Quests}} de:Prüfung des Kriegers es:Prueba del Guerrero fr:L’Épreuve des Guerriers it:Prova del Guerriero pl:Próba Wojownika pt:Provação do Guerreiro ru:Колизей глупцов — Испытание воина uk:Колізей дурнів — Випробування воїна zh:勇士的试炼 Category:Combat (Hollow Knight) {{#seo:|warrior, trial 1, colo 1}}"
+   ]
+  ]
+ ],
+ "Trial_of_the_Conqueror": [
+  [
+   "Wave 1",
+   [
+    "Heavy Fool, centre",
+    "Winged Fool, left + Winged Fool, right",
+    "Winged Fool, top centre + Heavy Fool, centre"
+   ]
+  ],
+  [
+   "Wave 2",
+   [
+    "Transition: Platforms rise up.",
+    "Armoured Squit, top left + Armoured Squit, top right"
+   ]
+  ],
+  [
+   "Wave 3",
+   [
+    "Transition: Spikes cover the floor.",
+    "Armoured Squit, top left + Armoured Squit, top right"
+   ]
+  ],
+  [
+   "Wave 4",
+   [
+    "Transition: Two platforms fall away, leaving only a single platform in the centre.",
+    "Winged Fool, top left",
+    "Armoured Squit, right"
+   ]
+  ],
+  [
+   "Wave 5",
+   [
+    "Transition: Six more platforms rise up all around the arena.",
+    "Primal Aspid, left + Armoured Squit, top right",
+    "Defeating one enemy spawns the next row.",
+    "Armoured Squit, left + Primal Aspid, top right",
+    "Defeating one enemies spawns the next row.",
+    "Volatile Gruzzer, top left + Volatile Gruzzer, top right + Volatile Gruzzer, top centre",
+    "Defeating two enemies spawns the next row.",
+    "Volatile Gruzzer, top centre + Volatile Gruzzer, centre"
+   ]
+  ],
+  [
+   "Wave 6",
+   [
+    "Transition: A triple platform rises up in the centre and the other platforms go away.",
+    "Heavy Fool, right",
+    "Belfly, left + Belfly, right + Belfly, centre (one after another)"
+   ]
+  ],
+  [
+   "Wave 7",
+   [
+    "Transition: Two platforms go away, leaving only one platform in the centre.",
+    "Belfly, centre"
+   ]
+  ],
+  [
+   "Wave 8",
+   [
+    "Transition: The platforms and spikes go away, returning the arena to its original state.",
+    "Hopper x4 + (one after another)",
+    "Defeating two enemies spawns the next row.",
+    "Hopper x4 + (one after another)",
+    "Great Hopper, top centre"
+   ]
+  ],
+  [
+   "Wave 9",
+   [
+    "Transition: The walls close in to about 25% of the arena's original floor space.",
+    "Great Hopper, top centre"
+   ]
+  ],
+  [
+   "Wave 10",
+   [
+    "Transition: The walls return to their original width and the ceiling drops to about 50% of the arena's original height.",
+    "Grub Mimic, centre"
+   ]
+  ],
+  [
+   "Wave 11",
+   [
+    "Transition: The ceiling returns to its original height and a single platform rises up in the centre.",
+    "Shielded Fool, left + Shielded Fool, right Winged Fool, top centre",
+    "Defeating two enemies spawns the next row and makes the platform go away.",
+    "Winged Fool, top centre",
+    "Heavy Fool, centre + Armoured Squit, top left",
+    "Defeating one enemy spawns the next row.",
+    "Armoured Squit, top right"
+   ]
+  ],
+  [
+   "Wave 12",
+   [
+    "Transition: The walls close in to about 50% of the arena's original floor space.",
+    "Heavy Fool, centre",
+    "Winged Fool, top centre"
+   ]
+  ],
+  [
+   "Wave 13",
+   [
+    "Transition: Spikes cover the floor.",
+    "Armoured Squit, centre",
+    "Winged Fool, centre",
+    "Armoured Squit, centre + Armoured Squit, top centre"
+   ]
+  ],
+  [
+   "Wave 14",
+   [
+    "Transition: The walls return to their original state, 3 platforms rise up, and spikes cover the floor.",
+    "Winged Fool, left + Winged Fool, right",
+    "Winged Fool, top centre + Armoured Squit, top left + Armoured Squit, top right"
+   ]
+  ],
+  [
+   "Wave 15",
+   [
+    "Transition: The arena returns to its original state before 4 platforms rise up.",
+    "Battle Obble, left + Battle Obble, right + Battle Obble, centre + Battle Obble, top centre",
+    "Defeating two enemies spawns the next row.",
+    "Battle Obble, top left + Battle Obble, top right",
+    "Defeating two enemies spawns the next row and makes spikes cover the floor.",
+    "Battle Obble, top left + Battle Obble, top right + Battle Obble, bottom centre"
+   ]
+  ],
+  [
+   "Wave 16",
+   [
+    "Transition: The spikes and platforms go away and the ceiling drops to about 50% of the arena's original height.",
+    "Battle Obble x2, left + Battle Obble, right + Battle Obble, bottom right"
+   ]
+  ],
+  [
+   "Wave 17",
+   [
+    "Transition: The ceiling rises to about 75% of the arena's original height.",
+    "Oblobbles, top left + Oblobbles, top right == Achievements == {{Achievement|Conqueror}} {{HK Nav Quests}} fr:L’Épreuve des Conquérants it:Prova del Conquistatore pl:Próba Zdobywcy pt:Provação do Conquistador ru:Колизей глупцов — Испытание завоевателя uk:Колізей дурнів — Випробування завойовника zh:征服者的试炼 Category:Combat (Hollow Knight) {{#seo:|conqueror, trial 2, colo 2}}"
+   ]
+  ]
+ ],
+ "Trial_of_the_Fool": [
+  [
+   "Wave 1",
+   [
+    "Heavy Fool, left + Sturdy Fool, right",
+    "Defeating one enemy spawns the next row.",
+    "Armoured Squit x2, centre",
+    "Shielded Fool, left + Shielded Fool, right + Primal Aspid, top centre",
+    "Winged Fool, left + Winged Fool, right + Sharp Baldur, left + Sharp Baldur, right",
+    "Cyclone Slash can protect the Knight from all directions while damaging foes left and right."
+   ]
+  ],
+  [
+   "Wave 2",
+   [
+    "Transition: Two platforms spring up, followed by spikes covering the floor.",
+    "Sturdy Fool, left + Sturdy Fool, right + Primal Aspid, top centre",
+    "Stay on the platform and take down the Primal Aspid, spikes will take care of those Sturdy Fools."
+   ]
+  ],
+  [
+   "Wave 3",
+   [
+    "Transition: Ceiling drops down to about 75% of arena height.",
+    "Battle Obble, top left + Battle Obble, top right + Battle Obble, centre + Winged Fool, centre",
+    "After taking down the Winged Fool, it is a good time to heal as Battle Obbles do not actively try to aim at the Knight.",
+    "Furious Vengefly, top left + Furious Vengefly, top right",
+    "Prepare Nail Arts beforehand as Furious Vengeflies are extremely aggressive."
+   ]
+  ],
+  [
+   "Wave 4",
+   [
+    "Transition: The platforms and spikes go away.",
+    "Heavy Fool, left + Heavy Fool, right Belfly x6 (one after another)",
+    "Stay clinging as high as possible, let those Belflies take care of the rest."
+   ]
+  ],
+  [
+   "Wave 5",
+   [
+    "Transition: The ceiling rises, returning the arena to its original state.",
+    "Death Loodle, top centre + Death Loodle, top left + Death Loodle, top right (one after another)"
+   ]
+  ],
+  [
+   "Wave 6",
+   [
+    "Transition: Four platforms rise up.",
+    "Death Loodle, bottom left + Death Loodle, top left + Death Loodle, top centre + Death Loodle, top right + Death Loodle, bottom right"
+   ]
+  ],
+  [
+   "Wave 7",
+   [
+    "Transition: The platforms go away, returning the arena to its original state.",
+    "Death Loodle, left + Death Loodle, right + Death Loodle, centre"
+   ]
+  ],
+  [
+   "Wave 8",
+   [
+    "Transition: Four platforms stacked in a column rise up in the centre and spikes cover the floor.",
+    "Armoured Squit, left + Armoured Squit, top right",
+    "Defeating one enemy spawns the next row.",
+    "Primal Aspid, top left",
+    "Defeating one enemy spawns the next row.",
+    "Primal Aspid, top right",
+    "Defeating one enemy spawns the next row.",
+    "Primal Aspid, left + Winged Fool, right",
+    "Garpede x4",
+    "Crawling across the arena, reaching each platform at a different time. They cross platforms in this order: 3, 4, 2, 1 (1 is the top platform). Once all four Garpedes are done crossing, the next row spawns. Stay at the top platform to get the longest possible time to heal.",
+    "Winged Fool, top left + Armoured Squit, right + Armoured Squit, top right"
+   ]
+  ],
+  [
+   "Wave 9",
+   [
+    "Transition: Platforms and spikes go away, returning the arena to its original state.",
+    "Shielded Fool, left + Heavy Fool, right + Primal Aspid, centre",
+    "Defeating two enemies spawns the next row.",
+    "Mantis Traitor, centre",
+    "Defeating one enemy spawns the next row.",
+    "Mantis Petra, centre",
+    "Mantis Petra, left + Mantis Petra, right + Mantis Traitor, centre",
+    "Defeating two enemies spawns the next row.",
+    "Mantis Petra, left + Heavy Fool, right",
+    "Soul Twister x2 Mistake x3 (one after another)",
+    "Leave one Mistake alive to farm SOUL with the Dream Nail.",
+    "Soul Warrior + Folly + Spawn every 8 seconds until Soul Warrior is beaten."
+   ]
+  ],
+  [
+   "Wave 10",
+   [
+    "Transition: Six platforms rise up and spikes cover the floor.",
+    "Volt Twister, top centre",
+    "Soul Twister, top centre",
+    "Volt Twister, top right",
+    "Volt Twister, right Soul Twister, right"
+   ]
+  ],
+  [
+   "Wave 11",
+   [
+    "Transition: The platforms and spikes go away, returning the arena to its original state.",
+    "Soul Warrior Soul Twister"
+   ]
+  ],
+  [
+   "Wave 12",
+   [
+    "Transition: The walls close in, shrinking the arena floorspace to about half.",
+    "Winged Fool, left + Sturdy Fool, right",
+    "Lesser Mawlek, left + Lesser Mawlek, right",
+    "Lesser Mawlek, left + Lesser Mawlek, right + Winged Fool, top centre",
+    "Cling as high as possible to safely take down the Winged Fool.",
+    "Brooding Mawlek, centre"
+   ]
+  ],
+  [
+   "Wave 13",
+   [
+    "Transition: The walls close in even more, keeping The Knight stuck in place for several seconds. Then they expand to 3 Garpedes' worth of space.",
+    "Garpede x8",
+    "This wave starts with 1 Garpede crawling down in the centre. Before it reaches The Knight, the walls open a bit. Then Garpedes crawl down in pairs (except the 5th which crawls down solo), leaving The Knight just enough space to survive each wave. + Wave 1: centre + Wave 2: left, centre + Wave 3: left, right + Wave 4: centre + Wave 5: left, right With the help of Dream Wielder it is possible to get a handful of SOUL and heal a decent amount afterward."
+   ]
+  ],
+  [
+   "Wave 14",
+   [
+    "Transition: The walls spread out to half of the arena's size and spikes cover the floor.",
+    "Winged Fool, centre + Armoured Squit, top + Armoured Squit, bottom",
+    "Primal Aspid, top + Armoured Squit, bottom",
+    "Mantis Petra, top + Armoured Squit, bottom",
+    "Battle Obble x4",
+    "Defeating three enemies spawns the next row.",
+    "Winged Fool x2, centre",
+    "Transition: The ceiling drops down to about halfway.",
+    "Armoured Squit, centre",
+    "Armoured Squit, centre"
+   ]
+  ],
+  [
+   "Wave 16",
+   [
+    "Transition: The walls and ceiling return to their original state and 3 platforms rise up. Death Loodle x14 + (one after another)",
+    "Stay steady on any platform and let these Loodles kill themselves. It is possible to Dream Nail them and even heal at this time. If the platform is (unluckily) overwhelmed, Cyclone Slash will easily clear it."
+   ]
+  ],
+  [
+   "Wave 17",
+   [
+    "Transition: The platforms and spikes go away, returning the arena to its original state.",
+    "Heavy Fool, left + Sturdy Fool, right",
+    "Defeating one enemy spawns the next row.",
+    "Mantis Traitor, left",
+    "Defeating one enemy spawns the next row.",
+    "Winged Fool, centre",
+    "Defeating one enemy spawns the next row.",
+    "Mantis Petra, centre + Shielded Fool, right",
+    "Soul Twister Shielded Fool, right",
+    "Volt Twister Heavy Fool, left",
+    "Sharp Baldur, left + Sharp Baldur, right + Armoured Squit, top left + Armoured Squit, top right",
+    "Heavy Fool, left + Winged Fool, top centre + Shielded Fool, right",
+    "Defeating one enemy spawns the next row.",
+    "Sturdy Fool, left",
+    "God Tamer == Achievements == {{Achievement|Fool}} {{HK Nav Quests}} fr:L’Épreuve des Fous it:Prova del Folle pl:Próba Głupca pt:Provação do Tolo ru:Колизей глупцов — Испытание глупца uk:Колізей дурнів — Випробування дурня zh:愚人的试炼 Category:Combat (Hollow Knight) {{#seo:|fool, trial 3, colo 3}}"
+   ]
+  ]
+ ]
+}

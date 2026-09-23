@@ -1,0 +1,79 @@
+<!doctype html><html><head><meta charset="utf-8"><title>overflow</title></head><body>
+<pre id="out">measuring…</pre>
+<script>
+/* Lists what spills past the width at 390 px. With no parameters it measures the Charms screen.
+   ?view=charms|game|fight picks the screen (with ?tab= it's already Combat).
+   ?tab=pantheon&run=hallownest opens the Pantheons tab with a half-done Hallownest run: its
+   53-tile timeline is what's most at risk of overflowing.
+   ?tab=pantheon without run measures the choose-a-pantheon screen. With &view=charms it measures
+   instead the grid locked in the middle of a run (&room=2, a fight).
+   ?tab=combat opens the Hunter's Journal (on its list), and
+   &read=<id> moves to its page, which on mobile replaces the list.
+   ?tab=hall measures the Hall of Gods: &statue=<id> picks the statue, &pick=1 taps it (on
+   mobile, its plaque replaces the grid) and &hdiff=at|asra|radiant fights at it.
+   &click=hallBulk,hallMarkAll presses those buttons in order, by their data-act (as in
+   debug.html): there, it opens "Mark in bulk" and marks the first difficulty; &click=tablet
+   reads the tablet, which takes the place of the grid and the plaque.
+   ?journal=1 (or ?view=journal) opens your game's Hunter's Journal: &jread=<id> reads that
+   entry (on mobile, its page replaces the list) and &jseen=1 marks it as encountered,
+   which is when it carries "Defeat [−] N [+] more…", the widest thing on the page.
+   &lang=es measures in Spanish, which takes the most room. */
+const q = new URLSearchParams(location.search);
+const view = q.get('view') || (q.get('journal') ? 'journal' : q.get('tab') ? 'fight' : 'charms');
+try {
+  localStorage.removeItem('hollow.run');
+  if (q.get('journal') && !q.get('tab')) {
+    localStorage.setItem('hollow.prefs', JSON.stringify({ guideSeen: true, lang: q.get('lang') || 'en', langChosen: !!q.get('lang') }));
+  }
+  if (q.get('tab')) {
+    localStorage.setItem('hollow.prefs', JSON.stringify({ guideSeen: true, view, fightTab: q.get('tab'),
+      lang: q.get('lang') || 'en', langChosen: !!q.get('lang'), hallId: q.get('statue') || 'gruz-mother', hallDiff: q.get('hdiff') || '' }));
+  }
+  if (q.get('run')) {
+    localStorage.setItem('hollow.run', JSON.stringify({
+      pantheon: q.get('run'), room: Number(q.get('room') || 5), over: null, bindings: {}, cocoon: 3,
+      build: {}, masks: 5, lbCharm: 0, lbCocoon: 3, soul: 99, rest: {}, log: [],
+    }));
+  }
+} catch (e) { /* no storage */ }
+const f = document.createElement('iframe');
+f.src = 'index.html#v=1&nail=4&masks=9&vessels=3&notches=11&spells=222&arts=111&charms=ustrength,quickslash,fury'
+  + (view !== 'charms' ? '&view=' + view : '');
+f.style.cssText = 'width:390px;height:700px;border:0';
+f.addEventListener('load', () => {
+  const d = f.contentDocument;
+  if (q.get('tab') === 'combat' && !d.querySelector('.journal')) d.querySelector('[data-act="picker"]').click();
+  if (q.get('read')) d.querySelector('.jr-row[data-id="' + q.get('read') + '"]').dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+  if (q.get('pick') === '1') d.querySelector('.ped-btn.is-on').click();
+  if (view === 'journal') {
+    if (d.getElementById('hj').hidden) d.querySelector('#nav-hj').click();
+    if (q.get('jread')) d.querySelector('.hj-row[data-id="' + q.get('jread') + '"]').click();
+    if (q.get('jseen') === '1') d.querySelector('.hj-state [data-value="seen"]').click();
+  }
+  // &help=1 opens all the arena explanations (the "?" of your attacks and the enemy's). Each
+  // tap repaints, so each "?" is looked up again by its id.
+  if (q.get('help') === '1') {
+    for (const id of [...d.querySelectorAll('[data-act="help"]')].map((b) => b.dataset.id)) d.querySelector(`[data-act="help"][data-id="${id}"]`).click();
+  }
+  for (const act of (q.get('click') || '').split(',').filter(Boolean)) {
+    const b = d.querySelector(`[data-act="${act}"]:not(:disabled)`);
+    if (b) b.click();
+  }
+  const w = d.documentElement.clientWidth;
+  const lines = ['viewport ' + w + ' · scrollWidth ' + d.documentElement.scrollWidth];
+  for (const node of d.querySelectorAll('*')) {
+    // What's inside an <svg> is clipped by the svg itself, which is measured: your scene's
+    // ground is a 900 px strip clipped to the width, and it overflows nothing.
+    if (node.ownerSVGElement) continue;
+    const r = node.getBoundingClientRect();
+    if (r.right > w + 1 || r.left < -1) {
+      lines.push(Math.round(r.left) + '→' + Math.round(r.right) + '  ' + node.tagName.toLowerCase() +
+        '.' + (node.className && node.className.baseVal === undefined ? String(node.className).split(' ').join('.') : '') +
+        '  "' + (node.textContent || '').trim().slice(0, 40) + '"');
+    }
+  }
+  document.getElementById('out').textContent = lines.slice(0, 40).join('\n');
+});
+document.body.appendChild(f);
+</script>
+</body></html>

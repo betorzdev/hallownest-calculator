@@ -1,0 +1,911 @@
+{
+ "enemies": [
+  {
+   "name": "Aluba",
+   "hp": "1",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Ambloom",
+   "hp": "12",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Armoured Squit",
+   "hp": "40",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Aspid Hatchling",
+   "hp": "5",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Aspid Hunter",
+   "hp": "15",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Aspid Mother",
+   "hp": "20",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Baldur",
+   "hp": "15",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Battle Obble",
+   "hp": "70",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Belfly",
+   "hp": "5",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Bluggsac",
+   "hp": "20",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Boofly",
+   "hp": "40",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Carver Hatcher",
+   "hp": "35",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Charged Lumafly",
+   "hp": "—",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Corpse Creeper",
+   "hp": "18 (15 after transformation)",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Cowardly Husk",
+   "hp": "20",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Crawlid",
+   "hp": "8",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Crystal Crawler",
+   "hp": "15",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Crystal Hunter",
+   "hp": "25",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Crystallised Husk",
+   "hp": "35",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Death Loodle",
+   "hp": "45",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Deephunter",
+   "hp": "18",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Deepling",
+   "hp": "15",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Dirtcarver",
+   "hp": "20",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Duranda",
+   "hp": "30",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Durandoo",
+   "hp": "30",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Elder Baldur",
+   "hp": "60",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Entombed Husk",
+   "hp": "45",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Fluke Larva",
+   "hp": "1",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Flukefey",
+   "hp": "13",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Flukemon",
+   "hp": "55 total: 25 whole 15x2 halves",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Folly",
+   "hp": "13",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Fool Eater",
+   "hp": "16",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Fungified Husk",
+   "hp": "15",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Fungling",
+   "hp": "10",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Fungoon",
+   "hp": "15",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Furious Vengefly",
+   "hp": "40",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Garpede",
+   "hp": "—",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Glimback",
+   "hp": "35",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Gluttonous Husk",
+   "hp": "30",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Gorgeous Husk",
+   "hp": "220",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Goam",
+   "hp": "—",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Great Hopper",
+   "hp": "130",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Great Husk Sentry",
+   "hp": "170",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Grub Mimic",
+   "hp": "45",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Gruzzer",
+   "hp": "8",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Gulka",
+   "hp": "10",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Heavy Fool",
+   "hp": "90",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Heavy Sentry",
+   "hp": "35",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Hive Guardian",
+   "hp": "100",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Hive Soldier",
+   "hp": "65",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Hiveling",
+   "hp": "[Lifeblood] 18",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Hopper",
+   "hp": "50",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Husk Bully",
+   "hp": "15",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Husk Dandy",
+   "hp": "20",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Husk Guard",
+   "hp": "70",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Husk Hive",
+   "hp": "60",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Husk Hornhead",
+   "hp": "15",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Husk Miner",
+   "hp": "25",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Husk Sentry",
+   "hp": "25 / 28 / 28 / 28 / 28",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Husk Warrior",
+   "hp": "15",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Hwurmp",
+   "hp": "25",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Infected Balloon",
+   "hp": "15",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Kingsmould",
+   "hp": "170",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Lance Sentry",
+   "hp": "25",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Leaping Husk",
+   "hp": "15",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Lesser Mawlek",
+   "hp": "60",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Lifeseed",
+   "hp": "1",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Lightseed",
+   "hp": "1",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Little Weaver",
+   "hp": "30",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Loodle",
+   "hp": "30",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Maggot",
+   "hp": "1",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Mantis Petra",
+   "hp": "45",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Mantis Traitor",
+   "hp": "74",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Mantis Warrior",
+   "hp": "20",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Mantis Youth",
+   "hp": "15",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Maskfly",
+   "hp": "1",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Mawlurk",
+   "hp": "135",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Menderbug",
+   "hp": "1",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Mistake",
+   "hp": "13",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Moss Charger",
+   "hp": "15",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Moss Knight",
+   "hp": "50",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Mosscreep",
+   "hp": "10",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Mossfly",
+   "hp": "15 10 (Overgrown Mound)",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Mosskin",
+   "hp": "15",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Mossy Vagabond",
+   "hp": "25",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Obble",
+   "hp": "10",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Ooma",
+   "hp": "1",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Pilflip",
+   "hp": "30",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Primal Aspid",
+   "hp": "35",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Revek",
+   "hp": "—",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Royal Retainer",
+   "hp": "5",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Shadow Creeper",
+   "hp": "20",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Shardmite",
+   "hp": "15",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Sharp Baldur",
+   "hp": "65",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Shielded Fool",
+   "hp": "65",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Shrumal Ogre",
+   "hp": "80",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Shrumal Warrior",
+   "hp": "20",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Shrumeling",
+   "hp": "5",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Sibling",
+   "hp": "20",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Slobbering Husk",
+   "hp": "30",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Soul Twister",
+   "hp": "35",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Spiny Husk",
+   "hp": "44",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Sporg",
+   "hp": "25",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Squit",
+   "hp": "10",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Stalking Devout",
+   "hp": "100",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Sturdy Fool",
+   "hp": "80",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Tiktik",
+   "hp": "8",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Uoma",
+   "hp": "1",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Vengefly",
+   "hp": "8",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Violent Husk",
+   "hp": "40",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Void Tendrils",
+   "hp": "—",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Volatile Gruzzer",
+   "hp": "40",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Volatile Mosskin",
+   "hp": "15",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Volt Twister",
+   "hp": "80",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Wandering Husk",
+   "hp": "15",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Winged Fool",
+   "hp": "70",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Winged Sentry",
+   "hp": "25",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Wingmould",
+   "hp": "—",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Winged Zoteling",
+   "hp": "20",
+   "pack": "[Hidden Dreams] HIDDEN DREAMS"
+  },
+  {
+   "name": "Hopping Zoteling",
+   "hp": "20",
+   "pack": "[Hidden Dreams] HIDDEN DREAMS"
+  },
+  {
+   "name": "Volatile Zoteling",
+   "hp": "30",
+   "pack": "[Hidden Dreams] HIDDEN DREAMS"
+  },
+  {
+   "name": "Grimmkin Novice",
+   "hp": "50 / 90 / 120 / 140 / 160",
+   "pack": "[The Grimm Troupe] THE GRIMM TROUPE"
+  },
+  {
+   "name": "Grimmkin Master",
+   "hp": "75 / 120 / 180 / 210 / 240",
+   "pack": "[The Grimm Troupe] THE GRIMM TROUPE"
+  },
+  {
+   "name": "Grimmkin Nightmare",
+   "hp": "100 / 180 / 240 / 280 / 320",
+   "pack": "[The Grimm Troupe] THE GRIMM TROUPE"
+  },
+  {
+   "name": "Pale Lurker",
+   "hp": "200 / 240 / 290 / 340 / 400",
+   "pack": "[The Grimm Troupe] THE GRIMM TROUPE"
+  },
+  {
+   "name": "Flukemunga",
+   "hp": "150",
+   "pack": "[The Grimm Troupe] THE GRIMM TROUPE"
+  },
+  {
+   "name": "Zoteling the Mighty",
+   "hp": "200, after first kill 120",
+   "pack": "[The Grimm Troupe] THE GRIMM TROUPE"
+  },
+  {
+   "name": "Winged Zoteling",
+   "hp": "60",
+   "pack": "[The Grimm Troupe] THE GRIMM TROUPE"
+  },
+  {
+   "name": "Hopping Zoteling",
+   "hp": "60",
+   "pack": "[The Grimm Troupe] THE GRIMM TROUPE"
+  },
+  {
+   "name": "Volatile Zoteling",
+   "hp": "30",
+   "pack": "[The Grimm Troupe] THE GRIMM TROUPE"
+  },
+  {
+   "name": "Heavy Zoteling",
+   "hp": "190",
+   "pack": "[The Grimm Troupe] THE GRIMM TROUPE"
+  },
+  {
+   "name": "Turret Zoteling",
+   "hp": "100",
+   "pack": "[The Grimm Troupe] THE GRIMM TROUPE"
+  },
+  {
+   "name": "Lanky Zoteling",
+   "hp": "150",
+   "pack": "[The Grimm Troupe] THE GRIMM TROUPE"
+  },
+  {
+   "name": "Zote's Curse",
+   "hp": "100",
+   "pack": "[The Grimm Troupe] THE GRIMM TROUPE"
+  },
+  {
+   "name": "Head of Zote",
+   "hp": "200",
+   "pack": "[The Grimm Troupe] THE GRIMM TROUPE"
+  },
+  {
+   "name": "Fluke Zoteling",
+   "hp": "100",
+   "pack": "[The Grimm Troupe] THE GRIMM TROUPE"
+  }
+ ],
+ "bosses": [
+  {
+   "name": "Broken Vessel",
+   "hp": "525",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Brooding Mawlek",
+   "hp": "300",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "The Collector",
+   "hp": "750 / 750 / 750 / 800 / 850",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Crystal Guardian",
+   "hp": "280 (Crystal) 450 / 450 / 500 / 550 / 600 (Enraged)",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Dung Defender",
+   "hp": "700 / 750 / 800 / 850 / 900",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Elder Hu",
+   "hp": "250 / 420 / 550 / 600 / 650",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Failed Champion",
+   "hp": "1260 total: 360×3 (Armour) 60 + 40×3 (Head)",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "False Knight",
+   "hp": "255 total: 65×3 (Armour) 40×4 (Head)",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Flukemarm",
+   "hp": "350",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Galien",
+   "hp": "230 / 368 / 479 / 570 / 640",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "God Tamer",
+   "hp": "1050 total: 600 (Tamer) 450 (Beast)",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Gorb",
+   "hp": "200 / 320 / 479 / 570 / 640",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Gruz Mother",
+   "hp": "90 (Forgotten Crossroads) 140 (Colosseum of Fools)",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "The Hollow Knight",
+   "hp": "1000 +250 (If Phase 4 is reached)",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Hornet",
+   "hp": "225 (Protector) 700 (Sentinel)",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Lost Kin",
+   "hp": "1200",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Markoth",
+   "hp": "250 / 400 / 520 / 624 / 705",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Marmu",
+   "hp": "200 / 320 / 416 / 500 / 570",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Mantis Lords",
+   "hp": "210 (Phase 1) 160 + 160 (Phase 2)",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Massive Moss Charger",
+   "hp": "100",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "No Eyes",
+   "hp": "200 / 320 / 416 / 500 / 570",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Nosk",
+   "hp": "680",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Oblobbles",
+   "hp": "2 x 260, +40-100 after 1 killed",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "The Radiance",
+   "hp": "Stages 1-4 respectively: 350 + 400 + 250 + 700 Total: 1700",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Soul Master",
+   "hp": "385 total: 275 (Phase 1) 110 (Phase 2)",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Soul Tyrant",
+   "hp": "1250 total: 900 (Phase 1) 350 (Phase 2)",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Soul Warrior",
+   "hp": "180 (Soul Sanctum) 300 (Elegant Key Room & Colosseum of Fools)",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Traitor Lord",
+   "hp": "800",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Uumuu",
+   "hp": "300",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Vengefly King",
+   "hp": "55 (Greenpath) 100 (Colosseum of Fools)",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Watcher Knight",
+   "hp": "6×220 / 220 / 220 / 240 / 260 Total: 1320 / 1320 / 1320 / 1440 / 1560",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Xero",
+   "hp": "200 / 320 / 416 / 500 / 570",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Zote The Mighty",
+   "hp": "200",
+   "pack": "MAIN GAME"
+  },
+  {
+   "name": "Grey Prince Zote",
+   "hp": "1200–1500 (+100 per fight for 4 fights)",
+   "pack": "[Hidden Dreams] HIDDEN DREAMS"
+  },
+  {
+   "name": "White Defender",
+   "hp": "1600",
+   "pack": "[Hidden Dreams] HIDDEN DREAMS"
+  },
+  {
+   "name": "Grimm",
+   "hp": "800 / 800 / 800 / 930 / 1000",
+   "pack": "[The Grimm Troupe] THE GRIMM TROUPE"
+  },
+  {
+   "name": "Nightmare King Grimm",
+   "hp": "1500",
+   "pack": "[The Grimm Troupe] THE GRIMM TROUPE"
+  },
+  {
+   "name": "Hive Knight",
+   "hp": "800 / 800 / 800 / 850 / 920",
+   "pack": "[Lifeblood] LIFEBLOOD"
+  },
+  {
+   "name": "Absolute Radiance",
+   "hp": "Stages 1,2,3,4,6 respectively: 400 + 450 + 300 + 750 + 281 Total: 2181",
+   "pack": "[Godmaster] GODMASTER"
+  },
+  {
+   "name": "Brothers Oro & Mato",
+   "hp": "500 (Oro, Phase 1) 600 + 1000 (Oro + Mato, Phase 2)",
+   "pack": "[Godmaster] GODMASTER"
+  },
+  {
+   "name": "Great Nailsage Sly",
+   "hp": "1050",
+   "pack": "[Godmaster] GODMASTER"
+  },
+  {
+   "name": "Paintmaster Sheo",
+   "hp": "950",
+   "pack": "[Godmaster] GODMASTER"
+  },
+  {
+   "name": "Pure Vessel",
+   "hp": "1600",
+   "pack": "[Godmaster] GODMASTER"
+  },
+  {
+   "name": "Sisters of Battle",
+   "hp": "500 (Phase 1) 750 + 750 + 750 (Phase 2)",
+   "pack": "[Godmaster] GODMASTER"
+  },
+  {
+   "name": "Winged Nosk",
+   "hp": "750",
+   "pack": "[Godmaster] GODMASTER"
+  }
+ ]
+}

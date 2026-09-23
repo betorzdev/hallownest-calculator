@@ -1,0 +1,2464 @@
+/* css/app.css — Hollow: layout and components.
+   It follows the mockup's language: a 1216 px column, labels in Cinzel with generous
+   letter-spacing, text in Spectral, 1 px borders with no radii and corner brackets on
+   the panels. All colour comes from css/tokens.css. */
+
+/* ── Base ────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+.page { min-height: 100vh; background: var(--page-bg); padding-bottom: var(--sp-16); }
+.shell {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 0 var(--page-pad);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+}
+h1, h2, h3, h4, p, ol, ul { margin: 0; }
+ol, ul { padding: 0; list-style: none; }
+img { display: block; max-width: 100%; }
+/* Hidden things stay hidden even if their class sets display (the screens, the notice, the mini-bar). */
+[hidden] { display: none !important; }
+button { font-family: inherit; color: inherit; cursor: pointer; border: 0; background: none; }
+button:disabled { cursor: default; opacity: 0.45; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* The screen bar, stuck at the top, mustn't cover what has just been focused. */
+html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
+
+/* ── Figures ───────────────────────────────────────────────────────────
+   Every number goes in the sans with tabular figures. Two reasons: the sheet's
+   columns can be scanned top to bottom without the digits dancing, and the
+   units are lowercase again —Cinzel has no real lowercase, it replaces it with
+   small caps, which is why "0.891 s" read as "0.891 ꜱ"—. */
+.hero-num, .metric .val, .plate-val, .rd .v, .stat-value, .nailpick-num, .gplate-val, .step-num,
+.minihud b, .minihud em, .delta, .chip,
+.stat-detail .v, .insp-list .vals, .notch-free, .steps .n {
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+  letter-spacing: 0;
+}
+/* The unit goes with the number; it doesn't weigh the same. They're in <i>, so they
+   have to be set upright again. */
+.u { font-size: 0.62em; font-weight: 400; font-style: normal; color: var(--muted); }
+/* Next to a 34 or 88 px figure, a unit at 0.62em is one more number; at 0.4em and in dim
+   grey, the healing's "s" couldn't even be seen. At half height and in the secondary ink it
+   reads at first glance without competing with the figure. */
+.hero-num .u, .metric .val .u, .rd .v .u, .step-num .u { font-size: 0.5em; font-weight: 500; color: var(--ink-2); margin-left: 0.08em; }
+.plate-val .u { font-size: 0.6em; font-weight: 500; color: var(--ink-2); margin-left: 0.08em; }
+/* The "×" of a multiplier (reach, "×1"): it goes in front and is part of the value, not a unit
+   that can be read in passing. Larger and in the figure's ink, slightly lighter, so that
+   "×1.15" reads as "1.15 times" at first sight. */
+.u.u-mult, .hero-num .u.u-mult, .metric .val .u.u-mult, .rd .v .u.u-mult { font-size: 0.7em; font-weight: 600; color: var(--ink-2); margin-right: 0.04em; }
+/* A value that doesn't apply yet is a dash, not a huge figure. */
+.na { font-size: 0.7em; font-style: normal; color: var(--muted); }
+
+/* ── Labels: two levels and no more ────────────────────────────────────
+   Level 1, Cinzel, for section headers. Level 2, the sans, for field labels:
+   below 12 px the wide spacing of a Roman capital stops reading as a word and
+   starts reading as separate letters. */
+.sheet-title h2 {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--ink-2);
+  font-weight: 600;
+}
+.lbl, .block-head, .group h3,
+.stat-detail h4, .charm-detail h3, .banner-tag {
+  font-family: var(--font-num);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  color: var(--label);
+}
+.block-head { margin: 0 0 var(--sp-3); }
+
+/* Corner brackets. */
+.bk { position: absolute; width: 16px; height: 16px; pointer-events: none; }
+.bk.tl { top: -1px; left: -1px; border-top: 2px solid var(--bracket); border-left: 2px solid var(--bracket); }
+.bk.tr { top: -1px; right: -1px; border-top: 2px solid var(--bracket); border-right: 2px solid var(--bracket); }
+.bk.bl { bottom: -1px; left: -1px; border-bottom: 2px solid var(--bracket); border-left: 2px solid var(--bracket); }
+.bk.br { bottom: -1px; right: -1px; border-bottom: 2px solid var(--bracket); border-right: 2px solid var(--bracket); }
+
+/* ── Tinted sections ─────────────────────────────────────────────────────
+   Each section carries the pale tint of its area on the game's map (tokens.css): the sheet,
+   the guide and Your game, City of Tears'; combat, Crystal Peak's; the Hall and the
+   Pantheons, Godhome's. It tints the title, the corner brackets and the ornaments; the figures
+   and what responds to the finger don't change. The brackets read --bracket: redefining it is enough. */
+.panel, .guide, .gear { --tint: var(--tint-sheet); --bracket: color-mix(in oklab, var(--tint) 50%, transparent); }
+.fight { --tint: var(--tint-combat); }
+.fight.is-godhome { --tint: var(--tint-godhome); }
+.sec-title {
+  font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.14em;
+  font-weight: 600; font-size: var(--fs-lg); line-height: 1.2; color: var(--tint);
+}
+
+.chev { transition: transform var(--dur) var(--ease); }
+.chev.up { transform: rotate(180deg); }
+
+/* ── Controls ────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: var(--sp-2);
+  border: 1px solid var(--line-ctl);
+  background: var(--ctl);
+  color: var(--ink-2);
+  font-size: var(--fs-sm); letter-spacing: 0.06em;
+  padding: var(--sp-2) var(--sp-4); min-height: 40px;
+}
+.btn { transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease); }
+.btn:hover:not(:disabled) { border-color: var(--accent-line); color: var(--ink); }
+.btn-primary { border-color: var(--accent-line); background: var(--card-on); color: var(--ink-strong); box-shadow: var(--glow); }
+
+.seg { display: inline-flex; border: 1px solid var(--line-ctl); background: var(--card); }
+.seg button {
+  padding: var(--sp-2) var(--sp-3); min-height: 36px;
+  font-size: var(--fs-sm); color: var(--muted);
+  border-right: 1px solid var(--line-ctl);
+  flex: 1 1 auto; text-align: center;
+}
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--card-on); color: var(--ink-strong); box-shadow: inset 0 0 0 1px var(--accent-line); }
+.seg button:hover:not(:disabled):not([aria-pressed="true"]) { color: var(--ink-2); }
+.seg.sm button { padding: var(--sp-1) var(--sp-3); min-height: 28px; font-size: var(--fs-xs); }
+
+/* ── Header ──────────────────────────────────────────────────────────────
+   One row: the title, centred, under the filigree from the Hall's screen (tablet-hdr, the game's
+   white stroke), small, and on the right the language and Share, which apply to the whole site.
+   Behind it, the dust motes from the main menu. */
+/* Three columns: the title in the centre of the page, and to its right the language and Share. The
+   two side columns grow equally, so the title lands dead centre; if the buttons don't fit in
+   their half, their column widens and the title gives way a little rather than overlap. */
+.masthead {
+  padding: var(--sp-6) 0 0; display: grid; grid-template-columns: minmax(0, 1fr) auto 1fr;
+  align-items: center; gap: var(--sp-4) var(--sp-6);
+}
+.masthead .brand { grid-column: 2; }
+.masthead .mh-tools { grid-column: 3; justify-self: end; align-self: start; flex-wrap: nowrap; }
+.brand { display: flex; flex-direction: column; align-items: center; gap: var(--sp-1); min-width: 0; color: inherit; text-decoration: none; }
+/* The title leads to the start screen: on hover, the filigree lights up fully. */
+.brand .mh-hdr { transition: opacity var(--dur) var(--ease); }
+.brand:hover .mh-hdr { opacity: 1; }
+.mh-hdr { width: 200px; height: auto; opacity: 0.88; }
+.title {
+  font-family: var(--font-display); font-weight: 900; font-size: var(--fs-brand);
+  line-height: 1.05; letter-spacing: 0.02em; color: var(--ink-strong); text-align: center;
+  text-wrap: balance;
+}
+/* The language and Share, as loose text like a game menu: small, unboxed, so the title
+   rules. The chosen language in bone; what can be touched lights up in the accent. */
+.mh-tools { display: flex; align-items: center; gap: var(--sp-6); flex-wrap: wrap; }
+.langsel { display: flex; align-items: center; gap: var(--sp-1); }
+.langsel button + button::before { content: '·'; margin-right: var(--sp-1); color: var(--muted); }
+.langsel button, .mh-link {
+  display: inline-flex; align-items: center; min-height: 32px; padding: 0;
+  font-size: var(--fs-sm); letter-spacing: 0.08em; color: var(--muted);
+  transition: color var(--dur) var(--ease);
+}
+.langsel button[aria-pressed="true"] { color: var(--ink-strong); }
+.langsel button:not([aria-pressed="true"]):hover, .mh-link:hover { color: var(--accent); }
+
+/* ── The screen bar ──────────────────────────────────────────────────────
+   The pages of the game's pause menu: their names in the serif, in lowercase, and an accent
+   diamond in front of the one you're viewing (design/02-hollow-knight.md, the charm screen).
+   Stuck at the top and across the full window width; on the right, the mini-bar with what you
+   look at while touching charms. The page clips what sticks out (overflow-x: clip, which
+   doesn't break sticky the way hidden would). */
+.page { overflow-x: clip; }
+/* The notices, the guide and the screen, with the column's breathing room; what's empty takes no space. */
+.screens { display: flex; flex-direction: column; gap: var(--sp-8); }
+.screens > :empty { display: none; }
+@media (max-width: 899px) { .screens { gap: var(--sp-6); } }
+/* The footer: the fan-project notice and the sources, small and muted under a hairline. The
+   figures don't live here, so no accent but on the links, which are what responds to the finger. */
+.colophon {
+  display: flex; flex-direction: column; gap: var(--sp-1);
+  padding-top: var(--sp-4); border-top: 1px solid var(--line);
+  font-size: var(--fs-xs); line-height: 1.5; color: var(--muted); text-align: center; text-wrap: balance;
+}
+.colophon a {
+  color: var(--accent); text-decoration: underline; text-underline-offset: 3px;
+  text-decoration-color: var(--accent-line); transition: color var(--dur) var(--ease);
+}
+.colophon a:hover { color: var(--accent-ink); }
+.nav {
+  position: sticky; top: 0; z-index: 30; isolation: isolate;
+  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2) var(--sp-6);
+  min-height: var(--sticky-h);
+}
+.nav::before {
+  content: ''; position: absolute; z-index: -1; top: 0; bottom: 0; left: calc(50% - 50vw); right: calc(50% - 50vw);
+  background: var(--bg); border-bottom: 1px solid color-mix(in oklab, var(--tint-sheet) 16%, transparent);
+}
+.nav-tabs { display: flex; align-items: center; gap: var(--sp-1) var(--sp-6); min-width: 0; }
+.nav-tab {
+  display: inline-flex; align-items: center; gap: var(--sp-2); min-height: 44px; padding: 0;
+  font-family: var(--font-body); font-size: var(--fs-lg); line-height: 1.2; color: var(--muted); text-decoration: none;
+  transition: color var(--dur) var(--ease);
+}
+.nav-tab::before {
+  content: ''; flex: none; width: 7px; height: 7px; transform: rotate(45deg);
+  border: 1px solid transparent; transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+.nav-tab:hover { color: var(--accent); }
+.nav-tab[aria-current="page"] { color: var(--ink-strong); }
+.nav-tab[aria-current="page"]::before { border-color: var(--accent); background: var(--accent); }
+/* The Journal carries its completed entries over the total alongside. */
+.nav-num { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-xs); font-weight: 600; color: var(--ink-2); }
+.nav-hj:hover .nav-num { color: var(--accent); }
+
+/* The motes: 20 points of light rising slowly, across the full width of the page (they're placed
+   relative to .page) and behind everything. Still, they can't be seen: they only show with motion. */
+.page { position: relative; isolation: isolate; }
+.motes { position: absolute; left: 0; right: 0; top: 0; height: 260px; overflow: hidden; pointer-events: none; z-index: -1; }
+.motes i {
+  position: absolute; left: var(--x); bottom: 0; width: var(--s); height: var(--s); border-radius: 50%;
+  background: var(--mote); box-shadow: 0 0 6px var(--mote); opacity: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .motes i { animation: mote var(--t) linear infinite; animation-delay: var(--d); }
+}
+@keyframes mote {
+  0% { opacity: 0; transform: translate(0, 0); }
+  15%, 80% { opacity: var(--o); }
+  100% { opacity: 0; transform: translate(var(--dx), -250px); }
+}
+
+/* ── First-use guide ─────────────────────────────────────────────────────
+   In the sheet's language: its corner brackets in the tint, the title in Cinzel with the diamond
+   and the numbered steps unboxed. */
+.guide { position: relative; padding: var(--sp-6) var(--sp-6); }
+.guide h2 { font-family: var(--font-display); font-size: var(--fs-lg); letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; color: var(--tint); margin-bottom: var(--sp-1); }
+.guide > .rule { display: block; color: color-mix(in oklab, var(--tint) 45%, transparent); margin-bottom: var(--sp-4); }
+.guide-lede { font-size: var(--fs-md); line-height: 1.5; color: var(--ink-2); margin-bottom: var(--sp-4); max-width: var(--measure); }
+/* The link to Your game, inside step 1: what can be touched carries the accent. */
+.guide-link { padding: 0; font: inherit; font-style: italic; color: var(--accent); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--accent-line); }
+.guide-link:hover { color: var(--ink-strong); }
+.guide-close { position: absolute; top: 18px; right: 20px; }
+.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-6); }
+.steps li { display: flex; gap: var(--sp-3); font-size: var(--fs-sm); line-height: 1.5; color: var(--ink-2); }
+.steps .n { flex-shrink: 0; font-size: var(--fs-xl); font-weight: 700; line-height: 1; color: var(--tint); }
+.steps i { color: var(--ink); font-style: italic; }
+.steps b { color: var(--ink); }
+.examples { display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; margin-top: var(--sp-6); }
+.examples .lbl { color: var(--muted); }
+.example {
+  display: inline-flex; align-items: center; gap: var(--sp-2);
+  border: 1px solid var(--line-ctl); background: var(--ctl);
+  color: var(--ink-2); font-size: var(--fs-sm); padding: var(--sp-2) var(--sp-4) var(--sp-2) var(--sp-2);
+}
+.example:hover { border-color: var(--accent-line); color: var(--ink); }
+.example img { width: 24px; height: 24px; object-fit: contain; }
+
+/* ── The sheet: the game's Inventory screen ──────────────────────────────
+   Almost pure black, the corner brackets in the tint and no box: the title with its diamond, the
+   HUD, the large nail with the arena's cold spotlight behind it, the damage and the six figures,
+   the plates and the charm band. It's a container (inv): its pieces arrange themselves by the
+   sheet's width, not the window's. */
+.panel {
+  container: inv / inline-size;
+  --inv-pad: var(--sp-8);
+  --inv-line: color-mix(in oklab, var(--tint) 13%, transparent);
+  position: relative; background: var(--inv-bg); padding: var(--inv-pad) var(--inv-pad) 0;
+}
+.inv-head { display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-4); text-align: center; }
+.inv-head .sec-title { font-size: var(--fs-xl); }
+.inv-head .rule { color: color-mix(in oklab, var(--tint) 50%, transparent); }
+/* The rule between blocks: on the sheet, the full sheet; elsewhere, the charms in the pantheon's
+   rest room (.sep-wrap). */
+.sep-wrap, .detail { border-top: 1px solid var(--line); margin-top: var(--sp-8); padding-top: var(--sp-6); }
+
+/* The status block, in one row so it fits with the grid on an 800 px tall screen: the HUD with
+   health and soul as figures below it; the nail damage with the nail and its cold spotlight;
+   and after a rule, the six figures in two rows of three. The HUD is the arena's, larger: its
+   measurements come from --orb, --pip-h and --hud-row (see .kscene). */
+.inv-status {
+  --nail-h: 130px;
+  display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 220px) minmax(0, 1fr); grid-template-areas: "hud lead stats";
+  gap: var(--sp-6); align-items: center;
+}
+.inv-hud { grid-area: hud; display: flex; flex-direction: column; gap: var(--sp-3); min-width: 0; }
+.inv-lead { grid-area: lead; display: flex; align-items: center; gap: var(--sp-4); min-width: 0; }
+.panel .hud { --orb: 84px; --pip-h: 30px; --pip-w: calc(var(--pip-h) * 51 / 66); --hud-row: 244px; column-gap: var(--sp-3); }
+.panel .hud-side { padding-top: var(--sp-2); }
+.panel .hud-masks { gap: var(--sp-1); }
+.panel .hud-vessels { gap: var(--sp-2); padding-top: var(--sp-half); }
+/* Health and soul, as figures only: the HUD already draws the rest. With health lost or soul
+   spent, the maximum goes after it, in grey. */
+.inv-read { display: flex; gap: var(--sp-8); }
+.rd { display: flex; flex-direction: column; gap: var(--sp-half); min-width: 0; }
+.rd .v { font-size: var(--fs-xl); font-weight: 700; line-height: 1.05; color: var(--ink-strong); display: flex; align-items: baseline; gap: var(--sp-2); }
+.rd .of { font-style: normal; font-weight: 400; font-size: 0.7em; color: var(--muted); }
+
+/* The masks, aligned by their body and not by their canvas. Measured on the sprites
+   themselves (pixels with alpha ≥ 128):
+     mask.png     canvas 60×86, body 51×66 from (4, 10)
+     mask-lb.png  canvas 87×96, body 51×65 from (18, 17) — the rest is halo
+   The two bodies are almost the same size, but the canvases aren't, so with object-fit the
+   white ones came out narrow (16.7 px of useful width out of the box's 20) and the blue ones
+   lower. Here the slot IS the body (51 × 66) and each sprite is scaled and shifted as needed
+   to fit it, with lifeblood's halo spilling out, just like the soul orb's.
+   On the sheet each mask is a button (.pip-mask): the one you're about to remove lightens. */
+.pip-mask img, .hud-mask img { position: absolute; max-width: none; height: auto; }
+.pip-mask img, .hud-mask img { width: 117.647%; left: -7.843%; top: -15.152%; }
+.pip-mask.lb img, .hud-mask.lb img { width: 173.222%; left: -35.837%; top: -26.154%; }
+/* With Hiveblood, the honey hexagon in the mask's slot (the same fit as the honey growing in
+   the one that regenerates, .hud-honey); the blue one, in Joni's Blessing's. */
+.pip-mask img.is-hive, .hud-mask img.is-hive { width: 94.9%; left: 1.7%; top: -1.333%; }
+.pip-mask.lb img.is-hive.is-joni, .hud-mask.lb img.is-hive.is-joni { width: 93.66%; left: 4.88%; top: 0; }
+button.hud-mask { padding: 0; border: 0; background: none; cursor: pointer; }
+.pip-mask:hover { filter: brightness(1.25); }
+.pip-mask.is-empty:hover img { filter: brightness(0.55) saturate(0); opacity: 1; }
+/* The sheet's orb and vessels can be pressed too: soul is spent by hand, to see it.
+   They keep their dark container (.hud-vessel's background beats button's). */
+button.hud-orb, button.hud-vessel { padding: 0; border: 0; cursor: pointer; }
+button.hud-orb:hover .hud-soul, button.hud-orb:hover .orb-well, button.hud-vessel:hover { filter: brightness(1.2); }
+button.hud-orb:focus-visible { outline-offset: 6px; border-radius: 50%; }
+button.hud-vessel:focus-visible { outline-offset: 3px; }
+/* The empty container of the orb and the vessels, under the soul. */
+.orb-well {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: var(--soul-well); box-shadow: inset 0 0 0 1px var(--soul-rim);
+}
+
+/* The nail, vertical as in the game's Inventory and with the arena's spotlight behind it, next to its
+   damage; and the six figures, unboxed. */
+.inv-nail { position: relative; isolation: isolate; flex: none; width: 40px; height: var(--nail-h); display: flex; justify-content: center; }
+.inv-nail::before {
+  content: ''; position: absolute; z-index: -1; left: 50%; top: 50%; width: 180px; height: 250px; transform: translate(-50%, -50%);
+  background: radial-gradient(closest-side, var(--scene-glow), transparent);
+}
+.hero-nail { height: var(--nail-h); width: auto; max-width: none; }
+.hero { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; }
+.hero-row { display: flex; align-items: baseline; gap: var(--sp-3); flex-wrap: wrap; }
+.hero-num { font-size: var(--fs-hero); font-weight: 700; line-height: 0.9; color: var(--ink-strong); }
+.hero-note { font-size: var(--fs-md); line-height: 1.45; color: var(--ink-2); }
+.inv-stats { grid-area: stats; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-6) var(--sp-4); padding-left: var(--sp-6); border-left: 1px solid var(--inv-line); }
+
+.metric { display: flex; flex-direction: column; gap: var(--sp-1); text-align: left; padding: 0; min-width: 0; }
+.metric .lbl { font-size: var(--fs-2xs); }
+.metric .val {
+  font-size: var(--fs-2xl); font-weight: 700; line-height: 1;
+  color: var(--ink-strong); display: flex; align-items: baseline; gap: var(--sp-2); flex-wrap: wrap;
+}
+.metric .note { font-size: var(--fs-xs); color: var(--muted); line-height: 1.3; display: grid; min-height: 1.3em; }
+.metric .note > * { grid-area: 1 / 1; }
+
+/* The preview of the charm under the mouse (paintPreview): "→ what would remain" next to each figure
+   that would change with a click. On the six it goes on top of its note, which moves aside without
+   leaving a gap: it neither changes the height nor pushes the band. No green, since a hypothesis
+   isn't an advantage; what gets worse, in red. While it's there, the last change's chip steps aside. */
+.pv { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-sm); font-weight: 600; color: var(--ink-2); white-space: nowrap; }
+.pv.bad { color: var(--bad); }
+.pv:empty { display: none; }
+.hero-row .pv { font-size: var(--fs-lg); }
+.metric .note:has(.pv:not(:empty)) .note-t { visibility: hidden; }
+:is(.rd .v, .hero-row):has(.pv:not(:empty)) .delta { display: none; }
+.metric { transition: color var(--dur) var(--ease); }
+.metric:hover .lbl, .metric:focus-visible .lbl { color: var(--accent); }
+
+/* On the sheet the deltas are text: the colour already says whether it's better or worse. */
+.panel .delta, .panel .delta.good, .panel .delta.bad { border: 0; background: none; padding: 0; font-size: var(--fs-sm); font-weight: 600; }
+.panel .hero-row .delta { font-size: var(--fs-lg); }
+
+/* The numbers that move: the figure that just changed blooms in white and fades —Focus's
+   glow, not the accent—. Only on the repaint that follows the change (flashIds, in js/app.js).
+   Next to it appears what your last action moved (changeChip: "+6", not the distance to the
+   base Knight, which is read on the full sheet): it fades in, stays for a moment and goes,
+   because it's a notice and not data. It's hidden with visibility, so it keeps its space (the figure doesn't jump) and leaves the accessibility tree. With
+   reduced motion there's no animation: it stays until the next repaint. */
+@keyframes num-flash { from { text-shadow: 0 0 18px var(--focus-glow), 0 0 4px var(--focus-glow); } }
+@keyframes delta-last { 0% { opacity: 0; } 10%, 80% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
+.is-flash .hero-num, .metric.is-flash .val > span:first-child, .plate.is-flash .plate-val,
+.rd.is-flash .v > span:first-child, .minihud .is-flash b { animation: num-flash var(--dur-flash) var(--ease); }
+.delta.is-last { animation: delta-last var(--dur-delta) var(--ease) forwards; }
+
+/* ── Equipped and notches, as on the game's screen ─────────────────────
+   The notch's dot uses the HUD sprite (assets/hud/notch-ui.png) as a mask: that way it
+   keeps its exact silhouette and halo, but can be tinted white or magenta, which is what
+   the game does when you overcharm.
+   The sprite is embedded in base64 on purpose: Chrome treats each local file as a
+   different origin and blocks external CSS masks, so over `file://` a
+   url(../assets/…) leaves the used notch invisible. To regenerate it:
+   base64 -w0 assets/hud/notch-ui.png */
+:root { --notch-sprite: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAABL2lDQ1BJQ0MgcHJvZmlsZQAAeNqtkbFKw1AUhr8bRcWhVgji4HAnUVBs1cGMSVuKIFirQ5KtSUOV0iTc3Kp9CEe3Di7uPoGTo+Cg+AS+geLUwSFIcBLBb/rOz+Fw4AejYtedhlGGQaxVu+lI1/Pl7BMzTAFAJ8xSu9U6AIiTOOInAj5fEQDPm3bdafA35sNUaWACbHejLARRAfoXOtUgxoAZ9FMN4g4w1Um7BuIBKPVyfwFKQe5vQEm5ng/iAzB7rueDMQeYQe4rgKmjSw1QS9KROuudalm1LEva3SSI5PEo09Egk/txmKg0UR0ddYH8PwAW88V205FrVcvaW+efcT1f5vZ+hADE0mORFYRDdf7dhbHz+1zcGC/D4S1MT4ps9wpuNmDhushWq1DegvvxF8KzT/7obdArAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAACKNJREFUeNq8WVtvG8cVnp2dJbm8SSRFRqQk23AcKUBkN0DSpkUM5CFF89AkAgKkL33qryuKFnmIi+QlDRCjSRvLKRwXRQrHcOxAoiiLpHgn995zRrPOyWApMZZRAUezu9zd+eY791nj5t//yZ7Bn7HAPdF5JhDPAJSxANjovKDFORmko5Hwe6REP//JgMVTsMjJyAlIrt0XaeACkJC8LyJj9CyAUtY4GU0C1tSAcjV5qCRQ98SAg5/KrlgAJGUsFouMJhkZGSMCEkdPHXsELGX5VMBiARYpSKFAoaS00SLMUqAxMFcdO+rYJxKcxapYkM0YII5pJTZIRgFNqd84eWesdl8BRHAz9R6HAObqd/80ZsUZAA2i2hQBl1NgswRsfA8nQGMmY5kqsBPNEanDJTJ7FqNCTU5B5ZXgefbhdw+ujUej7SAInheWqJsGLxmGwfwwOM6kMi249iBXKPynUlm5q94zVYuPRQ9tgRYREoHqzhMDjVlEKSLQb+/de3U0Hr+RyWReXSqV7VqtxlKpFLNtm3EA6jhO7bjXqw0Gg2vH3eO3ut3uV5Vy6Wa5Uv0XMRVG2PfVGCWFLHFKGLI0NhHkMoLc3d19D1j7zebmZq2+usosAFgoFCRQ0zRZFEUs8H1WWVlho+GQAWC73W5fHw2GW7PZ7JPG2saNBJWHmvzIVucxahLbjNlEdee+un3793Yms3P58mVRbzTY0tKSBGUJIUGGYchQ9el0WgIvFousXKnIsdt+XG21mu8397/PNtYu/EmB0MNVpIE9E6gg3i0ZvfnZZ+9lbHtn++pV0ajXmeu6DOyTjScTyaI0MAAtLIvlczmWy+eZgAXgIpD5fB7MgnNxdHT02/bj1mSltvqBcrI4vsbCtfQbiTm2aWqOZH/z329+DgDe2traEpVymXkAKAD2+v2+ZFEyCoJsygXACGpmdjZ7wi6AL+SX2ErVZTPHE8e97q9T/d6j4tLyFyoSzNR8DjGFJw7FExiNg3uKMto6PHhjfW2tBsI4qHgETLqOIx0nDAJ0Hik+HCOraJvINNgm6/d6EnRocFYsVVi1WgXwdhXuuU5CXpoQRBOHwbQTmqcFCfKpu/++sw0T/QLULtnxPI95wBoyhzaKwMFhWLfTYT0YIRpIwLgANAkEPATguBCwb2mv+J7xePTKoNfbViAtklS4VjsYPKEy0tVvHbUfXysUC3YBbA5VPgEg+LdcKslzZBdtsQQmUQVPh5AlQQ3hOh7jnwuLm4wnsIAfEpAlLHsw6L9EIozQChzjtPDENRFhFF0pLZekF6PzoC3mwPbQHiFOyocuXbrESsvL8h4EiSpvHhxIJvEasjsF9WcmU8kmhrN+t4OPPk/qhCQ2EwM+1+pNuUJgsIHqRhUiOBuACvOkSOodH0ubQ5Do5SbnMq7iYnARaJtyIpUIDG6AqXD5PEQAWNSsTlg05/hNxOekT5OqYObMyrGToM0hWASCNoqejzaH3o1A8ByjQBxH0TTwXKYfFcLweRQE7LneskaQkQD2zHr0JDTAf67ASQEmkA0EHqs6DD0WYAQAUPibDxpA0LgwZE/mf7BP3w+YACh43Q/DhXufJEbp07JWNAzR9Rzwct9jUwQVGSxr51ghV2QWgOiBrR3s77HAc0ANEUZ91mrug9rRVEADHIWzKIxktIBYIMUPcTKjR+ImzUynMhoSgHGREJom359Op6tj8Np0ygYcMBG8MpfNMXSydqfFms0mm46mkEYF0g/X2swDwJmMLa9FmFr5ieo974TZKAqZmbKapB6N5lX8IqE7pH0OimNZ6Xv9fu+VCXh8PptnU3CqCYgo5lmtXmPpjMkODw/ZYDwCxk5KSijzwEwsDOzAKjgYZCYT1G2ZkLmmU4bv8l0H0mr+vtam0ErqR4zSdjbUWghZ8IJX37l//94O2GIWVTcaD8GjbbBPE4BYrNFYZ1lYwGzqsuNBX9oj2iU6oFCFCjoSOhjauINZCzOb606z2dxdNY9DugFKWERzPUvoc+KqfPbaa7/8+tGjh/9otfbfxABuCg5gRwAgkJVRFgqQUqUqY+VyuSSdCB0sUKkVowMCRkGA7c4R5PsJLC53q1qtfa0qfkczubk2mqT6eKWTtbX1vz18+N1LKSuzepJVhHQM9F4EgqlRpIW0RwdUiyDxOkYA6fUwgp2zFpjI3t4ems7hxsaFT+FVY1WQuKTpo2wy3UYN0grEDVfcjKVef/36l91258ZB8+APkNtFXGvC/MzxHalWfAxtcTadybAFDg/nAu6xAPSMDXt91nl8yMaDoQ/p9uPnnlvdJUBnihTq/acyyoj6TQLWfGdn588f3fgof9g8eB+8WFy4ePEJW/IFwK4XpCGGujKYW1xACj0xESjrWHPve1yEX1xa+uDK5tZf4JGhUvtEzeNrVf4TTAbZzdNzvUn6JZs0dcW/fnjjd1Alvb3WaKxiMbJ2YQPiqs1yxcIPHVoQgvgy17uuh9U9m01GrZVq7ePtqy8jSCwSRkrGpH2moSpKqvBp5xcXrb5aKS0Fw7fffeePX3z++QMISW8Oev1f9UfDrGzschlpm5jrMUYiQAxlyFg+m/1yfePip1de2Nol4MaqK6Ugg6QGz0jYH9U3vVJz+nrZLt++devlznHnZ1AtbQKD62EYldFOQbrQke6DHX9br9fvbG6+eFeBisGNFLApaUf8pH5pHtCkHbu4kI4r8Rh03AHQLR19R88luyQzcuxonh4s2i6zBDOgKTUix3ETZilHEGSXhGvZjjZtdP9J33sK5+X5s4DqSSDSWlmXtCu06DW050KSHn2tNdZj5lNtktEEwAmbIYm1Pglj1K6jhK3HQAOuq/mpgepVlW57nExqnFI2BtqOyDxw59rIZQkbVrTf1kEaCdvdYUKFFs3Z0z/3Hn40B7z+YWHRryELsXjeryLRGYwv4pz/l+9M55nwqT+K/U+AAQBUkJHWB0VxwwAAAABJRU5ErkJggg==); }
+.loadout { display: flex; flex-direction: column; gap: var(--sp-6); }
+.loadout-block .block-head { display: flex; align-items: baseline; gap: var(--sp-3); }
+.notch-free { font-family: var(--font-body); font-size: var(--fs-sm); letter-spacing: 0; text-transform: none; color: var(--ink-2); }
+.notch-free.is-over { color: var(--over-ink); }
+
+/* With no charms, the row is just the empty slot, as in the game (the text stays for screen
+   readers); it's the same size as with one equipped, so the grid doesn't jump when equipping the first. */
+.eq-row { display: flex; flex-wrap: wrap; gap: var(--sp-3); align-items: center; min-height: 54px; }
+.eq {
+  width: 54px; height: 54px; padding: 0; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.eq img { width: 100%; height: 100%; object-fit: contain; }
+.eq:hover img, .eq:focus-visible img { filter: drop-shadow(0 0 8px var(--accent)); }
+/* The next slot takes a charm's whole cell (54 × 54) and draws its dot in the centre:
+   that way it lands right where the one you equip will go. */
+.eq-slot { width: 54px; height: 54px; flex-shrink: 0; display: grid; place-items: center; }
+.eq-slot::before {
+  content: ''; width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid var(--notch-free); opacity: 0.7;
+}
+
+/* All notches take the same 23px cell: the row is the same length with an empty game as
+   with everything equipped, so filling one doesn't shift the others. */
+.notches { display: flex; flex-wrap: wrap; gap: var(--sp-3); align-items: center; min-height: 24px; }
+.notch {
+  width: 23px; height: 23px; flex-shrink: 0; display: block;
+  --dot: var(--notch-used);
+  -webkit-mask: var(--notch-sprite) center / contain no-repeat;
+  mask: var(--notch-sprite) center / contain no-repeat;
+  /* The game's disc has a dark ring and a light dot in the centre. */
+  background: radial-gradient(circle, var(--dot) 0 7%, var(--notch-core) 11% 18%, var(--dot) 23% 100%);
+  filter: drop-shadow(0 0 3px var(--notch-used-glow)) drop-shadow(0 0 9px var(--notch-used-glow));
+}
+.notch.is-over {
+  --dot: var(--notch-over);
+  filter: drop-shadow(0 0 4px var(--notch-over-glow)) drop-shadow(0 0 12px var(--notch-over-glow));
+}
+/* The free notch isn't lit: in the game it's a dark ring. It keeps the cell and draws the
+   ring inside, the same diameter as the lit dot. */
+.notch.is-free {
+  -webkit-mask: none; mask: none; filter: none; background: transparent;
+  display: grid; place-items: center;
+}
+.notch.is-free::before {
+  content: ''; width: 13px; height: 13px; border-radius: 50%;
+  border: 2px solid var(--notch-free);
+}
+/* The grid's preview (paintNotchPreview, in js/app.js), with the mouse over a charm.
+   The one you'd take: the free one's ring, same diameter, but lit —the ring in white, or in
+   magenta if it would overcharm you, with a short halo and the centre at half tone—, and
+   breathing: you don't have it yet. The one you'd release: the dot you already have, with no halo and almost off. */
+.notch.is-pending {
+  --fill: var(--notch-pending-fill);
+  -webkit-mask: none; mask: none; background: transparent;
+  display: grid; place-items: center;
+  filter: drop-shadow(0 0 3px var(--notch-used-glow));
+  animation: notch-pending var(--dur-pending) var(--ease-fade) infinite alternate;
+}
+.notch.is-pending::before {
+  content: ''; width: 13px; height: 13px; border-radius: 50%;
+  border: 2px solid var(--dot); background: var(--fill);
+}
+.notch.is-pending.is-over { --fill: var(--notch-over-pending-fill); filter: drop-shadow(0 0 4px var(--notch-over-glow)); }
+@keyframes notch-pending { to { opacity: 0.55; } }
+.notch.is-leaving { filter: none; opacity: 0.38; }
+.notch-free .nf-to { color: var(--ink-2); }
+.notch-free .nf-to.is-over { color: var(--over-ink); }
+/* In one column the row sits above the grid: the preview stays at the height it had
+   (--row-h, noted by paintNotchPreview) and what doesn't fit is clipped, with a margin for the halo. */
+@container inv (max-width: 899px) {
+  .notches.is-preview { height: var(--row-h); overflow: clip; overflow-clip-margin: var(--sp-2); }
+}
+
+/* ── Quick access to the charms ────────────────────────────────────────
+   The grid from the game's charm screen, to the right of the notches: four rows of ten
+   slots with the even ones offset by half a slot. The proportions come from measuring an
+   official screenshot: slot 0.806 of the pitch, rows 0.968 of the pitch and offset 0.554
+   of the pitch; hence the factors below.
+   The slot narrows by itself (cqw) so the four rows always fit. */
+.loadout-wrap { display: grid; grid-template-columns: minmax(0, 392px) minmax(0, 1fr); gap: var(--sp-6); align-items: start; }
+/* On the sheet, the charms go on a full-bleed black band, between two rules, laid out like the
+   game's charm screen: Equipped with the grid below, and to its right Notches with the charm's
+   detail. They're two independent columns: what grows in one (the notches when you overcharm)
+   doesn't push anything apart in the other. */
+.inv-band {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
+  gap: var(--sp-6) var(--sp-8); align-items: start;
+  margin: var(--sp-8) calc(var(--inv-pad) * -1) 0; padding: var(--sp-8) var(--inv-pad);
+  background: var(--well); border-block: 1px solid var(--inv-line);
+}
+.band-col { display: flex; flex-direction: column; gap: var(--sp-6); min-width: 0; }
+/* "Clear", in Equipped's header: text in the screen's ink, unboxed. */
+.eq-clear {
+  margin-left: auto; display: inline-flex; align-items: center; gap: var(--sp-1); padding: var(--sp-1) 0;
+  font-family: var(--font-body); font-size: var(--fs-sm); letter-spacing: 0; text-transform: none; color: var(--muted);
+  transition: color var(--dur) var(--ease);
+}
+.eq-clear:hover:not(:disabled) { color: var(--accent); }
+.eq-clear:disabled { opacity: 0; pointer-events: none; }
+/* The overcharm notice, inside the band and below the notches: unboxed, in the game's magenta. */
+.inv-band .banner.is-band { background: none; border: 0; padding: 0; margin-top: var(--sp-3); gap: var(--sp-1); flex-direction: column; }
+.inv-band .banner.is-band .banner-text { font-size: var(--fs-sm); line-height: 1.45; }
+.quick { min-width: 0; container-type: inline-size; }
+.quick .block-head { display: flex; align-items: baseline; gap: var(--sp-3); }
+.quick-hint { font-family: var(--font-body); font-size: var(--fs-sm); letter-spacing: 0; text-transform: none; color: var(--muted); }
+.quick-grid {
+  --qc: min(52px, 7.6cqw);
+  display: flex; flex-direction: column; gap: calc(var(--qc) * 0.2);
+}
+.qrow { display: flex; gap: calc(var(--qc) * 0.24); }
+.qrow:nth-child(even) { margin-left: calc(var(--qc) * 0.69); }
+.qc {
+  position: relative; width: var(--qc); height: var(--qc); padding: 0; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+/* The double slots with no version chosen, and always on Charms found, split into two halves. */
+.qslot-pair { display: flex; gap: var(--sp-half); width: var(--qc); height: var(--qc); flex-shrink: 0; }
+.qslot-pair .qc { width: calc((var(--qc) - 2px) / 2); }
+/* With a finger, each slot takes half of the gap that separates it from its neighbour. */
+@media (pointer: coarse) {
+  .qc:not(.qc-half)::after { content: ''; position: absolute; inset: calc(var(--qc) * -0.12); }
+}
+.qc img {
+  width: 100%; height: 100%; object-fit: contain;
+  opacity: 0.7; filter: grayscale(0.3);
+  transition: opacity var(--dur-fast) var(--ease), filter var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.qc:hover img, .qc:focus-visible img { opacity: 0.95; filter: none; transform: scale(1.09); }
+.qc.is-on img { opacity: 1; filter: drop-shadow(0 0 7px var(--accent)); }
+.qc.is-on:hover img { filter: drop-shadow(0 0 9px var(--accent-line)); }
+/* The detail's charm looks like the one under the mouse: lit and a little larger, with no ring
+   or ornament. That way you know which one the detail describes when the pointer is no longer on it. */
+.qc.is-sel img { opacity: 0.95; filter: none; transform: scale(1.09); }
+.qc.is-on.is-sel img { opacity: 1; filter: drop-shadow(0 0 9px var(--accent-line)); }
+/* The one that would overcharm you announces itself in magenta, like the notches. */
+.qc.is-over:hover img, .qc.is-over:focus-visible img { filter: drop-shadow(0 0 8px var(--over-line)); }
+.qc.is-locked { cursor: not-allowed; }
+/* The one moved by the full-sheet chip you're looking at, with its halo. */
+.qc.is-hot img { opacity: 1; filter: drop-shadow(0 0 8px var(--accent)); }
+.qc.is-locked img { opacity: 0.25; filter: grayscale(0.75); }
+.qc.is-locked:hover img { opacity: 0.45; filter: grayscale(0.75); transform: none; }
+/* The one you haven't found in your game stays shadowed in every state —under the mouse, in
+   the detail (is-sel), highlighted by a chip (is-hot) or warning of overcharm—: otherwise
+   those rules gave it its colour back and it looked found. That's why it comes after all of
+   them. It only lightens a little, and the one that would overcharm you keeps its magenta halo.
+   Equipped (is-on) looks like any equipped one: you're wearing it. */
+.quick:not(.quick-owned) .qc.is-missing:not(.is-on) { cursor: not-allowed; }
+.qc.is-missing:not(.is-on) img { filter: var(--charm-missing-art); }
+.qc.is-missing:not(.is-on):not(.is-locked) img { opacity: 1; }
+.qc.is-missing:not(.is-on):is(:hover, :focus-visible, .is-sel, .is-hot) img { filter: var(--charm-missing-art) brightness(1.6); }
+.qc.is-missing.is-over:not(.is-on):is(:hover, :focus-visible) img { filter: var(--charm-missing-art) brightness(1.6) drop-shadow(0 0 8px var(--over-line)); }
+/* The locked grid —halfway through a pantheon outside its benches, or with the Charms
+   binding—: all grey and with no hover reaction, so it doesn't look touchable. The click
+   does get through, and brings up the notice saying why not. */
+.quick.is-locked .quick-grid, :is(.loadout-wrap, .inv-band):has(.quick.is-locked) .eq-row {
+  filter: grayscale(0.8); opacity: 0.55;
+}
+.quick.is-locked .qc, :is(.loadout-wrap, .inv-band):has(.quick.is-locked) .eq { cursor: not-allowed; }
+.quick.is-locked .qc:is(:hover, .is-sel) img { transform: none; }
+:is(.loadout-wrap, .inv-band):has(.quick.is-locked) .eq:hover img { filter: none; }
+.quick.is-locked .quick-hint { color: var(--cond); font-style: italic; }
+
+/* Spells and arts, as plates: the artwork on black, frameless, with its light behind it;
+   white if you've learnt it and off if not, which leaves the artwork as a silhouette. */
+.inv-plates { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-6) var(--sp-12); margin-top: var(--sp-8); padding-top: var(--sp-6); border-top: 1px solid var(--inv-line); }
+/* After the charm band, its rule already separates: without the plates' one, which doubled it. */
+.inv-band + .inv-plates { border-top: 0; padding-top: 0; }
+.plates { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-4); }
+.plate { display: flex; flex-direction: column; align-items: center; gap: var(--sp-half); text-align: center; padding: 0 0 var(--sp-2); min-width: 0; }
+.plate-art { position: relative; isolation: isolate; width: 100%; height: 92px; display: grid; place-items: center; margin-bottom: var(--sp-2); }
+.plate-art::before { content: ''; position: absolute; z-index: -1; inset: -8% 2%; background: var(--halo-plate); transition: filter var(--dur) var(--ease); }
+/* Never stretching the sprite: the 192 px ones are scaled down and the fluke, at 88, stays at its size. */
+.plate-art img { width: auto; height: auto; max-width: min(150px, 90%); max-height: 76px; object-fit: contain; }
+.plate:not(.is-on) .plate-art::before { background: var(--halo-plate-off); }
+.plate:not(.is-on) .plate-art img { filter: brightness(0); }
+.plate-name { font-size: var(--fs-sm); line-height: 1.25; color: var(--ink); }
+.plate-val { font-size: var(--fs-xl); font-weight: 700; line-height: 1.1; color: var(--ink-strong); }
+.plate-note { font-size: var(--fs-xs); line-height: 1.3; color: var(--muted); }
+.plate:not(.is-on) .plate-name { color: var(--muted); }
+button.plate:hover .plate-name, button.plate:focus-visible .plate-name { color: var(--accent); }
+button.plate:hover .plate-art::before { filter: brightness(1.5); }
+
+/* Effects: what charms do that doesn't show in the figures, below the spell and art plates. The
+   same plates as the spells, with the effect's artwork (or the charm's) and, in the corner, the
+   medal of the charm that gives it; if the figure comes from a synergy, both, overlapping. Below,
+   when it triggers, in a label. The drawbacks (Joni's Blessing, the fragile ones), in --bad. */
+.inv-effects { margin-top: var(--sp-8); }
+.inv-effects .block-head { display: flex; align-items: baseline; gap: var(--sp-1) var(--sp-3); flex-wrap: wrap; }
+.eff-plates { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: var(--sp-6) var(--sp-4); }
+.eff-plates .plate-art { height: 96px; }
+.eff-plates .plate-art > img { max-width: min(128px, 86%); max-height: 84px; }
+.eff-plates .plate-art .plate-src { position: absolute; right: calc(50% - 62px); bottom: -2px; display: inline-flex; }
+.plate-art .plate-src img { width: 28px; height: 28px; max-width: none; max-height: none; object-fit: contain; }
+.plate-art .plate-src img + img { margin-left: -10px; }
+.plate-when {
+  margin-top: var(--sp-1); font-family: var(--font-num); text-transform: uppercase; letter-spacing: 0.09em;
+  font-size: var(--fs-2xs); font-weight: 600; line-height: 1.3; color: var(--label);
+}
+.plate-note.is-na { font-style: italic; }
+.plate-note b { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; color: var(--ink-strong); }
+.plate.is-bad :is(.plate-name, .plate-note) { color: var(--bad); }
+
+/* Frame for the game's icons. Each family of artwork has its shape:
+   charms are square and go in a circle; spells, arts and abilities are landscape (up to
+   3.2:1) and call for a rectangle; nails are vertical (1:4.5) and are laid down so their
+   edge can be seen. */
+.medal {
+  width: 46px; height: 46px; flex-shrink: 0; border-radius: 50%; padding: var(--sp-1);
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--medal-off-line); background: var(--medal-off);
+  overflow: hidden;
+}
+.medal img { width: auto; height: auto; max-width: 100%; max-height: 100%; object-fit: contain; }
+.medal.sm { width: 34px; height: 34px; padding: var(--sp-1); }
+
+
+.medal.nail { width: 68px; height: 36px; border-radius: 0; padding: 0; }
+.medal.nail img { width: auto; height: 62px; max-width: none; max-height: none; transform: rotate(-90deg); }
+.medal.nail.sm { width: 60px; height: 32px; }
+.medal.nail.sm img { height: 54px; }
+
+.medal.off img { opacity: 0.4; filter: grayscale(0.8); }
+
+.good { color: var(--good); }
+.bad { color: var(--bad); }
+
+/* The "See every stat" button: it stays in place and the full sheet opens below it; when open,
+   an identical one closes it from the end. Right under the top one, the sheet doesn't repeat the rule. */
+.toggle-all + .detail { border-top: 0; margin-top: 0; padding-top: var(--sp-2); }
+.toggle-all {
+  width: 100%; margin-top: var(--sp-6);
+  display: flex; align-items: center; justify-content: center; gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-4); border-top: 1px solid var(--inv-line, var(--line));
+  color: var(--ink-2); font-family: var(--font-display);
+  font-size: var(--fs-xs); letter-spacing: 0.16em; text-transform: uppercase;
+  transition: color var(--dur) var(--ease);
+}
+.toggle-all:hover { color: var(--accent); }
+
+/* ── Full sheet ──────────────────────────────────────────────────────── */
+.sheet-head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--sp-6); flex-wrap: wrap; margin-bottom: var(--sp-6); }
+.sheet-title { display: flex; align-items: baseline; gap: var(--sp-4); flex-wrap: wrap; }
+.sheet-title h2 { font-size: var(--fs-xs); color: var(--ink-2); }
+.hint { font-size: var(--fs-xs); color: var(--muted); font-style: italic; }
+.compare { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; }
+
+/* Two flowing columns: with grid, a long group left gaps next to a short one. */
+.groups { columns: 2; column-gap: var(--sp-8); }
+.group { break-inside: avoid; margin-bottom: var(--sp-6); }
+.group h3 { padding-bottom: var(--sp-2); border-bottom: 1px solid var(--line); margin-bottom: var(--sp-half); }
+
+.stat { border-bottom: 1px solid var(--line-row); padding: var(--sp-2) var(--sp-half); cursor: pointer; }
+.stat:hover { background: var(--accent-soft); }
+.stat-row { display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: var(--sp-2) var(--sp-4); }
+.stat-label { font-size: var(--fs-sm); line-height: 1.3; color: var(--ink-2); }
+.stat-value { font-size: var(--fs-md); font-weight: 600; color: var(--ink-strong); display: inline-flex; align-items: baseline; justify-content: flex-end; gap: var(--sp-2); }
+.stat-reason { grid-column: 1 / -1; font-size: var(--fs-xs); color: var(--muted); font-style: italic; }
+.stat.is-na .stat-label, .stat.is-na .stat-value { color: var(--muted); }
+.stat.is-hit { background: var(--accent-soft); box-shadow: inset 2px 0 0 var(--accent); }
+.stat.is-flash { animation: flash 1.1s ease; }
+@keyframes flash { 0%, 40% { background: var(--accent-soft); } 100% { background: transparent; } }
+
+.delta { font-size: var(--fs-xs); font-weight: 500; padding: 1px var(--sp-2); border: 1px solid var(--line); color: var(--muted); }
+.delta.good { color: var(--good); border-color: var(--good); background: var(--good-soft); }
+.delta.bad { color: var(--bad); border-color: var(--bad); background: var(--bad-soft); }
+
+.chips { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: var(--sp-1); margin-top: var(--sp-half); }
+.chip { font-size: var(--fs-2xs); padding: 1px var(--sp-2); border: 1px solid var(--line); color: var(--muted); background: var(--card); }
+.chip b { color: var(--ink-2); font-weight: 600; }
+/* The charm chip is data: in ink, like the rest. Only on hover (it lights up on the grid the
+   charm that moves it) does it take the accent. */
+.chip.chip-charm { border-color: var(--line-ctl); color: var(--ink-2); }
+.chip.chip-charm b { color: var(--ink-strong); }
+.chip.chip-charm:hover { border-color: var(--accent-line); color: var(--accent); }
+.chip.syn { border-color: var(--cond); color: var(--cond); }
+.chip.off { opacity: 0.55; font-style: italic; }
+.chip.more { font-style: italic; }
+.chip i { font-style: italic; }
+
+.stat-detail { display: none; padding: var(--sp-3) 0 var(--sp-1); }
+.stat.is-open .stat-detail { display: block; }
+.stat-detail h4 { margin: var(--sp-2) 0 var(--sp-1); }
+.stat-detail ul { border-top: 1px solid var(--line-row); }
+.stat-detail li { display: flex; justify-content: space-between; gap: var(--sp-3); padding: var(--sp-1) 0; border-bottom: 1px solid var(--line-row); font-size: var(--fs-xs); }
+.stat-detail li.off { opacity: 0.6; font-style: italic; }
+.stat-detail .k { color: var(--muted); }
+.stat-detail .v { color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.stat-detail .note { font-size: var(--fs-xs); color: var(--muted); margin-top: var(--sp-2); font-style: italic; }
+
+/* What your charms give you */
+.fx-wrap { border-top: 1px solid var(--line); padding-top: var(--sp-6); }
+.fx { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-2); }
+.fx-item { display: flex; align-items: center; gap: var(--sp-3); background: var(--card); border: 1px solid var(--line-card); padding: var(--sp-3) var(--sp-3); min-width: 0; }
+.fx-item > span:last-child { display: flex; flex-direction: column; gap: var(--sp-half); min-width: 0; }
+.fx-name { font-size: var(--fs-sm); line-height: 1.25; color: var(--ink); }
+.fx-note { font-size: var(--fs-xs); line-height: 1.3; color: var(--muted); }
+.muted-p { font-size: var(--fs-md); color: var(--muted); }
+
+/* ── Overcharm notice ────────────────────────────────────────────────── */
+.banner { background: var(--over-bg); border: 1px solid var(--over-line); padding: var(--sp-4) var(--sp-6); display: flex; gap: var(--sp-4); align-items: baseline; flex-wrap: wrap; }
+.banner-tag { color: var(--over-ink); flex-shrink: 0; }
+.banner-text { font-size: var(--fs-md); color: var(--over-ink-2); }
+#banner:not(:empty) { display: flex; flex-direction: column; gap: var(--sp-2); }
+
+/* ── Pantheon notice: charms aren't touched outside its benches ──────── */
+.banner.is-run { background: var(--notice-bg); border-color: var(--notice-line); align-items: center; }
+.banner.is-run .banner-tag { color: var(--cond); }
+.banner.is-run .banner-text { color: var(--ink-2); flex: 1 1 24ch; }
+.banner.is-run .btn { flex-shrink: 0; }
+
+/* When you overcharm, the screen is tinted purple at the edges and it goes: it jumps in with
+   the flash and fades, instead of staying the whole time, which was tiring. That you're still
+   overcharmed is already said by the notice, the magenta notches and the HUD's aura. It sits on
+   top of the content but transparent in the centre, so it doesn't touch the numbers; without
+   motion it doesn't show. */
+.page::after {
+  content: ''; position: fixed; inset: 0; z-index: 40; pointer-events: none;
+  background: radial-gradient(ellipse 92% 74% at 50% 50%, transparent 38%, var(--over-ambient-soft) 70%, var(--over-ambient) 100%);
+  opacity: 0;
+}
+/* It comes in fast with the flash (~200 ms), holds for half a second and fades out slowly
+   (~2 s, soft fade on both sides), like the game's fades. */
+:root.is-overcharming .page::after { animation: overcharm-ambient 2600ms linear forwards; }
+@keyframes overcharm-ambient {
+  0%   { opacity: 0; animation-timing-function: var(--ease); }
+  8%   { opacity: 1; }
+  25%  { opacity: 1; animation-timing-function: var(--ease-fade); }
+  100% { opacity: 0; }
+}
+
+/* ── Overcharm: the game's flash and shake ───────────────────────────────
+   In Hollow Knight, going over your notches lights the screen up in white and violet and
+   shakes it. It fires only once, when crossing the threshold (js/app.js → overcharmFx). */
+.overcharm-fx {
+  position: fixed; inset: 0; z-index: 90; pointer-events: none; opacity: 0;
+  background:
+    radial-gradient(circle at 50% 44%, var(--overcharm-core) 0%, var(--overcharm-glow) 16%, var(--overcharm-edge) 36%, transparent 66%),
+    radial-gradient(circle at 50% 44%, transparent 52%, var(--overcharm-edge) 100%);
+}
+.overcharm-fx.is-on { animation: overcharm-flash 780ms cubic-bezier(0.16, 0.8, 0.3, 1) forwards; }
+/* All four bindings at once: the same flash and the same shake, in gold (bindAllFx). */
+.overcharm-fx.is-gold {
+  background:
+    radial-gradient(circle at 50% 44%, var(--bindall-core) 0%, var(--bindall-glow) 16%, var(--bindall-edge) 36%, transparent 66%),
+    radial-gradient(circle at 50% 44%, transparent 52%, var(--bindall-edge) 100%);
+}
+:root.is-binding-all .binds.is-all .bind-art { animation: bindall-pip 420ms ease-out 3 alternate; }
+@keyframes bindall-pip {
+  from { filter: sepia(0.35) saturate(0.9) brightness(1.9) drop-shadow(0 0 6px var(--godhome-glow)) drop-shadow(0 0 14px var(--godhome-glow)); }
+  to   { filter: sepia(0.35) saturate(0.9) brightness(2.3) drop-shadow(0 0 10px var(--godhome-glow)) drop-shadow(0 0 26px var(--godhome-glow)); }
+}
+@keyframes overcharm-flash {
+  0%   { opacity: 0;    transform: scale(0.55); }
+  8%   { opacity: 1;    transform: scale(1); }
+  30%  { opacity: 0.45; transform: scale(1.1); }
+  100% { opacity: 0;    transform: scale(1.32); }
+}
+
+/* The shake goes on .page: the floating notice lives outside it and doesn't move. */
+.page.is-quaking { animation: overcharm-quake 480ms ease-in-out; }
+@keyframes overcharm-quake {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  9%  { transform: translate3d(-6px, 4px, 0); }
+  21% { transform: translate3d(6px, -5px, 0); }
+  33% { transform: translate3d(-5px, -3px, 0); }
+  45% { transform: translate3d(5px, 3px, 0); }
+  57% { transform: translate3d(-3px, 2px, 0); }
+  69% { transform: translate3d(3px, -2px, 0); }
+  85% { transform: translate3d(-2px, 1px, 0); }
+}
+
+/* While the hit lasts: the notice comes in and the notches you went over pulse. */
+:root.is-overcharming .banner:not(.is-run) { animation: overcharm-banner 520ms ease-out; }
+@keyframes overcharm-banner {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: none; }
+}
+:root.is-overcharming .notch.is-over { animation: overcharm-pip 420ms ease-out 3 alternate; }
+@keyframes overcharm-pip {
+  from { filter: drop-shadow(0 0 4px var(--notch-over-glow)) drop-shadow(0 0 12px var(--notch-over-glow)); }
+  to   { filter: drop-shadow(0 0 7px var(--notch-over-glow)) drop-shadow(0 0 22px var(--notch-over-glow)); }
+}
+
+/* ── The mini-bar, in the screen bar ───────────────────────────────────
+   With the game's sprites instead of labels: the nail, the mask, soul and a notch.
+   Its figures flash like the sheet's. In combat, those of the build you're fighting with. */
+.minihud { display: flex; gap: var(--sp-6); align-items: center; }
+.minihud span { display: flex; align-items: center; gap: calc(var(--sp-1) + var(--sp-half)); min-width: 0; }
+.minihud b { font-size: var(--fs-lg); font-weight: 600; color: var(--ink-strong); }
+.minihud em { font-style: normal; font-size: var(--fs-xs); color: var(--lifeblood-line); }
+.minihud .is-over b { color: var(--over-ink); }
+.mini-nail { height: 28px; width: auto; }
+.mini-mask { height: 22px; width: auto; }
+.mini-soul { width: 20px; height: 20px; }
+.mini-lbl { font-family: var(--font-num); font-style: normal; font-size: var(--fs-2xs); font-weight: 600; letter-spacing: 0.06em; color: var(--label); }
+.minihud .notch { width: 16px; height: 16px; }
+/* The fight's scoreboard (.is-fight): your masks and your soul, and the name, bar and health of
+   whoever you're hitting. The bar is the one from their card (.fbar); here it stretches over what the name leaves. */
+.mini-of { font-family: var(--font-num); font-style: normal; font-size: var(--fs-xs); color: var(--muted); margin-left: calc(var(--sp-1) * -1); }
+.minihud.is-fight { flex: 0 1 540px; justify-content: flex-end; }
+.minihud .mini-me { flex: none; }
+.minihud .mini-foe { flex: 1 1 320px; gap: var(--sp-2); }
+.minihud .mini-foe-name { display: block; min-width: 0; max-width: 18ch; font-size: var(--fs-sm); color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.minihud .mini-foe .fbar { display: block; flex: 1 1 64px; min-width: 40px; }
+.minihud .mini-foe .fbar span { display: block; }
+
+/* ── Your game ───────────────────────────────────────────────────────────
+   Another page of the Inventory: the sheet's black with its corner brackets in the tint, and
+   no boxes inside. What can be touched is marked by the accent; what's read goes in bone. */
+.gear { display: flex; flex-direction: column; }
+/* The two starting points, under the title: text in the screen's ink, unboxed. */
+.presets { display: flex; justify-content: center; align-items: baseline; flex-wrap: wrap; gap: var(--sp-1) var(--sp-3); margin-top: var(--sp-2); }
+.presets .lbl { color: var(--muted); }
+.presets-sep { color: var(--muted); }
+.text-btn {
+  padding: var(--sp-1) 0; font-family: var(--font-body); font-size: var(--fs-md); color: var(--ink-2);
+  border-bottom: 1px solid var(--line-ctl); transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.text-btn:hover { color: var(--accent); border-bottom-color: var(--accent-line); }
+.gear-body > .inv-head { grid-column: 1 / -1; margin-bottom: 0; }
+.gear-body {
+  --inv-pad: var(--sp-8);
+  --inv-line: color-mix(in oklab, var(--tint) 13%, transparent);
+  position: relative; background: var(--inv-bg); padding: var(--inv-pad);
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-8) var(--sp-12); align-items: start;
+}
+/* Four blocks in two rows —the nail and the body, the arts and the spells—, with a rule
+   between the rows; in one column, between each block. */
+.block { min-width: 0; }
+.gear-body > section.block:nth-of-type(n+3) { border-top: 1px solid var(--inv-line); padding-top: var(--sp-6); }
+.gear-body .block-head { display: flex; align-items: baseline; gap: var(--sp-3); flex-wrap: wrap; }
+.block-note { font-family: var(--font-body); font-size: var(--fs-sm); font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--muted); }
+
+/* The nail: all five upright, with their damage below. The one you carry, with the arena's cold
+   spotlight behind it and the damage in bone; the others, in half-light. */
+.nailpicks { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--sp-1); }
+.nailpick { position: relative; isolation: isolate; display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); padding: var(--sp-2) 0 var(--sp-1); min-width: 0; }
+.nailpick::before {
+  content: ''; position: absolute; z-index: -1; inset: -6% -14% 18%;
+  background: radial-gradient(closest-side, var(--scene-glow), transparent);
+  opacity: 0; transition: opacity var(--dur) var(--ease);
+}
+.nailpick.is-on::before { opacity: 1; }
+.nailpick-art { height: 104px; display: flex; justify-content: center; }
+.nailpick-art img { height: 100%; width: auto; max-width: none; opacity: 0.38; filter: grayscale(0.5); transition: opacity var(--dur) var(--ease), filter var(--dur) var(--ease); }
+.nailpick.is-on .nailpick-art img { opacity: 1; filter: none; }
+.nailpick:hover .nailpick-art img, .nailpick:focus-visible .nailpick-art img { opacity: 0.85; filter: none; }
+.nailpick-num { font-size: var(--fs-lg); font-weight: 700; line-height: 1.1; color: var(--muted); padding-bottom: var(--sp-1); border-bottom: 2px solid transparent; }
+.nailpick.is-on .nailpick-num { color: var(--ink-strong); border-bottom-color: var(--accent-line); }
+.nailpick:hover .nailpick-num, .nailpick:focus-visible .nailpick-num { color: var(--accent); }
+
+/* Arts and spells: small plates, with the white light if you've learnt it and as a silhouette
+   if not. The three in a block share rows (subgrid): a name that breaks onto two lines doesn't
+   throw off the neighbours' figure or selector. */
+.gplates { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-1) var(--sp-3); }
+.gplate { display: grid; grid-row: span 3; grid-template-rows: subgrid; row-gap: var(--sp-1); justify-items: center; align-items: start; text-align: center; min-width: 0; padding: 0; }
+.gplate:has(.seg) { grid-row: span 4; }
+.gplate-art { position: relative; isolation: isolate; width: 100%; height: 60px; display: grid; place-items: center; }
+.gplate-art::before { content: ''; position: absolute; z-index: -1; inset: -8% 2%; background: var(--halo-plate); transition: filter var(--dur) var(--ease); }
+.gplate-art img { width: auto; height: auto; max-width: 92%; max-height: 50px; object-fit: contain; }
+.gplate:not(.is-on) .gplate-art::before { background: var(--halo-plate-off); }
+.gplate:not(.is-on) .gplate-art img { filter: brightness(0); }
+.gplate-name { font-size: var(--fs-xs); line-height: 1.25; color: var(--ink-2); }
+.gplate.is-on .gplate-name { color: var(--ink); }
+.gplate-val { font-size: var(--fs-md); font-weight: 700; line-height: 1.25; color: var(--ink-strong); }
+.gplate-val.is-none { font-family: var(--font-body); font-size: var(--fs-xs); font-weight: 400; color: var(--muted); }
+button.gplate:hover .gplate-name, button.gplate:focus-visible .gplate-name { color: var(--accent); }
+button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
+.gplate .seg { width: 100%; }
+.gplate .seg button { padding: var(--sp-1) 0; }
+/* Charms found: the Charms grid (.quick-grid), but what you have shows whole, undimmed, and
+   what you don't, shadowed (.qc.is-missing, further up). */
+.own-all { margin-left: auto; display: flex; align-items: baseline; gap: var(--sp-2); }
+.own-all .text-btn { font-size: var(--fs-sm); }
+.own-all .text-btn:disabled { color: var(--muted); border-bottom-color: transparent; cursor: default; }
+.quick-owned .qc:not(.is-missing) img { opacity: 1; filter: none; }
+
+/* Body: the game item that raises it, its name and its range, and the −/+ on the right. */
+.field { --field-icon: 36px; display: flex; flex-direction: column; gap: var(--sp-1); }
+.field + .field { margin-top: var(--sp-4); }
+.field-row { display: flex; align-items: center; gap: var(--sp-3); }
+.field-icon { width: var(--field-icon); height: var(--field-icon); flex-shrink: 0; display: grid; place-items: center; }
+.field-icon img { width: auto; height: auto; max-width: 100%; max-height: 100%; }
+.field-text { display: flex; flex-direction: column; flex-grow: 1; min-width: 0; }
+.field-name { font-size: var(--fs-sm); line-height: 1.3; color: var(--ink); }
+.field-note { font-size: var(--fs-xs); line-height: 1.3; color: var(--muted); }
+.step-row { display: flex; align-items: center; gap: var(--sp-1); flex-shrink: 0; }
+.step { width: 36px; height: 36px; flex-shrink: 0; border: 1px solid var(--line-ctl); color: var(--ink-2); font-size: var(--fs-lg); line-height: 1; }
+.step:hover:not(:disabled) { border-color: var(--accent-line); color: var(--accent); }
+.step-num { min-width: 2.2ch; text-align: center; font-size: var(--fs-xl); font-weight: 700; line-height: 1; color: var(--ink-strong); }
+.field .preview { padding-left: calc(var(--field-icon) + var(--sp-3)); }
+@media (pointer: coarse) { .step { width: 44px; height: 44px; } }
+.preview { display: block; font-size: var(--fs-xs); color: var(--muted); min-height: 1.2em; text-wrap: pretty; }
+/* The condition, in front and in grey; what would change, in normal ink. Green is kept for
+   what you've already gained: a hypothesis isn't an advantage. */
+.preview i { font-style: normal; color: var(--muted); }
+.preview b { font-weight: 600; color: var(--ink-2); }
+.preview b.bad { color: var(--bad); }
+
+/* ── The charm's detail, next to the grid ─────────────────────────────────
+   What the floating inspector did, now neither floating nor boxed: the name with its medal, its
+   cost in notch points and the button on the same row; the game's line, a status line and what
+   changes, before → after. It's always the same size —also with no charm chosen— so the band
+   doesn't grow or shrink on hover: each piece has its line cap and the list its own
+   (DETAIL_ROWS in js/app.js). */
+.charm-detail { min-width: 0; height: 340px; overflow: hidden; padding-top: var(--sp-4); border-top: 1px solid var(--inv-line); }
+.detail-hint { font-size: var(--fs-sm); line-height: 1.5; color: var(--muted); font-style: italic; max-width: 40ch; }
+.insp-head { display: flex; align-items: center; gap: var(--sp-3); }
+.insp-id { flex: 1 1 auto; min-width: 0; }
+.insp-name { font-size: var(--fs-lg); line-height: 1.25; color: var(--ink-strong); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.insp-notch { display: flex; align-items: center; gap: var(--sp-3); margin-top: var(--sp-half); font-size: var(--fs-xs); color: var(--muted); white-space: nowrap; overflow: hidden; }
+.insp-en { font-style: italic; overflow: hidden; text-overflow: ellipsis; }
+.detail-cost { display: inline-flex; flex: none; gap: var(--sp-1); }
+.detail-cost .notch { width: 16px; height: 16px; }
+.insp-blurb {
+  font-size: var(--fs-sm); line-height: 1.45; color: var(--ink-2); margin: var(--sp-3) 0 var(--sp-2);
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+}
+.insp-state { font-size: var(--fs-xs); line-height: 1.4; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.insp-state.bad { color: var(--bad); }
+.insp-state.over { color: var(--over-ink); }
+.insp-state.cond { color: var(--cond); }
+.charm-detail h3 { margin: var(--sp-3) 0 var(--sp-1); }
+.insp-list li { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-3); padding: var(--sp-1) 0; border-bottom: 1px solid var(--line-row); font-size: var(--fs-xs); line-height: 1.35; }
+.insp-list .lbl { min-width: 0; font-family: var(--font-body); font-size: var(--fs-xs); letter-spacing: 0; text-transform: none; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.insp-list .with { font-style: italic; color: var(--muted); }
+.insp-list .vals { flex: none; display: inline-flex; align-items: baseline; gap: var(--sp-1); font-variant-numeric: tabular-nums; }
+.insp-list .from { color: var(--muted); }
+.insp-list .arrow { color: var(--muted); }
+.insp-list .to { color: var(--ink); font-weight: 600; }
+.insp-more button { padding: 0; font: inherit; font-style: italic; color: var(--accent); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--accent-line); }
+.insp-more button:hover { color: var(--ink-strong); }
+.insp-empty { font-size: var(--fs-xs); color: var(--muted); }
+
+/* ── Floating notice ─────────────────────────────────────────────────── */
+.toast {
+  position: fixed; left: 50%; bottom: var(--sp-6); transform: translateX(-50%); z-index: 80;
+  background: var(--card-on); border: 1px solid var(--line-panel); color: var(--ink);
+  padding: var(--sp-3) var(--sp-6); font-size: var(--fs-sm); box-shadow: var(--shadow-md); max-width: calc(100vw - var(--sp-8));
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────── */
+@media (max-width: 1099px) {
+  /* No room for the two columns: the grid moves below and gets its size back. */
+  .loadout-wrap { grid-template-columns: minmax(0, 1fr); gap: var(--sp-6); }
+    .groups { columns: 1; }
+  .fx { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 899px) {
+  /* The title, the lead paragraph and the large figures already scale by themselves with clamp():
+     three sets of sizes, one per breakpoint, aren't needed. */
+  :root { --page-pad: var(--sp-4); --sticky-h: 100px; }
+  .shell { gap: var(--sp-6); }
+  /* The bar in two rows: the tabs and, below, the mini-bar across the full width. */
+  .nav { flex-direction: column; align-items: stretch; gap: 0; }
+  .minihud { justify-content: space-between; gap: var(--sp-3); padding: var(--sp-2) 0; border-top: 1px solid var(--line-row); }
+  .minihud.is-fight { flex: none; justify-content: space-between; }
+  .minihud .mini-foe { flex: 1 1 auto; }
+  .panel { --inv-pad: var(--sp-6); }
+  /* Your game in one column, with the rule between each block. */
+  .gear-body { --inv-pad: var(--sp-6); grid-template-columns: minmax(0, 1fr); gap: var(--sp-6); }
+  .gear-body > section.block + section.block { border-top: 1px solid var(--inv-line); padding-top: var(--sp-6); }
+  .steps { grid-template-columns: minmax(0, 1fr); gap: var(--sp-3); }
+  /* The close button sat ON TOP of its own title: it read
+     "Got it / HOW IT WORKS". It stays at the top right and the title makes room for it. */
+  .guide { padding: var(--sp-4); }
+  .guide h2 { padding-right: 104px; }
+  .guide-close { top: var(--sp-3); right: var(--sp-3); }
+}
+@media (max-width: 599px) {
+  .panel, .gear-body { --inv-pad: var(--sp-4); }
+  .fx { grid-template-columns: minmax(0, 1fr); }
+  /* The header, centred: the title on its row and the language and Share below. */
+  .masthead { display: flex; flex-wrap: wrap; justify-content: center; padding-top: var(--sp-4); }
+  .brand { flex: 1 1 100%; }
+  .masthead .mh-tools { flex-wrap: wrap; }
+  .langsel button, .mh-link { min-height: 44px; }
+  .mh-hdr { width: 160px; }
+  /* The two starting points: the label above, and both on one line. */
+  .presets .lbl { flex: 1 1 100%; text-align: center; }
+  /* The bar, on mobile: the four tabs spread out (the active one underlined: the diamond doesn't
+     fit) and without the Journal's book, which leaves room for its name with your completed entries. */
+  :root { --sticky-h: 100px; }
+  .nav-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; }
+  .nav-tab { flex-direction: column; justify-content: center; gap: 0; min-height: 48px; font-size: var(--fs-md); text-align: center; }
+  .nav-tab::before { display: none; }
+  .nav-tab[aria-current="page"] { box-shadow: inset 0 -2px 0 var(--accent); }
+}
+/* The sheet arranges itself by its own width (container inv), not the window's. */
+/* No room for the row: the HUD and the damage on top, and the six below, after a rule. */
+@container inv (max-width: 1039px) {
+  .inv-status { grid-template-columns: minmax(0, 340px) minmax(0, 1fr); grid-template-areas: "hud lead" "stats stats"; }
+  .inv-stats { grid-template-columns: repeat(6, minmax(0, 1fr)); padding: var(--sp-6) 0 0; border-left: 0; border-top: 1px solid var(--inv-line); }
+}
+@container inv (max-width: 899px) {
+  /* The status in three rows: the HUD, the nail damage and the six in two rows of three. */
+  .inv-status { grid-template-columns: minmax(0, 1fr); grid-template-areas: "hud" "lead" "stats"; }
+  .inv-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-6); }
+  /* The band in one column: Equipped, Notches, the grid and the detail BELOW it, so as not to
+     push it under the finger. The columns dissolve and each piece takes its place. */
+  .inv-band { display: flex; flex-direction: column; align-items: stretch; }
+  .band-col { display: contents; }
+  .inv-band .is-eq { order: 1; }
+  .inv-band .is-notches { order: 2; }
+  .inv-band .quick { order: 3; }
+  .inv-band .charm-detail { order: 4; }
+}
+@container inv (max-width: 559px) {
+  /* Nine 24.8 px masks fit in a row next to the 64 px orb: not a single slot below finger
+     size. */
+  .panel .hud { --orb: 64px; --pip-h: 32px; --hud-row: 248px; column-gap: var(--sp-2); }
+  .panel .hud-masks { gap: var(--sp-1) var(--sp-half); }
+  .inv-status { --nail-h: 120px; }
+  .inv-lead { gap: var(--sp-4); }
+  .inv-nail { width: 40px; }
+  .inv-nail::before { width: 140px; height: 200px; }
+  .inv-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-6) var(--sp-4); }
+  .inv-plates { grid-template-columns: minmax(0, 1fr); gap: var(--sp-6); }
+  .plates { gap: var(--sp-2); }
+  .plate-art { height: 64px; }
+  .plate-art img { max-height: 54px; max-width: 94%; }
+  .plate-name { font-size: var(--fs-xs); }
+  .plate-val { font-size: var(--fs-lg); }
+  .eff-plates { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-6) var(--sp-2); }
+  .eff-plates .plate-art { height: 76px; }
+  .eff-plates .plate-art > img { max-height: 64px; }
+  .inv-head .sec-title { font-size: var(--fs-lg); }
+}
+/* On mobile the sheet reads in the order it's used: the HUD and the nail, and right after them
+   the charms (Equipped, Notches, the grid and its detail); the six figures, afterwards. While you
+   scroll down to touch charms, the fixed mini-bar already shows the ones that change most. It's
+   the same trick as the band (display: contents + order), one level up: the panel becomes a flex column. */
+@media (max-width: 599px) {
+  .panel { display: flex; flex-direction: column; }
+  .panel > .inv-status { display: contents; }
+  .inv-hud { order: 1; }
+  .inv-lead { order: 2; margin-top: var(--sp-6); }
+  .panel > .inv-band { order: 3; }
+  .panel > .inv-status .inv-stats { order: 4; margin-top: var(--sp-8); padding-top: 0; border-top: 0; }
+  .panel > .inv-plates, .panel > .inv-effects, .panel > .toggle-all, .panel > .detail { order: 5; }
+  .panel > .inv-band + .inv-plates { border-top: 1px solid var(--inv-line); padding-top: var(--sp-6); }
+  /* The grid, seven per row and without the staggered layout: each slot ~45 px, finger size.
+     At ten per row they measured 27 px. */
+  .quick-grid {
+    --qc: min(48px, calc((100cqw - 6 * var(--sp-half)) / 7));
+    display: grid; grid-template-columns: repeat(7, var(--qc)); justify-content: space-between; gap: var(--sp-2) 0;
+  }
+  .quick-grid .qrow { display: contents; }
+  .quick-grid .qrow:nth-child(even) { margin-left: 0; }
+  /* Without a mouse the detail doesn't jump from slot to slot: it's as tall as what it says, without the fixed space. */
+  .charm-detail { height: auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+
+/* ── Combat simulator ──────────────────────────────────────────────────
+   Two cards facing each other and two columns of buttons. Each button carries its number in
+   front: what you see is your build's arithmetic against the enemy's health, not an
+   animation. Its header is its three tabs (fightHead).
+   It's another screen of the game, like the Inventory: the same black, with the corner
+   brackets in the section's tint (Crystal Peak's; in the Hall and the Pantheons, Godhome's),
+   and no slate boxes inside. What can be touched goes without a background —with a thin rule
+   if it has no artwork to give it shape—, veils on hover, and the chosen one carries the accent. */
+.fight-body {
+  --inv-pad: var(--sp-8);
+  --inv-line: color-mix(in oklab, var(--tint) 13%, transparent);
+  position: relative; background: var(--inv-bg); padding: var(--inv-pad);
+  display: flex; flex-direction: column; gap: var(--sp-6);
+}
+/* Block labels loose on the screen (Pantheon, Bindings) carry their rule behind them,
+   like the Your game blocks. */
+.fight-body > .block-head { display: flex; align-items: center; gap: var(--sp-3); margin: 0; }
+.fight-body > .block-head::after { content: ''; flex: 1; border-top: 1px solid var(--inv-line); }
+/* Here and not with the other breakpoints, which come earlier in the file and would lose. */
+@media (max-width: 899px) { .fight-body { --inv-pad: var(--sp-6); } }
+@media (max-width: 599px) { .fight-body { --inv-pad: var(--sp-4); } }
+.fight-tools { display: flex; align-items: flex-end; gap: var(--sp-4) var(--sp-6); flex-wrap: wrap; }
+.fight-reset { display: inline-flex; align-items: center; gap: var(--sp-2); min-height: 44px; font-size: var(--fs-sm); }
+.fight-reset svg { flex: none; transition: transform var(--dur) var(--ease); }
+.fight-reset:hover svg { transform: rotate(-60deg); }
+.fight-pick { display: flex; flex-direction: column; gap: var(--sp-1); min-width: 0; flex: 1 1 300px; }
+/* ── The Hunter's Journal: the enemy picker ──────────────────────────────
+   Traced from the game's Journal screen (design/02-hollow-knight.md): on the left the list
+   with the medallions, on the right the page, on black, with the frameless artwork, the name
+   in small caps and the corner brackets.
+   It isn't a dropdown but a panel of the combat screen itself: it pushes the arena down
+   and closes with its button, with Esc or when picking. */
+.jr-toggle {
+  display: flex; align-items: center; gap: var(--sp-3);
+  width: 100%; min-height: 48px; text-align: left;
+  font-family: var(--font-body); font-size: var(--fs-md); color: var(--ink);
+  background: none; border: 0; border-bottom: 1px solid var(--line-ctl);
+  padding: var(--sp-1) 0;
+  transition: border-color var(--dur) var(--ease);
+}
+.jr-toggle:hover, .jr-toggle[aria-expanded="true"] { border-color: var(--accent-line); }
+.jr-val { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-lg); color: var(--ink-strong); }
+.jr-val.is-empty { color: var(--muted); }
+.jr-toggle-act { font-size: var(--fs-xs); color: var(--muted); white-space: nowrap; }
+.jr-toggle:hover .jr-toggle-act, .jr-toggle:hover .chev { color: var(--accent); }
+
+/* The Journal medallion (84 × 96: the ring and its two finials). Those without an entry carry
+   their portrait in a round well of the same size. */
+.jr-medal { width: 35px; height: 40px; flex: none; object-fit: contain; }
+.jr-medal.is-art {
+  display: grid; place-items: center; overflow: hidden;
+  height: 35px; margin: var(--sp-half) 0 3px;
+  border-radius: 50%; background: var(--medal); box-shadow: inset 0 0 0 2px var(--medal-line);
+}
+.jr-medal.is-art img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%; }
+
+.journal {
+  display: grid; grid-template-columns: minmax(250px, 320px) minmax(0, 1fr);
+  height: clamp(540px, 74vh, 660px);
+  border: 1px solid var(--inv-line);
+}
+
+.jr-index { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--inv-line); }
+.jr-search {
+  font-family: var(--font-body); font-size: var(--fs-sm); color: var(--ink);
+  background: none; border: 0; border-bottom: 1px solid var(--inv-line);
+  padding: var(--sp-3); width: 100%; min-height: 44px;
+  -webkit-appearance: none; appearance: none; border-radius: 0;
+}
+.jr-search::placeholder { color: var(--muted); }
+.jr-search:focus-visible { outline-offset: -2px; }
+.jr-kinds { margin: var(--sp-2); }
+/* Each filter's count, inside its own button. */
+.jr-kinds i {
+  font-family: var(--font-num); font-style: normal; font-variant-numeric: tabular-nums;
+  font-size: var(--fs-2xs); color: var(--muted); margin-left: var(--sp-half);
+}
+.jr-kinds button[aria-pressed="true"] i { color: var(--ink-2); }
+.jr-head {
+  display: flex; justify-content: space-between; padding: 0 var(--sp-4) var(--sp-1);
+  font-family: var(--font-num); text-transform: uppercase; letter-spacing: 0.09em;
+  font-size: var(--fs-2xs); font-weight: 600; color: var(--label);
+}
+
+.jr-list { position: relative; flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 var(--sp-2) var(--sp-2); }
+.jr-row {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--sp-3);
+  width: 100%; text-align: left; padding: var(--sp-half) var(--sp-2);
+  font-size: var(--fs-sm); color: var(--ink-2); line-height: 1.25;
+  border: 1px solid transparent;
+  transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.jr-row:hover { background: var(--veil); color: var(--ink); }
+.jr-row.is-cur { background: var(--picked); color: var(--ink-strong); border-color: var(--accent-line); }
+/* Who you're fighting, even while reading another entry: the chosen card's rule. */
+.jr-row.is-on { box-shadow: inset 3px 0 0 var(--accent); }
+.jr-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.jr-hits { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-xs); color: var(--muted); }
+.jr-row.is-cur .jr-hits { color: var(--ink-2); }
+.jr-empty { font-size: var(--fs-sm); color: var(--muted); font-style: italic; padding: var(--sp-3); }
+/* "No enemy" weighs little: removing the enemy is an option, not the way forward. */
+.jr-none {
+  margin: 0 var(--sp-2) var(--sp-2); padding: var(--sp-2) var(--sp-3); text-align: left;
+  font-size: var(--fs-xs); font-style: italic; color: var(--muted); border-top: 1px solid var(--inv-line);
+}
+.jr-none:hover { color: var(--ink-2); }
+
+.jr-page {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: var(--sp-2);
+  min-height: 0; margin: var(--sp-4); padding: var(--sp-4) var(--sp-6);
+  text-align: center;
+}
+.jr-num {
+  position: absolute; top: var(--sp-2); right: var(--sp-3);
+  font-family: var(--font-num); font-variant-numeric: tabular-nums;
+  font-size: var(--fs-2xs); letter-spacing: 0.09em; color: var(--muted);
+}
+.jr-art { flex: none; height: 170px; width: 100%; display: flex; align-items: flex-end; justify-content: center; }
+.jr-art img { max-height: 100%; max-width: 100%; object-fit: contain; }
+.jr-art img.is-missing { visibility: hidden; }
+.jr-title { font-family: var(--font-display); font-size: var(--fs-xl); font-weight: 600; letter-spacing: 0.06em; color: var(--ink-strong); margin-top: var(--sp-2); }
+.jr-page .rule { flex: none; color: var(--bracket); }
+.jr-kind { font-size: var(--fs-xs); color: var(--muted); }
+.jr-text {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  display: flex; flex-direction: column; gap: var(--sp-3);
+  width: 100%; max-width: var(--measure); margin-top: var(--sp-2); padding-right: var(--sp-2);
+  text-align: left; line-height: 1.55;
+}
+.jr-desc { font-size: var(--fs-md); color: var(--ink); }
+.jr-notes { font-size: var(--fs-md); color: var(--ink-2); font-style: italic; white-space: pre-line; }
+.jr-by { font-size: var(--fs-sm); color: var(--muted); text-align: right; }
+.jr-aside { font-size: var(--fs-sm); color: var(--muted); font-style: italic; }
+.jr-blank { margin: auto; font-size: var(--fs-sm); color: var(--muted); font-style: italic; }
+
+/* What the calculator adds: always in view, at the foot of the page. */
+.jr-foot {
+  flex: none; width: 100%; display: flex; align-items: flex-end; justify-content: space-between;
+  gap: var(--sp-4); flex-wrap: wrap; padding-top: var(--sp-3); border-top: 1px solid var(--inv-line); text-align: left;
+}
+.jr-facts { display: flex; gap: var(--sp-6); flex-wrap: wrap; }
+.jr-fact { display: flex; flex-direction: column; gap: var(--sp-half); }
+.jr-fact dt {
+  font-family: var(--font-num); text-transform: uppercase; letter-spacing: 0.09em;
+  font-size: var(--fs-2xs); font-weight: 600; color: var(--label);
+}
+.jr-fact dd { margin: 0; font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-xl); font-weight: 600; color: var(--ink-strong); line-height: 1.1; }
+.jr-fact small { font-size: var(--fs-xs); color: var(--muted); }
+
+/* On mobile the two columns don't fit, and without a mouse there's no "hover" to read the
+   page: only the list remains, and tapping a row picks it. The Journal page does show on the
+   Hall's plaque (.hall-plaque.jr-page), which grows with its text instead of scrolling. */
+@media (max-width: 699px) {
+  .journal { grid-template-columns: minmax(0, 1fr); height: auto; }
+  .jr-index { border-right: 0; }
+  .jr-list { flex: none; max-height: 62vh; }
+  .journal .jr-page { display: none; }
+  .jr-page { margin: var(--sp-3); padding: var(--sp-4) var(--sp-3); }
+  .jr-art { height: 140px; }
+  .jr-text { overflow: visible; flex: none; }
+  .jr-foot { flex-direction: column; align-items: stretch; }
+  .jr-facts { gap: var(--sp-4); justify-content: space-between; }
+}
+
+/* ── Your side of the arena: a scene from the game ─────────────────────
+   The HUD at the top left and the Knight standing on the black foreground. Nothing in the
+   HUD is a rectangle (design/02-hollow-knight.md, §5): no box and no border. The scene is
+   the field; what's read goes in the header above, just like the enemy's.
+   The HUD is painted by hudHtml() in js/app.js, the same as the sheet's, and shares its fit (.pip-mask, .orb-well). */
+.kscene {
+  --orb: 64px;
+  --pip-h: 24px; --pip-w: calc(var(--pip-h) * 51 / 66);
+  --hud-row: 224px;     /* what the masks take up before wrapping: the tail, the vessels and the aura are measured from here and from --orb */
+  /* The HUD is in the flow and the Knight stays anchored at the bottom: with two rows of masks
+     (9 and 6 of lifeblood) the scene grows instead of pushing the vessels into his horns.
+     --stage is his place: what shows of the artwork plus the ground. */
+  --stage: 164px;
+  position: relative; min-height: 248px; overflow: hidden; isolation: isolate;
+  padding: var(--sp-3) var(--sp-3) var(--stage);
+  background: var(--scene-bg);
+}
+/* The spotlight behind the Knight: without it, his cloak and his Shade, which are black, can't be seen. */
+.kscene::before {
+  content: ''; position: absolute; z-index: -1; left: 50%; bottom: -24px;
+  width: 340px; height: 260px; transform: translateX(-50%);
+  background: radial-gradient(closest-side, var(--scene-glow), transparent);
+}
+.kscene.is-down::before { background: radial-gradient(closest-side, var(--scene-glow-low), transparent); }
+.kside-read b { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 600; color: var(--ink-strong); }
+.kside-lb, .kside-lb b { color: var(--lifeblood-line); }
+
+/* The HUD: the orb on the left; to its right, the masks on top of the frame's tail and the
+   reserve vessels below. It's the same size at any width, as in the game. */
+.hud {
+  position: relative; z-index: 1;
+  display: grid; grid-template-columns: var(--orb) auto; column-gap: var(--sp-2); align-items: start;
+}
+.hud-orb { position: relative; display: block; width: var(--orb); height: var(--orb); }
+.hud-soul {
+  position: absolute; width: 120.37%; max-width: none; height: auto; left: -9.03%; top: -7.18%;
+  clip-path: inset(var(--cut) 0 0 0);
+}
+.hud-ring {
+  position: absolute; left: -10%; top: -10%; width: 120%; height: 120%;
+  fill: var(--hud-frame); overflow: visible;
+}
+.hud-side { position: relative; display: flex; flex-direction: column; align-items: flex-start; padding-top: var(--sp-1); }
+.hud-masks { position: relative; display: flex; flex-wrap: wrap; gap: var(--sp-1); max-width: var(--hud-row); }
+.hud-mask { position: relative; display: block; width: var(--pip-w); height: var(--pip-h); }
+/* The lost mask is the same one shadowed, like the HUD's dark gap. */
+.hud-mask.is-empty img { filter: brightness(0.2) saturate(0); opacity: 0.85; }
+.hud-tail { display: block; width: calc(var(--hud-row) + 6px); height: auto; aspect-ratio: 230 / 16; margin-left: calc(var(--sp-1) * -1); fill: var(--hud-frame); }
+.hud-curl { fill: none; stroke: var(--hud-frame); stroke-width: 1.3; stroke-linecap: round; }
+.hud-vessels { display: flex; gap: var(--sp-1); padding-left: var(--sp-1); }
+.hud-vessel {
+  position: relative; width: calc(var(--orb) / 4); height: calc(var(--orb) / 4); border-radius: 50%;
+  background: var(--soul-well); box-shadow: inset 0 0 0 1px var(--soul-rim);
+}
+.hud-vessel img {
+  position: absolute; width: 121.6%; max-width: none; height: auto; left: -10.8%; top: -10.8%;
+  clip-path: inset(var(--cut) 0 0 0);
+}
+/* Overcharmed: the game's purple aura, behind the masks. */
+.hud-over {
+  position: absolute; z-index: -1; left: calc(var(--hud-row) * -0.125); top: calc(var(--orb) * -0.25);
+  width: calc(var(--hud-row) * 1.2143); max-width: none; height: auto;
+  pointer-events: none;
+}
+
+/* The Knight, standing on the ground. The artwork has 5% of air under the feet, so the
+   feet fall inside the ground's edge and don't float above it. */
+.kstage { position: absolute; left: 50%; bottom: 14px; width: 150px; height: 160px; transform: translateX(-50%); }
+.kstage-art { position: absolute; left: 50%; bottom: 0; height: 100%; width: auto; max-width: none; transform: translateX(-50%); }
+/* The Shade doesn't stand: it floats. */
+.kscene.is-down .kstage-art { height: 116px; bottom: 22px; animation: shade-float 3.2s ease-in-out infinite; }
+.kscene.is-dying .kstage-art { animation: shade-in var(--dur-slow) var(--ease), shade-float 3.2s ease-in-out infinite; }
+.kfloor { position: absolute; left: 0; bottom: 0; width: 100%; height: 44px; fill: var(--scene-floor); }
+.krock { position: absolute; bottom: 0; fill: var(--scene-floor); }
+.krock.is-left { left: 0; width: 100px; height: 110px; }
+.krock.is-right { right: 0; width: 120px; height: 130px; }
+
+/* What just happened. The hit: the flash, the mask that breaks and the game's invulnerability
+   flicker, in jumps and not faded. */
+.kscene.is-hit::after, .kscene.is-dying::after {
+  content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background: var(--scene-flash); opacity: 0; animation: scene-flash var(--dur) var(--ease);
+}
+.kscene.is-hit .kstage-art { animation: kn-blink 900ms steps(1, end); }
+.hud-mask.is-breaking img { animation: mask-break var(--dur-slow) var(--ease); }
+.hud-mask.is-mending img { animation: mask-mend var(--dur-slow) var(--ease); }
+.kscene.is-focus .kstage-art { animation: kn-focus 700ms var(--ease); }
+.hud-orb.is-moving .hud-soul, .hud-vessel.is-moving img { animation: soul-level var(--dur-slow) var(--ease); }
+
+/* A single mask: the black smoke the Knight gives off. Without motion it isn't shown. */
+.wisp {
+  position: absolute; left: calc(50% + var(--x)); bottom: 84px; width: var(--s); height: var(--s);
+  border-radius: 50%; background: var(--void-wisp); opacity: 0;
+  animation: wisp 2.4s ease-out infinite; animation-delay: var(--d);
+}
+.wisp:nth-of-type(1) { --x: -26px; --s: 8px; --d: 0s; --dx: -6px; }
+.wisp:nth-of-type(2) { --x: 16px; --s: 6px; --d: -0.4s; --dx: 5px; }
+.wisp:nth-of-type(3) { --x: -8px; --s: 10px; --d: -0.8s; --dx: -3px; }
+.wisp:nth-of-type(4) { --x: 24px; --s: 7px; --d: -1.2s; --dx: 8px; }
+.wisp:nth-of-type(5) { --x: -18px; --s: 5px; --d: -1.6s; --dx: -9px; }
+.wisp:nth-of-type(6) { --x: 4px; --s: 8px; --d: -2s; --dx: 2px; }
+
+@keyframes scene-flash { from { opacity: 1; } }
+@keyframes kn-blink { 0%, 22%, 44%, 66% { opacity: 0.25; } 11%, 33%, 55%, 77%, 100% { opacity: 1; } }
+@keyframes kn-focus { 45% { filter: drop-shadow(0 0 14px var(--focus-glow)) brightness(1.12); } }
+@keyframes mask-break { from { filter: brightness(2); opacity: 1; transform: scale(1.2); } }
+@keyframes mask-mend { from { filter: brightness(2.4); opacity: 0; transform: scale(0.5); } }
+@keyframes soul-level { from { clip-path: inset(var(--cut-was) 0 0 0); } }
+@keyframes shade-in { from { opacity: 0; } }
+@keyframes shade-float { 50% { transform: translate(-50%, -5px); } }
+@keyframes wisp {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.6); }
+  20% { opacity: 0.9; }
+  100% { opacity: 0; transform: translate(var(--dx), -72px) scale(1.2); }
+}
+
+/* ── The arena ────────────────────────────────────────────────────────
+   You on the left with your attacks; opposite, one card per entity. The boss and each of
+   its parts carry a normal card; the minions, a smaller one. Each card brings ITS OWN
+   buttons, because an Infected Balloon attacks on its own, and the header is a button
+   because you have to be able to choose who you hit. */
+.arena { display: grid; grid-template-columns: minmax(0, 330px) minmax(0, 1fr); gap: var(--sp-4); align-items: start; }
+.side-knight, .side-foes { display: flex; flex-direction: column; gap: var(--sp-3); min-width: 0; }
+
+/* The arena's two headers, yours and the enemy's: name and figures on one line. */
+.foes-head, .kside-head { display: flex; align-items: baseline; gap: var(--sp-3); flex-wrap: wrap; }
+.foes-head h3, .kside-head h3 { font-size: var(--fs-md); color: var(--ink-strong); }
+.foes-total, .kside-read { font-size: var(--fs-xs); color: var(--muted); }
+
+.foecard { border-top: 1px solid var(--inv-line); min-width: 0;
+  transition: box-shadow var(--dur) var(--ease), background-color var(--dur-fast) var(--ease); }
+/* Who you're hitting: the accent rule on its left, like the Journal row. */
+.foecard.is-on { box-shadow: inset 2px 0 0 var(--accent); }
+.foecard.is-down { opacity: 0.45; }
+.foecard.is-empty { border: 1px dashed var(--inv-line); }
+
+.foecard-head {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center;
+  gap: var(--sp-3); width: 100%; text-align: left; padding: var(--sp-3);
+}
+/* The whole card picks who you hit (data-act="target"), the space next to the attacks too:
+   it's veiled whole wherever you come in, and if you aren't over an attack, the name takes
+   the accent. With the veil only on the header, the attacks looked like another card's. */
+.foecard[data-act] { cursor: pointer; }
+.foecard[data-act]:hover { background: var(--veil); }
+.foecard[data-act]:hover:not(:has(.move:hover)) .foecard-name { color: var(--accent); }
+/* The portrait, with the same cold spotlight the Knight has behind him opposite: without it,
+   the dark enemies (False Knight, Nosk) get lost in the black. An <img>'s background is
+   painted behind the artwork. */
+.foecard-art { width: auto; height: 72px; max-width: 84px; padding: var(--sp-1); object-fit: contain;
+  background: radial-gradient(closest-side, var(--scene-glow), transparent); }
+.foecard-art.is-missing { display: none; }
+.foecard-body { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; }
+.foecard-name { font-size: var(--fs-sm); color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.foecard-num {
+  font-family: var(--font-num); font-variant-numeric: tabular-nums;
+  font-size: var(--fs-md); font-weight: 600; color: var(--ink-strong);
+}
+.foecard-note { font-size: var(--fs-xs); color: var(--muted); }
+.foecard-moves {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(156px, 1fr));
+  gap: var(--sp-2); padding: 0 var(--sp-3) var(--sp-3);
+}
+/* A minion is a guest: a shorter card, a small portrait and the name in italics. */
+.foecard.is-minion { margin-left: var(--sp-6); }
+.foecard.is-minion .foecard-art { height: 44px; max-width: 48px; }
+.foecard.is-minion .foecard-head { padding: var(--sp-2) var(--sp-3); }
+.foecard.is-minion .foecard-name { font-style: italic; color: var(--muted); font-size: var(--fs-xs); }
+.foecard.is-minion .foecard-num { font-size: var(--fs-sm); }
+.foecard.is-minion .fbar { height: 5px; }
+.move-summon .move-num { color: var(--ink-2); }
+
+.fbar { height: 8px; background: var(--well); box-shadow: inset 0 0 0 1px var(--well-line); }
+/* Bone while it has health left; red is kept for when there really is little left,
+   otherwise a full red bar warns of a danger that doesn't exist yet. */
+.fbar span { display: block; height: 100%; background: var(--ink-2); transition: width var(--dur) var(--ease); }
+.fbar.is-low span { background: var(--bad); }
+
+/* The end of a fight, titled the way the game titles an area on entry: spaced-out small
+   caps, centred, and the flourish from the page title below. No box and no traffic-light
+   colour, which made it look like a status tag: the scene already says who has fallen,
+   and falling is written only one step dimmer than winning. It comes in like the game's
+   titles, fading, an instant after the hit that causes it. */
+.fight-end {
+  display: flex; flex-direction: column; align-items: center; gap: var(--sp-2);
+  text-align: center; padding: var(--sp-2) 0;
+}
+.fight-end-title {
+  font-family: var(--font-display); font-weight: 600; font-size: var(--fs-xl);
+  text-transform: uppercase; letter-spacing: 0.14em; line-height: 1.2;
+  padding-left: 0.14em;              /* the letter-spacing hangs after the last letter: it's offset to centre */
+  color: var(--ink-strong); text-wrap: balance;
+}
+.fight-end-rule { display: flex; align-items: center; gap: var(--sp-3); color: var(--bracket); line-height: 0; }
+.fight-end-rule i { width: 72px; height: 1px; background: linear-gradient(to left, currentColor, transparent); }
+.fight-end-rule i:last-child { background: linear-gradient(to right, currentColor, transparent); }
+.fight-end-rule svg { fill: none; stroke: currentColor; stroke-width: 1; }
+.fight-end-rule .hall-badge { width: 28px; height: 28px; }
+.fight-end-note { font-size: var(--fs-sm); font-style: italic; color: var(--ink-2); text-wrap: balance; }
+.fight-end-acts { display: flex; justify-content: center; gap: var(--sp-2); flex-wrap: wrap; margin-top: var(--sp-2); }
+.fight-end.is-dead .fight-end-title { color: var(--ink-2); }
+.fight-end.is-dead .fight-end-rule { color: var(--line-ctl); }
+.fight-end.is-dead .fight-end-note { color: var(--muted); }
+.fight-end.is-fresh { animation: fight-end-in var(--dur-slow) var(--ease) var(--dur) both; }
+@keyframes fight-end-in { from { opacity: 0; transform: translateY(6px); } }
+
+/* The two movesets. */
+.moveset { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; }
+.move {
+  display: grid; grid-template-columns: 1fr auto; align-items: baseline;
+  gap: var(--sp-half) var(--sp-3); text-align: left; width: 100%;
+  background: none; border: 1px solid var(--inv-line);
+  padding: var(--sp-2) var(--sp-3); min-height: 44px;
+  transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+.move:hover:not(:disabled) { border-color: var(--accent-line); background: var(--veil); }
+/* Yours carry their artwork from the game, which already gives them shape: no rule, like the charms. */
+.moveset .move, .moveset .spell-card { border-color: transparent; }
+.move-foe:hover:not(:disabled) { border-color: var(--over-line); }
+.move-name { font-size: var(--fs-sm); color: var(--ink); min-width: 0; }
+.move-num {
+  font-family: var(--font-num); font-variant-numeric: tabular-nums;
+  font-size: var(--fs-md); font-weight: 600; color: var(--ink-strong);
+}
+.move-foe .move-num { color: var(--over-ink); }
+.move-cost { grid-column: 1 / -1; font-size: var(--fs-2xs); color: var(--muted); }
+/* Your attacks carry their artwork from the game, in the same landscape slot for all:
+   spells and arts are wide, and the nail, vertical, is laid down. */
+.move.has-art { grid-template-columns: 56px minmax(0, 1fr) auto; align-items: center; }
+.move-art { grid-row: 1 / span 2; display: grid; place-items: center; width: 56px; height: 30px; }
+/* The row, the slot's height, and the artwork centred even if it overflows (unsafe). Without
+   fixing it, the row grew to the artwork and left it stuck at the top: the nail (56 px before
+   rotating it) sat 13 px below its row's centre and Great Slash, 7. Each artwork's height is
+   still given by its width (max-height didn't resolve against an auto row; now, without it). */
+.move-art { grid-template-rows: 30px; }
+.move-art img { width: auto; height: auto; max-width: 100%; max-height: none; object-fit: contain; place-self: unsafe center; }
+.move-art.is-nail img { height: 56px; max-height: none; max-width: none; transform: rotate(-90deg); }
+/* The charm icons (Shadow Dash, Weaverlings, Dreamshield) are square: with the grid's auto row,
+   max-height: 100% has nothing to measure against and only the width ruled, so they came out
+   at 56 × 56 and spilled out of the button. The row fixed at the slot's height leaves them at
+   30 × 30, centred. */
+.move-art.is-charm { grid-template-rows: 100%; }
+.move-art.is-charm img { height: 100%; width: auto; max-width: none; }
+.move.has-art .move-cost { grid-column: 2 / -1; }
+.move:disabled .move-art img { filter: grayscale(0.8); }   /* the button already dims as a whole */
+/* Why hitting there is no use: immunity or damage cap. It's flagged, not simulated. */
+.move-cost.is-warn { color: var(--cond); font-style: italic; }
+.summons { display: flex; flex-direction: column; gap: var(--sp-2); margin-top: var(--sp-3); }
+.summons .block-head { margin: 0; }
+.move-summon .move-num { color: var(--ink-2); }
+
+/* The log: the latest at the top, and only the latest in live ink. */
+/* It takes the place of the buttons that aren't there yet, so the column doesn't shrink: it
+   measures exactly one .move, so choosing an enemy with a single attack doesn't move
+   anything below. */
+.moveset-empty {
+  display: flex; align-items: center; min-height: 44px; padding: 0 var(--sp-3);
+  font-size: var(--fs-sm); color: var(--muted); font-style: italic;
+}
+
+.fight-log { border-top: 1px solid var(--inv-line); padding-top: var(--sp-4); }
+.side-foes > .fight-log { margin-top: var(--sp-4); }
+.fight-log ol { display: flex; flex-direction: column; gap: var(--sp-1); }
+.fight-log li { font-size: var(--fs-xs); color: var(--muted); font-variant-numeric: tabular-nums; }
+.fight-log li.is-last { color: var(--ink-2); }
+
+/* Charms in the arena (design/04-charms-in-combat.md §3.3). Carefree Melody splits the enemy
+   attack into two buttons —the hit and "negated", with its probability— under a shared
+   frame, like the Hall's double pedestals. */
+.move-pair { display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-flow: column; grid-auto-columns: auto; }
+/* The pair takes two cells of the attack grid: in just one, the attack's name gets squashed
+   against its figure. In one column (mobile), the whole row. */
+.foecard-moves .move-pair { grid-column: span 2; }
+/* A split attack is a single card: the border belongs to the whole and lights up whole; inside,
+   only the piece you're about to press is tinted, because each one is a different action (it hits
+   you, you stop it, you negate it). With a border per piece, on hover they looked like loose parts. */
+.move-pair { border: 1px solid var(--inv-line); transition: border-color var(--dur) var(--ease); }
+.move-pair .move { border: 0; background: transparent; }
+.move-pair .move + .move { border-left: 1px dashed var(--inv-line); }
+.move-pair .move:hover:not(:disabled) { border-color: var(--inv-line); background: var(--veil); }
+.move-pair:has(.move:hover:not(:disabled)) { border-color: var(--over-line); }
+.move-negate, .move-block { grid-template-columns: auto; text-align: center; }
+.move-negate .move-name, .move-block .move-name { font-size: var(--fs-2xs); color: var(--muted); }
+.move-negate .move-num, .move-block .move-num { font-size: var(--fs-sm); color: var(--ink-2); }
+/* A spell's impacts, with the game's notches (design/05-spell-variants.html, B): the button
+   and its row form a single card. Lit lands; a ring, not; the figure, below. */
+/* The border and the background belong to the card, not to its two parts: otherwise, on hover
+   only the button lit up and they looked like two cards. It lights up whole, wherever you come
+   in, while the spell can be cast; disabled, its button dims and the notches stay at hand. */
+.spell-card {
+  display: flex; flex-direction: column;
+  border: 1px solid transparent;
+  transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+.spell-card .move, .spell-card .move:hover:not(:disabled) { border: 0; background: transparent; }
+.spell-card:has(.move:not(:disabled)):hover { border-color: var(--accent-line); background: var(--veil); }
+.spell-dots {
+  display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--sp-1) var(--sp-2);
+  padding: 0 var(--sp-3) var(--sp-2) calc(56px + var(--sp-3) * 2);
+}
+.sd-dot { display: grid; justify-items: center; gap: var(--sp-half); min-width: 28px; min-height: 28px; padding: var(--sp-half); }
+.sd-dot .notch { width: 17px; height: 17px; }
+.sd-dot .notch.is-free::before { width: 10px; height: 10px; }
+.sd-dot small { font-family: var(--font-num); font-size: var(--fs-2xs); color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.sd-dot.is-off small { color: var(--muted); text-decoration: line-through; }
+.sd-dot:hover .notch.is-free::before, .sd-dot:focus-visible .notch.is-free::before { border-color: var(--accent-line); }
+/* The sixteen flukes: smaller dots, no figure, and the count at the end. */
+.spell-dots.is-small { gap: 0; }
+.spell-dots.is-small .sd-dot { min-width: 22px; min-height: 22px; place-content: center; }
+.spell-dots.is-small .notch { width: 13px; height: 13px; }
+.spell-dots.is-small .notch.is-free::before { width: 8px; height: 8px; }
+.sd-count, .sd-side { font-size: var(--fs-2xs); color: var(--muted); align-self: center; margin-left: var(--sp-1); font-variant-numeric: tabular-nums; }
+.sd-count { color: var(--ink-2); }
+.sd-side i { font-style: normal; }
+.sd-side button { color: var(--muted); padding: var(--sp-1); min-height: 28px; }
+.sd-side button[aria-pressed="true"] { color: var(--ink); text-decoration: underline; text-decoration-color: var(--accent-line); text-underline-offset: 3px; }
+.sd-side button:hover { color: var(--ink); }
+/* "land", in front of the notches: the legend that says what lit means without opening the "?". It
+   sits in the space below the artwork, next to the first notch, so as not to move the notches or
+   push "left · right" onto another line; in that text's ink, and at the notch's height (17 px
+   plus its 2 px margin top and bottom), not its figure's. */
+.spell-dots { position: relative; }
+.sd-lbl {
+  position: absolute; left: 0; top: 0; width: calc(56px + var(--sp-3) * 2 - var(--sp-2));
+  text-align: right; font-size: var(--fs-2xs); line-height: 21px; color: var(--muted);
+}
+
+/* The arena's explanations (js/app.js, "The arena's explanations"). The "?" goes at the end of
+   the row it explains, in a column of its own; attacks that don't carry one keep that space, so
+   their figures stay in column with their neighbours'. What it opens goes below and pushes what's
+   underneath: nothing floats on top, which on mobile would cover the buttons. The card lights up
+   whole, like the spell's (this rule comes from it), while the attack can be cast. */
+.moveset { --help-w: 32px; }
+/* The space is kept by the figure, not the button: the note below ("no soul; it breaks on
+   impact…") still has the full width. */
+.moveset > .move .move-num { margin-right: var(--help-w); }
+.move-card {
+  display: grid; grid-template-columns: minmax(0, 1fr) var(--help-w);
+  border: 1px solid transparent;
+  transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+.move-card > .move { grid-column: 1; grid-row: 1; }
+.move-card > .help-q { grid-column: 2; grid-row: 1; }
+.move-card > .spell-dots, .move-card > .arena-help { grid-column: 1 / -1; }
+.move-card .move, .move-card .move:hover:not(:disabled) { border: 0; background: transparent; }
+.move-card:has(.move:not(:disabled)):hover { border-color: var(--accent-line); background: var(--veil); }
+/* The "?": a small grey ring, in the body serif. It responds to the finger, so on hover,
+   focused or open it takes the accent (design/00 §3); open, also the chosen veil. The area
+   you can tap is the row's full height, not just the ring. */
+.help-q { display: grid; place-items: center; align-self: stretch; width: var(--help-w, 32px); min-height: 32px; padding: 0; color: var(--muted); }
+.help-q span {
+  display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%;
+  border: 1px solid var(--line-ctl);
+  font-family: var(--font-body); font-size: var(--fs-2xs); font-weight: 600; line-height: 1;
+  transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease);
+}
+.help-q:hover span, .help-q:focus-visible span, .help-q[aria-expanded="true"] span { color: var(--accent); border-color: var(--accent-line); }
+.help-q[aria-expanded="true"] span { background: var(--picked); }
+/* What it opens: short prose in the serif, in secondary ink; in bone, the figures and the term
+   as it appears on screen, so the sum reads at a glance. Under an attack it takes its card's
+   width (aligned with the name, in the column's 330 px, it was 37 letters per line and
+   Descending Dark needed nine); on the enemy's side, under its header and at a reading measure. */
+.arena-help { display: flex; flex-direction: column; gap: var(--sp-1); font-size: var(--fs-xs); line-height: 1.5; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.arena-help b { font-weight: 600; color: var(--ink-strong); }
+.move-card > .arena-help { padding: 0 var(--sp-3) var(--sp-3); }
+.arena-help.is-foe { max-width: var(--measure); }
+/* The enemy's "?", at the top right of its header: on mobile, when the line broke, it was left
+   alone on a row. */
+.foes-head:has(> .help-q) { position: relative; padding-right: calc(var(--help-w, 32px) + var(--sp-2)); }
+.foes-head > .help-q { position: absolute; top: 0; right: 0; min-height: 0; height: 1.6em; }
+/* Stagger: the counter under the bar and, when staggered, the card dimmed without quite falling. */
+.foecard-stagger { font-size: var(--fs-2xs); color: var(--muted); font-variant-numeric: tabular-nums; }
+.foecard-stagger.is-down { color: var(--cond); font-style: italic; }
+.foecard.is-staggered .foecard-art { filter: grayscale(0.6); transform: rotate(-8deg); }
+/* Hiveblood: the returning mask fills with honey from the bottom up, like the orb's soul.
+   The hexagon is narrower than the mask: it's fitted by its body's height and centred
+   (measured on the sprites, alpha ≥ 128: 52 × 75 in 55 × 77, and Joni's 53 × 76 in 55 × 78). */
+.hud-mask .hud-honey { width: 94.9%; left: 1.7%; top: -1.333%; clip-path: inset(calc((1 - var(--regen, 0)) * 100%) 0 0 0); }
+.hud-mask .hud-honey.is-joni { width: 93.66%; left: 4.88%; top: 0; }
+.hud-mask.is-empty .hud-honey { filter: none; opacity: 1; }
+/* Baldur Shell under the orb, with the hits it has left. Broken, like an empty mask. */
+.hud-shell {
+  grid-column: 1; justify-self: center; display: flex; align-items: center; gap: var(--sp-1);
+  margin-top: var(--sp-1); font-family: var(--font-num); font-variant-numeric: tabular-nums;
+  font-size: var(--fs-2xs); color: var(--ink-2);
+}
+.hud-shell img { height: var(--pip-h); width: auto; }
+.hud-shell.is-broken img { filter: brightness(0.2) saturate(0); opacity: 0.85; }
+.hud-shell.is-broken b { color: var(--muted); }
+/* Dreamshield: the attack says whether it blocks it or passes through (the wiki's two lists). */
+.move-cost.is-proj { color: var(--ink-2); font-style: italic; }
+/* Focusing: the window in which a hit takes your heal away (what Baldur Shell covers). */
+.kside-focus {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2);
+  margin-top: var(--sp-2); font-size: var(--fs-xs); color: var(--cond); font-style: italic;
+}
+/* The positional ones, which aren't simulated here: they're named, without inventing figures. */
+.moveset-notes {
+  list-style: none; margin: var(--sp-2) 0 0; padding: 0; display: flex; flex-direction: column; gap: var(--sp-half);
+  font-size: var(--fs-2xs); color: var(--muted);
+}
+.moveset-notes b { color: var(--ink-2); font-weight: 500; }
+/* The clock counts your actions, not the fight: it's said at the foot of the log. */
+.fight-clock-note { margin-top: var(--sp-2); font-size: var(--fs-2xs); color: var(--muted); font-style: italic; }
+
+
+/* Screen readers only: the timeline is seen through pictures and heard through words. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ── Tabs: ARENA | HALL OF GODS | PANTHEONS ────────────────────────────
+   They are the Combat screen's title, centred over their rule like the other screens': Cinzel
+   in small caps, the active one in its section's tint and the others dimmed. What responds to
+   the finger still belongs to the accent: the underline and the hover. */
+.tabs { display: flex; justify-content: center; align-items: center; gap: var(--sp-4); flex-wrap: wrap; }
+.tab {
+  font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.14em;
+  font-weight: 600; font-size: var(--fs-lg); color: var(--muted); padding: var(--sp-1) 0;
+  border-bottom: 1px solid transparent;
+  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.tab:hover { color: var(--accent); }
+.tab.is-on { color: var(--tint); border-bottom-color: var(--accent-line); }
+.tab-sep { width: 1px; height: 16px; background: var(--line-ctl); flex: none; }
+/* Combat's three, with the middle one right over the rule's diamond: the side ones take equal
+   columns (the widest rules), one flush right and the other flush left. Otherwise "Arena" and
+   "Pantheons", of different lengths, left the Hall shifted to one side of the diamond even
+   though the whole group was centred. */
+.fight-head .tabs { display: grid; grid-template-columns: 1fr auto auto auto 1fr; column-gap: var(--sp-4); }
+.fight-head .tabs > :first-child { justify-self: end; }
+.fight-head .tabs > :last-child { justify-self: start; }
+/* Letter-spacing leaves air after the last letter: the same in front, and the label stays
+   centred in its box (and the underline, under it). */
+.tab { padding-inline-start: 0.14em; }
+/* On mobile the three don't fit on one line (in Spanish, «Salón de los Dioses» alone already
+   measures 200 px): they share the row, and the long one switches to its short label («Salón», "Hall")
+   rather than break or push the others. */
+.tab-short { display: none; }
+@media (max-width: 599px) {
+  /* Equal columns need twice the widest («Panteones»): with less air between letters and
+     between tabs, they fit at 390 px in both languages. */
+  .fight-head .tabs { align-self: stretch; column-gap: var(--sp-1); }
+  .tab { min-width: 0; letter-spacing: 0.06em; padding-inline-start: 0.06em; text-align: center; font-size: var(--fs-md); }
+  .tab-long { display: none; }
+  .tab-short { display: inline; }
+}
+/* Narrower still, twice «Panteones» no longer fits: they share the row as before. */
+@media (max-width: 379px) {
+  .fight-head .tabs { display: flex; justify-content: space-between; }
+}
+
+/* ── Choosing a pantheon ────────────────────────────────────────────── */
+/* Each pantheon is its final boss standing on Godhome's light, with the pedestal's stone rule
+   below: the same niche as the Hall's statues. The light switches on on hover and on the
+   chosen one, which also carries the accent. */
+/* auto-fit: the five fill the row on desktop and go two by two on mobile. */
+.pcards { display: grid; grid-template-columns: repeat(auto-fit, minmax(148px, 1fr)); gap: var(--sp-3); }
+.pcard {
+  display: flex; flex-direction: column; align-items: stretch; gap: var(--sp-2);
+  text-align: center; padding: 0 0 var(--sp-3); border: 1px solid transparent;
+  transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+.pcard:hover { background: var(--veil); border-color: var(--line); }
+.pcard.is-on { background: var(--picked); border-color: var(--accent-line); }
+.pcard-art {
+  width: 100%; height: 112px; padding: var(--sp-3) var(--sp-6) 0; object-fit: contain; object-position: 50% 100%;
+  background: var(--godhome-light-rest); border-bottom: 4px solid var(--godhome-line);
+}
+.pcard:hover .pcard-art, .pcard.is-on .pcard-art { background-image: var(--godhome-light); }
+.pcard-body { display: flex; flex-direction: column; gap: var(--sp-half); min-width: 0; padding: 0 var(--sp-3); }
+.pcard-name { font-size: var(--fs-md); color: var(--ink); }
+.pcard.is-on .pcard-name { color: var(--ink-strong); }
+.pcard-motto { font-size: var(--fs-xs); color: var(--ink-2); font-style: italic; }
+.pcard-meta { font-size: var(--fs-2xs); color: var(--muted); }
+
+/* The bindings: switches with their game icon. Off, the icon in grey. */
+.binds { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: var(--sp-2); }
+.bind {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto;
+  column-gap: var(--sp-3); align-items: center; text-align: left;
+  padding: var(--sp-2) var(--sp-3); border: 1px solid transparent;
+  transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+.bind:hover { background: var(--veil); border-color: var(--line); }
+.bind.is-on { background: var(--picked); border-color: var(--accent-line); }
+.bind-art { grid-row: 1 / 3; width: 40px; height: 40px; filter: grayscale(1) brightness(0.7);
+  transition: filter var(--dur) var(--ease); }
+.bind.is-on .bind-art { filter: none; }
+.bind-name { font-size: var(--fs-sm); color: var(--ink); }
+/* All four at once: in the game the icons light up in Godhome's gold, with their halo.
+   It's the game's signal, not the accent: that's why the rule and the name go in that tint too. */
+.binds.is-all .bind.is-on { border-color: var(--godhome-line); }
+.binds.is-all .bind-art, .run-binds.is-all img {
+  filter: sepia(0.35) saturate(0.9) brightness(1.9) drop-shadow(0 0 6px var(--godhome-glow)) drop-shadow(0 0 14px var(--godhome-glow));
+}
+.binds.is-all .bind-name { color: var(--godhome); }
+.bind-note { font-size: var(--fs-2xs); color: var(--muted); }
+/* Under each pantheon, the bindings you've finished it with in your game (the lifeblood door's
+   notches): off in grey, done in their bronze, and with "×4" (all four at once) in
+   Godhome's gold, like the marks on the pantheon's door in the game. */
+.pcard-wrap { display: flex; flex-direction: column; gap: var(--sp-1); min-width: 0; }
+.pcard-wrap > .pcard { flex: 1 1 auto; }
+.pdone { display: flex; justify-content: center; align-items: center; gap: var(--sp-half); }
+.pdone-bind, .pdone-all { width: 32px; height: 32px; display: grid; place-items: center; }
+.pdone-bind img { width: 22px; height: 22px; filter: grayscale(1) brightness(0.45); transition: filter var(--dur) var(--ease); }
+.pdone-bind:hover img { filter: grayscale(1) brightness(0.8); }
+.pdone-bind.is-on img { filter: none; }
+.pdone-all { font-family: var(--font-num); font-size: var(--fs-xs); font-weight: 600; color: var(--muted); transition: color var(--dur) var(--ease); }
+.pdone-all:hover { color: var(--accent); }
+.pdone-all.is-on { color: var(--godhome); }
+.pdone.is-all .pdone-bind img { filter: sepia(0.35) saturate(0.9) brightness(1.9) drop-shadow(0 0 4px var(--godhome-glow)); }
+@media (pointer: coarse) { .pdone-bind, .pdone-all { width: 34px; height: 44px; } }
+
+/* The lifeblood door: its 20 notches in a row, lit in lifeblood blue, with the 8, 12 and 16
+   ones (those that open it and raise the germs) larger. Below, the cocoon. */
+.door { display: flex; flex-direction: column; gap: var(--sp-3); max-width: var(--measure); }
+.door-notches { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); }
+.dn { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--notch-free); }
+.dn.is-major { width: 16px; height: 16px; }
+@media (max-width: 599px) { .door-notches { gap: var(--sp-1); } }
+.dn.is-lit { border-color: var(--lifeblood-line); background: var(--lifeblood-line); box-shadow: 0 0 8px var(--lifeblood-line); }
+.door-state { font-size: var(--fs-sm); color: var(--ink); }
+.door-cocoon { display: flex; align-items: center; gap: var(--sp-4); }
+.door-cocoon-art { width: 128px; height: auto; flex: none; }
+.door-cocoon-body { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; font-size: var(--fs-sm); color: var(--ink); }
+.door-seeds { display: flex; gap: var(--sp-1); }
+.door-seeds img { height: 26px; width: auto; }
+.run-go { display: flex; }
+
+/* ── Inside the pantheon ────────────────────────────────────────────── */
+.run-head { display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; }
+.run-head h3 { font-size: var(--fs-md); color: var(--ink-strong); }
+.run-head .btn { margin-left: auto; }
+.run-binds { display: inline-flex; gap: var(--sp-1); }
+
+/* The timeline: one tile per room. Cleared, dimmed and with its mark; the current one, with
+   the accent; the one you fell in, in red; the ones to go, off. */
+.timeline { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: var(--sp-1); }
+.timeline .tl {
+  position: relative; aspect-ratio: 1; display: grid; place-items: center;
+  border: 1px solid var(--inv-line); overflow: hidden;
+}
+.tl-art { width: 78%; height: 78%; object-fit: contain; }
+/* The bench's banner is landscape: it's framed by its knob, the recognisable part. */
+.tl-rest .tl-art { width: 100%; height: 100%; object-fit: cover; object-position: 0 70%; }
+.tl-n {
+  position: absolute; top: 1px; left: 3px; z-index: 1;
+  font-family: var(--font-num); font-variant-numeric: tabular-nums;
+  font-size: var(--fs-2xs); color: var(--muted); text-shadow: 0 0 3px var(--bg);
+}
+.tl-count {
+  position: absolute; bottom: 1px; right: 3px; z-index: 1;
+  font-family: var(--font-num); font-size: var(--fs-2xs); color: var(--ink-2); text-shadow: 0 0 3px var(--bg);
+}
+.timeline .tl.is-todo .tl-art { opacity: 0.35; filter: grayscale(0.6); }
+.timeline .tl.is-done .tl-art { opacity: 0.45; }
+.timeline .tl.is-done::after {
+  content: '✔'; position: absolute; right: 3px; top: 1px; z-index: 1;
+  font-size: var(--fs-2xs); color: var(--ink-2); text-shadow: 0 0 3px var(--bg);
+}
+.timeline .tl.is-current { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent), var(--glow); background: var(--picked); }
+.timeline .tl.is-current .tl-n { color: var(--accent-ink); }
+.timeline .tl.is-fail { border-color: var(--bad); box-shadow: inset 0 0 0 1px var(--bad); }
+/* Skipped: neither cleared nor pending. A dash instead of the ✔, and the artwork dimmer. */
+.timeline .tl.is-skipped .tl-art { opacity: 0.25; filter: grayscale(1); }
+.timeline .tl.is-skipped::after {
+  content: '–'; position: absolute; right: 4px; top: 0; z-index: 1;
+  font-size: var(--fs-xs); color: var(--muted);
+}
+
+/* The whole tile is the button that takes you to that room. */
+.tl-go { position: absolute; inset: 0; display: grid; place-items: center; padding: 0; width: 100%; height: 100%; }
+button.tl-go { transition: background-color var(--dur-fast) var(--ease); }
+button.tl-go:hover { background: var(--veil); }
+.tl:has(button.tl-go:hover) { border-color: var(--accent-line); }
+button.tl-go:hover .tl-art { opacity: 0.9; filter: none; }
+.timeline-hint { font-size: var(--fs-xs); color: var(--muted); font-style: italic; margin-top: calc(var(--sp-1) * -1); }
+
+/* The rest: one card per station, and the whole card is the button, because you decide the
+   order. On top, its corner of the Godhome room —the only area of the game with golden
+   light—, which fades into the card at the bottom; below, what it would give you now with
+   the HUD icons. The figures in bone, like all of them; only what you lose goes in red.
+   Three in a row if they fit; if not, one below the other with the artwork on the left. */
+.rest-room { container-type: inline-size; }
+.rest-stations { --rs-ico: 18px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-3); }
+.rest-station {
+  display: flex; flex-direction: column; min-width: 0; padding: 0; text-align: left;
+  border: 1px solid var(--inv-line);
+  transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+.rest-station:hover:not(:disabled) { border-color: var(--accent-line); background: var(--veil); }
+.rs-art { position: relative; display: block; flex: none; aspect-ratio: 16 / 9; overflow: hidden; background: var(--scene-bg); }
+.rs-art img { display: block; width: 100%; height: 100%; object-fit: cover;
+  filter: brightness(0.8); transition: filter var(--dur) var(--ease); }
+.rest-station:hover:not(:disabled) .rs-art img { filter: none; }
+.rs-art::after { content: ''; position: absolute; inset: auto 0 0; height: 35%;
+  background: linear-gradient(transparent, var(--inv-bg)); }
+.rs-body { display: flex; flex-direction: column; gap: var(--sp-2); padding: var(--sp-2) var(--sp-3) var(--sp-3); min-width: 0; }
+.rs-name { font-size: var(--fs-sm); color: var(--ink); }
+.rs-fxs { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-1) var(--sp-3); }
+.rs-fx { display: inline-flex; align-items: center; gap: var(--sp-1); font-size: var(--fs-xs); color: var(--muted); }
+.rs-fx b { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-md); font-weight: 600; color: var(--ink-strong); }
+.rs-fx.is-loss b { color: var(--bad); }
+.rs-fx.is-note { font-style: italic; }
+.rs-rule { font-size: var(--fs-2xs); color: var(--muted); }
+/* The icons, fitted by their body like the panel's masks (.pip-mask): the slot is the body
+   and the sprite is scaled and shifted. Soul: soul.png, a 37 px disc in 45. */
+.rs-ico { position: relative; display: inline-block; flex: none; height: var(--rs-ico); width: calc(var(--rs-ico) * 51 / 66); }
+.rs-ico img { position: absolute; max-width: none; height: auto; width: 117.647%; left: -7.843%; top: -15.152%; }
+.rs-ico.is-lb img { width: 173.222%; left: -35.837%; top: -26.154%; }
+.rs-ico.is-soul { width: var(--rs-ico); }
+.rs-ico.is-soul img { width: 121.622%; left: -10.811%; top: -10.811%; }
+/* No cocoon, or already broken: the station dims, but the reason can still be read. */
+.rest-station:disabled { opacity: 1; }
+.rest-station:disabled .rs-art img { filter: grayscale(1) brightness(0.4); }
+.rest-station:disabled .rs-name { color: var(--muted); }
+
+@container (max-width: 559px) {
+  .rest-stations { grid-template-columns: minmax(0, 1fr); gap: var(--sp-2); }
+  .rest-station { flex-direction: row; }
+  .rs-art { width: 132px; aspect-ratio: auto; min-height: 88px; }
+  .rs-art::after { inset: 0 0 0 auto; width: 35%; height: auto;
+    background: linear-gradient(90deg, transparent, var(--inv-bg)); }
+  .rs-body { flex: 1; justify-content: center; padding: var(--sp-2) var(--sp-3); }
+}
+
+@media (max-width: 899px) {
+  /* In one column, the enemy before your attacks: you tap one and see who it hits without
+     scrolling the whole list. Your scene on top, then their cards, your attacks and, at the
+     end, the log (which on wide screens goes under the enemy). The two columns dissolve and each piece takes its place. */
+  .arena { display: flex; flex-direction: column; align-items: stretch; gap: var(--sp-3); }
+  .arena > .side-knight, .arena > .side-foes { display: contents; }
+  .side-knight > * { order: 1; }
+  .side-foes > * { order: 2; }
+  .side-knight > .moveset { order: 3; margin-top: var(--sp-4); }
+  .side-foes > .fight-log, .side-foes > .fight-clock-note { order: 4; }
+  .foecard.is-minion { margin-left: var(--sp-4); }
+  .timeline { grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); }
+}
+
+/* ── Hall of Gods ──────────────────────────────────────────────────────
+   The game's statues are almost black sculptures: each carries a light behind it, not a
+   box. It's Godhome's radial halo (--godhome-light*, tokens.css) faded into the surface
+   underneath, with a stone rule under the feet as a pedestal: lit silhouettes in a dark
+   room, which is how they look there. The light is the background, not an accent: the
+   chosen one is marked, as everywhere else, with --accent. At rest the light is bronze, so
+   35 pedestals don't dazzle; the chosen one and the one under your finger light up, and
+   the ones the filter dims stay in half-light. */
+.hall-idol {
+  display: flex; align-items: center; gap: var(--sp-4);
+  padding-bottom: var(--sp-6); border-bottom: 1px solid var(--inv-line);
+}
+.hall-idol-art {
+  flex: none; width: 64px; height: 76px; padding: var(--sp-1);
+  display: flex; align-items: flex-end; justify-content: center;
+  background: var(--godhome-light); border-bottom: 4px solid var(--godhome-line);
+}
+.hall-idol-art img { max-width: 100%; max-height: 100%; object-fit: contain; }
+/* Not won: the light at rest and the silhouette at half opacity, like an unbeaten statue. */
+.hall-idol.is-off .hall-idol-art { background-image: var(--godhome-light-rest); }
+.hall-idol.is-off .hall-idol-art img { opacity: 0.6; }
+.hall-idol-body { display: flex; flex-direction: column; gap: var(--sp-1); min-width: 0; }
+.hall-idol-body h3 { font-family: var(--font-display); font-size: var(--fs-lg); font-weight: 600; letter-spacing: 0.08em; color: var(--ink-strong); }
+.hall-idol-note { font-size: var(--fs-xs); color: var(--ink-2); }
+.hall-counts { display: flex; gap: var(--sp-2) var(--sp-6); flex-wrap: wrap; margin-top: var(--sp-1); }
+/* Each count is a filter: active, it carries the accent frame and dims on the grid the ones
+   already beaten at that difficulty (.ped-btn.is-dim). The negative padding leaves the text
+   where it was and gives the button its tap area. */
+.hall-count-btn {
+  display: flex; align-items: center; gap: var(--sp-2);
+  min-height: 36px; padding: var(--sp-1) var(--sp-2); margin: 0 calc(-1 * var(--sp-2));
+  border: 1px solid transparent;
+  transition: border-color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease);
+}
+.hall-count-btn:hover { border-color: var(--line-ctl); }
+.hall-count-btn:hover .hall-count-lbl, .hall-count-btn.is-on .hall-count-lbl { color: var(--accent); }
+.hall-count-btn.is-on { border-color: var(--accent-line); background: var(--picked); }
+.hall-filter-note { font-size: var(--fs-xs); color: var(--ink-2); }
+.hall-count-num b { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-lg); font-weight: 600; color: var(--ink-strong); }
+.hall-count-num .u { font-family: var(--font-num); font-size: var(--fs-xs); color: var(--muted); }
+.hall-count-lbl {
+  font-family: var(--font-num); text-transform: uppercase; letter-spacing: 0.09em;
+  font-size: var(--fs-2xs); font-weight: 600; color: var(--label);
+}
+.hall-rules { max-width: var(--measure); font-size: var(--fs-xs); color: var(--muted); font-style: italic; }
+/* Mark in bulk: collapsed under the rules; open, two rows like "Fight on", with the
+   badge in front of each difficulty, and after an action the line that undoes it. */
+/* Open, the block grows: the Idol and the tablet stay at the top, next to the title. */
+.hall-idol.is-bulk { align-items: flex-start; }
+.hall-idol.is-bulk .hall-tablet-btn { align-self: flex-start; }
+.hall-bulk-toggle { align-self: flex-start; margin-top: var(--sp-1); }
+.hall-bulk-toggle, .hall-bulk-btn, .hall-undo { min-height: 36px; padding: var(--sp-1) var(--sp-3); font-size: var(--fs-xs); }
+.hall-bulk { display: flex; flex-direction: column; gap: var(--sp-2); padding-top: var(--sp-2); border-top: 1px solid var(--inv-line); }
+.hall-bulk-rule { max-width: var(--measure); font-size: var(--fs-xs); color: var(--muted); }
+.hall-bulk-done { display: flex; align-items: center; gap: var(--sp-2) var(--sp-3); flex-wrap: wrap; font-size: var(--fs-xs); color: var(--ink-2); }
+
+/* The bronze, silver and radiant symbols are the game's badges; not won, in grey. */
+.hall-badge { flex: none; width: 20px; height: 20px; object-fit: contain; filter: grayscale(1) brightness(0.5); opacity: 0.75; }
+.hall-badge.is-on { filter: none; opacity: 1; }
+/* On the tile, at 12 px: the same language as the Idol and the plaque. */
+.ped-marks .hall-badge { width: 12px; height: 12px; }
+
+.hall-room { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 400px); gap: var(--sp-6); align-items: start; }
+
+/* The pedestals: one per boss, and the double ones (lever, dreamcatcher) take two cells with
+   a shared frame, so that each half has its statue at full size. */
+/* "dense" fills the gap a double pedestal leaves when it doesn't fit at the end of a row:
+   the single statue that came after moves up to fill it. */
+.hall-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); grid-auto-flow: row dense; gap: var(--sp-2); }
+.ped { display: grid; }
+/* A double pedestal is one pedestal: the same frame as the others and the stone band
+   continuous under both halves; the second carries its glyph (Dream Nail or lever). */
+.ped-pair { grid-column: span 2; grid-template-columns: 1fr 1fr; }
+.ped-btn {
+  position: relative; display: flex; flex-direction: column; align-items: stretch; gap: var(--sp-1);
+  min-width: 0; padding: 0 0 var(--sp-2); text-align: center;
+  transition: background-color var(--dur-fast) var(--ease);
+}
+/* The niche: the card's surface, the pedestal as the bottom edge (outside the lights'
+   inset:0) and two overlapping lights, the resting one and the lit one, which fades in on
+   hover. The statue goes on top of both. */
+.ped-niche {
+  position: relative; display: block; aspect-ratio: 1;
+  border-bottom: 5px solid var(--godhome-line);
+}
+.ped-niche::before, .ped-niche::after {
+  content: ''; position: absolute; inset: 0; background: var(--godhome-light-rest);
+}
+.ped-niche::after { background: var(--godhome-light); opacity: 0; transition: opacity var(--dur) var(--ease); }
+.ped-niche > img:first-child {
+  position: absolute; z-index: 1; left: 7%; right: 7%; top: 8%; bottom: 3%; width: 86%; height: 89%;
+  object-fit: contain; object-position: 50% 100%;
+}
+.ped-btn:hover .ped-niche::after, .ped-btn:focus-visible .ped-niche::after, .ped-btn.is-on .ped-niche::after { opacity: 1; }
+.ped-btn:hover { background: var(--veil); }
+.ped-btn.is-on { background: var(--picked); box-shadow: inset 0 0 0 1px var(--accent-line); z-index: 1; }
+/* The dream version of a dreamcatcher pedestal: the same statue, with the Dream Nail. */
+.ped-dream { position: absolute; z-index: 1; top: var(--sp-1); right: var(--sp-1); width: 18px; height: 18px; object-fit: contain; filter: drop-shadow(0 0 2px var(--godhome-ink)); }
+/* The second fight of a lever pedestal carries the lever's glyph, in the same place. */
+.ped-lever { position: absolute; z-index: 1; top: var(--sp-1); right: var(--sp-1); color: var(--godhome-ink); }
+/* The name, in the dense cells' sans: a serif at 11 px on dark loses its strokes. */
+.ped-name {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+  min-height: 2.6em; padding: 0 var(--sp-1);
+  font-family: var(--font-num); font-size: var(--fs-2xs); line-height: 1.3; letter-spacing: 0.01em; color: var(--ink-2);
+}
+.ped-btn.is-on .ped-name { color: var(--ink-strong); }
+.ped-marks { display: flex; justify-content: center; gap: var(--sp-1); }
+/* With a count's filter, the ones already beaten at that difficulty have their light switched
+   off and the silhouette drops to half opacity: the ones still to go stay lit. The chosen one
+   keeps its accent rule. */
+.ped-btn.is-dim .ped-niche::before { background: var(--godhome-light-off); }
+.ped-btn.is-dim .ped-niche > img:first-child { opacity: 0.55; }
+.ped-btn.is-dim .ped-name { color: var(--muted); }
+.ped-btn.is-dim .ped-marks { opacity: 0.5; }
+
+/* The plaque: the Journal page, with the statue in its niche and one row per difficulty. */
+.hall-plaque.jr-page {
+  position: sticky; top: var(--sp-4); margin: 0; padding: var(--sp-4);
+}
+/* The chosen statue, with its light on, directly on the plaque's well: like the creature on
+   the black on the Journal page. */
+.hall-art {
+  flex: none; width: 100%; height: 170px; padding: var(--sp-3) var(--sp-3) var(--sp-2);
+  display: flex; align-items: flex-end; justify-content: center;
+  background: var(--godhome-light); border-bottom: 6px solid var(--godhome-line);
+}
+.hall-art img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.hall-title { font-size: var(--fs-sm); color: var(--ink-2); font-style: italic; }
+.hall-other { font-size: var(--fs-xs); min-height: 36px; }
+/* The table of the three difficulties: one row each, with its button to fight. */
+.hall-table { width: 100%; border-collapse: collapse; text-align: left; table-layout: auto; }
+.hall-table th, .hall-table td { padding: var(--sp-2) var(--sp-1); border-top: 1px solid var(--inv-line); vertical-align: middle; }
+.hall-table thead th {
+  border-top: 0; padding-top: 0;
+  font-family: var(--font-num); text-transform: uppercase; letter-spacing: 0.09em;
+  font-size: var(--fs-2xs); font-weight: 600; color: var(--label); line-height: 1.2;
+}
+.hall-table td { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-md); font-weight: 600; color: var(--ink-strong); }
+/* The figures, on the right and with air: they're compared in a column, from one difficulty to another. */
+.hall-table td, .hall-table thead th:not(:first-child) { text-align: right; padding-left: var(--sp-3); }
+.hall-table td:last-child, .hall-table thead th:last-child { padding-right: 0; }
+.hall-table th:first-child { padding-left: 0; }
+/* Each difficulty is a button: it marks or removes your real game's symbol. No background, like
+   one more row; what responds to the finger lights up in --accent. */
+.hall-mark {
+  display: inline-flex; align-items: center; gap: var(--sp-2);
+  min-height: 36px; padding: 0;
+  font-family: var(--font-display); font-weight: 600; letter-spacing: 0.04em; font-size: var(--fs-xs); color: var(--ink);
+  transition: color var(--dur-fast) var(--ease);
+}
+.hall-mark:hover { color: var(--accent); }
+.hall-mark[aria-pressed="true"] { color: var(--ink-strong); }
+.hall-mark-hint { width: 100%; text-align: left; font-size: var(--fs-xs); color: var(--muted); line-height: 1.5; }
+/* Fight: one button per difficulty, below the table that compares them. */
+.hall-go-row { width: 100%; display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; }
+.hall-go-row .lbl { margin-right: auto; text-align: left; }
+/* Three primaries in a row can't all glow at once: the halo, only under the finger. */
+.hall-go { min-height: 40px; padding: var(--sp-1) var(--sp-3); font-size: var(--fs-xs); box-shadow: none; }
+.hall-go:hover, .hall-go:focus-visible { box-shadow: var(--glow); }
+.hall-notes { width: 100%; text-align: left; font-size: var(--fs-xs); color: var(--muted); line-height: 1.5; }
+.hall-arena { width: 100%; text-align: left; font-size: var(--fs-sm); color: var(--ink-2); line-height: 1.5; padding-top: var(--sp-3); border-top: 1px solid var(--inv-line); }
+.hall-arena b {
+  font-family: var(--font-num); text-transform: uppercase; letter-spacing: 0.09em;
+  font-size: var(--fs-2xs); font-weight: 600; color: var(--label); margin-right: var(--sp-1);
+}
+
+/* In front of the statue. */
+.hall-diff {
+  display: inline-flex; align-items: center; gap: var(--sp-1);
+  font-family: var(--font-num); text-transform: uppercase; letter-spacing: 0.09em;
+  font-size: var(--fs-2xs); font-weight: 600; color: var(--ink-2);
+}
+.hall-head-acts { margin-left: auto; display: flex; gap: var(--sp-2); flex-wrap: wrap; }
+.run-head .hall-head-acts .btn { margin-left: 0; }
+
+/* "Read the tablet": to the right of the Idol, with the artwork of the entrance tablet.
+   While it's being read it stays pressed, like the chosen one: with the accent's veil and rule. */
+.hall-tablet-btn { flex: none; margin-left: auto; align-self: center; }
+.hall-tablet-btn img { width: 28px; height: 40px; object-fit: contain; }
+.hall-tablet-btn[aria-pressed="true"] { border-color: var(--accent-line); background: var(--picked); color: var(--ink-strong); }
+
+/* ── The Hall's tablet ─────────────────────────────────────────────────
+   Traced from its screen in the game ("Screenshot HK Hall of Gods 03", 1920 × 1080). The
+   unit is --tu, the names' body size (26 px in the screenshot), and every measurement from
+   the screenshot is in multiples of it, like --qc on the charm grid:
+     columns    four of eleven rows, every 16.33 (424.5 px): the list measures 65.3
+     rows       every 2.36 (61.4 px); the symbol, 2 tall with its halo, and the name at 0.38
+     title      1.7, in regular Trajan; the names, in capitals and semibold: Cinzel 600
+                without spacing gives 338 px for "MASSIVE MOSS CHARGER", and the game 342
+     ornaments  the top one measures 28.8 wide (749 px) and the bottom one 17.3 (450 px)
+     air        0.4 from the ornament to the title, 1.6 from the title to the list, 1.7 from the list to the foot
+     "Exit"     at 5.5 from the bottom ornament's edge, which is a controller spot: here you go back at the top
+   Cinzel stands in for Trajan: its lowercase letters are small caps, so "Hall of Gods" comes
+   out as in the game without forcing anything. It doesn't cover the site: it's read inside the
+   Hall, in place of the grid and the plaque, and unboxed, because the frame's black is already
+   its screen's. That's why the unit comes from the frame's width and not the window's: the
+   tablet is a container, and with four columns the list fills it as in the game (--fs-tablet). */
+.tablet { container: tablet / inline-size; color: var(--ink-strong); }
+.tablet-bar, .tablet-page { --tu: var(--fs-tablet); }
+.tablet-page {
+  width: min(100%, calc(var(--tu) * 65.3)); margin: 0 auto;
+  display: flex; flex-direction: column; align-items: center;
+}
+.tablet-hdr { width: min(100%, calc(var(--tu) * 28.8)); height: auto; }
+.tablet-title {
+  margin-top: calc(var(--tu) * 0.4); font-family: var(--font-display); font-size: calc(var(--tu) * 1.7);
+  font-weight: 400; letter-spacing: 0.02em; line-height: 1.1; color: var(--ink-strong); text-align: center;
+}
+/* Eleven rows, filled by columns, as in the game: top to bottom and then to the right. */
+.tablet-list {
+  width: 100%; margin: calc(var(--tu) * 1.6) 0 0; padding: 0; list-style: none;
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: repeat(11, auto);
+  grid-auto-flow: column; row-gap: calc(var(--tu) * 0.36); column-gap: 0;
+}
+.tablet-row { display: flex; align-items: center; gap: calc(var(--tu) * 0.38); min-width: 0; min-height: calc(var(--tu) * 2); }
+.tablet-mark { flex: none; width: calc(var(--tu) * 2); height: calc(var(--tu) * 2); object-fit: contain; }
+.tablet-mark.m-radiant { filter: var(--radiant-glow); }
+/* With no symbol, the game doesn't leave the spot blank: it puts an empty ring, centred where
+   the symbol would go. At 1920 px it measures 20.6 across (0.79 of the body): a dot of radius
+   2.3, a gap up to 5 and a ring up to 10.3. Here, in a box of 0.82 so the soft edge falls at 0.79. */
+.tablet-mark.is-empty {
+  background: radial-gradient(circle closest-side,
+      var(--tablet-empty-dot) 0 19%, transparent 25% 43%,
+      var(--tablet-empty-ring-in) 52%, var(--tablet-empty-ring) 83% 90%, transparent 100%)
+    center / calc(var(--tu) * 0.82) calc(var(--tu) * 0.82) no-repeat;
+}
+.tablet-name {
+  min-width: 0; padding-right: var(--sp-1); font-family: var(--font-display); font-size: var(--tu); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0; line-height: 1.15; color: var(--ink-strong);
+}
+.tablet-ftr { width: calc(var(--tu) * 17.3); max-width: 60%; height: auto; margin-top: calc(var(--tu) * 1.7); }
+/* "‹ Statues", at the top left, where you go back on the web (like "‹ Hall" on the mobile
+   plaque). The game's "Exit" sits by the bottom ornament because there you leave with the
+   controller; here you leave with a finger or the mouse. Unboxed, in the screen's ink and
+   typeface. With four columns, next to the ornament: it takes no room (the bottom margin gives
+   its height back) and doesn't catch clicks outside the button, and the tablet fits on one screen. */
+.tablet-bar { display: flex; height: 44px; margin-bottom: -44px; pointer-events: none; }
+.tablet-back {
+  display: flex; align-items: center; gap: calc(var(--tu) * 0.4);
+  padding: 0 var(--sp-2); margin-left: calc(-1 * var(--sp-2)); pointer-events: auto;
+  font-family: var(--font-body); font-size: calc(var(--tu) * 1.17); color: var(--ink-strong);
+  transition: color var(--dur-fast) var(--ease);
+}
+.tablet-back svg { width: calc(var(--tu) * 0.8); height: calc(var(--tu) * 0.8); }
+.tablet-back:hover { color: var(--accent); }
+/* On opening, focus goes to the title (tabletOpen), to read from the top; it isn't a control:
+   no ring. With Shift+Tab you reach "‹ Statues", which does have one. */
+.tablet-title:focus-visible { outline: none; }
+
+/* Where the four columns don't fit without breaking the names, the list splits into two
+   (22 rows) and, on mobile, into one; the order is still the tablet's. Then it's taller than
+   the screen, so "‹ Statues" goes on its own line, above the ornament, and stays stuck under
+   the bar while scrolling down the list: a strip of the frame's black across its full width,
+   faded at the bottom, like a screen edge and not a box. */
+@container tablet (max-width: 999px) {
+  .tablet-bar, .tablet-page { --tu: var(--fs-lg); }
+  .tablet-page { width: min(100%, calc(var(--tu) * 40)); }
+  .tablet-list { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(22, auto); }
+  .tablet-bar {
+    position: sticky; top: var(--sticky-h); z-index: 1;
+    margin: 0 calc(-1 * var(--inv-pad)) var(--sp-2); padding: 0 var(--inv-pad);
+    background: var(--inv-bg);
+  }
+  /* The fade, downwards only: a shadow would also spill out of the frame's sides. */
+  .tablet-bar::after {
+    content: ''; position: absolute; inset: 100% 0 auto; height: var(--sp-3);
+    background: linear-gradient(var(--inv-bg), transparent); pointer-events: none;
+  }
+}
+@container tablet (max-width: 519px) {
+  .tablet-title { font-size: var(--fs-xl); }
+  .tablet-list { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; grid-auto-flow: row; }
+  .tablet-ftr { margin-top: var(--sp-4); }
+}
+
+/* On mobile the grid and the plaque take turns, like the Journal's list and page. */
+@media (max-width: 699px) {
+  .hall-room { grid-template-columns: minmax(0, 1fr); }
+  .hall-room.is-reading .hall-grid { display: none; }
+  .hall-room:not(.is-reading) .hall-plaque { display: none; }
+  .hall-plaque.jr-page { position: relative; top: auto; padding: var(--sp-3); }
+  .hall-go-row .lbl { flex: 1 1 100%; }
+  .hall-go, .hall-bulk-btn { flex: 1 1 0; justify-content: center; }
+  /* Next to the Idol there are 244 px left: three buttons only fit with the badge above the name. */
+  .hall-bulk-btn { flex-direction: column; gap: var(--sp-1); padding: var(--sp-1); letter-spacing: 0; }
+  .hall-grid { grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: var(--sp-1); }
+  .hall-idol { align-items: flex-start; flex-wrap: wrap; }
+  .hall-idol-body { flex: 1 1 0; }
+  .hall-tablet-btn { flex: 1 1 100%; margin-left: 0; justify-content: center; }
+}
+
+/* ── The Hunter's Journal: your game ───────────────────────────────────
+   The Journal's quest, apart from combat: it's its own screen, the fourth in the bar (until
+   22-Sep, a full-screen <dialog>). The Hunter and the counts at the top, and below them the
+   list and the page. Everything with the hj- prefix, so as not to clash with the
+   combat Journal (.journal, .jr-*), which has its own handlers. */
+
+/* The screen, like the others: the black with its corner brackets in its tint (Fungal Wastes',
+   which the map study set aside for the enemies) and the title centred. */
+.hj-sec { --tint: var(--tint-journal); --bracket: color-mix(in oklab, var(--tint) 50%, transparent); }
+.hj-body {
+  --inv-pad: var(--sp-8);
+  --inv-line: color-mix(in oklab, var(--tint) 13%, transparent);
+  position: relative; background: var(--inv-bg); padding: var(--inv-pad);
+  display: flex; flex-direction: column; gap: var(--sp-4);
+}
+.hj-head .inv-head { margin-bottom: 0; }
+
+/* The Hunter: his artwork, his line and the counts, unboxed, like the Charms sheet: the
+   artwork loose with its light behind it, and the figures on the other side of a rule in the tint. */
+.hj-top { display: flex; flex-direction: column; gap: var(--sp-2); }
+.hj-hunter {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--sp-4) var(--sp-8);
+}
+.hj-hunter-fig { position: relative; isolation: isolate; display: flex; }
+.hj-hunter-fig::before {
+  content: ''; position: absolute; z-index: -1; left: 50%; top: 55%; width: 200px; height: 160px; transform: translate(-50%, -50%);
+  background: radial-gradient(closest-side, var(--scene-glow), transparent);
+}
+.hj-hunter-art { width: 110px; height: auto; align-self: end; }
+.hj-hunter-body { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; }
+/* The game's title when talking to him: a small "The" above "Hunter". */
+.hj-hunter-name { display: flex; flex-direction: column; font-family: var(--font-display); font-size: var(--fs-lg); font-weight: 600; letter-spacing: 0.1em; color: var(--ink-strong); line-height: 1.1; }
+.hj-hunter-name small { font-size: var(--fs-2xs); letter-spacing: 0.2em; color: var(--ink-2); }
+.hj-says { margin: 0; display: flex; flex-direction: column; gap: var(--sp-1); max-width: 60ch; font-size: var(--fs-sm); line-height: 1.5; color: var(--ink-2); }
+.hj-hunter-side {
+  display: flex; flex-direction: column; gap: var(--sp-2); align-items: flex-start;
+  padding-left: var(--sp-6); border-left: 1px solid var(--inv-line);
+}
+.hj-counts, .hj-feats { display: flex; gap: var(--sp-2) var(--sp-6); flex-wrap: wrap; }
+/* The counts are read-only: filtering is the list tabs' job. */
+.hj-tally { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-half); }
+.hj-count-num b, .hj-feat-num b { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 600; color: var(--ink-strong); }
+.hj-count-num b { font-size: var(--fs-xl); line-height: 1; }
+.hj-count-num .u, .hj-feat-num .u { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-style: normal; font-size: var(--fs-xs); color: var(--muted); }
+.hj-count-lbl, .hj-feat-lbl {
+  font-family: var(--font-num); text-transform: uppercase; letter-spacing: 0.09em;
+  font-size: var(--fs-2xs); font-weight: 600; color: var(--label);
+}
+.hj-feat { display: flex; align-items: baseline; gap: var(--sp-2); }
+.hj-feat-num b { font-size: var(--fs-sm); }
+.hj-feat.is-done .hj-feat-lbl { color: var(--ink-strong); }
+.hj-total-note { max-width: 40ch; font-size: var(--fs-xs); line-height: 1.5; color: var(--muted); }
+.hj-howto { max-width: 40ch; font-size: var(--fs-sm); line-height: 1.5; color: var(--ink); }
+/* Mark in bulk, at the foot of the list. Collapsed, only its text button. Open, unboxed and on
+   three short lines, so the list stays in view while ticking boxes: at the bottom, the
+   button and All · None (it doesn't move on opening: the panel grows upwards); above, which
+   ones it acts on, and above that the three actions as text with how many would change, and "Undo". */
+.hj-bulkbar {
+  flex: none; display: flex; flex-direction: column-reverse; gap: var(--sp-2);
+  margin-left: var(--sp-3); padding: var(--sp-2) var(--sp-4) 0 0; border-top: 1px solid var(--inv-line);
+}
+.hj-bulk-head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); }
+.hj-bulk-toggle { display: inline-flex; align-items: center; gap: var(--sp-2); min-height: 36px; font-size: var(--fs-sm); }
+.hj-bulk-toggle[aria-expanded="true"] { color: var(--ink-strong); border-bottom-color: var(--accent-line); }
+.hj-bulk-picks { display: inline-flex; align-items: center; gap: var(--sp-2); }
+.hj-bulk-sep { color: var(--line-ctl); }
+.hj-bulk { display: flex; flex-direction: column; gap: var(--sp-1); }
+.hj-bulk-scope { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--sp-2); }
+.hj-bulk-rule { font-size: var(--fs-xs); color: var(--muted); }
+.hj-bulk-acts { display: flex; align-items: center; gap: 0 var(--sp-4); flex-wrap: wrap; }
+/* The actions and All · None, as text like the entry's state; dimmed if they wouldn't
+   change anything. */
+.hj-bulk-btn, .hj-pick-btn {
+  min-height: 32px; padding: var(--sp-1) 0; font-family: var(--font-body); color: var(--ink-2);
+  border-bottom: 1px solid transparent;
+  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.hj-bulk-btn { font-size: var(--fs-sm); }
+.hj-pick-btn { font-size: var(--fs-xs); }
+.hj-bulk-btn:hover:not(:disabled), .hj-pick-btn:hover:not(:disabled) { color: var(--accent); border-bottom-color: var(--accent-line); }
+.hj-bulk-btn:disabled, .hj-pick-btn:disabled { color: var(--muted); opacity: 0.55; cursor: default; }
+.hj-bulk-btn i { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-style: normal; font-size: var(--fs-xs); color: var(--muted); }
+.hj-bulk-btn:hover:not(:disabled) i { color: var(--ink-2); }
+.hj-bulk-done { display: flex; align-items: baseline; gap: var(--sp-1) var(--sp-3); flex-wrap: wrap; font-size: var(--fs-xs); color: var(--ink-2); }
+.hj-undo { font-size: var(--fs-xs); }
+@media (pointer: coarse) { .hj-bulk-btn, .hj-pick-btn { min-height: 44px; } }
+/* Each row's checkbox, in front of the medallion. Picked, it fills with the accent: it's a state
+   of what responds to the finger. The ones that never change keep the space, so the column
+   doesn't go out of line. With Shift a range is picked: with no text selection in between. */
+.hj-list li.is-picking { display: flex; align-items: stretch; -webkit-user-select: none; user-select: none; }
+.hj-list li.is-picking .hj-row { flex: 1 1 auto; min-width: 0; }
+.hj-pick { flex: none; width: 32px; display: grid; place-items: center; }
+.hj-box {
+  width: 18px; height: 18px; display: grid; place-items: center;
+  border: 1px solid var(--line-ctl); background: var(--card); color: var(--bg);
+  transition: border-color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease);
+}
+.hj-pick:hover .hj-box { border-color: var(--accent-line); }
+.hj-pick[aria-checked="true"] .hj-box { background: var(--accent); border-color: var(--accent); }
+.hj-row.is-picked:not(.is-cur) { background: var(--accent-soft); }
+@media (pointer: coarse) { .hj-pick { width: 44px; } }
+
+/* The open book: the index on the left and the entry on the right, unboxed, on the screen's
+   black. What makes it a book is the spine —a rule in the tint that fades at the top and the
+   bottom, with the light of both pages rising towards it. No corner brackets of its own: the
+   screen's already frame it, and two frames read as a picture inside another. The entry's
+   number goes tiny in the portrait's corner. They measure what's left of the window under the
+   bar (never less than 460 px) and each page scrolls inside. */
+.hj-pane {
+  position: relative; flex: none; height: var(--hj-pane-h, max(460px, calc(100dvh - var(--sticky-h) - var(--sp-8) * 2)));
+  display: grid; grid-template-columns: minmax(260px, 340px) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr);
+  margin-bottom: var(--sp-2);
+  container-type: size;   /* the page's portrait is sized in proportion to the book */
+}
+.hj-index {
+  position: relative; display: flex; flex-direction: column; min-height: 0; padding: var(--sp-4) 0 0 var(--sp-1);
+}
+/* The fold's light: an ellipse centred on the spine that fades towards all four sides, so it
+   doesn't read as a box's edge. */
+.hj-index::before {
+  content: ''; position: absolute; top: 0; bottom: 0; right: -160px; width: 320px; pointer-events: none;
+  background: radial-gradient(closest-side, var(--hj-leaf), transparent);
+}
+.hj-index::after {
+  content: ''; position: absolute; top: 0; bottom: 0; right: 0; width: 1px;
+  background: linear-gradient(to bottom, transparent, var(--hj-spine) 14%, var(--hj-spine) 86%, transparent);
+}
+/* As on the Arena's page: at the top right, level with the portrait. */
+.hj-folio {
+  position: absolute; top: var(--sp-2); right: 0;
+  font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-2xs); letter-spacing: 0.09em; color: var(--muted);
+}
+.hj-search {
+  flex: none; font-family: var(--font-body); font-size: var(--fs-md); color: var(--ink);
+  background: transparent; border: 0; border-bottom: 1px solid var(--line-ctl);
+  padding: var(--sp-2) 0; margin: 0 var(--sp-4) 0 var(--sp-3); min-height: 44px;
+  -webkit-appearance: none; appearance: none; border-radius: 0;
+  transition: border-color var(--dur) var(--ease);
+}
+.hj-search:hover { border-bottom-color: var(--accent-line); }
+.hj-search::placeholder { color: var(--muted); }
+/* The state tabs, under the search box: text with its count below and the chosen one underlined,
+   like the Combat tabs. Four in the column: the label goes small and on one line, and the
+   spare space is shared out. */
+.hj-show { flex: none; padding: var(--sp-3) var(--sp-4) var(--sp-2) var(--sp-3); }
+.hj-tabs { display: flex; justify-content: space-between; gap: var(--sp-2); width: 100%; }
+.hj-tabs button {
+  display: flex; flex-direction: column; align-items: center; gap: 1px; min-height: 40px; padding: var(--sp-1) 0;
+  font-family: var(--font-body); font-size: var(--fs-xs); line-height: 1.2; white-space: nowrap; color: var(--muted);
+  border-bottom: 1px solid transparent;
+  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.hj-tabs button:hover { color: var(--accent); }
+.hj-tabs button[aria-pressed="true"] { color: var(--ink-strong); border-bottom-color: var(--accent-line); }
+.hj-tabs i { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-style: normal; font-size: var(--fs-2xs); color: var(--muted); }
+.hj-tabs button[aria-pressed="true"] i { color: var(--ink-2); }
+.hj-search:focus-visible { outline-offset: 2px; }
+.hj-list { position: relative; flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: var(--sp-2) var(--sp-3) var(--sp-2) var(--sp-3); }
+/* The rows, like the Arena picker's: on hover, a veil; the one you're reading, in its rectangle
+   (--picked with the accent's rule). */
+.hj-row {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--sp-3);
+  width: 100%; text-align: left; padding: 3px var(--sp-2);
+  font-size: var(--fs-sm); color: var(--ink-2); line-height: 1.25;
+  border: 1px solid transparent;
+  transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.hj-row:hover { background: var(--veil); color: var(--ink); }
+.hj-row.is-cur { background: var(--picked); color: var(--ink-strong); border-color: var(--accent-line); }
+.hj-row.is-unseen { color: var(--muted); }
+.hj-row.is-unseen.is-cur { color: var(--ink-2); }
+.hj-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hj-left { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-xs); color: var(--muted); }
+.hj-row.is-cur .hj-left { color: var(--ink-2); }
+.hj-empty { font-size: var(--fs-sm); color: var(--muted); font-style: italic; padding: var(--sp-3) 0; }
+
+/* The Journal medallion (84 × 96: the ring and its two finials). Complete, it carries the game's
+   frame on top (Bestiary frame upgrade.png, 102 × 105), centred on the ring. Not encountered,
+   shadowed. */
+.hj-medal { position: relative; flex: none; width: 42px; height: 48px; }
+.hj-medal img { width: 100%; height: 100%; object-fit: contain; }
+.hj-medal .hj-frame { position: absolute; left: -10.71%; top: -4.69%; width: 121.43%; height: 109.375%; }
+/* With the frame, the medallion's white ring would peek out between its points: it's clipped inside
+   the ring (radius 38 of 84, measured on the sprites), and the frame acts as the border. */
+.hj-row.is-done .hj-medal img:first-child { clip-path: circle(42% at 50% 50%); }
+.hj-row.is-unseen .hj-medal img { filter: var(--hj-unseen-medal); }
+
+.hj-page {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: var(--sp-2);
+  min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  padding: var(--sp-4) var(--sp-8) var(--sp-4); text-align: center;
+}
+.hj-back { display: none; }
+/* The portrait rules, as in the game: large and with the arena's light behind it; not
+   encountered, a silhouette with the light off. */
+.hj-art { position: relative; isolation: isolate; flex: none; height: clamp(96px, 26cqh, 280px); width: 100%; display: flex; align-items: flex-end; justify-content: center; }
+.hj-art::before {
+  content: ''; position: absolute; z-index: -1; left: 50%; top: 55%; width: min(440px, 100%); height: calc(100% + 40px); transform: translate(-50%, -50%);
+  background: radial-gradient(closest-side, var(--scene-glow), transparent);
+}
+.hj-art.is-shadow::before { background: radial-gradient(closest-side, var(--scene-glow-low), transparent); }
+.hj-art img { max-height: 100%; max-width: 100%; object-fit: contain; }
+.hj-art.is-medal img { height: 168px; }
+.hj-art.is-shadow img { filter: var(--hj-unseen-art); }
+.hj-art img.is-missing { visibility: hidden; }
+.hj-page-name { font-family: var(--font-display); font-size: var(--fs-2xl); font-weight: 600; letter-spacing: 0.06em; line-height: 1.15; text-wrap: balance; color: var(--ink-strong); margin-top: var(--sp-3); }
+/* The Journal's flourish: the screen's only ornament. */
+.hj-fleur { flex: none; width: min(237px, 70%); height: auto; }
+.hj-text {
+  display: flex; flex-direction: column; gap: var(--sp-3);
+  width: 100%; max-width: var(--measure); margin-top: var(--sp-2);
+  text-align: left; line-height: 1.55;
+}
+.hj-desc { font-size: var(--fs-md); color: var(--ink); white-space: pre-line; }
+/* The book's two voices: the description in the serif, and the Hunter's notes handwritten, in
+   capitals. Undeciphered, their ink is there but blurred; on completing the entry it settles. */
+.hj-notes, .hj-sealed {
+  font-family: var(--font-hand); font-size: var(--fs-lg); text-transform: uppercase; letter-spacing: 0.03em;
+  line-height: 1.7; color: var(--ink-2); white-space: pre-line;
+}
+.hj-sealed { filter: var(--hj-sealed); opacity: 0.8; -webkit-user-select: none; user-select: none; pointer-events: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .hj-notes.is-inking { animation: hj-ink var(--dur-flash) var(--ease-fade); }
+}
+@keyframes hj-ink { from { filter: var(--hj-sealed); opacity: 0.8; } }
+.hj-by { font-size: var(--fs-sm); color: var(--muted); text-align: right; }
+.hj-aside { font-size: var(--fs-sm); color: var(--muted); font-style: italic; }
+.hj-inspect { font-size: var(--fs-sm); color: var(--ink-2); padding-left: var(--sp-3); border-left: 2px solid var(--line-ctl); }
+/* "Defeat [−] N [+] more to decipher the Hunter's notes.": the game's sentence, and the
+   number is the control. The number goes in --font-num, like every figure. */
+.hj-kills { font-size: var(--fs-md); color: var(--ink-2); line-height: 2.2; }
+.hj-stepper { display: inline-flex; align-items: center; vertical-align: middle; margin: 0 var(--sp-1); border: 1px solid var(--line-ctl); background: var(--card); line-height: 1; }
+.hj-step { width: 32px; min-height: 32px; font-family: var(--font-num); font-size: var(--fs-md); color: var(--ink-2); }
+.hj-step:hover:not(:disabled) { color: var(--accent); background: var(--card-idle); }
+.hj-step:disabled { color: var(--line-ctl); }
+.hj-count {
+  width: 4.5ch; min-height: 32px; padding: 0 var(--sp-1); text-align: center;
+  font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-md); font-weight: 600; color: var(--ink-strong);
+  background: var(--card); border: 0; border-left: 1px solid var(--line-ctl); border-right: 1px solid var(--line-ctl); border-radius: 0;
+  -moz-appearance: textfield; appearance: textfield;
+}
+.hj-count::-webkit-outer-spin-button, .hj-count::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+@media (pointer: coarse) {
+  .hj-step { width: 44px; min-height: 44px; }
+  .hj-count { min-height: 44px; }
+}
+/* The entry's state, at the top of the page and in view on entering: the states as text,
+   like the tabs, with the chosen one underlined. "In your game" is left only for the screen
+   reader (the group's aria-label). */
+.hj-mark {
+  flex: none; width: 100%; display: flex; align-items: baseline; justify-content: center; gap: var(--sp-2) var(--sp-4); flex-wrap: wrap;
+  padding-bottom: var(--sp-3); border-bottom: 1px solid var(--inv-line);
+}
+.hj-state { display: inline-flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; justify-content: center; }
+.hj-state button {
+  min-height: 36px; padding: var(--sp-1) 0; font-family: var(--font-body); font-size: var(--fs-md); color: var(--muted);
+  border-bottom: 1px solid transparent;
+  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.hj-state button:hover { color: var(--accent); }
+.hj-state button[aria-pressed="true"] { color: var(--ink-strong); border-bottom-color: var(--accent-line); }
+.hj-state-sep { color: var(--line-ctl); }
+.hj-state-lbl { font-size: var(--fs-xs); color: var(--muted); }
+.hj-state-lbl::after { content: ':'; }
+
+/* The game's notice when an entry changes, with the medallion. It goes at the top, level with
+   the header, between the title and "Close", which is where there's nothing to press: at the
+   bottom it covered the page's state buttons just when you'd touched them. And it doesn't catch
+   clicks: if on mobile it sits over "Close", the tap goes through. It's shown and hidden
+   with hidden; without motion, it simply appears. */
+.hj-note {
+  position: fixed; z-index: 35; left: 50%; top: calc(var(--sticky-h) + var(--sp-3)); translate: -50% 0;
+  pointer-events: none;
+  display: flex; align-items: center; gap: var(--sp-3); max-width: calc(100% - var(--sp-8));
+  padding: var(--sp-2) var(--sp-6) var(--sp-2) var(--sp-3);
+  background: var(--block); border: 1px solid var(--line-panel); box-shadow: var(--shadow-md);
+  font-family: var(--font-display); font-size: var(--fs-md); letter-spacing: 0.06em; color: var(--ink-strong);
+  animation: hj-note-in var(--dur-slow) var(--ease);
+}
+.hj-note[hidden] { display: none; }
+/* The notice's figures, outside Cinzel (tokens.css, decision 3). */
+.hj-note-num { font-family: var(--font-num); font-weight: 600; letter-spacing: 0; font-variant-numeric: tabular-nums; }
+.hj-note img { width: 42px; height: 48px; object-fit: contain; }
+@keyframes hj-note-in { from { opacity: 0; transform: translateY(-8px); } }
+
+/* On mobile the list and the page take turns, as in the combat Journal; the Hunter only
+   shows with the list. */
+@media (max-width: 699px) {
+  .hj-body { --inv-pad: var(--sp-4); gap: var(--sp-3); }
+  .hj-hunter { grid-template-columns: auto minmax(0, 1fr); gap: var(--sp-3) var(--sp-4); }
+  .hj-hunter-art { width: 96px; }
+  .hj-hunter-fig::before { width: 160px; height: 140px; }
+  .hj-says { font-size: var(--fs-sm); }
+  .hj-hunter-side { grid-column: 1 / -1; padding: var(--sp-3) 0 0; border-left: 0; border-top: 1px solid var(--inv-line); }
+  .hj-top.is-reading { display: none; }
+  .hj-pane { height: auto; grid-template-columns: minmax(0, 1fr); grid-template-rows: none; container-type: normal; }
+  .hj-index { padding: var(--sp-3) 0; }
+  .hj-state { gap: var(--sp-2); }
+  .hj-state button { font-size: var(--fs-sm); }
+  .hj-index::before, .hj-index::after { display: none; }
+  .hj-list { flex: none; max-height: 64vh; }
+  .hj-pane.is-reading .hj-index { display: none; }
+  .hj-pane:not(.is-reading) .hj-page { display: none; }
+  .hj-page { padding: var(--sp-4) var(--sp-3); overflow: visible; background: none; }
+  .hj-back { display: inline-flex; align-self: flex-start; }
+  .hj-art { height: 200px; }
+  .hj-art::before { height: 240px; }
+  .hj-art.is-medal img { height: 112px; }
+  .hj-page-name { font-size: var(--fs-xl); }
+  /* Between the title and "Close" it doesn't fit: the notice becomes a full-width strip, on one line. */
+  .hj-note { left: var(--sp-4); right: var(--sp-4); translate: none; max-width: none; justify-content: center; padding: var(--sp-1) var(--sp-3); font-size: var(--fs-sm); }
+  .hj-note img { width: 35px; height: 40px; }
+}
