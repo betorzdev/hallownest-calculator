@@ -1,5 +1,5 @@
 'use strict';
-// Reference values taken from hollowknight.wiki (see README, "Where the numbers come from").
+// Reference values taken from hollowknight.wiki (see docs/guide.md, "Where the numbers come from").
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const engine = require('../js/engine.js');

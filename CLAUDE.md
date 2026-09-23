@@ -1,7 +1,8 @@
 # Hallownest Calculator — project instructions
 
 A site for seeing **how each of the Knight's stats changes with each charm**. Spanish and English.
-`README.md` explains what's on the page; these are the rules for working on it.
+`README.md` is the short tour with screenshots; `docs/guide.md` explains everything on the page
+(keep it up to date when the page changes); these are the rules for working on it.
 
 ## Where the knowledge is
 
@@ -37,7 +38,7 @@ Neither folder is part of the page: `index.html` doesn't load them.
 - **Every visible string carries its `{ es, en }` pair**, and the engine receives the language:
   `compute(state, lang)`. The maths never depends on the language.
 - **The numbers come from `hollowknight.wiki`**, with the game's rounding (half to the even
-  integer). The rules are in `README.md` and the odd cases are noted where they're used.
+  integer). The rules are in `docs/guide.md` and the odd cases are noted where they're used.
 - **The repo is written in English**: code, identifiers, comments, tests, docs (`design/`,
   `kb/`) and commit messages. Only the site's Spanish side is Spanish: the `es` of each
   `{ es, en }` pair and the Spanish texts the tests and the smoke test check.

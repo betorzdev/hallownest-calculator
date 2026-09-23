@@ -91,7 +91,7 @@ would remain"** when hovering a charm; and the mini-bar adds the DPS. The backup
 
 And **out went the footer** (the wiki note, the rounding and Team Cherry, with §5.10's provenance
 line): Albert removed it from every screen. Where the numbers come from and the artwork credit
-are still in `README.md`. (On 23 September 2026 a smaller footer came back, only with the
+are still in `README.md` (since 23 September 2026, `docs/guide.md`). (On 23 September 2026 a smaller footer came back, only with the
 fan-project notice, © Team Cherry and the wikis under CC BY-SA, for publishing the repo:
 `renderColophon` in `js/app.js`.)
 

@@ -30,7 +30,7 @@
     share:          { es: 'Compartir', en: 'Share' },
     shareHint:      { es: 'Copia un enlace con esta build', en: 'Copy a link to this build' },
 
-    /* Footer: the fan-project notice, the sources and the author (README, "Credits and licences",
+    /* Footer: the fan-project notice, the sources and the author (docs/guide.md, "Credits and licences",
        "Contact") */
     footLabel:      { es: 'Aviso, fuentes y contacto', en: 'Notice, sources and contact' },
     footFan:        { es: 'Proyecto de fans no oficial, gratuito y sin ánimo de lucro, sin relación con {tc}. Hollow Knight y su arte son © Team Cherry.',

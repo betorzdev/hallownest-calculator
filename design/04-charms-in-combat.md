@@ -4,7 +4,7 @@
 > `js/fight.js`, `test/fight.test.js` and the engine's `options.fight`; the third, Dreamshield
 > (`proj`, "Blocked" and the "Dreamshield" action), stagger in hits (`stagger` in `js/enemies.js`),
 > soul in two pools and the HUD for Hiveblood and Baldur Shell. The decisions the wiki doesn't
-> settle are noted in `js/fight.js` and in the README.
+> settle are noted in `js/fight.js` and in `docs/guide.md`.
 
 What each of the 45 charms does **inside a fight**, which part of that the arena simulates today
 (`js/app.js`, "Combat simulator") and which model is needed for everything to fit: the secondary
@@ -153,7 +153,7 @@ Grimmchild, Kingsoul) · **E** 7 (8, 15, 16, 18, 19, 24, 34) · **F** 4 (1, 2, 1
   Shell, Carefree Melody and Stalwart Shell have to hang, **in a fixed order** (§3.3).
 - **C** needs **new buttons in "Your attacks"**: Shadow Dash, Dream Nail, Weaverlings,
   Dreamshield. They only appear if you wear the charm (and the Shadow Dash always, because the
-  Shade Cloak is taken as owned, as the README says).
+  Shade Cloak is taken as owned, as `docs/guide.md` says).
 - **D** needs **time**, and today the arena doesn't have it by decision: "there's no time or
   animation, you decide the order". The proposal (§3.4) respects that: the clock decides nothing,
   it only **counts** how long your actions take with the numbers the sheet already has, and with
