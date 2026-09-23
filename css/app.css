@@ -192,6 +192,8 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
   text-decoration-color: var(--accent-line); transition: color var(--dur) var(--ease);
 }
 .colophon a:hover { color: var(--accent-ink); }
+/* The GitHub mark after the contact line: just the icon, so no underline. */
+.colophon .gh { display: inline-flex; vertical-align: -3px; margin-left: var(--sp-1); text-decoration: none; }
 .nav {
   position: sticky; top: 0; z-index: 30; isolation: isolate;
   display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2) var(--sp-6);

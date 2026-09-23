@@ -30,13 +30,16 @@
     share:          { es: 'Compartir', en: 'Share' },
     shareHint:      { es: 'Copia un enlace con esta build', en: 'Copy a link to this build' },
 
-    /* Footer: the fan-project notice and the sources (README, "Credits and licences") */
-    footLabel:      { es: 'Aviso y fuentes', en: 'Notice and sources' },
+    /* Footer: the fan-project notice, the sources and the author (README, "Credits and licences",
+       "Contact") */
+    footLabel:      { es: 'Aviso, fuentes y contacto', en: 'Notice, sources and contact' },
     footFan:        { es: 'Proyecto de fans no oficial, gratuito y sin ánimo de lucro, sin relación con {tc}. Hollow Knight y su arte son © Team Cherry.',
                       en: 'Unofficial fan project, free and non-commercial, not affiliated with {tc}. Hollow Knight and its artwork are © Team Cherry.' },
     footData:       { es: 'Datos de {wiki} y de la {wikiEs}, bajo {lic}.',
                       en: 'Data from {wiki} and the {wikiEs}, under {lic}.' },
     footWikiEs:     { es: 'wiki en español', en: 'Spanish wiki' },
+    footMade:       { es: 'Hecho por Albert. ¿Un número mal, una traducción rara o un fallo? Escribe a {mail}.',
+                      en: 'Made by Albert. A wrong number, an odd translation or a bug? Write to {mail}.' },
 
     /* The screen bar: the pages of the game's pause menu, and the Journal */
     navLabel:       { es: 'Pantallas', en: 'Screens' },

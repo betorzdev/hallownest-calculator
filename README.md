@@ -903,7 +903,8 @@ from the wikis. The rules are in `CLAUDE.md`, "Translations".
 [Team Cherry](https://www.teamcherry.com.au/). *Hollow Knight*, its artwork, sprites, texts and
 names are © Team Cherry; they're used here only to show the game's own information, and
 belong to their owners.
-The site says so too, with the wikis and their licence, in the footer under every screen
+The site says so too, with the wikis, their licence and the contact (the mail and a GitHub mark
+linking to the repo), in the footer under every screen
 (`renderColophon` in `js/app.js`).
 
 - **Numbers and data**: [hollowknight.wiki](https://hollowknight.wiki/) and the
@@ -920,4 +921,12 @@ The site says so too, with the wikis and their licence, in the footer under ever
   [SIL Open Font License 1.1](assets/fonts/OFL.txt).
 - **Code**: MIT ([`LICENSE`](LICENSE)). It covers only the code, not any of the above.
 
-If you hold rights over something here and want it removed, open an issue.
+If you hold rights over something here and want it removed, open an issue or write to
+[betorzdev@gmail.com](mailto:betorzdev@gmail.com).
+
+## Contact
+
+Made by **Albert** ([@betorzdev](https://github.com/betorzdev)).
+Found a wrong number, a bad translation or a bug? Open an
+[issue](https://github.com/betorzdev/hollownest-calculator/issues) or write to
+[betorzdev@gmail.com](mailto:betorzdev@gmail.com).
