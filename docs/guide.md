@@ -337,6 +337,9 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   are laid down 90°. `enemies/` are the combat portraits and `pantheon/` the icons of the
   bindings, the Godseeker, the bench and the three corners of the rest room, cropped from their
   screenshots on the wiki (`npm run pantheon`).
+  `site/` is what search engines and link previews show: `og.jpg` (1200 × 630, the top of
+  `docs/screenshots/charms.webp`) and the favicon, Void Heart squared to 48 and 192 px, plus
+  `apple-touch-icon.png` on the page's background. Regenerate them if the Charms screen changes.
   `knight/` is the artwork for your side of the arena: the Knight, his Shade and the HUD's
   overcharm aura (`npm run knight`; with python3 and Pillow they're quantised on download).
   `journal/` is the Journal list's medallions (`npm run journal`), and `hunter/`, what your
@@ -937,5 +940,5 @@ If you hold rights over something here and want it removed, open an issue or wri
 
 Made by **Albert** ([@betorzdev](https://github.com/betorzdev)).
 Found a wrong number, a bad translation or a bug? Open an
-[issue](https://github.com/betorzdev/hollownest-calculator/issues) or write to
+[issue](https://github.com/betorzdev/hallownest-calculator/issues) or write to
 [betorzdev@gmail.com](mailto:betorzdev@gmail.com).

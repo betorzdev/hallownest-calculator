@@ -436,7 +436,7 @@
         lic: ext('https://creativecommons.org/licenses/by-sa/3.0/', 'CC BY-SA 3.0'),
       })}</p>
       <p>${t('footMade', { mail: '<a href="mailto:betorzdev@gmail.com">betorzdev@gmail.com</a>' })}
-        <a class="gh" href="https://github.com/betorzdev/hollownest-calculator" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">${GITHUB}</a></p>`;
+        <a class="gh" href="https://github.com/betorzdev/hallownest-calculator" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">${GITHUB}</a></p>`;
   }
 
   /* The screen bar: Charms, Your game, Combat and the Journal, with your completed ones. It lives
