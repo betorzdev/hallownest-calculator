@@ -3110,16 +3110,17 @@
     </div>`;
   }
 
-  /* The timeline: one tile per room. Cleared ones dimmed and with ✔, skipped ones with a dash,
+  /* The timeline: one tile per room. Cleared ones dimmed (no tick), skipped ones with a dash,
      the current one with the accent, the one you fell in red; the rest, off. While the
      run goes on, each tile is a button that takes you to that room. */
   function timelineHtml() {
     const clearedSet = new Set(run.cleared);
     const tiles = runRooms().map((r, i) => {
       const isCurrent = i === run.room && !run.over;
-      const tileState = clearedSet.has(i) ? 'is-done'
+      // The current room wins over cleared: jumping back to a room you've beaten still marks it.
+      const tileState = isCurrent ? 'is-current'
+        : clearedSet.has(i) ? 'is-done'
         : i === run.room && run.over === 'dead' ? 'is-fail'
-        : isCurrent ? 'is-current'
         : i < run.room || run.over === 'won' ? 'is-skipped' : 'is-todo';
       let img, name;
       if (r.type === 'fight') {

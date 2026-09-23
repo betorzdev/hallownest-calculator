@@ -1264,12 +1264,16 @@ f.addEventListener('load', async () => {
     const states2 = () => tiles().map((x) => (x.classList.contains('is-done') ? '✔' : x.classList.contains('is-current') ? '▶'
       : x.classList.contains('is-skipped') ? '–' : '·')).join('');
     ok('each tile, except the current one, is a button', d.querySelectorAll('.timeline [data-act="runJump"]').length === 11);
+    winRoom();
+    await click('[data-act="runNext"]');
+    await click('[data-act="runJump"][data-value="0"]');
+    ok('going back to a cleared room marks it as the current one', states2().startsWith('▶·'), states2());
     await click('.move-foe');                                     // you arrive hurt wherever you skip to
     const hurtMasks = maskCount();
     await click('[data-act="runJump"][data-value="5"]');
     ok('skipping goes straight to the rest', !!q('.rest-stations') && txt('.run-head .fighter-phase') === 'Sala 6 de 12',
        txt('.run-head .fighter-phase'));
-    ok("what's skipped doesn't count as cleared", states2() === '–––––▶······', states2());
+    ok("what's skipped doesn't count as cleared", states2() === '✔––––▶······', states2());
     ok('and you take what you had', maskCount() === hurtMasks, hurtMasks + ' → ' + maskCount());
     ok('hurt, the hot springs show the masks and the soul they would give', !!q('[data-act="restBath"] .rs-ico.is-mask')
        && !!q('[data-act="restBath"] .rs-ico.is-soul'), txt('[data-act="restBath"] .rs-fxs'));
@@ -1279,7 +1283,7 @@ f.addEventListener('load', async () => {
     ok('and straight to a fight: the finale', txt('.foes-head h3') === nameEs('oro-mato'), txt('.foes-head h3'));
     winRoom();
     await click('[data-act="runNext"]');
-    ok("finishing by skipping isn't completing it", !!q('.run-end.is-won') && txt('.run-end .fight-end-note').indexOf('11 salas saltadas') >= 0,
+    ok("finishing by skipping isn't completing it", !!q('.run-end.is-won') && txt('.run-end .fight-end-note').indexOf('10 salas saltadas') >= 0,
        txt('.run-end .fight-end-note'));
     ok('and after the end there is no more skipping', !q('.timeline [data-act="runJump"]'));
 

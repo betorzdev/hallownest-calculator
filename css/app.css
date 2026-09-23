@@ -1773,14 +1773,10 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
 }
 .timeline .tl.is-todo .tl-art { opacity: 0.35; filter: grayscale(0.6); }
 .timeline .tl.is-done .tl-art { opacity: 0.45; }
-.timeline .tl.is-done::after {
-  content: '✔'; position: absolute; right: 3px; top: 1px; z-index: 1;
-  font-size: var(--fs-2xs); color: var(--ink-2); text-shadow: 0 0 3px var(--bg);
-}
 .timeline .tl.is-current { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent), var(--glow); background: var(--picked); }
 .timeline .tl.is-current .tl-n { color: var(--accent-ink); }
 .timeline .tl.is-fail { border-color: var(--bad); box-shadow: inset 0 0 0 1px var(--bad); }
-/* Skipped: neither cleared nor pending. A dash instead of the ✔, and the artwork dimmer. */
+/* Skipped: neither cleared nor pending. A dash, and the artwork dimmer than a cleared one. */
 .timeline .tl.is-skipped .tl-art { opacity: 0.25; filter: grayscale(1); }
 .timeline .tl.is-skipped::after {
   content: '–'; position: absolute; right: 4px; top: 0; z-index: 1;
