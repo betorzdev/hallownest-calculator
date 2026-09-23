@@ -17,8 +17,11 @@
                       en: 'Forge your nail, equip charms, and watch every number change at once.' },
     goHome:         { es: 'Ir a Amuletos, la pantalla de inicio', en: 'Go to Charms, the home screen' },
     langGroup:      { es: 'Idioma', en: 'Language' },
-    metaDescription:{ es: 'Cómo cambian las estadísticas del Caballero de Hollow Knight con cada amuleto y cada mejora.',
-                      en: 'How the Knight\'s stats in Hollow Knight change with every charm and every upgrade.' },
+    // The tab and search-result title: carries the game's name and what the site is.
+    docTitle:       { es: 'Calculadora de Hallownest · amuletos y estadísticas de Hollow Knight',
+                      en: 'Hallownest Calculator · Hollow Knight charm and stats calculator' },
+    metaDescription:{ es: 'Cómo cambian las estadísticas del Caballero de Hollow Knight con cada amuleto y cada mejora: daño del aguijón, DPS, hechizos, máscaras y alma, un simulador de combate contra cada jefe y el Hogar de Dioses, y el Diario del Cazador.',
+                      en: 'How the Knight\'s stats in Hollow Knight change with every charm and every upgrade: nail damage, DPS, spells, masks and soul, a combat simulator against every boss and Godhome, and the Hunter\'s Journal.' },
     presetBase:     { es: 'Caballero base', en: 'Base Knight' },
     presetBaseHint: { es: 'Como al empezar la partida: Aguijón antiguo, 5 máscaras, 3 muescas, ningún amuleto conseguido, sin capa ni Aguijón Onírico',
                       en: 'As at the start of the game: Old Nail, 5 masks, 3 notches, no charms found, no cloak and no Dream Nail' },

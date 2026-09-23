@@ -391,7 +391,7 @@
      screen, Charms, like the logo on almost any website. */
   const VIEW_KEY = { charms: 'navCharms', game: 'navGame', fight: 'navFight', journal: 'navJournal' };
   function renderMasthead() {
-    document.title = prefs.view === 'charms' ? t('title') : t(VIEW_KEY[prefs.view]) + ' · ' + t('title');
+    document.title = prefs.view === 'charms' ? t('docTitle') : t(VIEW_KEY[prefs.view]) + ' · ' + t('title');
     const meta = document.querySelector('meta[name="description"]');
     if (meta) meta.setAttribute('content', t('metaDescription'));
     // The screen labels are fixed in index.html: they change with the language.
