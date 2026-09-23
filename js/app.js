@@ -230,6 +230,12 @@
     } catch (e) { if (location.hash !== url) location.hash = url; }
   }
 
+  /* A GoatCounter event (index.html loads it). Only the name travels, never the hash with the
+     build. Without the script (blocked, offline, file://) it does nothing. */
+  function track(name) {
+    try { if (window.goatcounter && goatcounter.count) goatcounter.count({ path: name, title: name, event: true }); } catch (e) {}
+  }
+
   function persist() {
     save(KEY.build, C.encode(state));
     writeUrl(false);
@@ -3316,6 +3322,7 @@
     setView(v);
     writeUrl(changed);
     render();
+    if (changed) track('screen-' + prefs.view);
     if (changed) {
       const start = el.masthead.offsetTop + el.masthead.offsetHeight;   // where the bar stays stuck
       if (scrollY > start) scrollTo(0, start);
@@ -3392,6 +3399,7 @@
       if (next === prefs.lang) return;
       prefs.lang = I.setLang(next);
       prefs.langChosen = true;
+      track('lang-' + prefs.lang);
       savePrefs();
       rebuildNF();
       persist();
@@ -3473,6 +3481,7 @@
     // The link carries the build and the language, not the screen.
     share() {
       persist();
+      track('share');
       const url = location.href.split('#')[0] + hashFor('');
       const done = () => toast(t('linkCopied'));
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, () => prompt(t('copyThis'), url));

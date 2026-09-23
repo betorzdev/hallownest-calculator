@@ -266,7 +266,11 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
 
 ## Files
 
-- `index.html` — the page; eleven classic scripts (it works over `file://`).
+- `index.html` — the page; eleven classic scripts (it works over `file://`) and GoatCounter's,
+  the visit counter: no cookies, one visit per page load and, as events, the screen switches
+  (`screen-*`), the language (`lang-*`) and *Share*. The hash with the build is never sent, and it
+  counts nothing over `file://`, on `localhost` or in an iframe. Without it the site works the
+  same (`track()` in `js/app.js`).
 - `css/tokens.css` — the tokens of the dark theme, the only one.
 - `css/app.css` — layout and components.
 - `js/i18n.js` — the interface language: `t(key)`, `pick({es, en})` and the number formats.

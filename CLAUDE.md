@@ -28,6 +28,8 @@ Neither folder is part of the page: `index.html` doesn't load them.
 ## Hard constraints
 
 - **No framework and no build.** `index.html` loads **eleven classic scripts**, not modules.
+  Plus GoatCounter's (`async`, external), the visit counter: the site has to work the same
+  without it, so its events go through `track()` in `js/app.js`, which does nothing if it's missing.
 - **The site has to work over `file://`** (opening `index.html` with a double click). Everything
   else follows from that: ES modules and `fetch()` are blocked by the opaque origin, so **data
   travels in `.js` files with an assignment, never in `.json`**. If `kb/data/hp.json` ever goes
