@@ -253,14 +253,16 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 .steps .n { flex-shrink: 0; font-size: var(--fs-xl); font-weight: 700; line-height: 1; color: var(--tint); }
 .steps i { color: var(--ink); font-style: italic; }
 .steps b { color: var(--ink); }
-.examples { display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; margin-top: var(--sp-6); }
+/* The example builds: text with its charms, unboxed, like the starting points on Your game.
+   The name underlined like .text-btn, and the accent under the pointer. */
+.examples { display: flex; align-items: center; gap: var(--sp-1) var(--sp-3); flex-wrap: wrap; margin-top: var(--sp-6); }
 .examples .lbl { color: var(--muted); }
-.example {
-  display: inline-flex; align-items: center; gap: var(--sp-2);
-  border: 1px solid var(--line-ctl); background: var(--ctl);
-  color: var(--ink-2); font-size: var(--fs-sm); padding: var(--sp-2) var(--sp-4) var(--sp-2) var(--sp-2);
+.example { display: inline-flex; align-items: center; gap: var(--sp-1); min-height: 44px; padding: 0; font-size: var(--fs-sm); color: var(--ink-2); }
+.example-name {
+  margin-left: var(--sp-1); padding: var(--sp-1) 0; border-bottom: 1px solid var(--line-ctl);
+  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
 }
-.example:hover { border-color: var(--accent-line); color: var(--ink); }
+.example:hover .example-name, .example:focus-visible .example-name { color: var(--accent); border-bottom-color: var(--accent-line); }
 .example img { width: 24px; height: 24px; object-fit: contain; }
 
 /* ── The sheet: the game's Inventory screen ──────────────────────────────
@@ -972,6 +974,9 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
   .guide { padding: var(--sp-4); }
   .guide h2 { padding-right: 104px; }
   .guide-close { top: var(--sp-3); right: var(--sp-3); }
+  /* The examples, one per line under their label, without the separators that would hang at the end. */
+  .examples { flex-direction: column; align-items: flex-start; gap: 0; }
+  .examples .presets-sep { display: none; }
 }
 @media (max-width: 599px) {
   .panel, .gear-body { --inv-pad: var(--sp-4); }

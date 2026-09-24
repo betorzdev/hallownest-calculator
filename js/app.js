@@ -494,7 +494,8 @@
   }
 
   function exampleButtons() {
-    return EXAMPLES.map((ex) => `<button type="button" class="example" data-act="example" data-value="${ex.id}" title="${esc(t(ex.desc))}">${ex.charms.slice(0, 3).map((id) => `<img src="assets/charms/${id}.png" alt="">`).join('')}${esc(t(ex.name))}</button>`).join('');
+    return EXAMPLES.map((ex) => `<button type="button" class="example" data-act="example" data-value="${ex.id}" title="${esc(t(ex.desc))}">${ex.charms.slice(0, 3).map((id) => `<img src="assets/charms/${id}.png" alt="">`).join('')}<span class="example-name">${esc(t(ex.name))}</span></button>`)
+      .join('<span class="presets-sep" aria-hidden="true">·</span>');
   }
 
   // The first-use guide, on Charms. Step 1 leads to Your game.
