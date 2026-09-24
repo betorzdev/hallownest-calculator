@@ -50,6 +50,8 @@ Neither folder is part of the page: `index.html` doesn't load them.
 **Nothing is translated by hand.** Every visible string carries `{ es, en }` and comes from a
 source, in this order. `npm run text -- "Shade Cloak"` searches the first one; `--key CHARM_NAME_`
 lists by key; `--audit` cross-checks every game name the site carries against its text.
+An element that shows only a game name carries `${NT}` (`translate="no"`), so a browser
+translator leaves it as the game says it.
 
 1. **The game's text**: the dump of its TextAssets, `kb/data/all_text.json` (downloaded the
    first time, pinned to patch 1.5.12620). Charms `CHARM_NAME_*`, items and abilities

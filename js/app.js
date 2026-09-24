@@ -46,6 +46,11 @@
   };
 
   /* ── Utilities ───────────────────────────────────────────────────────── */
+  /* Game names stay as the game says them even if a browser translator translates the page:
+     Chrome, Edge, Safari and Firefox skip what carries translate="no" (and its title and alt). */
+  const NT = ' translate="no"';
+  // A contribution's label is a game name when it comes from one (js/engine.js, SRC): not «Knight», masks, vessels or overcharm.
+  const namedSrc = (src) => /^(charm|synergy|binding|upgrade:(nail|spell|art))\b/.test(src);
   const esc = (s) => String(s).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
   const load = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
   const save = (k, v) => { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* no storage */ } };
@@ -834,7 +839,7 @@
     return `<div class="insp-head">
         <span class="medal"><img src="assets/charms/${c.id}.png" alt=""></span>
         <div class="insp-id">
-          <div class="insp-name">${esc(pick(c))}</div>
+          <div class="insp-name"${NT}>${esc(pick(c))}</div>
           <div class="insp-notch"><span class="insp-en">${esc(I.current === 'en' ? c.es : c.en)}</span>${cost}${c.fragile ? `<span>${esc(t('breaksOnDeath'))}</span>` : ''}</div>
         </div>
       </div>
@@ -997,7 +1002,7 @@
       const note = lvl ? t('soulCost', { n: fmtStat(sheet.stats['soul.spellCost']) }) : t('notLearned');
       return `<button type="button" class="plate${lvl ? ' is-on' : ''}${flashCls('spell.' + k)}" data-act="kpi" data-id="spell.${k}" title="${esc(t('goTo', { label: name }))}">
         <span class="plate-art"><img src="${icon}" alt=""></span>
-        <span class="plate-name">${esc(name)}</span>
+        <span class="plate-name"${NT}>${esc(name)}</span>
         ${lvl ? `<span class="plate-val">${fmtStatRich(stat)}</span>` : ''}
         <span class="plate-note">${esc(note)}</span>
       </button>`;
@@ -1014,7 +1019,7 @@
       const note = !on ? t('notLearned') : stat.applies ? formula : (stat.reason || '');
       return `<button type="button" class="plate${on ? ' is-on' : ''}${flashCls(ART_STAT[k])}" data-act="kpi" data-id="${ART_STAT[k]}" title="${esc(t('goTo', { label: name }))}">
         <span class="plate-art"><img src="${D.art('arts', k)}" alt=""></span>
-        <span class="plate-name">${esc(name)}</span>
+        <span class="plate-name"${NT}>${esc(name)}</span>
         ${on ? `<span class="plate-val">${fmtStatRich(stat)}</span>` : ''}
         <span class="plate-note">${esc(note)}</span>
       </button>`;
@@ -1101,7 +1106,7 @@
     const body = equipped.length
       ? `<div class="fx">${equipped.map((c) => `<div class="fx-item" data-charm="${c.id}">
           <span class="medal sm"><img src="assets/charms/${c.id}.png" alt=""></span>
-          <span><span class="fx-name">${esc(pick(c))}</span><span class="fx-note">${esc(pick(c.blurb))}</span></span>
+          <span><span class="fx-name"${NT}>${esc(pick(c))}</span><span class="fx-note">${esc(pick(c.blurb))}</span></span>
         </div>`).join('')}</div>`
       : `<p class="muted-p">${esc(t('noCharmsYet'))}</p>`;
     return `<div class="block-head">${esc(t('charmEffects'))}</div>${body}`;
@@ -1182,7 +1187,7 @@
       <span class="mini-me${flash('masks') || lbFlash}"><img class="mini-mask" src="${D.art('hud', maskArt(sh, lb && !fight.masks))}" alt=""><b>${fight.masks}</b><i class="mini-of">/${sh.stats['health.masks'].value}</i>${lb ? `<em>(${lb})</em>` : ''}</span>
       <span class="mini-me${flash('soul')}"><img class="mini-soul" src="${D.art('hud', 'soul')}" alt=""><b>${fight.soul}</b></span>
       <span class="mini-foe${flash('hp')}">
-        <span class="mini-foe-name">${esc(pick(part.name))}</span>
+        <span class="mini-foe-name"${NT}>${esc(pick(part.name))}</span>
         <span class="fbar ${pct <= 25 ? 'is-low' : ''}"><span style="width:${pct}%"></span></span>
         <b>${NF[0].format(hp)}</b>
       </span>`;
@@ -1247,7 +1252,7 @@
     }
     if (!c.active) val = c.cond || val;
     const cls = ['chip', isCharm ? 'chip-charm' : '', isSyn ? 'syn' : '', c.active ? '' : 'off'].filter(Boolean).join(' ');
-    return `<span class="${cls}"${charmAttr}>${esc(c.label)}${val ? ' <b>' + esc(val) + '</b>' : ''}${c.active && c.cond ? ' <i>· ' + esc(c.cond) + '</i>' : ''}</span>`;
+    return `<span class="${cls}"${charmAttr}>${namedSrc(c.source) ? `<span${NT}>${esc(c.label)}</span>` : esc(c.label)}${val ? ' <b>' + esc(val) + '</b>' : ''}${c.active && c.cond ? ' <i>· ' + esc(c.cond) + '</i>' : ''}</span>`;
   }
   const contribText = (c, s) => c.text || (c.op === 'add' ? sign(c.value) + fmtValue(Math.abs(c.value), s.fmt === 'mult' ? 'dec2' : s.fmt, false) : c.op === 'mul' ? '×' + NF[2].format(c.value) : (c.op === 'set' || c.op === 'replace') ? fmtValue(c.value, s.fmt, false) : c.op === 'on' ? t('yes') : c.op === 'off' ? t('no') : '');
 
@@ -1260,7 +1265,7 @@
     const shown = s.contribs.filter((c) => c.source.startsWith('charm:') || c.source.startsWith('synergy:'));
     const chips = shown.slice(0, 3).map((c) => chipFor(c, s)).join('') + (shown.length > 3 ? `<span class="chip more">${esc(t('andMore', { n: shown.length - 3 }))}</span>` : '');
     const detail = `<div class="stat-detail">
-      ${s.contribs.length ? `<h4>${esc(t('howCalc'))}</h4><ul>` + s.contribs.map((c) => `<li class="${c.active ? '' : 'off'}"><span class="k">${esc(c.label)}${c.cond ? ' · ' + esc(c.cond) : ''}</span><span class="v">${esc(contribText(c, s))}</span></li>`).join('') + '</ul>' : ''}
+      ${s.contribs.length ? `<h4>${esc(t('howCalc'))}</h4><ul>` + s.contribs.map((c) => `<li class="${c.active ? '' : 'off'}"><span class="k">${namedSrc(c.source) ? `<span${NT}>${esc(c.label)}</span>` : esc(c.label)}${c.cond ? ' · ' + esc(c.cond) : ''}</span><span class="v">${esc(contribText(c, s))}</span></li>`).join('') + '</ul>' : ''}
       ${s.parts ? `<h4>${esc(t('breakdown'))}</h4><ul>` + s.parts.map((p) => `<li><span class="k">${esc(p.label)}</span><span class="v">${(p.approx ? '~' : '') + (p.fmt === 'pct' ? NF[1].format(p.v) + pctSpace() : NF[2].format(p.v))}${p.unit ? ' ' + esc(p.unit) : ''}</span></li>`).join('') + '</ul>' : ''}
       ${cmp && cmp.applies ? `<div class="note">${esc(compareLabel())}: ${esc(fmtStat(cmp))}</div>` : ''}
       ${s.note ? `<div class="note">${esc(s.note)}</div>` : ''}
@@ -1329,7 +1334,7 @@
       </button>`;
     }).join('');
     return `<section class="block">
-      <h3 class="block-head">${esc(t('theNail'))}<span class="block-note">${esc(pick(D.NAILS[state.nail]))}</span></h3>
+      <h3 class="block-head">${esc(t('theNail'))}<span class="block-note"${NT}>${esc(pick(D.NAILS[state.nail]))}</span></h3>
       <div class="nailpicks">${nails}</div>
     </section>`;
   }
@@ -1341,7 +1346,7 @@
       const on = !!state.arts[k];
       return `<button type="button" class="gplate${on ? ' is-on' : ''}" data-act="art" data-key="${k}" aria-pressed="${on}" title="${esc(D.ARTS[k].en)}">
         <span class="gplate-art"><img src="${D.art('arts', k)}" alt=""></span>
-        <span class="gplate-name">${esc(pick(D.ARTS[k]))}</span>
+        <span class="gplate-name"${NT}>${esc(pick(D.ARTS[k]))}</span>
         <span class="gplate-val${on ? '' : ' is-none'}">${on ? fmtStatRich(sheet.stats[ART_STAT[k]]) : esc(t('notLearned'))}</span>
       </button>`;
     }).join('');
@@ -1355,7 +1360,7 @@
       const opts = [{ text: '—', title: t('notLearned') }, { text: 'I', title: pick(sp.levels[1]) }, { text: 'II', title: pick(sp.levels[2]) }];
       return `<div class="gplate${lvl ? ' is-on' : ''}">
         <span class="gplate-art"><img src="${spellArt(k, lvl, (id) => state.charms.includes(id))}" alt=""></span>
-        <span class="gplate-name">${esc(lvl ? pick(sp.levels[lvl]) : pick(sp.slot))}</span>
+        <span class="gplate-name"${NT}>${esc(lvl ? pick(sp.levels[lvl]) : pick(sp.slot))}</span>
         <span class="gplate-val${lvl ? '' : ' is-none'}">${lvl ? fmtStatRich(sheet.stats['spell.' + k]) : esc(t('notLearned'))}</span>
         <span class="seg sm" role="group" aria-label="${esc(pick(sp.slot))}">${opts.map((o, i) => `<button type="button" data-act="seg" data-key="spells.${k}" data-value="${i}" aria-pressed="${i === lvl}" title="${esc(o.title)}">${o.text}</button>`).join('')}</span>
       </div>`;
@@ -1370,13 +1375,13 @@
     const A = D.ABILITIES;
     const dream = `<button type="button" class="gplate${state.dream ? ' is-on' : ''}" data-act="seg" data-key="dream" data-value="${state.dream ? 0 : 1}" aria-pressed="${state.dream}" title="${esc(A.dream.en)}">
         <span class="gplate-art"><img src="${D.art('abilities', A.dream.art)}" alt=""></span>
-        <span class="gplate-name">${esc(pick(A.dream))}</span>
+        <span class="gplate-name"${NT}>${esc(pick(A.dream))}</span>
         <span class="gplate-val${state.dream ? '' : ' is-none'}">${state.dream ? fmtStatRich(sheet.stats['soul.dreamNail']) : esc(t('notFound'))}</span>
       </button>`;
     const cloak = A.cloaks[state.cloak];
     const cloakPlate = `<div class="gplate${cloak ? ' is-on' : ''}">
         <span class="gplate-art"><img src="${D.art('abilities', (cloak || A.cloaks[1]).art)}" alt=""></span>
-        <span class="gplate-name">${esc(pick(cloak || A.cloaks[1]))}</span>
+        <span class="gplate-name"${NT}>${esc(pick(cloak || A.cloaks[1]))}</span>
         <span class="gplate-val${cloak ? '' : ' is-none'}">${cloak ? fmtStatRich(sheet.stats['move.dashCooldown']) : esc(t('notFound'))}</span>
         ${segmented('cloak', state.cloak, [{ text: '—', title: t('notFound') }, { text: 'I', title: pick(A.cloaks[1]) }, { text: 'II', title: pick(A.cloaks[2]) }], t('cloakLbl'))}
       </div>`;
@@ -1385,7 +1390,7 @@
     const gdmg = D.PETS.grimmchildByPhase[state.grimm];
     const grimm = !isOwned('grimmchild') ? '' : `<div class="gplate is-on">
         <span class="gplate-art"><img src="${D.art('effects', 'grimmchild')}" alt=""></span>
-        <span class="gplate-name">${esc(pick(D.CHARM_BY_ID.grimmchild))}</span>
+        <span class="gplate-name"${NT}>${esc(pick(D.CHARM_BY_ID.grimmchild))}</span>
         <span class="gplate-val${gdmg ? '' : ' is-none'}">${gdmg ? esc(String(gdmg)) : esc(t('grimmNoAttack'))}</span>
         ${segmented('grimm', state.grimm, ['I', 'II', 'III', 'IV'].map((text, i) => ({ text, from: 1,
           off: i === 3 && !state.dream, title: i === 3 && !state.dream ? t('grimmNeedsDream') : t('grimmPhase', { n: i + 1 }) })), pick(D.CHARM_BY_ID.grimmchild))}
@@ -2130,7 +2135,7 @@
       const n = jrHits(x), cur = x.id === jrCursor;
       return `<li role="presentation"><button type="button" role="option" id="jr-${x.id}" class="jr-row ${cur ? 'is-cur' : ''} ${x.id === prefs.foeId ? 'is-on' : ''}"
         aria-selected="${cur}" tabindex="${cur ? 0 : -1}" data-act="foe" data-id="${x.id}">
-        ${jrMedal(x)}<span class="jr-name">${esc(pick(x.name))}</span>
+        ${jrMedal(x)}<span class="jr-name"${NT}>${esc(pick(x.name))}</span>
         <span class="jr-hits" title="${esc(n === null ? t('fightInvuln') : t('hitsToKill', { n }))}">${n === null ? '—' : NF[0].format(n)}</span>
       </button></li>`;
     }).join('');
@@ -2161,7 +2166,7 @@
     return `${brackets}
       ${entry && entry.n ? `<span class="jr-num">${esc(t('jrNum', { n: entry.n }))}</span>` : ''}
       <div class="jr-art"><img src="${D.art('enemies', x.id)}" alt="" onerror="this.classList.add('is-missing')"></div>
-      <h3 class="jr-title">${esc(pick(x.name))}</h3>
+      <h3 class="jr-title"${NT}>${esc(pick(x.name))}</h3>
       ${rule}
       <p class="jr-kind">${esc(t(x.kind === 'boss' ? 'jrBoss' : 'jrEnemy'))}${esc(place)}</p>
       <div class="jr-text">${text}</div>
@@ -2512,7 +2517,7 @@
         if (!ownMove(m)) return '';
         const proj = shield && m.proj ? `<span class="move-cost is-proj">${esc(t(m.proj === 'block' ? 'projBlock' : 'projPierce'))}</span>` : '';
         const btn = `<button type="button" class="move move-foe" data-act="foehit" data-id="${id}:${j}" ${offFoe ? 'disabled' : ''}>
-          <span class="move-name">${esc(m.label)}</span>
+          <span class="move-name"${NT}>${esc(m.label)}</span>
           <span class="move-num">${diffOf() === 'radiant' ? '☠' : '−' + m.dmg}</span>
           ${m.warn ? `<span class="move-cost is-warn">${esc(m.warn)}</span>`
             : diffOf() === 'radiant' ? '' : `<span class="move-cost">${esc(m.dmg === 1 ? t('maskUnitOne') : t('maskUnit'))}</span>`}${proj}
@@ -2550,7 +2555,7 @@
         <button type="button" class="foecard-head" data-act="target" data-id="${id}" ${isDead ? 'disabled' : ''} aria-pressed="${isTarget}">
           <img class="foecard-art" src="${D.art('enemies', part.art || foeData.id)}" alt="" loading="lazy" onerror="this.classList.add('is-missing')">
           <span class="foecard-body">
-            <span class="foecard-name">${esc(pick(part.name))}</span>
+            <span class="foecard-name"${NT}>${esc(pick(part.name))}</span>
             <span class="fbar ${pct <= 25 ? 'is-low' : ''}"><span style="width:${pct}%"></span></span>
             ${staggerLine}
           </span>
@@ -2574,11 +2579,11 @@
       foeSide = `<div class="foecard">
         <div class="foecard-head">
           <img class="foecard-art" src="${D.art('enemies', f.id)}" alt="" loading="lazy" onerror="this.classList.add('is-missing')">
-          <span class="foecard-body"><span class="foecard-name">${esc(foeName(f))}</span>
+          <span class="foecard-body"><span class="foecard-name"${NT}>${esc(foeName(f))}</span>
             <span class="foecard-note">${esc(t('fightInvuln'))}</span></span>
         </div>
         <div class="foecard-moves">${foeMoves(f).map((m, j) => `<button type="button" class="move move-foe" data-act="foehit" data-id="p0:${j}" ${dead ? 'disabled' : ''}>
-            <span class="move-name">${esc(m.label)}</span><span class="move-num">−${m.dmg}</span>
+            <span class="move-name"${NT}>${esc(m.label)}</span><span class="move-num">−${m.dmg}</span>
           </button>`).join('')}</div>
       </div>`;
     } else {
@@ -2588,7 +2593,7 @@
         ? t('fightStanding', { n: standing, total: standing + fight.queue })
         : phaseList.length > 1 ? t('fightPhase', { n: fight.phase + 1, total: phaseList.length }) : '';
       foeSide = `<div class="foes-head">
-          <h3>${esc(foeName(f))}</h3>
+          <h3${NT}>${esc(foeName(f))}</h3>
           ${countLbl ? `<span class="fighter-phase">${esc(countLbl)}</span>` : ''}
           <span class="foes-total">${esc(t('fightTotal', { n: NF[0].format(total) }))} · ${esc(t('hitsToKill', { n: toKill }))} · ${esc(pick(f.zone))}</span>
           ${helpBtn('foe', t('helpFoe'))}
@@ -2611,7 +2616,7 @@
         : m.gain ? esc(t('soulLower')) : m.note ? esc(m.note) : '';
       const btn = `<button type="button" class="move ${m.art ? 'has-art' : ''}" data-act="hit" data-id="${m.id}" ${off ? 'disabled' : ''} ${why ? `title="${esc(why)}"` : ''}>
         ${m.art ? `<span class="move-art ${m.id === 'nail' ? 'is-nail' : ''}${m.charm ? ' is-charm' : ''}"><img src="${m.art}" alt=""></span>` : ''}
-        <span class="move-name">${esc(m.label)}</span>
+        <span class="move-name"${/^(nail|art:|spell:)/.test(m.id) ? NT : ''}>${esc(m.label)}</span>
         <span class="move-num">${num}</span>
         ${sub ? `<span class="move-cost">${sub}</span>` : ''}
       </button>`;
@@ -2624,7 +2629,7 @@
       return `<div class="move-card${dots ? ' spell-card' : ''}">${btn}${help ? helpBtn(m.id, t('helpOf', { name: m.label })) : ''}${dots}${help ? helpBox(m.id, help) : ''}</div>`;
     }).join('');
     // The positional ones, named with their blurb: you can see you wear them and that they aren't simulated here.
-    const notes = POSITIONAL.filter(fightHas).map((id) => `<li><b>${esc(pick(D.CHARM_BY_ID[id]))}</b>: ${esc(pick(D.CHARM_BY_ID[id].blurb))}</li>`);
+    const notes = POSITIONAL.filter(fightHas).map((id) => `<li><b${NT}>${esc(pick(D.CHARM_BY_ID[id]))}</b>: ${esc(pick(D.CHARM_BY_ID[id].blurb))}</li>`);
     const notesHtml = notes.length ? `<ul class="moveset-notes" aria-label="${esc(t('fightNotes'))}">${notes.join('')}</ul>` : '';
 
     const endHtml = end !== undefined ? end
@@ -2670,7 +2675,7 @@
       <button type="button" class="jr-toggle" data-act="picker" aria-expanded="${pickerOpen}" aria-controls="journal"
               aria-labelledby="foe-lbl jr-val">
         ${f ? jrMedal(f) : ''}
-        <span class="jr-val ${f ? '' : 'is-empty'}" id="jr-val">${esc(f ? foeName(f) : t('fightPick'))}</span>
+        <span class="jr-val ${f ? '' : 'is-empty'}" id="jr-val"${f ? NT : ''}>${esc(f ? foeName(f) : t('fightPick'))}</span>
         <span class="jr-toggle-act">${esc(t(pickerOpen ? 'jrClose' : 'jrOpen'))}</span>${chevron(pickerOpen)}
       </button></div>`;
     const journal = pickerOpen ? `<div class="journal" id="journal">
@@ -2793,7 +2798,7 @@
       return `<button type="button" class="ped-btn ${s.via === 'dream' ? 'is-dream' : ''} ${on ? 'is-on' : ''} ${dim ? 'is-dim' : ''}"
         data-act="hallPick" data-id="${s.id}" aria-pressed="${on}" tabindex="${on ? 0 : -1}" title="${esc(title)}">
         <span class="ped-niche"><img src="assets/hall/${HG.artOf(s)}.png" alt="" loading="lazy">${via}</span>
-        <span class="ped-name">${esc(s.short ? pick(s.short) : statueName(s))}</span>
+        <span class="ped-name"${NT}>${esc(s.short ? pick(s.short) : statueName(s))}</span>
         <span class="ped-marks" aria-hidden="true">${HG.DIFFS.map((d) => hallBadge(d, hasMark(s.id, d))).join('')}</span>
         <span class="sr-only">${esc(got.length ? got.join(', ') : t('hallNoMarks'))}${s.via ? ' · ' + esc(t(s.via === 'dream' ? 'hallViaDream' : 'hallViaLever')) : ''}</span>
       </button>`;
@@ -2857,8 +2862,8 @@
     return `${brackets}
       <button type="button" class="btn jr-back" data-act="hallList">‹ ${esc(t('fightTabHall'))}</button>
       <div class="hall-art"><img src="assets/hall/${HG.artOf(s)}.png" alt=""></div>
-      <h3 class="jr-title">${esc(pick(x.name))}</h3>
-      <p class="hall-title">${esc(pick(s.title))}</p>
+      <h3 class="jr-title"${NT}>${esc(pick(x.name))}</h3>
+      <p class="hall-title"${NT}>${esc(pick(s.title))}</p>
       ${rule}
       ${partner ? `<button type="button" class="btn hall-other" data-act="hallPick" data-id="${partner.id}">${esc(t(via === 'dream' ? 'hallDream' : 'hallLever', { name: statueName(partner) }))}</button>` : ''}
       ${tableHtml}`;
@@ -2911,7 +2916,7 @@
     const rowEl = (id) => {
       const s = HG.STATUE_BY_ID[id], d = HG.tabletMark(marks, id);
       const markIcon = d ? `<img class="tablet-mark m-${d}" src="assets/hall/badge-${d}.png" alt="" width="36" height="36">` : '<span class="tablet-mark is-empty"></span>';
-      return `<li class="tablet-row">${markIcon}<span class="tablet-name">${esc(s.tablet ? pick(s.tablet) : statueName(s))}</span>`
+      return `<li class="tablet-row">${markIcon}<span class="tablet-name"${NT}>${esc(s.tablet ? pick(s.tablet) : statueName(s))}</span>`
         + `<span class="sr-only"> · ${esc(d ? t(DIFF_KEY[d]) : t('hallNoMarks'))}</span></li>`;
     };
     return `<section class="tablet" aria-labelledby="tablet-title">
@@ -3071,7 +3076,7 @@
       return `<div class="pcard-wrap"><button type="button" class="pcard ${on ? 'is-on' : ''}" data-act="pantheonPick" data-value="${p.id}" aria-pressed="${on}">
         <img class="pcard-art" src="${D.art('enemies', lastFoe.id)}" alt="" loading="lazy">
         <span class="pcard-body">
-          <span class="pcard-name">${esc(pick(p.name))}</span>
+          <span class="pcard-name"${NT}>${esc(pick(p.name))}</span>
           <span class="pcard-motto">${esc(pick(p.motto))}</span>
           <span class="pcard-meta">${esc(t('runRooms', { n: p.rooms.length }))} · ${esc(pick(lastFoe.name))}</span>
         </span>
@@ -3125,7 +3130,7 @@
     const p = PN.PANTHEON_BY_ID[run.pantheon];
     const binds = BINDS.filter((k) => run.bindings[k]);
     return `<div class="run-head">
-      <h3>${esc(pick(p.name))}</h3>
+      <h3${NT}>${esc(pick(p.name))}</h3>
       <span class="fighter-phase">${esc(t('runRoom', { n: Math.min(run.room + 1, p.rooms.length), total: p.rooms.length }))}</span>
       ${binds.length ? `<span class="run-binds ${binds.length === BINDS.length ? 'is-all' : ''}">${binds.map((k) => `<img src="assets/pantheon/bind-${k}.png" alt="${esc(t('bind_' + k))}" title="${esc(t('bind_' + k))}" width="24" height="24">`).join('')}</span>` : ''}
       <button type="button" class="btn" data-act="runQuit">${esc(run.over ? t('runExit') : t('runQuit'))}</button>
@@ -4082,7 +4087,7 @@
       return `<li role="presentation" class="${hjBulkOpen ? 'is-picking' : ''}">${pickBox}<button type="button" role="option" id="hj-e-${r.id}"
         class="hj-row ${cur ? 'is-cur' : ''} ${s.seen ? '' : 'is-unseen'} ${s.done ? 'is-done' : ''} ${isPicked ? 'is-picked' : ''}"
         aria-selected="${cur}" tabindex="${cur ? 0 : -1}" data-act="hjRead" data-id="${r.id}">
-        ${hjMedal(r, s)}<span class="hj-name">${esc(entryName)}</span>${leftBadge}
+        ${hjMedal(r, s)}<span class="hj-name"${NT}>${esc(entryName)}</span>${leftBadge}
         <span class="sr-only"> · ${esc(hjStateText(s))}${isPicked ? ' · ' + esc(t('hjPicked')) : ''}</span></button></li>`;
     }).join('');
   }
@@ -4150,7 +4155,7 @@
     return `<button type="button" class="btn hj-back" data-act="hjBack">‹ ${esc(t('jrBack'))}</button>
       ${control ? `<div class="hj-mark">${control}</div>` : ''}
       <div class="hj-art ${s.seen ? '' : 'is-shadow'} ${r.id === 'seal-of-binding' ? 'is-medal' : ''}"><img src="${hjArt(r, s)}" alt="" onerror="this.classList.add('is-missing')"><span class="hj-folio" aria-hidden="true">${esc(t('hjFolio', { n: NF[0].format(r.n) }))}</span></div>
-      <h3 class="hj-page-name">${esc(pick(hjNameOf(r)))}</h3>
+      <h3 class="hj-page-name"${NT}>${esc(pick(hjNameOf(r)))}</h3>
       <img class="hj-fleur" src="${D.art('hunter', 'fleur')}" alt="" width="237" height="37">
       <div class="hj-text">${text}</div>`;
   }

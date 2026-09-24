@@ -894,9 +894,17 @@ The Spanish names are those of the game's official translation (see "Credits and
 
 ## Languages
 
-The site starts in **English**. The language saved in `hollow.prefs` only counts if it was
-chosen (with the selector or with a link that carries it): Spanish used to be saved even when
-nobody had touched it, and this way those visits also switch to English.
+Until someone chooses, the site starts in **the browser's language**: the first of
+`navigator.languages` that it speaks, and English if none. That list is the one browsers compare
+the page against to offer translating it, so for someone who reads Spanish or English their
+translator doesn't pop up. The language saved in `hollow.prefs` only counts if it was chosen
+(with the selector or with a link that carries it): Spanish used to be saved even when nobody
+had touched it.
+
+For whoever does translate the page (a browser in another language gets it in English), the
+game names carry `translate="no"` (`NT` in `js/app.js`): charms, the nail, spells, Nail Arts,
+abilities, enemies and their attacks, statues, pantheons and Journal entries stay as the game
+says them. Only the elements that hold just a name; sentences with a name inside are translated.
 
 All text goes through `js/i18n.js` or through a `{ es, en }` in the data. The engine receives
 the language in `compute(state, lang)` and applies it to the labels, reasons and conditions it
