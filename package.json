@@ -13,6 +13,7 @@
     "journal": "node tools/fetch-journal.js",
     "knight": "node tools/fetch-knight.js",
     "artpack": "node tools/artpack.js",
-    "text": "node tools/game-text.js"
+    "text": "node tools/game-text.js",
+    "es": "node tools/es-page.js"
   }
 }

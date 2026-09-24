@@ -85,6 +85,8 @@ what the game says.
 - `npm test` — `node --test`, no dependencies. `test/i18n.test.js` fails if a Spanish accent
   slips into the English or a string is left untranslated. If you've touched game names,
   `npm run text -- --audit`.
+- If you've touched `index.html`, `npm run es`: `es/index.html` (the Spanish page, at its own
+  address for search engines) is generated from it, and `test/es-page.test.js` fails if it's behind.
 - To look at the page: `debug-smoke.html` drives the site and writes the result; `debug.html`
   sets the preferences for screenshots; `debug-overflow.html` lists what spills past the width;
   `debug-hover.html` tests the mouse behaviour, and has to be run with
