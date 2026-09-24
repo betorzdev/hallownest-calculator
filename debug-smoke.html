@@ -446,6 +446,10 @@ f.addEventListener('load', async () => {
     ok('its five attacks come out, on its card', d.querySelectorAll('.foecard .move-foe').length === 5,
        d.querySelectorAll('.foecard .move-foe').length);
     ok('the slam deals 2 masks', [...d.querySelectorAll('.move-foe')].some((n) => n.textContent.includes('−2')));
+    // The unit isn't written under the figure: it goes in the title and, for the screen reader, after the figure.
+    ok('the unit only in the title and for the screen reader', !q('.move-foe .move-cost:not(.is-warn):not(.is-proj)')
+       && [...d.querySelectorAll('.move-foe')].every((n) => /máscaras?$/.test(n.title) && /máscaras?$/.test(n.querySelector('.move-num .sr-only').textContent)),
+       q('.move-foe') && q('.move-foe').title);
 
     await click('[data-act="hit"]');
     // With no charms the Pure Nail deals 21, not the 32 of the build with Unbreakable Strength.
@@ -545,7 +549,7 @@ f.addEventListener('load', async () => {
     ok('Gruz Mother releases Gruzzers in her fight out in the world', summons().length === 1, summons().join(' | '));
 
     await pick('pure-vessel');
-    const firstDmg = () => txt('.foecard .move-foe .move-num');
+    const firstDmg = () => (q('.foecard .move-foe .move-num') ? q('.foecard .move-foe .move-num').firstChild.textContent.trim() : '(missing)');
     ok('Pure Vessel deals 2 in Combat', firstDmg() === '−2', firstDmg());
 
     /* ── Notices, which are told but not simulated ────────────────────── */

@@ -957,11 +957,13 @@
       const moves = foeMoves(foeData).map((m, j) => {
         if (!ownMove(m)) return '';
         const proj = shield && m.proj ? `<span class="move-cost is-proj">${esc(t(m.proj === 'block' ? 'projBlock' : 'projPierce'))}</span>` : '';
-        const btn = `<button type="button" class="move move-foe" data-act="foehit" data-id="${id}:${j}" ${offFoe ? 'disabled' : ''}>
+        // The unit isn't written under the figure (every button would repeat it): it goes in the
+        // title, for the mouse, and read after the figure, for the screen reader.
+        const unit = diffOf() === 'radiant' ? '' : m.dmg === 1 ? t('maskUnitOne') : t('maskUnit');
+        const btn = `<button type="button" class="move move-foe" data-act="foehit" data-id="${id}:${j}" ${offFoe ? 'disabled' : ''}${unit ? ` title="${esc('−' + m.dmg + ' ' + unit)}"` : ''}>
           <span class="move-name"${NT}>${esc(m.label)}</span>
-          <span class="move-num">${diffOf() === 'radiant' ? '☠' : '−' + m.dmg}</span>
-          ${m.warn ? `<span class="move-cost is-warn">${esc(m.warn)}</span>`
-            : diffOf() === 'radiant' ? '' : `<span class="move-cost">${esc(m.dmg === 1 ? t('maskUnitOne') : t('maskUnit'))}</span>`}${proj}
+          <span class="move-num">${diffOf() === 'radiant' ? '☠' : '−' + m.dmg}${unit ? `<span class="sr-only"> ${esc(unit)}</span>` : ''}</span>
+          ${m.warn ? `<span class="move-cost is-warn">${esc(m.warn)}</span>` : ''}${proj}
         </button>`;
         const block = shield && m.proj === 'block'
           ? `<button type="button" class="move move-block" data-act="foeblock" data-id="${id}:${j}" ${offFoe || !shieldOk ? 'disabled' : ''} title="${esc(t(shieldOk ? 'projBlock' : 'shieldBroken'))}">
