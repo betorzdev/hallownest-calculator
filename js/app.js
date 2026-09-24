@@ -17,6 +17,10 @@
   const KEY = { build: 'hollow.build', baseline: 'hollow.baseline', prefs: 'hollow.prefs', run: 'hollow.run', hall: 'hollow.hall', owned: 'hollow.owned', door: 'hollow.bindings' };
   // With no enemy, half of Combat comes out empty: whoever has none starts with the first boss.
   const DEFAULT_FOE = 'false-knight';
+  /* The page's own language: es/index.html is the Spanish copy, with its own address so that
+     search engines index the Spanish too (the hash's lang= never reaches them). Read before
+     setLang() rewrites <html lang>. */
+  const PAGE_LANG = document.documentElement.lang === 'es' ? 'es' : 'en';
   const $ = (sel) => document.querySelector(sel);
   const el = {
     page: $('.page'), masthead: $('#masthead'), colophon: $('#colophon'), nav: $('#nav'), guide: $('#guide'), panel: $('#panel'),
@@ -230,19 +234,22 @@
     return C.normalize(C.PRESETS.max);   // the first time, everything maxed out: that way everything shows
   }
 
-  /* A screen's URL: the build, the language if it isn't English (the default) and the screen
-     if it isn't Charms (the start screen). Share leaves it out: the fight doesn't travel in the
-     link, so opening it on Combat would show the recipient's own fight. */
-  const hashFor = (view = prefs.view) => '#' + C.encode(state) + (prefs.lang === 'es' ? '&lang=es' : '')
+  /* A screen's URL: the build, the language if it isn't the page's (English, or Spanish in es/)
+     and the screen if it isn't Charms (the start screen). Share leaves it out: the fight doesn't
+     travel in the link, so opening it on Combat would show the recipient's own fight. */
+  const hashFor = (view = prefs.view) => '#' + C.encode(state) + (prefs.lang !== PAGE_LANG ? '&lang=' + prefs.lang : '')
     + (view && view !== 'charms' ? '&view=' + view : '');
+  /* The same, as a path to this page. es/index.html carries <base href="../">, and against it a
+     bare "#…" would point at the English page. */
+  const here = (hash) => location.pathname + location.search + hash;
   /* Every screen change leaves a history entry, so that Back returns to the previous one;
      build changes rewrite the entry you're on. They all carry the mark {hk: 1}: going back
      to one of them changes the screen and nothing else (onHistory). */
   function writeUrl(push) {
     const url = hashFor();
     try {
-      if (push) history.pushState({ hk: 1 }, '', url);
-      else if (location.hash !== url || !(history.state && history.state.hk)) history.replaceState({ hk: 1 }, '', url);
+      if (push) history.pushState({ hk: 1 }, '', here(url));
+      else if (location.hash !== url || !(history.state && history.state.hk)) history.replaceState({ hk: 1 }, '', here(url));
     } catch (e) { if (location.hash !== url) location.hash = url; }
   }
 
@@ -425,7 +432,7 @@
     const langBtn = (code, label) => `<button type="button" lang="${code}" data-act="lang" data-value="${code}" aria-pressed="${prefs.lang === code}" aria-label="${label}" title="${label}">${code.toUpperCase()}</button>`;
     el.masthead.innerHTML = `
       <div class="motes" aria-hidden="true">${MOTES}</div>
-      <a class="brand" href="${hashFor('charms')}" data-act="view" data-value="charms" title="${esc(t('goHome'))}">
+      <a class="brand" href="${here(hashFor('charms'))}" data-act="view" data-value="charms" title="${esc(t('goHome'))}">
         <img class="mh-hdr" src="assets/hall/tablet-hdr.png" alt="" width="862" height="111">
         <h1 class="title">${esc(t('title'))}</h1>
       </a>
@@ -463,7 +470,7 @@
     for (const a of el.nav.querySelectorAll('[data-act="view"]')) {
       const v = a.dataset.value;
       if (v !== 'journal') a.textContent = t(VIEW_KEY[v]);
-      a.setAttribute('href', hashFor(v));
+      a.setAttribute('href', here(hashFor(v)));
       if (v === prefs.view) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
     }
     paintHjNav();
@@ -4512,7 +4519,8 @@
   loadDoor();              // and the lifeblood door's completed bindings
   loadJournal();           // and your game's Hunter's Journal
   loadOwned();             // and the charms you have
-  const fromUrl = splitHash(location.hash).lang;
+  // The link's language; without one, the Spanish page speaks Spanish (and that counts as choosing it).
+  const fromUrl = splitHash(location.hash).lang || (PAGE_LANG === 'en' ? null : PAGE_LANG);
   // The screen: the link's; without it, a link with a build opens Charms, and with no link, wherever you left it.
   const urlHash = splitHash(location.hash);
   prefs.view = urlHash.view || (C.isEmpty(urlHash.build) ? prefs.view : 'charms');

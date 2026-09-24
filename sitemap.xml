@@ -1,7 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://betorzdev.github.io/hallownest-calculator/</loc>
-    <lastmod>2026-09-23</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://betorzdev.github.io/hallownest-calculator/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://betorzdev.github.io/hallownest-calculator/es/"/>
+    <lastmod>2026-09-24</lastmod>
+  </url>
+  <url>
+    <loc>https://betorzdev.github.io/hallownest-calculator/es/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://betorzdev.github.io/hallownest-calculator/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://betorzdev.github.io/hallownest-calculator/es/"/>
+    <lastmod>2026-09-24</lastmod>
   </url>
 </urlset>

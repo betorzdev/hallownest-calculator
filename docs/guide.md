@@ -271,6 +271,12 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   (`screen-*`), the language (`lang-*`) and *Share*. The hash with the build is never sent, and it
   counts nothing over `file://`, on `localhost` or in an iframe. Without it the site works the
   same (`track()` in `js/app.js`).
+- `es/index.html` — the same page in Spanish, at its own address (`/es/`) so that search
+  engines index the Spanish too: they ignore the hash, and with it `lang=es`. It's `index.html`
+  with a Spanish `<head>` (title, description, `canonical`, Open Graph) and `<base href="../">`,
+  so it loads the same files. It's generated with `npm run es` (`tools/es-page.js`) and never
+  edited by hand; `test/es-page.test.js` fails if it falls behind `index.html`. Both pages carry
+  the `hreflang` links to each other, and so does `sitemap.xml`.
 - `css/tokens.css` — the tokens of the dark theme, the only one.
 - `css/app.css` — layout and components.
 - `js/i18n.js` — the interface language: `t(key)`, `pick({es, en})` and the number formats.
@@ -857,8 +863,8 @@ The build lives in the URL, readable and with only what differs from the base Kn
 `spells` are the levels of Vengeful Spirit, Desolate Dive and Howling Wraiths; `arts` are
 Cyclone Slash, Dash Slash and Great Slash. `hp` is the masks you have left, and it doesn't
 appear when you're at full health. `lang` isn't part of the build: it's only the language
-preference, and it only appears with Spanish, because English is the default (a `lang=en` from
-an old link is still understood). `view` isn't part of the build either: it's the screen
+preference, and it only appears when it isn't the page's: Spanish on the English page, English
+on the Spanish one (`es/`). `view` isn't part of the build either: it's the screen
 (`game`, `fight` or `journal`), and it doesn't appear on Charms, which is the start screen. A
 link with a build and no `view` opens Charms; without a build, the site opens where you left
 it. Each screen change leaves a history entry marked by the site (`{hk: 1}`), and going back
@@ -899,7 +905,8 @@ Until someone chooses, the site starts in **the browser's language**: the first 
 the page against to offer translating it, so for someone who reads Spanish or English their
 translator doesn't pop up. The language saved in `hollow.prefs` only counts if it was chosen
 (with the selector or with a link that carries it): Spanish used to be saved even when nobody
-had touched it.
+had touched it. The Spanish page (`es/`) starts in Spanish unless its link says otherwise, and
+opening it counts as choosing Spanish.
 
 For whoever does translate the page (a browser in another language gets it in English), the
 game names carry `translate="no"` (`NT` in `js/app.js`): charms, the nail, spells, Nail Arts,
