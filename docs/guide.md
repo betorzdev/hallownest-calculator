@@ -20,10 +20,10 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
 - **Header**, in one row: the title under the game's filigree —the one from the Hall of Gods
   screen, `assets/hall/tablet-hdr.png`, white as there and small—, which is the header's only
   ornament and, like the logo on almost any website, a link to the start screen (Charms), and
-  on the right what applies to the whole site: the language (English / Español; the site
-  starts in English) and *Share*. Behind it, **20 dust motes** rising slowly, as in the main
-  menu; with `prefers-reduced-motion` they don't appear. On mobile it centres and the language
-  and *Share* drop to their own row.
+  on the right what applies to the whole site: the language (English / Español; until you
+  choose, the site follows the browser's language, English if it's neither) and *Share*. Behind
+  it, **20 dust motes** rising slowly, as in the main menu; with `prefers-reduced-motion` they
+  don't appear. On mobile it centres and the language and *Share* drop to their own row.
 - **The screen bar**, which stays stuck at the top: **Charms · Your game · Combat · Journal**,
   in the serif and in lowercase, with an accent diamond in front of the one you're viewing
   (that's how the game marks the page of its menu); the Journal carries your completed entries

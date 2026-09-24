@@ -171,9 +171,10 @@
 
   function loadPrefs() {
     try { Object.assign(prefs, JSON.parse(load(KEY.prefs) || '{}')); } catch (e) { /* corrupt prefs */ }
-    // English by default. Spanish used to be saved even when nobody had chosen it,
-    // so only a language that was really chosen (selector or link) is honoured.
-    if (!prefs.langChosen || !['es', 'en'].includes(prefs.lang)) prefs.lang = 'en';
+    // Until someone chooses (selector or link), the browser's language: the first of its list
+    // that the site speaks, and English if none. Spanish used to be saved even when nobody had
+    // chosen it, so a saved language that wasn't really chosen isn't honoured.
+    if (!prefs.langChosen || !['es', 'en'].includes(prefs.lang)) prefs.lang = browserLang();
     if (!['base', 'nocharms', 'pinned'].includes(prefs.compare)) prefs.compare = 'base';
     if (!Array.isArray(prefs.open)) prefs.open = [];
     delete prefs.diff;   // difficulty no longer belongs to Combat: it belongs to each statue in the Hall
@@ -190,6 +191,16 @@
     prefs.bindings = { nail: !!b.nail, shell: !!b.shell, charms: !!b.charms, soul: !!b.soul };
   }
   const savePrefs = () => save(KEY.prefs, JSON.stringify(prefs));
+
+  function browserLang() {
+    let list = [];
+    try { list = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language]; } catch (e) { /* no navigator */ }
+    for (const tag of list) {
+      const base = String(tag || '').toLowerCase().split('-')[0];
+      if (base === 'es' || base === 'en') return base;
+    }
+    return 'en';
+  }
 
   /* The language and the screen travel in the URL with the build, but aren't part of it: if
      "view=" were read as a build, a bare #view=fight would be read as the base Knight and wipe
