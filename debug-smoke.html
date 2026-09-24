@@ -219,32 +219,35 @@ f.addEventListener('load', async () => {
     ok('with nothing learnt, the six plates as silhouettes', d.querySelectorAll('#panel .plate').length === 6 && !q('#panel .plate.is-on'));
     // The base Knight is a new game: no charms found, and the ones you don't have
     // can be looked at but not equipped. They're all marked on Your game to keep testing.
-    ok('the base Knight has no charms found', d.querySelectorAll('#gear .quick-owned .qc.is-missing').length === 45);
+    ok('the base Knight has no charms found', d.querySelectorAll('#gear .quick-owned .qc.is-missing').length === 40);
     await click('#panel .qc[data-id="fheart"]');
     ok("one not found can't be equipped", !isOn('fheart') && txt('#charm-detail .insp-state').indexOf('Sin conseguir') >= 0, txt('#charm-detail .insp-state'));
     await click('#gear [data-act="ownAll"][data-value="1"]');
-    // All is the end of the game: from each double slot, one version; the other half stays shadowed.
-    ok('All marks them found', d.querySelectorAll('#gear .quick-owned .qc.is-missing').length === 5
-       && d.querySelectorAll('#gear .quick-owned .qslot-pair .qc.is-missing').length === 5);
+    // All is the end of the game: from each double slot, one version, and the slot shows it lit.
+    ok('All marks them found', !q('#gear .quick-owned .qc.is-missing')
+       && d.querySelectorAll('#gear .quick-owned .qc-dual .qc-pip.is-on').length === 5);
     // All is the end of the game, with Void Heart, which is always equipped and can't be removed.
     ok('with Void Heart, equipped by itself', isOn('voidheart'), onIds());
     await equip('voidheart');
     ok("and it can't be removed", isOn('voidheart') && txt('#charm-detail .insp-state').indexOf('No se puede quitar') >= 0, txt('#charm-detail .insp-state'));
     await click('[data-act="clear"]');
     ok('not even with Clear', isOn('voidheart'), onIds());
-    // The double slots: two halves on Your game, at most one marked; tapping the marked one removes it.
-    ok('Your game: five double slots in two halves', d.querySelectorAll('#gear .quick-owned .qslot-pair').length === 5);
+    // The double slots: one whole slot on Your game that switches none → first → second → none.
+    ok('Your game: five whole double slots', d.querySelectorAll('#gear .quick-owned .qc-dual').length === 5 && !q('#gear .qslot-pair'));
     ok('on Charms, the version you have shows alone', !q('#panel .qslot-pair') && !!q('#panel .qc[data-id="uheart"]') && !q('#panel .qc[data-id="fheart"]'));
-    await click('#gear .quick-owned .qc[data-value="king"][aria-pressed="true"]');
+    await click('#gear .quick-owned .qc-dual[data-value="king"]');
     ok('without it in the collection, it is removed', !isOn('voidheart'), onIds());
     ok('with no version, the two halves shadowed', d.querySelectorAll('#panel .qslot-pair .qc.is-missing').length === 2);
-    await click('#gear .quick-owned .qc[data-value="king"][data-token="kingsoul"]');
-    ok('marking one half leaves it alone on Charms', !!q('#panel .qc[data-id="kingsoul"]:not(.is-missing)') && !q('#panel .qslot-pair'));
-    await click('#gear .quick-owned .qc[data-value="heart"][data-token="fheart"]');
-    ok('marking the other half removes the previous one', !!q('#gear .quick-owned .qc[data-value="heart"][data-token="uheart"]') && !q('#panel .qc[data-id="uheart"]'));
+    ok('with none, the slot shadowed and both dots empty', !!q('#gear .qc-dual.is-missing[data-value="king"][data-token="kingsoul"]')
+       && !q('#gear .qc-dual[data-value="king"] .qc-pip.is-on'));
+    await click('#gear .quick-owned .qc-dual[data-value="king"]');
+    ok('marking one version leaves it alone on Charms', !!q('#panel .qc[data-id="kingsoul"]:not(.is-missing)') && !q('#panel .qslot-pair'));
+    await click('#gear .quick-owned .qc-dual[data-value="heart"]');
+    await click('#gear .quick-owned .qc-dual[data-value="heart"]');
+    ok('switching to the other version removes the previous one', !!q('#gear .quick-owned .qc-dual[data-value="heart"][data-token="uheart"]') && !q('#panel .qc[data-id="uheart"]'));
     await equip('fheart');
     ok('Fragile Heart equipped', isOn('fheart'), onIds());
-    await click('#gear .quick-owned .qc[data-value="heart"][data-token="uheart"]');
+    await click('#gear .quick-owned .qc-dual[data-value="heart"]');
     ok('on swapping it for the unbreakable one, the fragile one is removed', !isOn('fheart'), onIds());
     await equip('uheart');
     ok('Divine makes it unbreakable', onCount() === 1 && isOn('uheart'), onIds());

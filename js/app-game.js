@@ -125,15 +125,27 @@
   function renderOwnedBlock() {
     // Counts the game's slots (40): for the double ones, one of their two versions is enough.
     const n = QUICK_SLOTS.filter((sl) => sl.some((c) => isOwned(c.id))).length;
-    const tile = (c, half) => {
+    const tile = (c) => {
       const on = isOwned(c.id);
-      // The halves of a double slot: at most one marked; tapping the marked one removes it.
-      const act = half ? `data-act="ownPick" data-value="${c.group}" data-token="${on ? '' : c.id}"` : `data-act="own" data-id="${c.id}"`;
-      return `<button type="button" class="qc${half ? ' qc-half' : ''}${on ? '' : ' is-missing'}" ${act} aria-pressed="${on}" title="${esc(pick(c) + (on ? '' : ' · ' + t('notFound')))}">
+      return `<button type="button" class="qc${on ? '' : ' is-missing'}" data-act="own" data-id="${c.id}" aria-pressed="${on}" title="${esc(pick(c) + (on ? '' : ' · ' + t('notFound')))}">
         <img src="assets/charms/${c.id}.png" alt="${esc(pick(c))}" loading="lazy">
       </button>`;
     };
-    const slot = (sl) => (sl.length === 1 ? tile(sl[0], false) : `<span class="qslot-pair">${sl.map((c) => tile(c, true)).join('')}</span>`);
+    /* A double slot is one whole slot that switches: each tap moves it on, none → first version
+       → second → none, so at most one is ever marked. It shows the marked one (with none, the
+       first, shadowed), and two dots under it say which of the two it is. */
+    const dual = (sl) => {
+      const cur = sl.find((c) => isOwned(c.id)) || null;
+      const next = cur === sl[0] ? sl[1].id : cur ? '' : sl[0].id;
+      const shown = cur || sl[0];
+      const label = cur ? pick(cur) : `${pick(sl[0])} / ${pick(sl[1])} · ${t('notFound')}`;
+      const pips = sl.map((c) => `<span class="qc-pip${c === cur ? ' is-on' : ''}"></span>`).join('');
+      return `<button type="button" class="qc qc-dual${cur ? '' : ' is-missing'}" data-act="ownPick" data-value="${shown.group}" data-token="${next}" aria-label="${esc(label)}" title="${esc(label)}">
+        <img src="assets/charms/${shown.id}.png" alt="" loading="lazy">
+        <span class="qc-pips" aria-hidden="true">${pips}</span>
+      </button>`;
+    };
+    const slot = (sl) => (sl.length === 1 ? tile(sl[0]) : dual(sl));
     let rows = '';
     for (let i = 0; i < QUICK_SLOTS.length; i += QUICK_PER_ROW) {
       rows += `<div class="qrow">${QUICK_SLOTS.slice(i, i + QUICK_PER_ROW).map(slot).join('')}</div>`;

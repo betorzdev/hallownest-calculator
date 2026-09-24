@@ -872,6 +872,14 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
 .own-all .text-btn { font-size: var(--fs-sm); }
 .own-all .text-btn:disabled { color: var(--muted); border-bottom-color: transparent; cursor: default; }
 .quick-owned .qc:not(.is-missing) img { opacity: 1; filter: none; }
+/* The double slots: one whole slot that switches version on each tap, and two dots under it,
+   the marked one filled in bone. With none, two empty rings. */
+.qc-pips {
+  position: absolute; left: 50%; bottom: calc(var(--qc) * -0.1); transform: translateX(-50%);
+  display: flex; gap: var(--sp-1); pointer-events: none;
+}
+.qc-pip { width: 5px; height: 5px; border-radius: 50%; border: 1px solid var(--muted); }
+.qc-pip.is-on { background: var(--ink); border-color: var(--ink); }
 
 /* Body: the game item that raises it, its name and its range, and the −/+ on the right. */
 .field { --field-icon: 36px; display: flex; flex-direction: column; gap: var(--sp-1); }

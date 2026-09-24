@@ -222,8 +222,9 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   your charms found —it belongs to the charm, and whoever banishes the troupe has Carefree
   Melody in its place— and whose IV needs the Dream Nail, because it's won by defeating
   Nightmare King Grimm (wiki, "Grimmchild"). Next to them, the **charms found**, on the game's grid, shadowed the
-  ones you don't have. The five two-version slots split into two halves, and at most one is
-  marked: tapping a half marks it and unmarks the other, and tapping the marked one removes it
+  ones you don't have. The five two-version slots are one whole slot that switches, so at
+  most one version is marked: each tap moves it on —none, the first, the second, none again—,
+  it shows the marked one (with none, the first, shadowed) and two dots under it say which
   (wiki, "Fragile Heart", "Kingsoul", "Void Heart": Divine makes the fragile one unbreakable
   for good, Void Heart replaces Kingsoul and Grimmchild and Carefree Melody exclude each
   other). Void Heart, as in the game, is always equipped and can't be removed (except by the
