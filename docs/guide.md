@@ -266,7 +266,7 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
 
 ## Files
 
-- `index.html` — the page; eleven classic scripts (it works over `file://`) and GoatCounter's,
+- `index.html` — the page; eighteen classic scripts (it works over `file://`) and GoatCounter's,
   the visit counter: no cookies, one visit per page load and, as events, the screen switches
   (`screen-*`), the language (`lang-*`) and *Share*. The hash with the build is never sent, and it
   counts nothing over `file://`, on `localhost` or in an iframe. Without it the site works the
@@ -332,10 +332,22 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
 - `js/fight.js` — the arena's combat rules: `apply(state, action, context)` returns the events
   of a hit, a hit taken, a heal or a wait, with the charms that react to each thing (Thorns of
   Agony, Grubsong, Baldur Shell, Carefree Melody, Spore Shroom, the clock passives).
-  Pure, no DOM and no language: `js/app.js` turns its events into log lines. The reason for
+  Pure, no DOM and no language: `js/app-arena.js` turns its events into log lines. The reason for
   each rule, charm by charm, is in `design/04-charms-in-combat.md`.
 - `js/codec.js` — the build's state: defaults, presets, equipping rules and the URL encoding.
-- `js/app.js` — rendering, events, `localStorage` and the link.
+- `js/app.js` — the core: state, `localStorage` and the link, the header, the screen bar and
+  the mini-bar, the HUD (`hudHtml`), the general render and the events. Each screen has its own
+  script, loaded after it, and they all share the `HK.app` object: what changes value lives
+  there (`App.state`, `App.run`…) and the rest is exported once and taken at the top of each
+  script (the rules, in its header).
+  - `js/app-charms.js` — Charms: the status block, the charm band and its detail, the plates,
+    the effects and the full sheet.
+  - `js/app-game.js` — Your game: nail, body, arts, spells, abilities and the charms you've found.
+  - `js/app-arena.js` — Combat: the simulator, the combat Journal to pick an enemy and the arena.
+  - `js/app-hall.js` — the Hall of Gods tab: marks, statues, plaque and tablet.
+  - `js/app-pantheons.js` — the Pantheons tab: the lifeblood door and the run room by room.
+  - `js/app-journal.js` — the Hunter's Journal screen: your game's book.
+  - `js/app-boot.js` — startup: what's saved, the link and the first render. It goes last.
 - `assets/` — the game's artwork: `charms/`, `nails/`, `spells/`, `arts/`, `abilities/`
   and `hud/`. `tools/fetch-icons.js` downloads them from the wiki's CDN (`npm run icons`).
   Each family has its shape and its frame: charms are square and go in a circle, spells and
@@ -366,8 +378,8 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
 - `tools/artpack.js` — the copy that's published as an Artifact (`npm run artpack -- <folder>`).
   An Artifact allows no more than 255 files and the site has over 480, so the portraits
   (`enemies/`) and the medallions (`journal/`) travel packed as data: URIs in `js/artpack.js`,
-  which `D.art()` checks before the path; `index.html` loads that script before `app.js`. It
-  leaves 162 files and writes their list. It isn't used locally.
+  which `D.art()` checks before the path; `index.html` loads that script before `js/app.js`. It
+  leaves 188 files and writes their list. It isn't used locally.
 - `debug*.html` — support pages, not part of the site:
   - `debug.html` — opens the page with fixed prefs for screenshots
     (`?w=390&h=2000&top=2450&lang=en&detail=1&guide=1&view=charms&open=fury&fx=70&hash=…`).

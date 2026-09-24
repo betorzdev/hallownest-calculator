@@ -1,9 +1,9 @@
 /* js/fight.js — Hollow: the arena's combat rules.
    apply(state, action, ctx) → events. Pure: no DOM, no language, no storage. It mutates
-   the state it receives (the `fight` of js/app.js) and returns a list of events with
-   numbers; js/app.js turns them into log lines with t(). The phases, the Watcher Knights'
-   queue, the frenzy and the summons stay in js/app.js: here health is only taken from
-   ctx.target, and app.js settles the deaths afterwards.
+   the state it receives (the `fight` of js/app-arena.js) and returns a list of events with
+   numbers; js/app-arena.js turns them into log lines with t(). The phases, the Watcher
+   Knights' queue, the frenzy and the summons stay in js/app-arena.js: here health is only
+   taken from ctx.target, and app-arena.js settles the deaths afterwards.
 
    What each charm does and why, one by one: design/04-charms-in-combat.md (§3.3 the
    hooks, in the order they're applied here; §3.4 the clock). The rules come from the
@@ -146,7 +146,7 @@
 
   /* ── Stagger ─────────────────────────────────────────────────────────────
      The state lives on the bar (tg.stag), so a new phase starts from zero. ctx.stagger is
-     the entry already resolved by js/app.js ({ hits, combo, window, bats, cap }, with Godhome's
+     the entry already resolved by js/app-arena.js ({ hits, combo, window, bats, cap }, with Godhome's
      Zote); without it, the bar doesn't stagger. */
   const partsOf = (ctx) => (ctx.parts || [ctx.target]).filter(Boolean);
   /* An enemy's stagger entry: null if it isn't staggered by hits. godhome: in the Hall and in
@@ -355,7 +355,7 @@
      ctx = { stats, has(id), target, targetIsMinion, radiant, foe, phase, tab, joniMax, fragile,
              stagger, parts }: stagger, the stagger entry already resolved; parts, the boss's
              bars (for the bats).
-     The checks that speak up (no soul, full health, no target) are done by app.js beforehand. */
+     The checks that speak up (no soul, full health, no target) are done by app-arena.js beforehand. */
   function apply(f, action, ctx) {
     const s = ctx.stats, has = ctx.has;
     const events = [];

@@ -741,7 +741,7 @@ f.addEventListener('load', async () => {
     ok('Descending Dark on the right deals 60', txt('[data-act="hit"][data-id="spell:dd"] .move-num') === '60'
        && q('[data-id="dd:burst1:right"]').getAttribute('aria-pressed') === 'true', txt('[data-act="hit"][data-id="spell:dd"] .move-num'));
 
-    /* ── The arena's explanations: the "?" for what doesn't read on its own (js/app.js) ── */
+    /* ── The arena's explanations: the "?" for what doesn't read on its own (js/app-arena.js) ── */
     const helpBtn = (id) => q(`[data-act="help"][data-id="${id}"]`);
     const boxOf = (id) => (helpBtn(id) ? d.getElementById(helpBtn(id).getAttribute('aria-controls')) : null);
     const isOpen = (id) => !!boxOf(id) && !boxOf(id).hidden && helpBtn(id).getAttribute('aria-expanded') === 'true';

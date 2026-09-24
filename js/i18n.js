@@ -384,7 +384,7 @@
     logBlocked:     { es: 'El Escudo para {move}: −{n} evitado. Se rompe 2 s', en: 'The Dreamshield blocks {move}: −{n} avoided. It breaks for 2 s' },
     logShield:      { es: 'Escudo Onírico: −{n}, sin alma. Le quedan {left}. Se rompe 2 s', en: 'Dreamshield: −{n}, no soul. {left} left. It breaks for 2 s' },
     hitsToKill:     { es: '{n} golpes de aguijón', en: '{n} nail hits' },
-    /* The arena's explanations (js/app.js, "The arena's explanations"): the "?" of an
+    /* The arena's explanations (js/app-arena.js, "The arena's explanations"): the "?" of an
        attack and the legend on the enemy's side. Between asterisks, the term as it appears on
        screen, which goes in bone like the figures. Charm and impact names arrive through
        {charm} and {label} from js/data.js and the engine: they aren't written here. */
