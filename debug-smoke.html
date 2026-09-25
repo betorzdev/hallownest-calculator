@@ -61,6 +61,8 @@ f.addEventListener('load', async () => {
     ok('40 slots in the grid, like the game, and not one of the old cards', d.querySelectorAll('#panel .quick-grid .qc').length === 40
        && !q('.charm-grid') && !q('#inspector'), d.querySelectorAll('#panel .quick-grid .qc').length + ' slots');
     ok('with nothing chosen, the detail explains how to use it', !!q('#charm-detail .detail-hint'), txt('#charm-detail'));
+    // The page opens with Unbreakable Strength and Quick Slash: the detail adds them up (21 → 32 on the nail).
+    ok('and, with charms of your own, what they add up to', !!q('#charm-detail .detail-sum li') && txt('#charm-detail .detail-sum').indexOf('32') >= 0, txt('#charm-detail'));
     ok('2 charms equipped', onCount() === 2, onIds());
     // Only the panel's charm notch row: the arena's spells also use the notch dot.
     const notches = () => [...d.querySelectorAll('#panel .notches .notch')].map((n) =>
@@ -309,6 +311,16 @@ f.addEventListener('load', async () => {
        && q('#nav [aria-current="page"]').dataset.value === 'game', visible() + ' · ' + w.location.hash);
     ok('with its two starting points', !!q('#gear [data-act="preset"][data-value="base"]') && !!q('#gear [data-act="preset"][data-value="max"]'));
     ok('and there overcharm is flagged at the top', !!q('#banner .banner:not(.is-run)'));
+    // Body with the game's pieces: tapping the 7th mask leaves 7; tapping it again, 6. The base 5 can't be removed.
+    const maskN = () => d.querySelectorAll('#gear .pieces.is-masks .piece.is-on').length;
+    ok('the masks are the game\'s, one per step', d.querySelectorAll('#gear .pieces.is-masks .piece img').length === 9);
+    await click('#gear .pieces.is-masks .piece:nth-child(7)');
+    ok('tapping a mask sets it there', maskN() === 7 && w.location.hash.indexOf('masks=7') >= 0, maskN() + ' · ' + w.location.hash);
+    await click('#gear .pieces.is-masks .piece:nth-child(7)');
+    ok('and tapping the last lit one lowers it', maskN() === 6, maskN());
+    ok('the base masks are fixed', q('#gear .pieces.is-masks .piece:nth-child(5)').disabled);
+    ok('spell levels are chosen by their own artwork', d.querySelectorAll('#gear .lvlpick .lvl img').length >= 6);
+    await click('#gear .pieces.is-masks .piece:nth-child(9)');
     await click('#gear [data-act="seg"][data-key="nail"][data-value="2"]');
     ok("changing the nail doesn't change screen", visible() === 'gear' && w.location.hash.indexOf('nail=2') >= 0
        && w.location.hash.indexOf('view=game') >= 0, w.location.hash);
@@ -1151,6 +1163,7 @@ f.addEventListener('load', async () => {
     await wait(1400);
     ok('the hit goes away by itself', !d.documentElement.classList.contains('is-binding-all') && q('#overcharm-fx').hidden);
     await click('[data-act="pantheonPick"][data-value="master"]');
+    ok('Enter comes with what you are entering', txt('.run-go .run-sum b') === 'Panteón del Maestro' && !!q('.run-go [data-act="runStart"]'), txt('.run-go .run-sum'));
     await click('[data-act="runStart"]');
     const tiles = () => [...d.querySelectorAll('.timeline .tl')];
     const states = () => tiles().map((x) => (x.classList.contains('is-done') ? '✔' : x.classList.contains('is-current') ? '▶'
@@ -1194,7 +1207,7 @@ f.addEventListener('load', async () => {
     ok('the detail shows the charm, but without an equip button', !q('[data-act="equip"][data-id="longnail"]')
        && txt('#charm-detail .insp-state.cond').indexOf('bancos') >= 0, txt('#charm-detail .insp-state.cond'));
     ok('nor can they all be removed', q('[data-act="clear"]').disabled);
-    await click('[data-act="step"][data-key="notches"][data-delta="-1"]');
+    await click('[data-act="setv"][data-key="notches"][data-value="10"]');
     ok('nor can the notches be changed', w.location.hash.indexOf('notches=11') >= 0, w.location.hash);
     await click('[data-act="preset"][data-value="base"]');
     ok('nor a preset that removes them', equippedIds() === lockedIds, equippedIds());

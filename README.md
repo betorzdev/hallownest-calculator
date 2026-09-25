@@ -62,7 +62,7 @@ take?*
 </tr>
 <tr>
 <td valign="top">
-<img src="docs/screenshots/your-game.webp" alt="Your game screen: the five nails, masks, vessels, notches, nail arts and spell levels">
+<img src="docs/screenshots/your-game.webp" alt="Your game screen: the five nails, the masks, vessels and notches as the game draws them, nail arts and spell levels chosen by their artwork">
 </td>
 <td valign="top">
 <img src="docs/screenshots/arena.webp" alt="Combat arena mid-fight against False Knight: the Knight and the enemy face to face with its title card, the scoreboard between them, and both sides' attacks below">

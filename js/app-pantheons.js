@@ -158,14 +158,23 @@
         <span class="bind-note">${esc(t('bindNote_' + k))}</span>
       </button>`;
     }).join('');
+    // What you're about to enter, right under the choices that make it: the pantheon, its rooms and
+    // the bindings on, with Enter beside it. The door and its cocoon come after: they're information.
+    const chosen = PN.PANTHEON_BY_ID[prefs.pantheon] || PN.PANTHEONS[0];
+    const onBinds = BINDS.filter((k) => prefs.bindings[k]).map((k) => t('bind_' + k));
+    const summary = `<div class="run-go">
+        <p class="run-sum"><b${NT}>${esc(pick(chosen.name))}</b><span>${esc(t('runRooms', { n: chosen.rooms.length }))}</span>
+          <span>${esc(onBinds.length ? t('bindingsLabel') + ': ' + onBinds.join(', ') : t('runSumNone'))}</span></p>
+        <button type="button" class="btn btn-primary" data-act="runStart">${esc(t('runEnter'))}</button>
+      </div>`;
     return `<div class="fight-body">${brackets}${head}
       <div class="block-head">${esc(t('pantheonPick'))}<span class="quick-hint">${esc(t('doorDoneHint'))}</span></div>
       <div class="pcards">${cards}</div>
       <div class="block-head">${esc(t('bindingsLabel'))}</div>
       <div class="binds ${BINDS.every((k) => prefs.bindings[k]) ? 'is-all' : ''}">${binds}</div>
+      ${summary}
       <div class="block-head">${esc(t('cocoonLabel'))}</div>
       ${doorHtml()}
-      <div class="run-go"><button type="button" class="btn btn-primary" data-act="runStart">${esc(t('runEnter'))}</button></div>
     </div>`;
   }
 

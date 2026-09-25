@@ -77,6 +77,9 @@
     /* Heads a stepper's preview: it says that what follows you don't have yet.
        The lines describing what you ALREADY have go without a heading. */
     ifOneMore:      { es: 'Si subes uno', en: 'With one more' },
+    pieceOf:        { es: '{what}: {n} de {max}', en: '{what}: {n} of {max}' },
+    notchesTrimmed: { es: 'Con {n} muescas no te caben: te quitas {charms}', en: 'With {n} notches they no longer fit: {charms} taken off' },
+    notchesTrimmedOne: { es: 'Con {n} muescas no te cabe: te quitas {charms}', en: 'With {n} notches it no longer fits: {charms} taken off' },
     soulCost:       { es: '{n} de alma', en: '{n} soul' },
     noFocus:        { es: 'No puedes curarte', en: 'You cannot heal' },
     healNote:       { es: '{masks} por Concentración', en: '{masks} per Focus' },
@@ -169,6 +172,7 @@
     quickHintHover: { es: 'un clic equipa o quita', en: 'one click equips or removes' },
     quickHintTouch: { es: 'un toque equipa o quita', en: 'one tap equips or removes' },
     detailMore:     { es: 'y {n} más en la ficha completa', en: 'and {n} more in the full sheet' },
+    detailSumTitle: { es: 'Lo que suman tus amuletos', en: 'What your charms add up to' },
     detailHintHover:{ es: 'Pasa el ratón por un amuleto para ver qué cambiaría en tu build; un clic lo equipa o lo quita.',
                       en: 'Hover a charm to see what it would change in your build; one click equips or removes it.' },
     detailHintTouch:{ es: 'Toca un amuleto para equiparlo o quitarlo: aquí verás qué cambia en tu build.',
@@ -527,6 +531,7 @@
     doorHelp:       { es: 'Marca bajo cada panteón los vínculos con que lo has terminado en tu partida (×4: los cuatro a la vez). Cada uno enciende una muesca de la puerta de la saviavida de Godhome, junto al Salón de los Dioses; con 8 se abre y pone un capullo en cada banco de los panteones.',
                       en: 'Under each pantheon, mark the bindings you have completed it with in your game (×4: all four at once). Each lights a notch on Godhome\'s Lifeblood door, next to the Hall of Gods; 8 open it and place a cocoon at every pantheon bench.' },
     runEnter:       { es: 'Entrar en el panteón', en: 'Enter the pantheon' },
+    runSumNone:     { es: 'Sin vínculos', en: 'No bindings' },
     runRoom:        { es: 'Sala {n} de {total}', en: 'Room {n} of {total}' },
     runTimeline:    { es: 'Salas del panteón', en: 'Pantheon rooms' },
     runQuit:        { es: 'Abandonar', en: 'Give up' },

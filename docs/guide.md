@@ -23,7 +23,8 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   on the right what applies to the whole site: the language (English / Español; until you
   choose, the site follows the browser's language, English if it's neither) and *Share*. Behind
   it, **20 dust motes** rising slowly, as in the main menu; with `prefers-reduced-motion` they
-  don't appear. On mobile it centres and the language and *Share* drop to their own row.
+  don't appear. On mobile it stays in one row, so content starts sooner: the title on the left,
+  smaller and without its filigree, and the language and *Share* on the right.
 - **The screen bar**, which stays stuck at the top: **Charms · Your game · Combat · Journal**,
   in the serif and in lowercase, with an accent diamond in front of the one you're viewing
   (that's how the game marks the page of its menu); the Journal carries your completed entries
@@ -142,8 +143,10 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
       chosen charm: on one row its name (and below it, in the other language), what it costs in
       the game's notch points —in magenta if it would overcharm you—; below, its line, a status line (overcharm, replaces, doesn't
       fit, needs…) and **what changes in your build, before → after**, with the synergies with
-      what you already wear at the end of each line. **It's always the same size**, also with no
-      charm chosen, so the band doesn't grow or shrink when going from one to another: the line
+      what you already wear at the end of each line. With no charm chosen it shows **what the
+      charms you wear add up to**: your sheet against the same build with only Void Heart, in
+      the same before → after rows, and how to use it at the foot (with no charms of your own,
+      only that). **It's always the same size**, also with no charm chosen, so the band doesn't grow or shrink when going from one to another: the line
       takes two lines at most (whole in its `title`), each change one and the list six; if there
       are more —Joni's Blessing and Shaman Stone—, the last one says how many remain and opens
       them on the full sheet, highlighted. It's what a floating inspector used to do, and the 45
@@ -208,13 +211,24 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   boxes inside: what you've achieved in the game. Under the title, two starting points, as text:
   *Base Knight* (a new game's: Old Nail, 5 masks, 3 notches, no Dream Nail, no cloak and no
   charms: it removes those too) and *Everything maxed* (every upgrade, keeping
-  your charms). Below, in two rows: the five nails standing in a row,
+  your charms). Below, **two columns that don't share rows**, so a tall block leaves no hole
+  beside it: on the left what you learn (the nail, its arts, the spells and the abilities), on
+  the right what you collect (the body and the charms found); on mobile, one column in the
+  order nail, body, arts, spells, abilities, charms. The five nails standing in a row,
   with their damage below and the cold spotlight behind the one you carry, and the body —masks,
-  soul vessels and notches— with the game item that raises it next to its −/+; and the arts and
-  the spells as small plates you tap (as a silhouette what you haven't learnt, with its figure
-  what you have, and the spells with their two levels). Below, the **abilities** that change
-  some number, with the same plates: the Dream Nail (yes or no), the cloak (no cloak, Mothwing
-  Cloak or Shade Cloak) and Grimmchild's phase (I–IV), which only shows if you have it among
+  soul vessels and notches— **with the game's own pieces**: a row of masks, the vessels and the
+  notches, lit up to what you have and shadowed after, like the HUD's lost mask. Tapping one
+  sets the value there and tapping the last lit one lowers it by one (the gesture of the
+  arena's spell notches); the ones every Knight starts with (5 masks, 3 notches) can't be
+  removed. **Lowering the notches keeps a state the game allows**: a charm only goes on with at
+  least one notch free (the last one may overcharm you), so the last ones you equipped come off
+  until the order you wore them in could have happened, and a notice says which (`normalize`
+  in `js/codec.js`, which applies it to links too). Next, the arts and the spells as small plates you tap (as a silhouette what you
+  haven't learnt, with its figure what you have), and under each spell **its two levels as
+  their own artwork** (Vengeful Spirit and Shade Soul…) after a dimmed "—" for not learnt; the
+  chosen one carries the accent's veil. Below, the **abilities** that change some number, with
+  the same plates: the Dream Nail (yes or no), the cloak (no cloak, Mothwing Cloak or Shade
+  Cloak, chosen by their artwork) and Grimmchild's phase (I–IV, four of the game's notches), which only shows if you have it among
   your charms found —it belongs to the charm, and whoever banishes the troupe has Carefree
   Melody in its place— and whose IV needs the Dream Nail, because it's won by defeating
   Nightmare King Grimm (wiki, "Grimmchild"). Next to them, the **charms found**, on the game's grid, shadowed the
@@ -780,8 +794,10 @@ The third tab of the same section. It's a real run: health, lifeblood and soul c
 room to the next, and **the rests are the only thing that heals**.
 
 - **Before going in** you choose the pantheon (all five, with their motto and their final boss)
-  and the **bindings** you want —each with its icon and what it does—. With all four at once
-  they light up in gold, as in the game.
+  and the **bindings** you want —each with its icon and what it does; the ones on, lit and with
+  the chosen veil—. With all four at once they light up in gold, as in the game. Right under
+  them, **what you're about to enter** —the pantheon, its rooms and the bindings on— with
+  *Enter the pantheon* beside it; the door and its cocoon come after.
 - **The lifeblood door, from your game.** Under each pantheon you mark by hand the bindings you've
   finished it with (and "×4" if it was with all four at once). They're the notches of Godhome's
   door, next to the Hall of Gods: each binding of each pantheon counts once (20 in total) and

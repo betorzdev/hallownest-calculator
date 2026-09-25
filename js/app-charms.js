@@ -4,7 +4,7 @@
 (() => {
   'use strict';
   const HK = globalThis.HK;
-  const D = HK.data, C = HK.codec, I = HK.i18n;
+  const D = HK.data, C = HK.codec, I = HK.i18n, E = HK.engine;
   const App = HK.app;
   const { t, pick, KEY, el, hoverable, SPELL_KEYS, ART_KEYS, ART_STAT, NEED_KEY, NT, namedSrc, esc, save,
     pctSpace, fmtValue, fmtStat, fmtStatRich, sign, masksText, notchText, spellArt, shortOf, goodClass,
@@ -311,10 +311,43 @@
   const DETAIL_ROWS = 6;
   const detailId = () => App.detailHover || App.detailSel;
 
+  /* With no charm in the detail, what the equipped ones add up to: your sheet against the same
+     build with only the fixed charms (Void Heart), in the same rows as a charm's changes, and the
+     hint at the foot. Without charms of your own, the hint alone. Memoised by the build, since
+     the detail repaints at every slot the mouse crosses. */
+  let sumMemo = { key: '', changes: [] };
+  function wornSum() {
+    const key = prefs.lang + JSON.stringify(App.state);
+    if (sumMemo.key !== key) {
+      const bare = compute({ ...App.state, charms: App.state.charms.filter(isFixed) });
+      sumMemo = { key, changes: E.diff(bare, App.sheet) };
+    }
+    return sumMemo.changes;
+  }
+  function sumDetail() {
+    const hint = `<p class="detail-hint">${esc(hoverable.matches ? t('detailHintHover') : t('detailHintTouch'))}</p>`;
+    if (!App.state.charms.some((id) => !isFixed(id))) return hint;
+    const changes = wornSum();
+    if (!changes.length) return hint;
+    const many = changes.length > DETAIL_ROWS;
+    const shown = many ? changes.slice(0, DETAIL_ROWS - 1) : changes;
+    const row = (ch) => {
+      const from = ch.kind === 'gain' ? '' : ch.before.applies ? fmtStat(ch.before) : '—';
+      const to = ch.kind === 'loss' ? '—' : fmtStat(ch.after);
+      return `<li title="${esc(ch.label)}"><span class="lbl">${esc(ch.label)}</span><span class="vals">${from ? `<span class="from">${esc(from)}</span><span class="arrow">→</span>` : ''}<span class="to ${goodClass(ch.good)}">${esc(to)}</span></span></li>`;
+    };
+    const more = many && !prefs.detailOpen
+      ? `<li class="insp-more"><button type="button" data-act="detail">${esc(t('detailMore', { n: changes.length - shown.length }))}</button></li>` : '';
+    return `<div class="detail-sum">
+        <h3>${esc(t('detailSumTitle'))}</h3>
+        <ul class="insp-list">${shown.map(row).join('')}${more}</ul>
+      </div>${hint}`;
+  }
+
   function charmDetail() {
     const id = detailId();
     const c = D.CHARM_BY_ID[id];
-    if (!c) return `<p class="detail-hint">${esc(hoverable.matches ? t('detailHintHover') : t('detailHintTouch'))}</p>`;
+    if (!c) return sumDetail();
     const imp = impact(id), a = imp.action;
     // A single status line, the weightiest one. "Equipped" is already said by the list's title.
     const states = [];

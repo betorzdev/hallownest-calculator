@@ -542,7 +542,9 @@ button.hud-vessel:focus-visible { outline-offset: 3px; }
 .plate-art { position: relative; isolation: isolate; width: 100%; height: 92px; display: grid; place-items: center; margin-bottom: var(--sp-2); }
 .plate-art::before { content: ''; position: absolute; z-index: -1; inset: -8% 2%; background: var(--halo-plate); transition: filter var(--dur) var(--ease); }
 /* Never stretching the sprite: the 192 px ones are scaled down and the fluke, at 88, stays at its size. */
-.plate-art img { width: auto; height: auto; max-width: min(150px, 90%); max-height: 76px; object-fit: contain; }
+/* The width is capped too, not only the height: Shade Soul's artwork is three times as wide as it
+   is tall (192 × 60) and, fitted by height alone, it came out twice the size of Descending Dark's. */
+.plate-art img { width: auto; height: auto; max-width: min(120px, 90%); max-height: 76px; object-fit: contain; }
 .plate:not(.is-on) .plate-art::before { background: var(--halo-plate-off); }
 .plate:not(.is-on) .plate-art img { filter: brightness(0); }
 .plate-name { font-size: var(--fs-sm); line-height: 1.25; color: var(--ink); }
@@ -796,10 +798,11 @@ button.plate:hover .plate-art::before { filter: brightness(1.5); }
   position: relative; background: var(--inv-bg); padding: var(--inv-pad);
   display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-8) var(--sp-12); align-items: start;
 }
-/* Four blocks in two rows —the nail and the body, the arts and the spells—, with a rule
-   between the rows; in one column, between each block. */
+/* Two independent columns (js/app-game.js, renderGear), each block under the previous one with a
+   rule between them; in one column, the page's order: nail, body, arts, spells, abilities, charms. */
 .block { min-width: 0; }
-.gear-body > section.block:nth-of-type(n+3) { border-top: 1px solid var(--inv-line); padding-top: var(--sp-6); }
+.gear-col { display: flex; flex-direction: column; gap: var(--sp-6); min-width: 0; }
+.gear-col > section.block + section.block { border-top: 1px solid var(--inv-line); padding-top: var(--sp-6); }
 .gear-body .block-head { display: flex; align-items: baseline; gap: var(--sp-3); flex-wrap: wrap; }
 .block-note { font-family: var(--font-body); font-size: var(--fs-sm); font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--muted); }
 
@@ -826,10 +829,10 @@ button.plate:hover .plate-art::before { filter: brightness(1.5); }
    throw off the neighbours' figure or selector. */
 .gplates { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-1) var(--sp-3); }
 .gplate { display: grid; grid-row: span 3; grid-template-rows: subgrid; row-gap: var(--sp-1); justify-items: center; align-items: start; text-align: center; min-width: 0; padding: 0; }
-.gplate:has(.seg) { grid-row: span 4; }
+.gplate:has(.lvlpick) { grid-row: span 4; }
 .gplate-art { position: relative; isolation: isolate; width: 100%; height: 60px; display: grid; place-items: center; }
 .gplate-art::before { content: ''; position: absolute; z-index: -1; inset: -8% 2%; background: var(--halo-plate); transition: filter var(--dur) var(--ease); }
-.gplate-art img { width: auto; height: auto; max-width: 92%; max-height: 50px; object-fit: contain; }
+.gplate-art img { width: auto; height: auto; max-width: min(100px, 92%); max-height: 50px; object-fit: contain; }
 .gplate:not(.is-on) .gplate-art::before { background: var(--halo-plate-off); }
 .gplate:not(.is-on) .gplate-art img { filter: brightness(0); }
 .gplate-name { font-size: var(--fs-xs); line-height: 1.25; color: var(--ink-2); }
@@ -838,8 +841,24 @@ button.plate:hover .plate-art::before { filter: brightness(1.5); }
 .gplate-val.is-none { font-family: var(--font-body); font-size: var(--fs-xs); font-weight: 400; color: var(--muted); }
 button.gplate:hover .gplate-name, button.gplate:focus-visible .gplate-name { color: var(--accent); }
 button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
-.gplate .seg { width: 100%; }
-.gplate .seg button { padding: var(--sp-1) 0; }
+/* The level under a plate: each level's own artwork, small, and the dimmed "not learnt" first.
+   The chosen one with the accent's veil and rule, like the nail picks; the rest in half-light. */
+.lvlpick { display: flex; justify-content: center; gap: var(--sp-1); width: 100%; min-width: 0; margin-top: var(--sp-1); }
+.lvl {
+  flex: 0 1 56px; min-width: 0;
+  display: grid; place-items: center; height: 40px; padding: var(--sp-1);
+  border-bottom: 2px solid transparent; color: var(--muted);
+  transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.lvl img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; filter: grayscale(1) brightness(0.55); transition: filter var(--dur) var(--ease); }
+.lvl:hover img, .lvl:focus-visible img { filter: grayscale(0.4) brightness(0.9); }
+.lvl:hover, .lvl:focus-visible { color: var(--accent); }
+.lvl.is-on { background: var(--picked); border-bottom-color: var(--accent-line); color: var(--ink-2); }
+.lvl.is-on img { filter: none; }
+.lvl.is-none { flex: 0 0 24px; font-size: var(--fs-md); }
+.lvlpick.is-dots { gap: 0; }
+.lvlpick.is-dots .sd-dot small { color: var(--ink-2); text-decoration: none; }
+.lvlpick.is-dots .sd-dot:disabled { opacity: 0.4; }
 /* Charms found: the Charms grid (.quick-grid), but what you have shows whole, undimmed, and
    what you don't, shadowed (.qc.is-missing, further up). */
 .own-all { margin-left: auto; display: flex; align-items: baseline; gap: var(--sp-2); }
@@ -855,21 +874,32 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
 .qc-pip { width: 5px; height: 5px; border-radius: 50%; border: 1px solid var(--muted); }
 .qc-pip.is-on { background: var(--ink); border-color: var(--ink); }
 
-/* Body: the game item that raises it, its name and its range, and the −/+ on the right. */
-.field { --field-icon: 36px; display: flex; flex-direction: column; gap: var(--sp-1); }
+/* Body: its name and range with the figure opposite, and below it the game's pieces to tap —the
+   masks, the vessels, the notches—, lit up to what you have and shadowed after, like the HUD's
+   lost mask. The base ones can't be removed. */
+.field { display: flex; flex-direction: column; gap: var(--sp-1); }
 .field + .field { margin-top: var(--sp-4); }
-.field-row { display: flex; align-items: center; gap: var(--sp-3); }
-.field-icon { width: var(--field-icon); height: var(--field-icon); flex-shrink: 0; display: grid; place-items: center; }
-.field-icon img { width: auto; height: auto; max-width: 100%; max-height: 100%; }
+.field-row { display: flex; align-items: baseline; gap: var(--sp-3); }
+.field-num { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-xl); font-weight: 700; line-height: 1; color: var(--ink-strong); }
+.field-num .u { font-size: var(--fs-xs); font-style: normal; font-weight: 400; color: var(--muted); }
+.pieces { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 38px)); align-items: center; }
+.piece {
+  display: grid; place-items: center; width: 100%; height: 38px; padding: var(--sp-1);
+  border-bottom: 2px solid transparent; transition: border-color var(--dur) var(--ease);
+}
+.piece img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; transition: filter var(--dur) var(--ease), opacity var(--dur) var(--ease); }
+.piece:not(.is-on) img { filter: brightness(0.2) saturate(0); opacity: 0.85; }
+.piece .notch { width: 20px; height: 20px; }
+.piece:hover:not(:disabled), .piece:focus-visible { border-bottom-color: var(--accent-line); }
+.piece:hover:not(:disabled):not(.is-on) img { filter: brightness(0.55) saturate(0); }
+.piece.is-base { cursor: default; }
+.piece.is-base:disabled { opacity: 1; }
+.pieces.is-vessels { grid-template-columns: repeat(var(--n), minmax(0, 46px)); }
+.pieces.is-vessels .piece { height: 44px; }
 .field-text { display: flex; flex-direction: column; flex-grow: 1; min-width: 0; }
 .field-name { font-size: var(--fs-sm); line-height: 1.3; color: var(--ink); }
 .field-note { font-size: var(--fs-xs); line-height: 1.3; color: var(--muted); }
-.step-row { display: flex; align-items: center; gap: var(--sp-1); flex-shrink: 0; }
-.step { width: 36px; height: 36px; flex-shrink: 0; border: 1px solid var(--line-ctl); color: var(--ink-2); font-size: var(--fs-lg); line-height: 1; }
-.step:hover:not(:disabled) { border-color: var(--accent-line); color: var(--accent); }
-.step-num { min-width: 2.2ch; text-align: center; font-size: var(--fs-xl); font-weight: 700; line-height: 1; color: var(--ink-strong); }
-.field .preview { padding-left: calc(var(--field-icon) + var(--sp-3)); }
-@media (pointer: coarse) { .step { width: 44px; height: 44px; } }
+@media (pointer: coarse) { .piece { min-height: 44px; } }
 .preview { display: block; font-size: var(--fs-xs); color: var(--muted); min-height: 1.2em; text-wrap: pretty; }
 /* The condition, in front and in grey; what would change, in normal ink. Green is kept for
    what you've already gained: a hypothesis isn't an advantage. */
@@ -885,6 +915,7 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
    (DETAIL_ROWS in js/app.js). */
 .charm-detail { min-width: 0; height: 340px; overflow: hidden; padding-top: var(--sp-4); border-top: 1px solid var(--inv-line); }
 .detail-hint { font-size: var(--fs-sm); line-height: 1.5; color: var(--muted); font-style: italic; max-width: 40ch; }
+.detail-sum + .detail-hint { margin-top: var(--sp-3); font-size: var(--fs-xs); }
 .insp-head { display: flex; align-items: center; gap: var(--sp-3); }
 .insp-id { flex: 1 1 auto; min-width: 0; }
 .insp-name { font-size: var(--fs-lg); line-height: 1.25; color: var(--ink-strong); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -939,17 +970,26 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
   .panel { --inv-pad: var(--sp-6); }
   /* Your game in one column, with the rule between each block. */
   .gear-body { --inv-pad: var(--sp-6); grid-template-columns: minmax(0, 1fr); gap: var(--sp-6); }
-  .gear-body > section.block + section.block { border-top: 1px solid var(--inv-line); padding-top: var(--sp-6); }
+  .gear-col { display: contents; }
+  .gear-body section.block { border-top: 1px solid var(--inv-line); padding-top: var(--sp-6); }
+  .gear-body section.block.is-nail { order: 1; border-top: 0; padding-top: 0; }
+  .gear-body section.block.is-body { order: 2; }
+  .gear-body section.block.is-arts { order: 3; }
+  .gear-body section.block.is-spells { order: 4; }
+  .gear-body section.block.is-abilities { order: 5; }
+  .gear-body section.block.is-owned { order: 6; }
 }
 @media (max-width: 599px) {
   .panel, .gear-body { --inv-pad: var(--sp-4); }
   .fx { grid-template-columns: minmax(0, 1fr); }
-  /* The header, centred: the title on its row and the language and Share below. */
-  .masthead { display: flex; flex-wrap: wrap; justify-content: center; padding-top: var(--sp-4); }
-  .brand { flex: 1 1 100%; }
-  .masthead .mh-tools { flex-wrap: wrap; }
+  /* The header in a single row, so what matters starts sooner on every screen: the title on the
+     left, smaller and without its filigree, and the language and Share on the right. */
+  .masthead { display: flex; flex-wrap: nowrap; justify-content: space-between; align-items: center; gap: var(--sp-3); padding-top: var(--sp-3); }
+  .brand { flex: 1 1 auto; align-items: flex-start; }
+  .brand .mh-hdr { display: none; }
+  .title { font-size: var(--fs-lg); text-align: left; letter-spacing: 0.04em; }
+  .masthead .mh-tools { flex: none; flex-wrap: nowrap; gap: var(--sp-4); }
   .langsel button, .mh-link { min-height: 44px; }
-  .mh-hdr { width: 160px; }
   /* The two starting points: the label above, and both on one line. */
   .presets .lbl { flex: 1 1 100%; text-align: center; }
   /* The bar, on mobile: the four tabs spread out (the active one underlined: the diamond doesn't
@@ -1946,7 +1986,7 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
 .bind.is-on { background: var(--picked); border-color: var(--accent-line); }
 .bind-art { grid-row: 1 / 3; width: 40px; height: 40px; filter: grayscale(1) brightness(0.7);
   transition: filter var(--dur) var(--ease); }
-.bind.is-on .bind-art { filter: none; }
+.bind.is-on .bind-art { filter: drop-shadow(0 0 6px var(--notch-used-glow)); }
 .bind-name { font-size: var(--fs-sm); color: var(--ink); }
 /* All four at once: in the game the icons light up in Godhome's gold, with their halo.
    It's the game's signal, not the accent: that's why the rule and the name go in that tint too. */
@@ -1963,9 +2003,9 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
 .pcard-wrap > .pcard { flex: 1 1 auto; }
 .pdone { display: flex; justify-content: center; align-items: center; gap: var(--sp-half); }
 .pdone-bind, .pdone-all { width: 32px; height: 32px; display: grid; place-items: center; }
-.pdone-bind img { width: 22px; height: 22px; filter: grayscale(1) brightness(0.45); transition: filter var(--dur) var(--ease); }
+.pdone-bind img { width: 22px; height: 22px; filter: grayscale(1) brightness(0.3); opacity: 0.8; transition: filter var(--dur) var(--ease), opacity var(--dur) var(--ease); }
 .pdone-bind:hover img { filter: grayscale(1) brightness(0.8); }
-.pdone-bind.is-on img { filter: none; }
+.pdone-bind.is-on img { filter: drop-shadow(0 0 4px var(--notch-used-glow)); opacity: 1; }
 .pdone-all { font-family: var(--font-num); font-size: var(--fs-xs); font-weight: 600; color: var(--muted); transition: color var(--dur) var(--ease); }
 .pdone-all:hover { color: var(--accent); }
 .pdone-all.is-on { color: var(--godhome); }
@@ -1986,7 +2026,13 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
 .door-cocoon-body { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; font-size: var(--fs-sm); color: var(--ink); }
 .door-seeds { display: flex; gap: var(--sp-1); }
 .door-seeds img { height: 26px; width: auto; }
-.run-go { display: flex; }
+.run-go {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--sp-3) var(--sp-6);
+  margin: var(--sp-2) 0 var(--sp-4); padding: var(--sp-4) 0; border-top: 1px solid var(--inv-line); border-bottom: 1px solid var(--inv-line);
+}
+.run-sum { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--sp-1) var(--sp-3); font-size: var(--fs-sm); color: var(--muted); }
+.run-sum b { font-family: var(--font-display); font-size: var(--fs-lg); font-weight: 600; color: var(--ink-strong); }
+.run-sum span + span::before { content: '·'; margin-right: var(--sp-3); color: var(--line-ctl); }
 
 /* ── Inside the pantheon ────────────────────────────────────────────── */
 .run-head { display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; }
@@ -2702,7 +2748,13 @@ button.tl-go:hover .tl-art { opacity: 0.9; filter: none; }
   .hj-top.is-reading { display: none; }
   .hj-pane { height: auto; grid-template-columns: minmax(0, 1fr); grid-template-rows: none; container-type: normal; }
   .hj-index { padding: var(--sp-3) 0; }
-  .hj-state { gap: var(--sp-2); }
+  /* The label on its own line and the three states in one row below, instead of breaking the row in two. */
+  .hj-state { gap: var(--sp-1) var(--sp-2); }
+  .hj-state-lbl { flex: 1 1 100%; text-align: center; }
+  .hj-state-lbl::after { content: none; }
+  /* The pantheon's summary: the bindings on a line of their own, without the separator in front. */
+  .run-sum span:last-child { flex-basis: 100%; }
+  .run-sum span:last-child::before { content: none; }
   .hj-state button { font-size: var(--fs-sm); }
   .hj-index::before, .hj-index::after { display: none; }
   .hj-list { flex: none; max-height: 64vh; }

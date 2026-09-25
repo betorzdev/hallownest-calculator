@@ -49,7 +49,7 @@ test('normalize: mutually exclusive charms, the last one wins', () => {
 
 test('normalize: Void Heart is always the first one equipped', () => {
   assert.deepEqual(codec.normalize({ charms: ['fury', 'ustrength', 'voidheart'] }).charms, ['voidheart', 'fury', 'ustrength']);
-  assert.deepEqual(codec.decode('#charms=quickslash,voidheart,pride').charms, ['voidheart', 'quickslash', 'pride']);
+  assert.deepEqual(codec.decode('#notches=11&charms=quickslash,voidheart,pride').charms, ['voidheart', 'quickslash', 'pride']);
   const worn = codec.toggleCharm(codec.normalize({ ...codec.PRESETS.max, charms: ['voidheart'] }), 'fury');
   assert.deepEqual(worn.charms, ['voidheart', 'fury'], 'what you equip goes after it');
   assert.deepEqual(codec.normalize({ charms: ['voidheart', 'kingsoul'] }).charms, ['kingsoul'], 'swapped for Kingsoul, it goes');
@@ -142,4 +142,19 @@ test('a link with a broken "%" reads the same, without that pair', () => {
   assert.doesNotThrow(() => { st = codec.decode('#v=1&charms=%E0&nail=3'); });
   assert.equal(st.nail, 3);
   assert.doesNotThrow(() => codec.decode('#nail=2&%zz=1&masks=%'));
+});
+
+test("normalize: the charms have to fit in the notches as the game allows, or the last ones come off", () => {
+  const worn = ['voidheart', 'ustrength', 'quickslash', 'fury'];   // 0 + 3 + 3 + 2 = 8
+  assert.deepEqual(codec.normalize({ notches: 8, charms: worn }).charms, worn, 'all fit');
+  // With 7, Fury went on with one notch free: overcharmed, which the game allows.
+  assert.deepEqual(codec.normalize({ notches: 7, charms: worn }).charms, worn, 'the last one may overcharm');
+  // With 6, Quick Slash and Strength fill them all: Fury had no free notch to go on.
+  assert.deepEqual(codec.normalize({ notches: 6, charms: worn }).charms, ['voidheart', 'ustrength', 'quickslash']);
+  // With 3, Strength fills them: Quick Slash and Fury come off, Void Heart (0 notches) stays.
+  assert.deepEqual(codec.normalize({ notches: 3, charms: worn }).charms, ['voidheart', 'ustrength']);
+  // Lowering the notches on Your game goes through set(): the same trimming.
+  assert.deepEqual(codec.set(codec.normalize({ notches: 11, charms: worn }), 'notches', 5).charms, ['voidheart', 'ustrength', 'quickslash']);
+  // A link that couldn't happen in the game arrives trimmed.
+  assert.deepEqual(codec.decode('#notches=3&charms=ustrength,quickslash').charms, ['ustrength']);
 });

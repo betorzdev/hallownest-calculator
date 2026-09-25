@@ -82,10 +82,25 @@
     });
     // Void Heart can't be removed, so it's always the first one equipped: whatever you wear came after it.
     if (st.charms.includes('voidheart')) st.charms = ['voidheart', ...st.charms.filter((id) => id !== 'voidheart')];
+    // The game only lets you equip a charm with at least one notch free, and the last one may
+    // overcharm you. With fewer notches than that (lowering them on Your game, or a link), the
+    // last ones equipped come off until the order you wore them in could have happened.
+    while (!fitsInOrder(st.charms, st.notches)) st.charms.pop();
     return st;
   }
 
   const clone = (st) => normalize(st);
+
+  // Whether each charm, in the order worn, found a free notch when it went on.
+  function fitsInOrder(charms, notches) {
+    let used = 0;
+    for (const id of charms) {
+      const n = D.CHARM_BY_ID[id].notches;
+      if (n > 0 && used >= notches) return false;
+      used += n;
+    }
+    return true;
+  }
 
   /* ── Notches and equipping rules ─────────────────────────────────────── */
   const notchesUsed = (charms) => charms.reduce((n, id) => n + (D.CHARM_BY_ID[id] ? D.CHARM_BY_ID[id].notches : 0), 0);
