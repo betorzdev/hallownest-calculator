@@ -219,32 +219,35 @@ f.addEventListener('load', async () => {
     ok('with nothing learnt, the six plates as silhouettes', d.querySelectorAll('#panel .plate').length === 6 && !q('#panel .plate.is-on'));
     // The base Knight is a new game: no charms found, and the ones you don't have
     // can be looked at but not equipped. They're all marked on Your game to keep testing.
-    ok('the base Knight has no charms found', d.querySelectorAll('#gear .quick-owned .qc.is-missing').length === 45);
+    ok('the base Knight has no charms found', d.querySelectorAll('#gear .quick-owned .qc.is-missing').length === 40);
     await click('#panel .qc[data-id="fheart"]');
     ok("one not found can't be equipped", !isOn('fheart') && txt('#charm-detail .insp-state').indexOf('Sin conseguir') >= 0, txt('#charm-detail .insp-state'));
     await click('#gear [data-act="ownAll"][data-value="1"]');
-    // All is the end of the game: from each double slot, one version; the other half stays shadowed.
-    ok('All marks them found', d.querySelectorAll('#gear .quick-owned .qc.is-missing').length === 5
-       && d.querySelectorAll('#gear .quick-owned .qslot-pair .qc.is-missing').length === 5);
+    // All is the end of the game: from each double slot, one version, and the slot shows it lit.
+    ok('All marks them found', !q('#gear .quick-owned .qc.is-missing')
+       && d.querySelectorAll('#gear .quick-owned .qc-dual .qc-pip.is-on').length === 5);
     // All is the end of the game, with Void Heart, which is always equipped and can't be removed.
     ok('with Void Heart, equipped by itself', isOn('voidheart'), onIds());
     await equip('voidheart');
     ok("and it can't be removed", isOn('voidheart') && txt('#charm-detail .insp-state').indexOf('No se puede quitar') >= 0, txt('#charm-detail .insp-state'));
     await click('[data-act="clear"]');
     ok('not even with Clear', isOn('voidheart'), onIds());
-    // The double slots: two halves on Your game, at most one marked; tapping the marked one removes it.
-    ok('Your game: five double slots in two halves', d.querySelectorAll('#gear .quick-owned .qslot-pair').length === 5);
+    // The double slots: one whole slot on Your game that switches none → first → second → none.
+    ok('Your game: five whole double slots', d.querySelectorAll('#gear .quick-owned .qc-dual').length === 5 && !q('#gear .qslot-pair'));
     ok('on Charms, the version you have shows alone', !q('#panel .qslot-pair') && !!q('#panel .qc[data-id="uheart"]') && !q('#panel .qc[data-id="fheart"]'));
-    await click('#gear .quick-owned .qc[data-value="king"][aria-pressed="true"]');
+    await click('#gear .quick-owned .qc-dual[data-value="king"]');
     ok('without it in the collection, it is removed', !isOn('voidheart'), onIds());
     ok('with no version, the two halves shadowed', d.querySelectorAll('#panel .qslot-pair .qc.is-missing').length === 2);
-    await click('#gear .quick-owned .qc[data-value="king"][data-token="kingsoul"]');
-    ok('marking one half leaves it alone on Charms', !!q('#panel .qc[data-id="kingsoul"]:not(.is-missing)') && !q('#panel .qslot-pair'));
-    await click('#gear .quick-owned .qc[data-value="heart"][data-token="fheart"]');
-    ok('marking the other half removes the previous one', !!q('#gear .quick-owned .qc[data-value="heart"][data-token="uheart"]') && !q('#panel .qc[data-id="uheart"]'));
+    ok('with none, the slot shadowed and both dots empty', !!q('#gear .qc-dual.is-missing[data-value="king"][data-token="kingsoul"]')
+       && !q('#gear .qc-dual[data-value="king"] .qc-pip.is-on'));
+    await click('#gear .quick-owned .qc-dual[data-value="king"]');
+    ok('marking one version leaves it alone on Charms', !!q('#panel .qc[data-id="kingsoul"]:not(.is-missing)') && !q('#panel .qslot-pair'));
+    await click('#gear .quick-owned .qc-dual[data-value="heart"]');
+    await click('#gear .quick-owned .qc-dual[data-value="heart"]');
+    ok('switching to the other version removes the previous one', !!q('#gear .quick-owned .qc-dual[data-value="heart"][data-token="uheart"]') && !q('#panel .qc[data-id="uheart"]'));
     await equip('fheart');
     ok('Fragile Heart equipped', isOn('fheart'), onIds());
-    await click('#gear .quick-owned .qc[data-value="heart"][data-token="uheart"]');
+    await click('#gear .quick-owned .qc-dual[data-value="heart"]');
     ok('on swapping it for the unbreakable one, the fragile one is removed', !isOn('fheart'), onIds());
     await equip('uheart');
     ok('Divine makes it unbreakable', onCount() === 1 && isOn('uheart'), onIds());
@@ -306,7 +309,6 @@ f.addEventListener('load', async () => {
        && q('#nav [aria-current="page"]').dataset.value === 'game', visible() + ' · ' + w.location.hash);
     ok('with its two starting points', !!q('#gear [data-act="preset"][data-value="base"]') && !!q('#gear [data-act="preset"][data-value="max"]'));
     ok('and there overcharm is flagged at the top', !!q('#banner .banner:not(.is-run)'));
-    ok('the guide only shows on Charms', !q('#guide .guide'));
     await click('#gear [data-act="seg"][data-key="nail"][data-value="2"]');
     ok("changing the nail doesn't change screen", visible() === 'gear' && w.location.hash.indexOf('nail=2') >= 0
        && w.location.hash.indexOf('view=game') >= 0, w.location.hash);
@@ -443,6 +445,10 @@ f.addEventListener('load', async () => {
     ok('its five attacks come out, on its card', d.querySelectorAll('.foecard .move-foe').length === 5,
        d.querySelectorAll('.foecard .move-foe').length);
     ok('the slam deals 2 masks', [...d.querySelectorAll('.move-foe')].some((n) => n.textContent.includes('−2')));
+    // The unit isn't written under the figure: it goes in the title and, for the screen reader, after the figure.
+    ok('the unit only in the title and for the screen reader', !q('.move-foe .move-cost:not(.is-warn):not(.is-proj)')
+       && [...d.querySelectorAll('.move-foe')].every((n) => /máscaras?$/.test(n.title) && /máscaras?$/.test(n.querySelector('.move-num .sr-only').textContent)),
+       q('.move-foe') && q('.move-foe').title);
 
     await click('[data-act="hit"]');
     // With no charms the Pure Nail deals 21, not the 32 of the build with Unbreakable Strength.
@@ -542,7 +548,7 @@ f.addEventListener('load', async () => {
     ok('Gruz Mother releases Gruzzers in her fight out in the world', summons().length === 1, summons().join(' | '));
 
     await pick('pure-vessel');
-    const firstDmg = () => txt('.foecard .move-foe .move-num');
+    const firstDmg = () => (q('.foecard .move-foe .move-num') ? q('.foecard .move-foe .move-num').firstChild.textContent.trim() : '(missing)');
     ok('Pure Vessel deals 2 in Combat', firstDmg() === '−2', firstDmg());
 
     /* ── Notices, which are told but not simulated ────────────────────── */
@@ -741,7 +747,7 @@ f.addEventListener('load', async () => {
     ok('Descending Dark on the right deals 60', txt('[data-act="hit"][data-id="spell:dd"] .move-num') === '60'
        && q('[data-id="dd:burst1:right"]').getAttribute('aria-pressed') === 'true', txt('[data-act="hit"][data-id="spell:dd"] .move-num'));
 
-    /* ── The arena's explanations: the "?" for what doesn't read on its own (js/app.js) ── */
+    /* ── The arena's explanations: the "?" for what doesn't read on its own (js/app-arena.js) ── */
     const helpBtn = (id) => q(`[data-act="help"][data-id="${id}"]`);
     const boxOf = (id) => (helpBtn(id) ? d.getElementById(helpBtn(id).getAttribute('aria-controls')) : null);
     const isOpen = (id) => !!boxOf(id) && !boxOf(id).hidden && helpBtn(id).getAttribute('aria-expanded') === 'true';

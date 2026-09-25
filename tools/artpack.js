@@ -4,7 +4,7 @@
    (assets/enemies/) and 163 medallions (assets/journal/) are most of them. Those two folders
    are packed into js/artpack.js as data: URIs (HK.artpack['enemies/<id>']), which D.art()
    checks before the path; everything else is copied as is, and index.html loads that script
-   just before app.js. No dependencies.
+   just before js/app.js, the first of the page's own. No dependencies.
    Usage: node tools/artpack.js <folder>          (npm run artpack -- <folder>)
    Leaves the site ready to publish in <folder> and writes the file list to the output. */
 'use strict';

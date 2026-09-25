@@ -235,7 +235,7 @@ single result.
 
 - The top bar **breaks into three rows** and leaves "Share" loose and centred.
 - In the first-use guide, the "Got it" button sits **on top of the title** (`position: static` in
-  the ≤899 px block): it reads "Got it / HOW IT WORKS".
+  the ≤899 px block): it reads "Got it / HOW IT WORKS". (The guide was removed on 25 September 2026.)
 - The rest —the one-column stack, the sticky compact bar, the inspector anchored at the bottom—
   is well solved. (Since 22 September the compact bar lives inside the screen bar and the
   inspector is the charm band's detail: §0.)

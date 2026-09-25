@@ -23,7 +23,7 @@ charm changed it. Then take that build into a fight.
 <tr>
 <td width="50%" valign="top">
 
-### ◆ Charms
+### Charms
 All 45 charms on the game's own Inventory screen. **Hover one and see what it would change**
 before you equip it: nail damage, DPS, hits until you die, soul per hit, healing time, every
 spell. Overcharm and notches work as in the game.
@@ -31,9 +31,32 @@ spell. Overcharm and notches work as in the game.
 </td>
 <td width="50%" valign="top">
 
-### ◆ Your game
+### Spells, Nail Arts and effects
+Under the charms, what each spell and Nail Art hits for with your build, and **what your
+charms do that the numbers don't show**: Weaverlings, Dreamshield, Thorns, the Elegy beams…
+with the synergies between them marked.
+
+</td>
+</tr>
+<tr>
+<td colspan="2" valign="top">
+<img src="docs/screenshots/spells-effects.webp" alt="Spells and Nail Arts with their damage, and the Effects row: Dreamshield, Weaverlings with Grubsong's synergy, Elegy's beams, Thorns, Grubsong's soul and the Void Heart">
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+### Your game
 Your nail, masks, soul vessels, notches, spells and nail arts, plus the charms and abilities
 you've actually found. Start from the base Knight or from everything maxed.
+
+</td>
+<td valign="top">
+
+### Combat
+Fight **180 enemies and bosses** with your build, hit by hit: phases, armour, the soul you gain,
+the masks you lose. Answers the question no other site does: *how many hits does this boss
+take?*
 
 </td>
 </tr>
@@ -46,17 +69,9 @@ you've actually found. Start from the base Knight or from everything maxed.
 </td>
 </tr>
 <tr>
-<td valign="top">
+<td colspan="2" valign="top">
 
-### ◆ Combat
-Fight **180 enemies and bosses** with your build, hit by hit: phases, armour, the soul you gain,
-the masks you lose. Answers the question no other site does: *how many hits does this boss
-take?*
-
-</td>
-<td valign="top">
-
-### ◆ Hall of Gods & Pantheons
+### Hall of Gods & Pantheons
 The **44 statues** on Attuned, Ascended and Radiant, and the **five Pantheons** room by room,
 with bindings, the hot springs and the Lifeblood cocoon.
 
@@ -73,14 +88,14 @@ with bindings, the hot springs and the Lifeblood cocoon.
 <tr>
 <td valign="top">
 
-### ◆ Hunter's Journal
+### Hunter's Journal
 Track your real playthrough entry by entry, from "not encountered" to "completed", with the
 kills left to decipher each one. The total works like the game's: 146, growing to 164.
 
 </td>
 <td valign="top">
 
-### ◆ In your pocket, in two languages
+### In your pocket, in two languages
 Works just as well on a phone. English and Spanish, with every name copied from the game's own
 official translation.
 

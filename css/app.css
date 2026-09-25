@@ -42,7 +42,7 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
    small caps, which is why "0.891 s" read as "0.891 ꜱ"—. */
 .hero-num, .metric .val, .plate-val, .rd .v, .stat-value, .nailpick-num, .gplate-val, .step-num,
 .minihud b, .minihud em, .delta, .chip,
-.stat-detail .v, .insp-list .vals, .notch-free, .steps .n {
+.stat-detail .v, .insp-list .vals, .notch-free {
   font-family: var(--font-num);
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum' 1;
@@ -93,11 +93,11 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 .bk.br { bottom: -1px; right: -1px; border-bottom: 2px solid var(--bracket); border-right: 2px solid var(--bracket); }
 
 /* ── Tinted sections ─────────────────────────────────────────────────────
-   Each section carries the pale tint of its area on the game's map (tokens.css): the sheet,
-   the guide and Your game, City of Tears'; combat, Crystal Peak's; the Hall and the
+   Each section carries the pale tint of its area on the game's map (tokens.css): the sheet
+   and Your game, City of Tears'; combat, Crystal Peak's; the Hall and the
    Pantheons, Godhome's. It tints the title, the corner brackets and the ornaments; the figures
    and what responds to the finger don't change. The brackets read --bracket: redefining it is enough. */
-.panel, .guide, .gear { --tint: var(--tint-sheet); --bracket: color-mix(in oklab, var(--tint) 50%, transparent); }
+.panel, .gear { --tint: var(--tint-sheet); --bracket: color-mix(in oklab, var(--tint) 50%, transparent); }
 .fight { --tint: var(--tint-combat); }
 .fight.is-godhome { --tint: var(--tint-godhome); }
 .sec-title {
@@ -176,7 +176,7 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
    look at while touching charms. The page clips what sticks out (overflow-x: clip, which
    doesn't break sticky the way hidden would). */
 .page { overflow-x: clip; }
-/* The notices, the guide and the screen, with the column's breathing room; what's empty takes no space. */
+/* The notices and the screen, with the column's breathing room; what's empty takes no space. */
 .screens { display: flex; flex-direction: column; gap: var(--sp-8); }
 .screens > :empty { display: none; }
 @media (max-width: 899px) { .screens { gap: var(--sp-6); } }
@@ -236,32 +236,6 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
   15%, 80% { opacity: var(--o); }
   100% { opacity: 0; transform: translate(var(--dx), -250px); }
 }
-
-/* ── First-use guide ─────────────────────────────────────────────────────
-   In the sheet's language: its corner brackets in the tint, the title in Cinzel with the diamond
-   and the numbered steps unboxed. */
-.guide { position: relative; padding: var(--sp-6) var(--sp-6); }
-.guide h2 { font-family: var(--font-display); font-size: var(--fs-lg); letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; color: var(--tint); margin-bottom: var(--sp-1); }
-.guide > .rule { display: block; color: color-mix(in oklab, var(--tint) 45%, transparent); margin-bottom: var(--sp-4); }
-.guide-lede { font-size: var(--fs-md); line-height: 1.5; color: var(--ink-2); margin-bottom: var(--sp-4); max-width: var(--measure); }
-/* The link to Your game, inside step 1: what can be touched carries the accent. */
-.guide-link { padding: 0; font: inherit; font-style: italic; color: var(--accent); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--accent-line); }
-.guide-link:hover { color: var(--ink-strong); }
-.guide-close { position: absolute; top: 18px; right: 20px; }
-.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-6); }
-.steps li { display: flex; gap: var(--sp-3); font-size: var(--fs-sm); line-height: 1.5; color: var(--ink-2); }
-.steps .n { flex-shrink: 0; font-size: var(--fs-xl); font-weight: 700; line-height: 1; color: var(--tint); }
-.steps i { color: var(--ink); font-style: italic; }
-.steps b { color: var(--ink); }
-.examples { display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; margin-top: var(--sp-6); }
-.examples .lbl { color: var(--muted); }
-.example {
-  display: inline-flex; align-items: center; gap: var(--sp-2);
-  border: 1px solid var(--line-ctl); background: var(--ctl);
-  color: var(--ink-2); font-size: var(--fs-sm); padding: var(--sp-2) var(--sp-4) var(--sp-2) var(--sp-2);
-}
-.example:hover { border-color: var(--accent-line); color: var(--ink); }
-.example img { width: 24px; height: 24px; object-fit: contain; }
 
 /* ── The sheet: the game's Inventory screen ──────────────────────────────
    Almost pure black, the corner brackets in the tint and no box: the title with its diamond, the
@@ -872,6 +846,14 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
 .own-all .text-btn { font-size: var(--fs-sm); }
 .own-all .text-btn:disabled { color: var(--muted); border-bottom-color: transparent; cursor: default; }
 .quick-owned .qc:not(.is-missing) img { opacity: 1; filter: none; }
+/* The double slots: one whole slot that switches version on each tap, and two dots under it,
+   the marked one filled in bone. With none, two empty rings. */
+.qc-pips {
+  position: absolute; left: 50%; bottom: calc(var(--qc) * -0.1); transform: translateX(-50%);
+  display: flex; gap: var(--sp-1); pointer-events: none;
+}
+.qc-pip { width: 5px; height: 5px; border-radius: 50%; border: 1px solid var(--muted); }
+.qc-pip.is-on { background: var(--ink); border-color: var(--ink); }
 
 /* Body: the game item that raises it, its name and its range, and the −/+ on the right. */
 .field { --field-icon: 36px; display: flex; flex-direction: column; gap: var(--sp-1); }
@@ -958,12 +940,6 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
   /* Your game in one column, with the rule between each block. */
   .gear-body { --inv-pad: var(--sp-6); grid-template-columns: minmax(0, 1fr); gap: var(--sp-6); }
   .gear-body > section.block + section.block { border-top: 1px solid var(--inv-line); padding-top: var(--sp-6); }
-  .steps { grid-template-columns: minmax(0, 1fr); gap: var(--sp-3); }
-  /* The close button sat ON TOP of its own title: it read
-     "Got it / HOW IT WORKS". It stays at the top right and the title makes room for it. */
-  .guide { padding: var(--sp-4); }
-  .guide h2 { padding-right: 104px; }
-  .guide-close { top: var(--sp-3); right: var(--sp-3); }
 }
 @media (max-width: 599px) {
   .panel, .gear-body { --inv-pad: var(--sp-4); }

@@ -80,6 +80,8 @@
       const g = D.CHARM_BY_ID[id].group;
       return !g || !seen.slice(i + 1).some((o) => D.CHARM_BY_ID[o].group === g);
     });
+    // Void Heart can't be removed, so it's always the first one equipped: whatever you wear came after it.
+    if (st.charms.includes('voidheart')) st.charms = ['voidheart', ...st.charms.filter((id) => id !== 'voidheart')];
     return st;
   }
 

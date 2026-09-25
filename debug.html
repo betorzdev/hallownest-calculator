@@ -9,7 +9,7 @@
 /* Debug page for screenshots: sets the prefs in localStorage and opens the site inside an
    iframe of the requested width (below 500 px headless capture crops if --window-size is
    used directly).
-   ?w=390&h=2200&top=2450&lang=en&detail=1&guide=1&view=charms|game|fight&foe=false-knight&hash=%23v%3D1...
+   ?w=390&h=2200&top=2450&lang=en&detail=1&view=charms|game|fight&foe=false-knight&hash=%23v%3D1...
    The screen: &view=; &fight=1 or &tab= already mean Combat. It also goes in the iframe's hash,
    because a link with a build and no "view=" opens Charms.
    Hall of Gods: &tab=hall&statue=<id> picks the statue, &hdiff=at|asra|radiant fights at it,
@@ -37,7 +37,6 @@ localStorage.setItem('hollow.prefs', JSON.stringify({
   lang: q.get('lang') || 'en', langChosen: true,
   compare: 'base', open: [], view,
   detailOpen: q.get('detail') === '1',
-  guideSeen: q.get('guide') !== '1',
   foeId: q.get('foe') || '',
   hallId: q.get('statue') || 'gruz-mother',
   hallDiff: q.get('hdiff') || '',

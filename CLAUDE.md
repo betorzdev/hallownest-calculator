@@ -27,7 +27,9 @@ Neither folder is part of the page: `index.html` doesn't load them.
 
 ## Hard constraints
 
-- **No framework and no build.** `index.html` loads **eleven classic scripts**, not modules.
+- **No framework and no build.** `index.html` loads **eighteen classic scripts**, not modules.
+  The page is `js/app.js` (the core) and one script per screen (`js/app-*.js`), sharing the
+  `HK.app` object, and `js/app-boot.js` starts it; the rules for sharing are in `js/app.js`'s header.
   Plus GoatCounter's (`async`, external), the visit counter: the site has to work the same
   without it, so its events go through `track()` in `js/app.js`, which does nothing if it's missing.
 - **The site has to work over `file://`** (opening `index.html` with a double click). Everything

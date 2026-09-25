@@ -38,11 +38,7 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   Switching screens scrolls up to its start, just below the bar. Only the chosen one shows,
   but the others keep being painted, hidden (`showScreen` in `js/app.js`): that way one's HUD
   doesn't animate on return what happened while you were looking at another.
-- **Charms**, the start screen. At the top, the **first-use guide**: the site's line, three
-  steps —the first leads to *Your game*— and three example builds (Nail to the limit,
-  Spellcaster, Lifeblood) to see the effect at once; it hides with "Got it". It carries the
-  sheet's language: its corner brackets, the title in Cinzel with the diamond and the unboxed steps.
-- **The sheet, which is the game's Inventory screen** (the mould is the wiki's
+- **Charms**, the start screen: **the sheet, which is the game's Inventory screen** (the mould is the wiki's
   `Inventory_Godseeker_Mode.png`; the mockup, `design/06-sheet-variants.html`): almost pure
   black, corner brackets, the screen's title, "Charms", and, from top to bottom, **the status
   block** —everything that matters, above the charm grid and in one row, so that on an 800 px
@@ -222,12 +218,14 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   your charms found —it belongs to the charm, and whoever banishes the troupe has Carefree
   Melody in its place— and whose IV needs the Dream Nail, because it's won by defeating
   Nightmare King Grimm (wiki, "Grimmchild"). Next to them, the **charms found**, on the game's grid, shadowed the
-  ones you don't have. The five two-version slots split into two halves, and at most one is
-  marked: tapping a half marks it and unmarks the other, and tapping the marked one removes it
+  ones you don't have. The five two-version slots are one whole slot that switches, so at
+  most one version is marked: each tap moves it on —none, the first, the second, none again—,
+  it shows the marked one (with none, the first, shadowed) and two dots under it say which
   (wiki, "Fragile Heart", "Kingsoul", "Void Heart": Divine makes the fragile one unbreakable
   for good, Void Heart replaces Kingsoul and Grimmchild and Carefree Melody exclude each
   other). Void Heart, as in the game, is always equipped and can't be removed (except by the
-  Charms binding). Changing the collection removes whatever you wear and no longer have.
+  Charms binding), and it's always the first one equipped, even if a link lists it later
+  (`normalize` in `js/codec.js`). Changing the collection removes whatever you wear and no longer have.
   Everything maxed is the end of the game: the unbreakable ones, Void Heart and Grimmchild. On
   Charms, the ones you don't have also show shadowed: they're looked at like the rest (the
   detail tells what they would do and says "Not found"), but they aren't equipped. They're
@@ -266,7 +264,7 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
 
 ## Files
 
-- `index.html` — the page; eleven classic scripts (it works over `file://`) and GoatCounter's,
+- `index.html` — the page; eighteen classic scripts (it works over `file://`) and GoatCounter's,
   the visit counter: no cookies, one visit per page load and, as events, the screen switches
   (`screen-*`), the language (`lang-*`) and *Share*. The hash with the build is never sent, and it
   counts nothing over `file://`, on `localhost` or in an iframe. Without it the site works the
@@ -332,10 +330,22 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
 - `js/fight.js` — the arena's combat rules: `apply(state, action, context)` returns the events
   of a hit, a hit taken, a heal or a wait, with the charms that react to each thing (Thorns of
   Agony, Grubsong, Baldur Shell, Carefree Melody, Spore Shroom, the clock passives).
-  Pure, no DOM and no language: `js/app.js` turns its events into log lines. The reason for
+  Pure, no DOM and no language: `js/app-arena.js` turns its events into log lines. The reason for
   each rule, charm by charm, is in `design/04-charms-in-combat.md`.
 - `js/codec.js` — the build's state: defaults, presets, equipping rules and the URL encoding.
-- `js/app.js` — rendering, events, `localStorage` and the link.
+- `js/app.js` — the core: state, `localStorage` and the link, the header, the screen bar and
+  the mini-bar, the HUD (`hudHtml`), the general render and the events. Each screen has its own
+  script, loaded after it, and they all share the `HK.app` object: what changes value lives
+  there (`App.state`, `App.run`…) and the rest is exported once and taken at the top of each
+  script (the rules, in its header).
+  - `js/app-charms.js` — Charms: the status block, the charm band and its detail, the plates,
+    the effects and the full sheet.
+  - `js/app-game.js` — Your game: nail, body, arts, spells, abilities and the charms you've found.
+  - `js/app-arena.js` — Combat: the simulator, the combat Journal to pick an enemy and the arena.
+  - `js/app-hall.js` — the Hall of Gods tab: marks, statues, plaque and tablet.
+  - `js/app-pantheons.js` — the Pantheons tab: the lifeblood door and the run room by room.
+  - `js/app-journal.js` — the Hunter's Journal screen: your game's book.
+  - `js/app-boot.js` — startup: what's saved, the link and the first render. It goes last.
 - `assets/` — the game's artwork: `charms/`, `nails/`, `spells/`, `arts/`, `abilities/`
   and `hud/`. `tools/fetch-icons.js` downloads them from the wiki's CDN (`npm run icons`).
   Each family has its shape and its frame: charms are square and go in a circle, spells and
@@ -356,7 +366,8 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   states, and the entrance tablet with the two ornaments of its screen (`npm run hall`,
   364 KB already paletted).
 - `docs/` — this guide, and in `docs/screenshots/` the README's captures (WebP, taken with
-  `debug.html` at 1440 × 900 and 390 px). Not part of the page.
+  `debug.html` at 1440 × 900 and 390 px; `spells-effects.webp` is cut from a taller Charms
+  capture, with a build whose charms have effects and synergies). Not part of the page.
 - `design/` — design material: the audit and the system (`00-system.md`), web best practices,
   the game's visual language with the measured palettes, and which Hollow Knight websites
   already exist. It isn't part of the page. **Read it before touching the design.**
@@ -366,8 +377,8 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
 - `tools/artpack.js` — the copy that's published as an Artifact (`npm run artpack -- <folder>`).
   An Artifact allows no more than 255 files and the site has over 480, so the portraits
   (`enemies/`) and the medallions (`journal/`) travel packed as data: URIs in `js/artpack.js`,
-  which `D.art()` checks before the path; `index.html` loads that script before `app.js`. It
-  leaves 162 files and writes their list. It isn't used locally.
+  which `D.art()` checks before the path; `index.html` loads that script before `js/app.js`. It
+  leaves 188 files and writes their list. It isn't used locally.
 - `debug*.html` — support pages, not part of the site:
   - `debug.html` — opens the page with fixed prefs for screenshots
     (`?w=390&h=2000&top=2450&lang=en&detail=1&guide=1&view=charms&open=fury&fx=70&hash=…`).
@@ -740,7 +751,7 @@ room to the next, and **the rests are the only thing that heals**.
   bench, changing charms leaves you at the new full health.
 - **Outside the benches, charms can't be touched from anywhere.** As in the game, which only
   lets you change them sitting on a bench: while the run is still half-done (also from other
-  combat tabs), the grid, the equipped ones, "Clear", the example builds, the presets and the
+  combat tabs), the grid, the equipped ones, "Clear", the presets and the
   notch steps don't change them. A notice above the screen says which pantheon and which room
   you're in, with a button that takes you there and another that abandons it without going
   (it says so in a notice, and focus moves to the screen's title); on the Pantheons tab it
