@@ -41,6 +41,12 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   its bindings, which may not be the sheet's. The screen goes in the URL (`view=`, in "State and
   link"): **Back and Forward** move from one to another without touching the build —going back
   from *Your game* doesn't return the nail you had—, and on reload you stay where you were.
+  They also walk through the places inside a screen, which the history entry carries (not the
+  URL): Combat's tabs (Arena, Hall of Gods, Pantheons), the arena's Journal open, a Hall
+  statue's fight, the tablet and, on mobile, the plaque and the Journal's page read in place of
+  their list. A "‹" button, closing the tablet or the Journal undoes the entry that opened them
+  (it's Back), so the history doesn't pile up. The marks, a half-done fight and the build
+  aren't places: Back doesn't touch them (`navNow`, `navTo` and `App.navParts` in `js/app.js`).
   Switching screens scrolls up to its start, just below the bar. Only the chosen one shows,
   but the others keep being painted, hidden (`showScreen` in `js/app.js`): that way one's HUD
   doesn't animate on return what happened while you were looking at another.
@@ -227,8 +233,10 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   Focus.
 - **The buttons are the game's menu items** (`.btn`), like the save slots': the menu's capitals, no
   box, and on hover or focus the menu's two pointers either side, which are also the focus mark.
+  So that they read as buttons at rest too (on a phone there's no hover), each one sits between
+  two hairlines in the accent that fade out at both ends; faint, they light up under the pointer.
   The one the screen leads to (*Enter the pantheon*, *Again*, *Import from the game*…) goes in bone
-  with a soft light behind it; *Give up* turns red under the pointer, like *Clear Save*. The
+  with its hairlines whole and a soft light behind it; *Give up* turns red under the pointer, like *Clear Save*. The
   segmented choices (the import's systems, the Journal picker's kinds, what to compare the sheet
   with) are words in a row with the chosen one over the accent's rule.
 - **The notices** (*Link copied*, a charm you can't touch in a pantheon, no soul for a spell…) are
@@ -263,10 +271,11 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   order nail, body, arts, spells, abilities, charms. The five nails standing in a row,
   with their damage below and the cold spotlight behind the one you carry, and the body —masks,
   soul vessels and notches— **with the game's own pieces**: a row of masks, the vessels and the
-  notches, lit up to what you have and shadowed after, like the HUD's lost mask. Tapping one
-  sets the value there and tapping the last lit one lowers it by one (the gesture of the
-  arena's spell notches); the ones every Knight starts with (5 masks, 3 notches) can't be
-  removed. **Lowering the notches keeps a state the game allows**: a charm only goes on with at
+  notches, lit up to what you have and shadowed after, like the HUD's lost mask. Tapping a
+  dark one lights up to it; tapping a lit one takes it off with every one after it, so one tap
+  reaches any value (with 3 vessels, the first leaves none), and with the mouse the ones that
+  would go dim before you click. The ones every Knight starts with (5 masks, 3 notches) can't
+  be removed. **Lowering the notches keeps a state the game allows**: a charm only goes on with at
   least one notch free (the last one may overcharm you), so the last ones you equipped come off
   until the order you wore them in could have happened, and a notice says which (`normalize`
   in `js/codec.js`, which applies it to links too). Next, the arts and the spells as small plates you tap (as a silhouette what you
@@ -799,7 +808,10 @@ it's for rehearsing a boss.
   hits of its own you survive at full health (on Radiant, one). Below, *Fight on* Attuned,
   Ascended or Radiant, and what changes about its arena in the Hall.
 - **The symbols are your real game's** —bronze, silver or radiant, the game's badges— and they're
-  marked by hand: each difficulty in the plaque's table is a button. Each one goes on its own, as
+  marked by hand: each difficulty in the plaque's table (the *In your game* column) is a button
+  with the game's empty ring where its symbol goes, tinged with the accent so it reads as
+  something to press; beaten, the badge sits in it. Under the mouse it previews the click, like
+  the notches: the badge you'd put breathes in, the one you'd remove fades. Each one goes on its own, as
   in the game (beating Ascended doesn't give you the Attuned one), with the game's rule that
   Radiant only exists after beating Ascended: marking Radiant switches on Ascended and removing
   Ascended switches off Radiant. They show as three small badges under each statue
@@ -816,7 +828,9 @@ it's for rehearsing a boss.
   plaque and on the statue's tile, its count flashes and the statue's light swells once; removed,
   its light goes out. If the Idol changes level, it lights up too.
 - **Mark in bulk**, collapsed under the Idol's rules, marks or removes a symbol on all 44 at
-  once, difficulty by difficulty, with the same Radiant-and-Ascended rule as the plaque.
+  once, difficulty by difficulty, with the same Radiant-and-Ascended rule as the plaque. Open,
+  it stays in the Idol's column: *Mark all* and *Remove all*, each with the three badges in the
+  counts' order (the name and the rule go in each button's title).
   What wouldn't change anything is dimmed. Removing wipes your real game, so the last bulk
   action leaves a line with *Undo*, which lasts until the next change of marks and doesn't
   expire on a timer.
@@ -875,6 +889,10 @@ room to the next, and **the rests are the only thing that heals**.
   the chosen veil—. With all four at once they light up in gold, as in the game. Right under
   them, **what you're about to enter** —the pantheon, its rooms and the bindings on— with
   *Enter the pantheon* beside it; the door and its cocoon come after.
+- **Rooms and bosses.** Each pantheon's card and the summary say how many rooms it has and how
+  many of them are bosses (the fight rooms: two Vengefly Kings in one room are one boss). Inside
+  the run, the header says which room you're in and how many bosses are left: the fights still
+  ahead, the current one until you win it; the ones you skipped behind you don't count.
 - **The lifeblood door, from your game.** Under each pantheon you mark by hand the bindings you've
   finished it with (and "×4" if it was with all four at once). They're the notches of Godhome's
   door, next to the Hall of Gods: each binding of each pantheon counts once (20 in total) and

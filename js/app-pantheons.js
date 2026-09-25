@@ -149,7 +149,7 @@
         <span class="pcard-body">
           <span class="pcard-name"${NT}>${esc(pick(p.name))}</span>
           <span class="pcard-motto">${esc(pick(p.motto))}</span>
-          <span class="pcard-meta">${esc(t('runRooms', { n: p.rooms.length }))} · ${esc(pick(lastFoe.name))}</span>
+          <span class="pcard-meta">${esc(roomsLine(p.rooms))} · ${esc(pick(lastFoe.name))}</span>
         </span>
       </button>${bindBtns}</div>`;
     }).join('');
@@ -166,7 +166,7 @@
     const chosen = PN.PANTHEON_BY_ID[prefs.pantheon] || PN.PANTHEONS[0];
     const onBinds = BINDS.filter((k) => prefs.bindings[k]).map((k) => t('bind_' + k));
     const summary = `<div class="run-go">
-        <p class="run-sum"><b${NT}>${esc(pick(chosen.name))}</b><span>${esc(t('runRooms', { n: chosen.rooms.length }))}</span>
+        <p class="run-sum"><b${NT}>${esc(pick(chosen.name))}</b><span>${esc(roomsLine(chosen.rooms))}</span>
           <span>${esc(onBinds.length ? t('bindingsLabel') + ': ' + onBinds.join(', ') : t('runSumNone'))}</span></p>
         <button type="button" class="btn btn-primary" data-act="runStart">${esc(t('runEnter'))}</button>
       </div>`;
@@ -207,12 +207,23 @@
       </div>`;
   }
 
+  /* The bosses are the fight rooms: a room with two of the same (Hallownest's two Vengefly
+     Kings) is one boss fight, as the game counts the statues. Left: the fights still ahead,
+     the current one included until it's won; the ones skipped behind you don't count. */
+  const bossCount = (rooms) => rooms.filter((r) => r.type === 'fight').length;
+  const bossesLeft = (rooms) => rooms.filter((r, i) => r.type === 'fight' && i >= App.run.room
+    && !App.run.cleared.includes(i) && !(i === App.run.room && fight.over)).length;
+  const roomsLine = (rooms) => t('runRooms', { n: rooms.length }) + ' · ' + t('runBosses', { n: bossCount(rooms) });
+
   function runHeadHtml() {
     const p = PN.PANTHEON_BY_ID[App.run.pantheon];
     const binds = BINDS.filter((k) => App.run.bindings[k]);
     return `<div class="run-head">
       <h3${NT}>${esc(pick(p.name))}</h3>
-      <span class="fighter-phase">${esc(t('runRoom', { n: Math.min(App.run.room + 1, p.rooms.length), total: p.rooms.length }))}</span>
+      <span class="run-stats">
+        <span class="run-stat">${esc(t('runRoom', { n: Math.min(App.run.room + 1, p.rooms.length), total: p.rooms.length }))}</span>
+        <span class="run-stat">${esc(t('runBossesLeft', { n: bossesLeft(p.rooms), total: bossCount(p.rooms) }))}</span>
+      </span>
       ${binds.length ? `<span class="run-binds ${binds.length === BINDS.length ? 'is-all' : ''}">${binds.map((k) => `<img src="assets/pantheon/bind-${k}.png" alt="${esc(t('bind_' + k))}" title="${esc(t('bind_' + k))}" width="24" height="24">`).join('')}</span>` : ''}
       <button type="button" class="btn${App.run.over ? '' : ' is-danger'}" data-act="runQuit">${esc(App.run.over ? t('runExit') : t('runQuit'))}</button>
     </div>`;
@@ -273,8 +284,7 @@
       const jumpable = !App.run.over && !isCurrent;
       return { state, sr, act: jumpable ? 'runJump' : '', title: t('runJumpTo', { room: sr }) };
     });
-    return `${path}
-      ${App.run.over ? '' : `<p class="timeline-hint">${esc(t('runJumpHint'))}</p>`}`;
+    return path;
   }
 
   // On the picker: the chosen pantheon's rooms, all lit; a tap enters it at that room.

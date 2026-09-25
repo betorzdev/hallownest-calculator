@@ -32,16 +32,16 @@
   const previewOf = (next, leadKey) => (next ? changeLine(App.sheet, compute(next), leadKey) : '');
 
   /* A Body row: the game's own pieces, one per step, as the HUD and the charm screen draw
-     them —the masks, the soul vessels, the notches—, lit up to what you have. Tapping one sets
-     the value to it and tapping the last lit one lowers it by one (the gesture of the arena's
-     spell notches). The ones every Knight starts with can't be removed. Below, what would
-     change with one more. */
+     them —the masks, the soul vessels, the notches—, lit up to what you have. Tapping a dark one
+     lights up to it; tapping a lit one takes it off with every one after it, so a single tap
+     reaches any value, down to none. The ones every Knight starts with can't be removed. Below,
+     what would change with one more. */
   function pieceRow(key, value, min, max, label, range, piece, previewNext) {
     // The ones you add light up in order from the first new one; the ones you remove, from the last.
     const had = was((st) => st[key]);
     const btns = Array.from({ length: max }, (_, i) => {
       const n = i + 1, on = n <= value, base = n <= min;
-      const next = on && n === value ? n - 1 : n;
+      const next = on ? n - 1 : n;
       const lit = fx(on, n <= had);
       const order = lit ? ` style="--i:${on ? n - had - 1 : had - n}"` : '';
       return `<button type="button" class="piece${on ? ' is-on' : ''}${base ? ' is-base' : ''}${lit}"${order} data-act="setv" data-key="${key}" data-value="${next}"

@@ -249,15 +249,50 @@
   /* The same, as a path to this page. es/index.html carries <base href="../">, and against it a
      bare "#…" would point at the English page. */
   const here = (hash) => location.pathname + location.search + hash;
-  /* Every screen change leaves a history entry, so that Back returns to the previous one;
-     build changes rewrite the entry you're on. They all carry the mark {hk: 1}: going back
-     to one of them changes the screen and nothing else (onHistory). */
+  /* Where you are, which is more than the screen: Combat's tab, and what each screen's script
+     registers in App.navParts as { get, set } (the Hall's statue, fight and tablet, the page
+     read on mobile, the arena's Journal open). Back and Forward walk through these, like the
+     game's menus; the build, the marks and a half-done fight aren't places, and stay as they are. */
+  App.navParts = {};
+  function navNow() {
+    const nav = { view: prefs.view, tab: prefs.fightTab };
+    for (const k of Object.keys(App.navParts)) nav[k] = App.navParts[k].get();
+    return nav;
+  }
+  const navKey = (nav) => JSON.stringify(nav);
+  /* Puts back a place from the history. Says whether the screen changed (it fades in) and
+     whether anything did (it repaints). */
+  function applyNav(nav) {
+    const was = navKey(navNow());
+    const viewChanged = !!nav.view && nav.view !== prefs.view;
+    if (viewChanged) setView(nav.view);
+    if (nav.tab && nav.tab !== prefs.fightTab) App.setFightTab(nav.tab);
+    for (const k of Object.keys(App.navParts)) if (nav[k] !== undefined) App.navParts[k].set(nav[k]);
+    return { viewChanged, changed: was !== navKey(navNow()) };
+  }
+  /* Every change of place leaves a history entry, so that Back returns to the previous one;
+     build changes rewrite the entry you're on. They all carry the mark {hk: 1}, the place
+     (nav) and the place they were pushed from (from): going back to one of them changes the
+     place and nothing else (onHistory). */
   function writeUrl(push) {
     const url = hashFor();
+    const nav = navNow(), key = navKey(nav);
+    const cur = history.state && history.state.hk ? history.state : null;
     try {
-      if (push) history.pushState({ hk: 1 }, '', here(url));
-      else if (location.hash !== url || !(history.state && history.state.hk)) history.replaceState({ hk: 1 }, '', here(url));
+      if (push) history.pushState({ hk: 1, nav, key, from: cur ? cur.key : null }, '', here(url));
+      else if (location.hash !== url || !cur || cur.key !== key) history.replaceState({ hk: 1, nav, key, from: cur ? cur.from : null }, '', here(url));
     } catch (e) { if (location.hash !== url) location.hash = url; }
+  }
+  /* After a change of place: a new entry if the place is new. With back, the change undoes
+     the one that brought you here (a "‹" button, closing the tablet or the Journal): if the
+     entry was pushed from this very place, it's Back, so the history doesn't pile up list →
+     page → list and the browser's Back then leaves, as it should. The change is already
+     painted, so onHistory finds nothing left to do. */
+  function navTo(back) {
+    const key = navKey(navNow());
+    const cur = history.state && history.state.hk ? history.state : null;
+    if (back && cur && cur.from === key) { try { history.back(); return; } catch (e) { /* stays as a new entry */ } }
+    if (!cur || cur.key !== key) writeUrl(true);
   }
 
   /* A GoatCounter event (index.html loads it). Only the name travels, never the hash with the
@@ -758,7 +793,7 @@
   function go(v, focusHead) {
     const changed = v !== prefs.view;
     setView(v);
-    writeUrl(changed);
+    navTo(false);
     render();
     if (changed) { track('screen-' + prefs.view); fadeIn(screenOf(prefs.view)); }
     if (changed) {
@@ -868,7 +903,7 @@
         // First it clears what's typed; if nothing is typed, it closes.
         const inp = el.fight.querySelector('.jr-search');
         if (App.pickerQuery) { App.pickerQuery = ''; if (inp) inp.value = ''; App.jrKeepCursor(); App.paintJournal(); App.jrScroll(true); }
-        else { App.pickerOpen = false; render(); const b = el.fight.querySelector('.jr-toggle'); if (b) b.focus(); }
+        else { App.pickerOpen = false; navTo(true); render(); const b = el.fight.querySelector('.jr-toggle'); if (b) b.focus(); }
       }
       // With the tablet open, Esc goes back to the statues from anywhere in the Hall
       // (or with no focus, after tapping a row, which isn't a control).
@@ -899,20 +934,19 @@
     if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.matches('.stat[data-act="row"]')) { ev.preventDefault(); actions.row(ev.target); }
   });
   /* Back and Forward. The entries the site leaves (marked with {hk: 1}) only change the
-     screen: the build is the current one, and the entry is rewritten with it. Otherwise, going
-     back from Your game would return the nail you used to have. A link typed or pasted by hand
-     does bring its build, its language and its screen (without "view=", Charms). On going back,
-     popstate and hashchange fire at once: the second call finds nothing left to do. */
+     place (navNow): the build is the current one, and the entry is rewritten with it.
+     Otherwise, going back from Your game would return the nail you used to have. An entry from
+     before places were kept carries only its screen, in the hash. A link typed or pasted by
+     hand does bring its build, its language and its screen (without "view=", Charms). On going
+     back, popstate and hashchange fire at once: the second call finds nothing left to do. */
   function onHistory() {
     const h = splitHash(location.hash);
     if (history.state && history.state.hk) {
-      const v = h.view || 'charms';
-      if (v === prefs.view && location.hash === hashFor()) return;
-      const changed = v !== prefs.view;
-      if (changed) setView(v);
+      const { viewChanged, changed } = applyNav(history.state.nav || { view: h.view || 'charms' });
       writeUrl(false);
+      if (!changed) return;
       render();
-      if (changed) fadeIn(screenOf(prefs.view));
+      if (viewChanged) fadeIn(screenOf(prefs.view));
       return;
     }
     if (h.lang && h.lang !== prefs.lang) { prefs.lang = I.setLang(h.lang); prefs.langChosen = true; savePrefs(); rebuildNF(); }
@@ -967,6 +1001,6 @@
     NEED_KEY, NT, namedSrc, esc, load, save, rebuildNF, pctSpace, fmtValue, fmtStat, fmtStatRich, sign,
     masksText, notchText, spellArt, shortOf, badgeText, goodClass, deltaChip, changeChip, prefs, loadPrefs,
     savePrefs, justWorn, justFound, splitHash, here, loadState, persist, compareLabel, compute, impact, recompute, commit, bindAllFx,
-    brackets, chevron, cross, FLEURS, rule, screenHead, hudHtml, restoreFocus, focusDescriptor, render, go, screenOf,
+    brackets, chevron, cross, FLEURS, rule, screenHead, hudHtml, restoreFocus, focusDescriptor, render, go, navTo, screenOf,
     underNav, toast, track, actions, isMaxOwned, loadOwned, saveOwned, isOwned, withFixed, isFixed, setOwned });
 })();

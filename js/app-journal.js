@@ -7,7 +7,7 @@
   const D = HK.data, F = HK.foes, J = HK.journal;
   const App = HK.app;
   const { t, pick, $, el, NT, esc, load, save, prefs, brackets, chevron, screenHead, plain, jrNarrow,
-    scrollToCur, stepCursor, DIFF_KEY, restoreFocus, focusDescriptor, underNav, actions } = App;
+    scrollToCur, stepCursor, DIFF_KEY, restoreFocus, focusDescriptor, underNav, navTo, actions } = App;
 
   /* ── The Hunter's Journal: your game ─────────────────────────────────
      The Journal's quest, as in the game: the 168 entries in their order, and for each one
@@ -396,10 +396,21 @@
     scrollToCur(listEl, listEl && listEl.querySelector('.hj-row.is-cur'), center);
   }
 
+  /* On mobile the page read in place of the list is a place: Back returns to the list. */
+  App.navParts.hj = {
+    get: () => (hjReading && jrNarrow.matches ? App.hjCursor : ''),
+    set(id) {
+      if (!jrNarrow.matches) return;
+      hjReading = !!id;
+      if (id) App.hjCursor = id;
+    },
+  };
+
   Object.assign(actions, {
     hjRead(node) {
       App.hjCursor = node.dataset.id;
       hjReading = true;
+      navTo(false);
       paintHunter();
       // On mobile the page replaces the list: scroll up to it.
       if (jrNarrow.matches) {
@@ -409,6 +420,7 @@
     },
     hjBack() {
       hjReading = false;
+      navTo(true);
       paintHunter();
       hjScroll(true);
       const rowEl = hjSec.querySelector('.hj-row.is-cur');

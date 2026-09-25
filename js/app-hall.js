@@ -8,7 +8,7 @@
   const App = HK.app;
   const { t, pick, KEY, el, NT, esc, load, save, prefs, savePrefs, brackets, chevron, rule, fight, fs, alive,
     hallFight, foe, phasesOf, totalHp, fightReset, jrNarrow, enduranceOf, fightEndHtml, fightSumHtml, wonNote, dealtOf,
-    arenaHtml, render, underNav, actions } = App;
+    arenaHtml, render, underNav, navTo, actions } = App;
 
   /* The Hall of Gods marks: { id: ['at', 'asra', 'radiant'] }. They are your real game's,
      marked by hand on the plaque (HG.toggleMark), and saved apart from the build. The
@@ -75,15 +75,21 @@
       won[hallFilter] === 0 ? 'hallFilterNone' : won[hallFilter] === 1 ? 'hallFilterOnOne' : 'hallFilterOn',
       { won: App.NF[0].format(won[hallFilter]), diff: t(DIFF_KEY[hallFilter]), left: App.NF[0].format(total - won[hallFilter]) }))}</p>` : '';
     /* Mark in bulk: one symbol on all 44 at once, by difficulty. It's rarely used, so it
-       goes collapsed, and whatever wouldn't change anything is dimmed. Removing wipes your real
-       game: the last action can be undone until the next change of marks. The lit badge
-       marks and the dimmed one removes. */
+       goes collapsed, and whatever wouldn't change anything is dimmed. Open, it stays small, in
+       the Idol's own column: two rows of three badges, in the counts' order, which are its
+       legend (the lit badge marks and the dimmed one removes); the name and the plaque's rule
+       go in each button's title. Removing wipes your real game: the last action can be undone
+       until the next change of marks. */
     const rowEl = (on) => {
       const lbl = 'hall-bulk-' + (on ? 'set' : 'unset');
-      return `<div class="hall-go-row" role="group" aria-labelledby="${lbl}">
-        <span class="lbl" id="${lbl}">${esc(on ? t('hallBulkSet', { n: total }) : t('hallBulkUnset'))}</span>
-        ${HG.DIFFS.map((d) => `<button type="button" class="btn hall-bulk-btn" data-act="hallMarkAll" data-value="${d}" data-on="${on ? 1 : 0}"
-          ${(on ? won[d] < total : won[d] > 0) ? '' : 'disabled'}>${hallBadge(d, on)}${esc(t(DIFF_KEY[d]))}</button>`).join('')}
+      return `<div class="hall-bulk-row" role="group" aria-labelledby="${lbl}">
+        <span class="lbl" id="${lbl}">${esc(t(on ? 'hallBulkSet' : 'hallBulkUnset'))}</span>
+        ${HG.DIFFS.map((d) => {
+          const tip = t(on ? 'hallBulkSetDiff' : 'hallBulkUnsetDiff', { n: total, diff: t(DIFF_KEY[d]) });
+          return `<button type="button" class="btn hall-bulk-btn" data-act="hallMarkAll" data-value="${d}" data-on="${on ? 1 : 0}"
+          aria-label="${esc(tip)}" title="${esc(tip + ' · ' + t('hallBulkRule'))}"
+          ${(on ? won[d] < total : won[d] > 0) ? '' : 'disabled'}>${hallBadge(d, on)}</button>`;
+        }).join('')}
       </div>`;
     };
     const undoNote = hallUndo ? `<p class="hall-bulk-done"><span role="status">${esc(t(
@@ -92,12 +98,10 @@
       <button type="button" class="btn hall-undo" data-act="hallUndo">${esc(t('hallUndo'))}</button></p>` : '';
     const bulk = `<button type="button" class="btn hall-bulk-toggle" data-act="hallBulk" aria-expanded="${hallBulk}"
         title="${esc(t('hallBulkHint', { n: total }))}">${esc(t('hallBulk'))}${chevron(hallBulk)}</button>`;
-    // Open, the panel goes on a row of its own under the Idol and the tablet: neither moves.
-    const bulkPanel = hallBulk ? `<div class="hall-bulk">${rowEl(true)}${rowEl(false)}
-        <p class="hall-bulk-rule">${esc(t('hallBulkRule'))}</p>${undoNote}</div>` : '';
+    const bulkPanel = hallBulk ? `<div class="hall-bulk">${rowEl(true)}${rowEl(false)}${undoNote}</div>` : '';
     // The Idol changing tier (all 44 at a difficulty) lights up like what you get on Your game.
     const idolFx = markFx && markFx.tier !== tier ? (tier ? ' is-lit' : ' is-out') : '';
-    const idol = `<div class="hall-idol ${tier ? '' : 'is-off'} ${hallBulk ? 'is-bulk' : ''}${idolFx}">
+    const idol = `<div class="hall-idol ${tier ? '' : 'is-off'}${idolFx}">
       <span class="hall-idol-art"><img src="assets/hall/idol-${tier || 'at'}.png" alt=""></span>
       <div class="hall-idol-body">
         <h3>${esc(t('hallIdol'))}</h3>
@@ -106,9 +110,9 @@
         ${filterNote}
         <p class="hall-rules">${esc(t('hallRules'))}</p>
         ${bulk}
+        ${bulkPanel}
       </div>
       ${tabletMini()}
-      ${bulkPanel}
     </div>`;
 
     const tile = (s) => {
@@ -158,12 +162,13 @@
     const nail = fs().stats['nail.damage'].value;
     /* A table and not three cards: what matters is comparing the three difficulties. */
     const perDiff = Object.fromEntries(HG.DIFFS.map((d) => [d, { total: totalHp(x, d), ...enduranceOf(x, d) }]));
-    /* Each difficulty is a button: it marks or removes your real game's symbol. */
+    /* Each difficulty is a button that marks or removes your real game's symbol: the game's
+       empty ring where the symbol goes, filled with the badge once beaten. */
     const diffRows = HG.DIFFS.map((d) => {
       const c = perDiff[d], won = hasMark(s.id, d);
       return `<tr class="${won ? 'is-won' : ''}">
         <th scope="row"><button type="button" class="hall-mark" data-act="hallMark" data-value="${d}" aria-pressed="${won}"
-          title="${esc(t(won ? 'hallMarkUnset' : 'hallMarkSet', { diff: t(DIFF_KEY[d]) }))}">${hallBadge(d, won, inkOf(s.id, d))}${esc(t(DIFF_KEY[d]))}</button></th>
+          title="${esc(t(won ? 'hallMarkUnset' : 'hallMarkSet', { diff: t(DIFF_KEY[d]) }))}"><span class="hall-socket">${hallBadge(d, true, inkOf(s.id, d))}</span>${esc(t(DIFF_KEY[d]))}</button></th>
         <td>${App.NF[0].format(c.total)}</td>
         <td>${App.NF[0].format(Math.ceil(c.total / nail))}</td>
         <td>${App.NF[0].format(c.n)}</td>
@@ -178,7 +183,7 @@
     ].filter(Boolean).join(' ');
     const tableHtml = `<table class="hall-table">
         <thead><tr>
-          <th scope="col"><span class="sr-only">${esc(t('hallColDiff'))}</span></th>
+          <th scope="col">${esc(t('hallColGame'))}</th>
           <th scope="col">${esc(t('jrHp'))}</th>
           <th scope="col">${esc(t('hallColHits'))}</th>
           <th scope="col">${esc(t('hallColSurvive'))}</th>
@@ -305,6 +310,24 @@
       ${arenaHtml(ending)}`;
   }
 
+  /* Where you are in the Hall, for Back: a statue's fight, the tablet and, on mobile, the plaque
+     read in place of the grid (on a wide screen choosing a statue isn't going anywhere). */
+  const reading = () => hallReading && jrNarrow.matches;
+  App.navParts.hall = {
+    get: () => ({ id: prefs.hallDiff || reading() ? prefs.hallId : '', diff: prefs.hallDiff, tablet: App.hallTablet, reading: reading() }),
+    set(v) {
+      const id = HG.STATUE_BY_ID[v.id] ? v.id : prefs.hallId;
+      const diff = HG.DIFFS.includes(v.diff) ? v.diff : '';
+      const refight = diff !== prefs.hallDiff || (diff && id !== prefs.hallId);
+      prefs.hallId = id;
+      prefs.hallDiff = diff;
+      App.hallTablet = !!v.tablet;
+      if (jrNarrow.matches) hallReading = !!v.reading;
+      savePrefs();
+      if (refight) fightReset();
+    },
+  };
+
   Object.assign(actions, {
     /* Hall of Gods. Choosing a statue only reads it on the plaque; fighting is each difficulty's
        button. On mobile the plaque replaces the grid, and the page scrolls up to it. */
@@ -315,6 +338,7 @@
       hallReading = true;
       App.hallTablet = false;
       savePrefs();
+      navTo(false);
       render();
       const plaque = el.fight.querySelector('.hall-plaque');
       if (jrNarrow.matches) {
@@ -326,6 +350,7 @@
     },
     hallList() {
       hallReading = false;
+      navTo(true);
       render();
       const b = el.fight.querySelector(`.ped-btn[data-id="${prefs.hallId}"]`);
       if (b) { b.scrollIntoView({ block: 'nearest' }); b.focus(); }
@@ -337,6 +362,7 @@
       App.hallTablet = false;           // on returning from the fight, to the plaque
       savePrefs();
       fightReset();
+      navTo(false);
       render();
       if (underNav(el.fight)) el.fight.scrollIntoView({ block: 'start' });
       const b = el.fight.querySelector('.hall-head [data-act="hallBack"]');
@@ -392,6 +418,7 @@
       App.hallTablet = true;
       hallReading = false;              // back to the grid: on mobile, not to the plaque that was being read
       tabletFx = 'open';
+      navTo(false);
       render();
       tabletFx = '';
       const tab = el.fight.querySelector('.tablet'), h = el.fight.querySelector('.tablet-title');
@@ -407,6 +434,7 @@
     tabletClose() {
       App.hallTablet = false;
       tabletFx = 'close';
+      navTo(true);
       render();
       tabletFx = '';
       const b = el.fight.querySelector('.hall-tablet-btn');
@@ -419,6 +447,7 @@
       filterWas = App.hallTablet ? null : hallFilter;   // from the tablet the grid is new: nothing to fade
       hallFilter = hallFilter === d || !HG.DIFFS.includes(d) ? '' : d;
       App.hallTablet = false;
+      navTo(true);
       render();
       filterWas = null;
       const b = el.fight.querySelector(`.hall-count-btn[data-value="${d}"]`);
@@ -429,6 +458,7 @@
       prefs.hallDiff = '';
       savePrefs();
       fightReset();
+      navTo(true);
       render();
       const plaque = el.fight.querySelector('.hall-plaque');
       if (plaque && underNav(plaque)) plaque.scrollIntoView({ block: 'start' });

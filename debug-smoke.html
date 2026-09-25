@@ -310,19 +310,21 @@ f.addEventListener('load', async () => {
        'notice: ' + (q('.banner') ? 'yes' : 'no'));
 
     /* ── The screens: Charms, Your game and Combat ──────────────────────── */
-    ok('on Charms, overcharm is flagged in the band and not at the top', !!q('#panel .banner.is-band') && !q('#banner .banner'));
+    ok('on Charms, overcharm is flagged in the band and not at the top', !!q('#panel .banner.is-band') && !q('#banner .banner:not(.is-hint)'));
     await goto('game');
     ok('Your game is its own screen and goes in the URL', visible() === 'gear' && w.location.hash.indexOf('view=game') >= 0
        && q('#nav [aria-current="page"]').dataset.value === 'game', visible() + ' · ' + w.location.hash);
     ok('with its two starting points', !!q('#gear [data-act="preset"][data-value="base"]') && !!q('#gear [data-act="preset"][data-value="max"]'));
-    ok('and there overcharm is flagged at the top', !!q('#banner .banner:not(.is-run)'));
-    // Body with the game's pieces: tapping the 7th mask leaves 7; tapping it again, 6. The base 5 can't be removed.
+    ok('and there overcharm is flagged at the top', !!q('#banner .banner:not(.is-run):not(.is-hint)'));
+    // Body with the game's pieces: tapping the dark 7th mask lights up to it (7); tapping the lit
+    // 6th takes it off with the ones after it (5). The base 5 can't be removed.
     const maskN = () => d.querySelectorAll('#gear .pieces.is-masks .piece.is-on').length;
     ok('the masks are the game\'s, one per step', d.querySelectorAll('#gear .pieces.is-masks .piece img').length === 9);
     await click('#gear .pieces.is-masks .piece:nth-child(7)');
-    ok('tapping a mask sets it there', maskN() === 7 && w.location.hash.indexOf('masks=7') >= 0, maskN() + ' · ' + w.location.hash);
-    await click('#gear .pieces.is-masks .piece:nth-child(7)');
-    ok('and tapping the last lit one lowers it', maskN() === 6, maskN());
+    ok('tapping a dark mask lights up to it', maskN() === 7 && w.location.hash.indexOf('masks=7') >= 0, maskN() + ' · ' + w.location.hash);
+    await click('#gear .pieces.is-masks .piece:nth-child(9)');
+    await click('#gear .pieces.is-masks .piece:nth-child(6)');
+    ok('and tapping a lit one takes it off with the ones after it', maskN() === 5, maskN());
     ok('the base masks are fixed', q('#gear .pieces.is-masks .piece:nth-child(5)').disabled);
     ok('spell levels are chosen by their own artwork', d.querySelectorAll('#gear .lvlpick .lvl img').length >= 6);
     await click('#gear .pieces.is-masks .piece:nth-child(9)');
@@ -861,8 +863,9 @@ f.addEventListener('load', async () => {
     await click('.ped-btn[data-id="pure-vessel"]');
     ok("the Hall opens the chosen statue's plaque", q('[data-act="fightTab"][data-value="hall"]').getAttribute('aria-selected') === 'true'
        && txt('.hall-plaque .jr-title') === nameOf('pure-vessel'), txt('.hall-plaque .jr-title'));
-    ok('35 pedestals, 9 of them double, and 44 statues', d.querySelectorAll('.ped').length === 35
-       && d.querySelectorAll('.ped-pair').length === 9 && d.querySelectorAll('.ped-btn').length === 44,
+    // 35 pedestals, 9 of them double; the last pair (Grimm) is drawn as two singles, so 36 and 8.
+    ok('35 pedestals, 9 of them double, and 44 statues', d.querySelectorAll('.ped').length === 36
+       && d.querySelectorAll('.ped-pair').length === 8 && d.querySelectorAll('.ped-btn').length === 44,
        d.querySelectorAll('.ped').length + ' · ' + d.querySelectorAll('.ped-pair').length + ' · ' + d.querySelectorAll('.ped-btn').length);
     const counters = () => [...d.querySelectorAll('.hall-count-num b')].map((n) => n.textContent.trim()).join(' ');
     ok('with nothing won, the counters at zero', counters() === '0 0 0', counters());
@@ -1176,8 +1179,8 @@ f.addEventListener('load', async () => {
     ok('the timeline has the 12 rooms and marks the first', tiles().length === 12 && states() === '▶···········', states());
     // The names, against the data: they're being switched to the official Spanish ones.
     const nameEs = (id) => w.HK.foes.FOE_BY_ID[id].name.es;
-    ok('room 1 is the Vengefly King', txt('.foes-head h3') === nameEs('vengefly-king') && txt('.run-head .fighter-phase') === 'Sala 1 de 12',
-       txt('.foes-head h3') + ' · ' + txt('.run-head .fighter-phase'));
+    ok('room 1 is the Vengefly King', txt('.foes-head h3') === nameEs('vengefly-king') && txt('.run-head .run-stat') === 'Sala 1 de 12',
+       txt('.foes-head h3') + ' · ' + txt('.run-head .run-stat'));
     ok('the run gets saved', JSON.parse(w.localStorage.getItem('hollow.run') || '{}').room === 0);
 
     // Hit without waiting: each click repaints synchronously.
@@ -1198,8 +1201,8 @@ f.addEventListener('load', async () => {
     /* ── Halfway through the pantheon, charms can't be touched from anywhere ── */
     const equippedIds = () => onIds();
     const lockedIds = equippedIds();
-    const bannerText = () => txt('#banner .banner.is-run .banner-text');
-    ok("on the pantheon tab the notice that you're in it doesn't show", !q('#banner .banner.is-run'));
+    const bannerText = () => txt('#banner .banner.is-run:not(.is-hint) .banner-text');
+    ok("on the pantheon tab the notice that you're in it doesn't show", !q('#banner .banner.is-run:not(.is-hint)'));
     await goto('charms');
     ok("outside the bench the notice that you're in a pantheon shows", bannerText().indexOf('Panteón del Maestro · sala 3 de 12') === 0, bannerText());
     ok('and the grid looks locked', q('#panel .quick').classList.contains('is-locked'));
@@ -1221,21 +1224,21 @@ f.addEventListener('load', async () => {
     ok("nor a link: the pantheon's stay", equippedIds() === lockedIds && w.location.hash.indexOf('longnail') < 0
        && txt('#toast').indexOf('enlace') >= 0, w.location.hash);
     await click('[data-act="fightTab"][data-value="hall"]');
-    ok('nor from the Hall of Gods', !!q('#banner .banner.is-run') && q('#panel .quick').classList.contains('is-locked'));
+    ok('nor from the Hall of Gods', !!q('#banner .banner.is-run:not(.is-hint)') && q('#panel .quick').classList.contains('is-locked'));
     await click('[data-act="fightTab"][data-value="combat"]');
-    ok('nor from the Combat tab', !!q('#banner .banner.is-run') && q('#panel .quick').classList.contains('is-locked'));
+    ok('nor from the Combat tab', !!q('#banner .banner.is-run:not(.is-hint)') && q('#panel .quick').classList.contains('is-locked'));
     await click('[data-act="runLockGo"]');
     ok('"Go to the pantheon" goes back to the room', visible() === 'fight' && w.location.hash.indexOf('view=fight') >= 0
        && d.activeElement.matches('#fight .screen-title')
        && q('[data-act="fightTab"][data-value="pantheon"]').getAttribute('aria-selected') === 'true'
-       && txt('.run-head .fighter-phase') === 'Sala 3 de 12', txt('.run-head .fighter-phase'));
+       && txt('.run-head .run-stat') === 'Sala 3 de 12', txt('.run-head .run-stat'));
     for (let i = 0; i < 3; i++) { winRoom(); await click('[data-act="runNext"]'); }
 
     /* ── The rest: you choose ───────────────────────────────────────────── */
     ok('room 6 is a rest', !!q('.rest-stations') && states().startsWith('✔✔✔✔✔▶'), states());
     ok('each station brings its corner of the room', [...d.querySelectorAll('.rest-station .rs-art img')]
        .map((i) => i.getAttribute('src').split('/').pop()).join(' ') === 'rest-spring.png rest-bench.png rest-cocoon.png');
-    ok('at the rest the notice goes and everything unlocks', !q('#banner .banner.is-run')
+    ok('at the rest the notice goes and everything unlocks', !q('#banner .banner.is-run:not(.is-hint)')
        && !q('#panel .quick').classList.contains('is-locked'));
     // The charm grid is at the rest, but locked until you sit down.
     const restGrid = () => [...d.querySelectorAll('.rest-charms .qc')];
@@ -1262,7 +1265,7 @@ f.addEventListener('load', async () => {
     await click('[data-act="runNext"]');
     ok('on leaving the rest they lock again', q('#panel .quick').classList.contains('is-locked'));
     await goto('game');
-    ok("and on Your game the notice that you're in a pantheon shows", !!q('#banner .banner.is-run'), bannerText());
+    ok("and on Your game the notice that you're in a pantheon shows", !!q('#banner .banner.is-run:not(.is-hint)'), bannerText());
     ok('with its button to abandon it without going there', txt('#banner [data-act="runQuit"]') === 'Abandonar');
     await goto('fight');
     for (let i = 0; i < 4; i++) { winRoom(); await click('[data-act="runNext"]'); }
@@ -1272,7 +1275,7 @@ f.addEventListener('load', async () => {
     let rounds = 0;
     while (!q('.run-end') && rounds++ < 30) { winRoom(); if (q('[data-act="runNext"]')) q('[data-act="runNext"]').click(); }
     ok('the Pantheon of the Master is completed', !!q('.run-end.is-won') && states() === '✔✔✔✔✔✔✔✔✔✔✔✔', txt('.run-end .fight-end-title') + ' · ' + states());
-    ok('and at the end they unlock', !q('#banner .banner.is-run') && !q('#panel .quick').classList.contains('is-locked'));
+    ok('and at the end they unlock', !q('#banner .banner.is-run:not(.is-hint)') && !q('#panel .quick').classList.contains('is-locked'));
 
     /* ── Falling ends the attempt ────────────────────────────────────────── */
     await click('[data-act="runAgain"]');
@@ -1315,7 +1318,7 @@ f.addEventListener('load', async () => {
     /* ── Abandoning from the notice, without going to the tab ──────────── */
     await goto('game');
     await click('#banner [data-act="runQuit"]');
-    ok('abandoning from the notice ends it and says so', !q('#banner .banner.is-run') && !w.localStorage.getItem('hollow.run')
+    ok('abandoning from the notice ends it and says so', !q('#banner .banner.is-run:not(.is-hint)') && !w.localStorage.getItem('hollow.run')
        && !q('#panel .quick').classList.contains('is-locked') && txt('#toast') === 'Has abandonado el Panteón del Maestro'
        && d.activeElement === q('#gear .screen-title'), txt('#toast') + ' · foco: ' + d.activeElement.className);
     await goto('fight');
@@ -1334,8 +1337,8 @@ f.addEventListener('load', async () => {
     await click('.move-foe');                                     // you arrive hurt wherever you skip to
     const hurtMasks = maskCount();
     await click('[data-act="runJump"][data-value="5"]');
-    ok('skipping goes straight to the rest', !!q('.rest-stations') && txt('.run-head .fighter-phase') === 'Sala 6 de 12',
-       txt('.run-head .fighter-phase'));
+    ok('skipping goes straight to the rest', !!q('.rest-stations') && txt('.run-head .run-stat') === 'Sala 6 de 12',
+       txt('.run-head .run-stat'));
     ok("what's skipped doesn't count as cleared", states2() === '✔––––▶······', states2());
     ok('and you take what you had', maskCount() === hurtMasks, hurtMasks + ' → ' + maskCount());
     ok('hurt, the hot springs show the masks and the soul they would give', !!q('[data-act="restBath"] .rs-ico.is-mask')

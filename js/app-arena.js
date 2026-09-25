@@ -8,7 +8,7 @@
   const D = HK.data, E = HK.engine, F = HK.foes, PN = HK.pantheons, J = HK.journal, HG = HK.hall, FT = HK.fight;
   const App = HK.app;
   const { t, pick, el, hoverable, SPELL_KEYS, ART_KEYS, ART_STAT, POSITIONAL, NT, esc, pctSpace, spellArt,
-    prefs, savePrefs, brackets, chevron, rule, hudHtml, render, toast, actions } = App;
+    prefs, savePrefs, brackets, chevron, rule, hudHtml, render, toast, navTo, actions } = App;
 
   /* ── Combat simulator ──────────────────────────────────────────────────
      An exchange of blows by hand: you decide the order. Each button applies its number
@@ -810,6 +810,26 @@
     jrKeepCursor();
   }
 
+  /* Combat's tabs, from their buttons and from Back: a new tab starts its fight from scratch,
+     and the arena with no enemy opens on the Journal. */
+  function setFightTab(v) {
+    prefs.fightTab = v;
+    App.pickerOpen = false;
+    App.hallTablet = false;
+    if (prefs.fightTab === 'combat' && !prefs.foeId) openJournal();
+    savePrefs();
+    fightReset();
+  }
+  /* The Journal open is a place: Back closes it. With no enemy it can't close, it's the only
+     place to pick one. */
+  App.navParts.picker = {
+    get: () => App.pickerOpen,
+    set(open) {
+      if (open && !App.pickerOpen) openJournal();
+      else if (!open && App.pickerOpen && prefs.foeId) { App.pickerOpen = false; App.pickerQuery = ''; }
+    },
+  };
+
   function jrMove(step, origin) {
     const matches = foeMatches(prefs.foeKind);
     if (!matches.length) return;
@@ -1434,6 +1454,7 @@
     },
     picker() {
       if (App.pickerOpen) { App.pickerOpen = false; App.pickerQuery = ''; } else openJournal();
+      navTo(true);
       render();
       // Not with a finger: opening the keyboard would cover half the list before it's read.
       if (App.pickerOpen && hoverable.matches) {
@@ -1451,6 +1472,7 @@
       App.pickerQuery = '';
       savePrefs();
       if (isNewFoe) fightReset();
+      navTo(true);
       render();
       const b = el.fight.querySelector('.jr-toggle');   // focus goes back to the button, it isn't lost
       if (b) b.focus();
@@ -1467,12 +1489,8 @@
     },
     fightReset() { fightReset(); render(); },
     fightTab(node) {
-      prefs.fightTab = node.dataset.value;
-      App.pickerOpen = false;
-      App.hallTablet = false;
-      if (prefs.fightTab === 'combat' && !prefs.foeId) openJournal();
-      savePrefs();
-      fightReset();
+      setFightTab(node.dataset.value);
+      navTo(false);
       render();
     },
     target(node) { fight.target = node.dataset.id; render(); },
@@ -1567,6 +1585,6 @@
 
   Object.assign(App, { bandCheck, fight, runRooms, runRoom, runFight, baseSheet, fs, fst, charmLock, touchesCharms,
     alive, hallFight, foe, phasesOf, totalHp, targetOf, fightReset, fightSync, plain, jrNarrow, enduranceOf,
-    jrPage, paintJournal, paintPage, scrollToCur, stepCursor, jrScroll, jrKeepCursor, openJournal, jrMove,
+    jrPage, paintJournal, paintPage, scrollToCur, stepCursor, jrScroll, jrKeepCursor, openJournal, setFightTab, jrMove,
     sheetHas, knightSide, fightEndHtml, fightSumHtml, wonNote, dealtOf, logHtml, arenaHtml, renderFight });
 })();
