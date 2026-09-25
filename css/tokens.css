@@ -113,6 +113,33 @@
   --focus-glow: rgba(242, 244, 250, 0.85);     /* Focus's white glow */
   --void-wisp: #000;                           /* the black smoke of the last mask */
 
+  /* The enemy's stage takes the light of its area (design/02-hollow-knight.md §3, "By area",
+     measured): each area is one hue family, a ramp from black to a pale tint. Two steps per
+     area: --area-*-mid, the upper mid-tone (the haze that rises from the ground), and
+     --area-*-light, the area's accent (the spotlight and the rim of light on the foreground).
+     They only light the scene, never text or a figure: the title card and the bar stay in bone
+     above it. css/app.css (.fstage[data-area]) mixes them in; js/app-arena.js (FOE_AREA) says
+     which area each enemy's is. Grimm and the Radiance aren't areas but carry the game's own
+     light (§3, base palette); Godhome is the existing gold. With no known area (the common
+     enemies), the cold spotlight above. The Abyss, the White Palace and the Path of Pain are
+     measured too, but no enemy in js/enemies.js is set there, so they aren't carried. */
+  --area-dirtmouth-mid: #27335d;   --area-dirtmouth-light: #50608c;
+  --area-crossroads-mid: #303a6e;  --area-crossroads-light: #5f699e;
+  --area-greenpath-mid: #2c535a;   --area-greenpath-light: #579b8c;
+  --area-fungal-mid: #3f6969;      --area-fungal-light: #8bc093;
+  --area-city-mid: #1d4879;        --area-city-light: #4577a8;
+  --area-crystal-mid: #2d2961;     --area-crystal-light: #9660ce;
+  --area-deepnest-mid: #263350;    --area-deepnest-light: #4a596c;
+  --area-resting-mid: #0c193b;     --area-resting-light: #75afcf;
+  --area-basin-mid: #2d2b2d;       --area-basin-light: #61616a;
+  --area-edge-mid: #46535c;        --area-edge-light: #9daca1;
+  --area-gardens-mid: #1c4242;     --area-gardens-light: #419582;
+  --area-hive-mid: #523a3c;        --area-hive-light: #c39b6e;
+  --area-colosseum-mid: #48404d;   --area-colosseum-light: #a7a59e;
+  --area-grimm-mid: #922748;       --area-grimm-light: #b2385a;
+  --area-radiance-mid: #997464;    --area-radiance-light: #ffe08d;
+  --area-godhome-mid: var(--godhome-line);  --area-godhome-light: var(--godhome);
+
   /* Notches: the glowing dot from the game's charm screen.
      Measured from the wiki's video: used #f4f6f8, free #32363e, overcharm magenta. */
   --notch-used: #f4f6f8;
@@ -241,6 +268,34 @@
   --halo-plate: radial-gradient(closest-side, rgba(236, 236, 236, 0.2), rgba(236, 236, 236, 0.06) 58%, transparent);
   --halo-plate-off: radial-gradient(closest-side, rgba(150, 164, 196, 0.2), transparent 78%);
   --mote: rgba(226, 232, 245, 0.7);    /* the dust motes from the main menu */
+
+  /* ── Atmosphere and the section's lights ───────────────────────────────
+     The whole page is the main menu (design/02-hollow-knight.md §5 "Menus and ornament", §7
+     points 5 and 6): a vignette on the four edges that sinks to the #04060C measured in its
+     corners, the dust motes across the window, and a noise grain so faint it's felt rather than
+     seen. All three are fixed to the window and sit BEHIND the content (css/app.css, .atmos):
+     they never cover a word.
+     The grain is an inline SVG (feTurbulence), not a file: over file:// nothing is fetched. */
+  --vignette: radial-gradient(ellipse 75% 70% at 50% 45%, transparent 55%, rgba(4, 6, 12, 0.55) 85%, rgba(4, 6, 12, 0.9) 100%);
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --grain-opacity: 0.025;
+  /* Each section's lamp: the hue of its map tint (--tint-*) at a fixed lightness and more
+     chroma, so the four read apart —City of Tears blue-lavender, Crystal Peak pink-violet,
+     Fungal Wastes cyan, Godhome gold— where the pale tints all read as bone. It lights what is
+     light, never ink: the title's rule and diamond and the corner brackets (--lamp), and the
+     spotlight behind the Knight and the nail (--scene-glow) and the halo behind the spell and
+     art plates (--halo-plate), which take a deeper one (--lamp-light) so the colour shows while
+     the spotlight stays as bright as the old cold one: what's written over it keeps its AA
+     (--muted ≥ 4.5:1 at the centre). css/app.css derives them per section (the "Tinted
+     sections" block); how much of the lamp each one takes is here. */
+  --lamp-l: 0.8;             /* oklch lightness */
+  --lamp-c: 0.1;             /* oklch chroma of the lines: the tints sit at 0.04–0.08 */
+  --lamp-light-c: 0.13;      /* and of the lights */
+  --lamp-line: 78%;          /* the brackets and the title's rule */
+  --lamp-glow: 20%;          /* the spotlight (was rgba(116, 142, 196, 0.26): the same luminance) */
+  --lamp-glow-low: 8%;       /* the same, off: you've fallen */
+  --lamp-plate: 24%;         /* the plates' halo, centre… */
+  --lamp-plate-edge: 7%;     /* …and edge */
   --dur-flash: 900ms;                   /* the glow of a figure that just changed */
   --dur-delta: 4s;                      /* how long your last change's chip stays in view */
   /* What's touched on that black goes unboxed: on hover, a veil of ink; the chosen one, a
@@ -275,6 +330,12 @@
      medallions you haven't seen. Each one's relief can still be read; a flat silhouette
      made them all look the same. */
   --charm-missing-art: grayscale(1) brightness(0.38);
+
+  /* The charm screen (design/02-hollow-knight.md §5 and §7.7).
+     The equipped charm, with a soft light behind it, like the game, and
+     not a glow hugging its outline: the accent, since equipped is what responds to the finger. */
+  --halo-charm: radial-gradient(closest-side, color-mix(in oklab, var(--accent) 30%, transparent), color-mix(in oklab, var(--accent) 9%, transparent) 62%, transparent);
+  --halo-charm-hot: radial-gradient(closest-side, color-mix(in oklab, var(--accent) 42%, transparent), color-mix(in oklab, var(--accent) 14%, transparent) 62%, transparent);
 
   color-scheme: dark;
 }

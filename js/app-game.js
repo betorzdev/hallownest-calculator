@@ -69,9 +69,12 @@
         ${l.art ? `<img src="${l.art}" alt="">` : '<span aria-hidden="true">—</span>'}</button>`).join('')}</span>`;
   }
 
-  /* The nail: all five in a row and upright, like the large one on the sheet, with its damage
-     below. The one you carry has the arena's cold spotlight behind it; the others wait in half-light. */
+  /* The nail, the screen's focal point: the picker itself, at the head of the left column. All five
+     upright; the one you carry, taller, with the arena's cold spotlight and its damage larger; the
+     others wait in half-light, with their damage below. Under the row, the name of the one you
+     carry. */
   function renderNailBlock() {
+    const cur = D.NAILS[App.state.nail];
     const nails = D.NAILS.map((n) => {
       const on = App.state.nail === n.level;
       return `<button type="button" class="nailpick${on ? ' is-on' : ''}${fx(on, was((st) => st.nail) === n.level)}" data-act="seg" data-key="nail" data-value="${n.level}" aria-pressed="${on}" aria-label="${esc(pick(n) + ', ' + n.damage)}" title="${esc(pick(n))}">
@@ -79,9 +82,10 @@
         <span class="nailpick-num">${n.damage}</span>
       </button>`;
     }).join('');
-    return `<section class="block is-nail">
-      <h3 class="block-head">${esc(t('theNail'))}<span class="block-note"${NT}>${esc(pick(D.NAILS[App.state.nail]))}</span></h3>
+    return `<section class="block is-nail gear-hero">
+      <h3 class="block-head">${esc(t('theNail'))}</h3>
       <div class="nailpicks">${nails}</div>
+      <p class="gh-caption"${NT}>${esc(pick(cur))}</p>
     </section>`;
   }
 

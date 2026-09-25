@@ -867,6 +867,13 @@ f.addEventListener('load', async () => {
     ok('35 pedestals, 9 of them double, and 44 statues', d.querySelectorAll('.ped').length === 36
        && d.querySelectorAll('.ped-pair').length === 8 && d.querySelectorAll('.ped-btn').length === 44,
        d.querySelectorAll('.ped').length + ' · ' + d.querySelectorAll('.ped-pair').length + ' · ' + d.querySelectorAll('.ped-btn').length);
+    /* The statues are the screen: the Idol is a single row above them (its rules go at the foot of
+       the grid) and the plaque stands beside the grid, not below it. */
+    const box = (sel) => q(sel).getBoundingClientRect();
+    ok('the statues first: the Idol in one row, and the plaque beside the grid', box('.hall-idol').height < 120
+       && box('.hall-grid').top - box('.hall-idol').bottom < 60 && box('.hall-plaque').top < box('.hall-grid').bottom
+       && box('.hall-plaque').left > box('.hall-grid').right && box('.hall-rules').top > box('.hall-grid').bottom,
+       'idol ' + Math.round(box('.hall-idol').height) + ' px · grid at ' + Math.round(box('.hall-grid').top - box('.hall-idol').bottom) + ' px · plaque at ' + Math.round(box('.hall-plaque').left - box('.hall-grid').right) + ' px to the right');
     const counters = () => [...d.querySelectorAll('.hall-count-num b')].map((n) => n.textContent.trim()).join(' ');
     ok('with nothing won, the counters at zero', counters() === '0 0 0', counters());
     const tableHps = () => [...d.querySelectorAll('.hall-table tbody tr')].map((r) => r.querySelector('td').textContent.trim()).join(' ');
