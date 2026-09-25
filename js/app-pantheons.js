@@ -176,6 +176,7 @@
       <div class="block-head">${esc(t('bindingsLabel'))}</div>
       <div class="binds ${BINDS.every((k) => prefs.bindings[k]) ? 'is-all' : ''}">${binds}</div>
       ${summary}
+      ${previewHtml(chosen)}
       <div class="block-head">${esc(t('cocoonLabel'))}</div>
       ${doorHtml()}
     </div>`;
@@ -213,48 +214,75 @@
       <h3${NT}>${esc(pick(p.name))}</h3>
       <span class="fighter-phase">${esc(t('runRoom', { n: Math.min(App.run.room + 1, p.rooms.length), total: p.rooms.length }))}</span>
       ${binds.length ? `<span class="run-binds ${binds.length === BINDS.length ? 'is-all' : ''}">${binds.map((k) => `<img src="assets/pantheon/bind-${k}.png" alt="${esc(t('bind_' + k))}" title="${esc(t('bind_' + k))}" width="24" height="24">`).join('')}</span>` : ''}
-      <button type="button" class="btn" data-act="runQuit">${esc(App.run.over ? t('runExit') : t('runQuit'))}</button>
+      <button type="button" class="btn${App.run.over ? '' : ' is-danger'}" data-act="runQuit">${esc(App.run.over ? t('runExit') : t('runQuit'))}</button>
     </div>`;
   }
 
-  /* The timeline: one tile per room. Cleared ones dimmed (no tick), skipped ones with a dash,
-     the current one with the accent, the one you fell in red; the rest, off. While the
-     run goes on, each tile is a button that takes you to that room. */
+  /* The rooms as a path through Godhome: round medallions threaded on a gold line, with the
+     benches (and the Godseeker's rooms) as larger marks on it that cut it into stretches, as the
+     pantheon is played bench to bench. The final boss goes last, larger, in its doorway of light.
+     Used inside a run (the timeline: each room's state, and a tap jumps to it) and on the picker
+     (a preview of the chosen pantheon: every room lit, and a tap enters the pantheon there).
+     room(i) returns { state, act, title } for each room. */
+  function roomLabel(r, i) {
+    let img, name;
+    if (r.type === 'fight') {
+      const f = F.FOE_BY_ID[r.foe];
+      img = D.art('enemies', f.id);
+      name = pick(f.name) + (r.count ? ' ×' + r.count : '');
+    } else if (r.type === 'rest') {
+      img = 'assets/pantheon/bench.png'; name = t('restTitle');
+    } else {
+      img = 'assets/pantheon/godseeker.png'; name = t('godseeker') + (r.who ? ' (' + pick(r.who) + ')' : '');
+    }
+    return { img, text: (i + 1) + '. ' + name + (r.note ? ' · ' + pick(r.note) : '') };
+  }
+  const TL_TICK = '<svg class="tl-tick" viewBox="0 0 12 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 5.2 L4.6 8.2 L10.5 1.8"/></svg>';
+  function pathHtml(rooms, room, cls = '') {
+    const last = rooms.length - 1;
+    const tiles = rooms.map((r, i) => {
+      const { img, text } = roomLabel(r, i);
+      const o = room(i, text);
+      // Where you are: the Knight over the room, like his pin on the game's map.
+      const you = o.state === 'is-current' ? `<img class="tl-you" src="${D.art('hud', 'knight')}" alt="">` : '';
+      const inner = `${you}<span class="tl-medal"><img class="tl-art" src="${img}" alt="" loading="lazy">${o.state === 'is-done' ? TL_TICK : ''}</span>
+        <span class="tl-n">${i + 1}</span>
+        ${r.count ? `<span class="tl-count">×${r.count}</span>` : ''}
+        <span class="sr-only">${esc(o.sr || text)}</span>`;
+      return `<li class="tl tl-${r.type} ${o.state}${i === last ? ' is-final' : ''}" ${o.state === 'is-current' ? 'aria-current="step"' : ''}>
+        <span class="tl-thread" aria-hidden="true"></span>
+        ${o.act
+          ? `<button type="button" class="tl-go" data-act="${o.act}" data-value="${i}" title="${esc(o.title)}">${inner}</button>`
+          : `<span class="tl-go" title="${esc(text)}">${inner}</span>`}
+      </li>`;
+    }).join('');
+    return `<ol class="timeline${cls}" aria-label="${esc(t('runTimeline'))}">${tiles}</ol>`;
+  }
+
   function timelineHtml() {
     const clearedSet = new Set(App.run.cleared);
-    const tiles = runRooms().map((r, i) => {
+    const path = pathHtml(runRooms(), (i, text) => {
       const isCurrent = i === App.run.room && !App.run.over;
       // The current room wins over cleared: jumping back to a room you've beaten still marks it.
-      const tileState = isCurrent ? 'is-current'
+      const state = isCurrent ? 'is-current'
         : clearedSet.has(i) ? 'is-done'
         : i === App.run.room && App.run.over === 'dead' ? 'is-fail'
         : i < App.run.room || App.run.over === 'won' ? 'is-skipped' : 'is-todo';
-      let img, name;
-      if (r.type === 'fight') {
-        const f = F.FOE_BY_ID[r.foe];
-        img = D.art('enemies', f.id);
-        name = pick(f.name) + (r.count ? ' ×' + r.count : '');
-      } else if (r.type === 'rest') {
-        img = 'assets/pantheon/bench.png'; name = t('restTitle');
-      } else {
-        img = 'assets/pantheon/godseeker.png'; name = t('godseeker') + (r.who ? ' (' + pick(r.who) + ')' : '');
-      }
-      const text = (i + 1) + '. ' + name + (r.note ? ' · ' + pick(r.note) : '')
-        + (tileState === 'is-skipped' ? ' · ' + t('runSkippedMark') : '');
-      const tileInner = `<span class="tl-n">${i + 1}</span>
-        <img class="tl-art" src="${img}" alt="" loading="lazy">
-        ${r.count ? `<span class="tl-count">×${r.count}</span>` : ''}
-        <span class="sr-only">${esc(text)}</span>`;
+      const sr = text + (state === 'is-skipped' ? ' · ' + t('runSkippedMark') : '');
       // You can go to any room except the one you're in, and only with the run alive.
       const jumpable = !App.run.over && !isCurrent;
-      return `<li class="tl tl-${r.type} ${tileState}" ${isCurrent ? 'aria-current="step"' : ''}>
-        ${jumpable
-          ? `<button type="button" class="tl-go" data-act="runJump" data-value="${i}" title="${esc(t('runJumpTo', { room: text }))}">${tileInner}</button>`
-          : `<span class="tl-go" title="${esc(text)}">${tileInner}</span>`}
-      </li>`;
-    }).join('');
-    return `<ol class="timeline" aria-label="${esc(t('runTimeline'))}">${tiles}</ol>
+      return { state, sr, act: jumpable ? 'runJump' : '', title: t('runJumpTo', { room: sr }) };
+    });
+    return `${path}
       ${App.run.over ? '' : `<p class="timeline-hint">${esc(t('runJumpHint'))}</p>`}`;
+  }
+
+  // On the picker: the chosen pantheon's rooms, all lit; a tap enters it at that room.
+  function previewHtml(p) {
+    return `<div class="run-path">
+        <div class="block-head">${esc(t('runPathTitle'))}<span class="quick-hint">${esc(t('runPathHint'))}</span></div>
+        ${pathHtml(p.rooms, (i, text) => ({ state: 'is-preview', act: 'runStartAt', title: t('runStartAtTip', { room: text }) }), ' is-preview')}
+      </div>`;
   }
 
   function roomHtml() {
@@ -368,6 +396,14 @@
       doorFx = null;
     },
     runStart() { startRun(); render(); },
+    /* From the picker's path: enter and go straight to that room. What's before it counts as
+       skipped, as when jumping inside a run. */
+    runStartAt(node) {
+      const i = Number(node.dataset.value);
+      startRun();
+      if (i > 0) runJump(i);
+      render();
+    },
     runAgain() {
       // Same pantheon and same bindings as the attempt that just ended.
       prefs.pantheon = App.run.pantheon; prefs.bindings = { ...App.run.bindings };

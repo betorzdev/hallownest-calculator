@@ -358,8 +358,8 @@ f.addEventListener('load', async () => {
     await wait(120);
     ok('combat is open on its screen', !!q('.fight-body') && visible() === 'fight');
     // Without ever having chosen anyone there's already an enemy: an empty fight shows nothing.
-    ok('with none chosen, it opens against False Knight', !q('.journal') && !q('.foecard.is-empty') &&
-       txt('.jr-val') === 'Falso Caballero', txt('.jr-val'));
+    ok('with none chosen, it opens against Crawlid', !q('.journal') && !q('.foecard.is-empty') &&
+       txt('.jr-val') === 'Reptacillo', txt('.jr-val'));
     // "No enemy" removes it, and that's how the empty fight is seen.
     await click('[data-act="picker"]');
     await click('.jr-none');
@@ -385,7 +385,7 @@ f.addEventListener('load', async () => {
     // In the tools/artpack.js copy, none goes by file: those folders aren't published.
     if (w.HK.artpack) ok("the packed copy doesn't request loose portraits", ![...d.querySelectorAll('img')]
       .some((n) => /assets\/(enemies|journal)\//.test(n.getAttribute('src'))));
-    ok('the page stays on the one that was removed', txt('.jr-title') === 'Falso Caballero', txt('.jr-title'));
+    ok('the page stays on the one that was removed', txt('.jr-title') === 'Reptacillo', txt('.jr-title'));
     await leer('crawlid');
     ok('the first entry is read on the page', txt('.jr-title') === 'Reptacillo', txt('.jr-title'));
     ok('with the Journal text in Spanish', txt('.jr-desc').startsWith('Tímido carroñero'), txt('.jr-desc'));
@@ -1037,23 +1037,23 @@ f.addEventListener('load', async () => {
     await click('.hj-row[data-id="vengefly"]');
     ok('not encountered: a silhouette, and neither description nor notes', !!q('.hj-art.is-shadow') && !q('.hj-desc') && !q('.hj-notes'));
     await click('.hj-state [data-value="seen"]');
-    ok("encountering it gives the game's notice, inside the Journal", !q('.hj-note').hidden && txt('.hj-note') === 'Nueva entrada en el diario'
-       && q('#toast').hidden, txt('.hj-note'));
+    ok("encountering it gives the game's notice, the site's one with the entry's medallion", !q('#toast').hidden && txt('#toast') === 'Nueva entrada en el diario'
+       && !!q('#toast .toast-art'), txt('#toast'));
     ok('encountered: the description and "Defeat 44 more…", which is the control', !!q('.hj-desc') && q('.hj-count') && q('.hj-count').value === '44'
        && txt('.hj-kills').replace(/\s+/g, ' ').startsWith('Derrota'), q('.hj-count') && q('.hj-count').value);
     ok('the same thing the game saves is saved: the defeats left', JSON.stringify(hjSaved()) === '{"vengefly":44}', JSON.stringify(hjSaved()));
     await click('.hj-step[data-value="-1"]');
     ok('"−" is one more defeat', q('.hj-count').value === '43', q('.hj-count').value);
     await hjType('.hj-count', '0');
-    ok('at zero: "Journal Updated", the Hunter\'s notes and the frame', txt('.hj-note') === 'Diario actualizado' && !!q('.hj-notes')
-       && !!q('.hj-row[data-id="vengefly"] .hj-frame') && !q('.hj-kills'), txt('.hj-note'));
+    ok('at zero: "Journal Updated", the Hunter\'s notes and the frame', txt('#toast') === 'Diario actualizado' && !!q('.hj-notes')
+       && !!q('.hj-row[data-id="vengefly"] .hj-frame') && !q('.hj-kills'), txt('#toast'));
     ok('and the button already counts 3', hjNum() === '3/146', hjNum());
     await click('.hj-row[data-id="goam"]');
     ok("Goam is got by inspecting: yes or no, with the game's line", !q('.hj-state [data-value="seen"]') && !!q('.hj-state [data-value="done"]')
        && txt('.hj-inspect').startsWith('Un goam fosilizado'), txt('.hj-inspect'));
     await click('.hj-row[data-id="false-knight"]');
     await click('.hj-state [data-value="done"]');
-    ok('a single-defeat one ends up complete when marked', hjSaved()['false-knight'] === 0 && txt('.hj-note') === 'Diario actualizado', JSON.stringify(hjSaved()));
+    ok('a single-defeat one ends up complete when marked', hjSaved()['false-knight'] === 0 && txt('#toast') === 'Diario actualizado', JSON.stringify(hjSaved()));
     await click('.hj-row[data-id="menderbug"]');
     await click('.hj-state [data-value="done"]');
     ok('an optional one encountered raises the total, as in the game', hjNum() === '5/147', hjNum());

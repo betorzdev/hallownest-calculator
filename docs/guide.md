@@ -23,7 +23,9 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   its left, what belongs to the site: the language (English / Español; until you choose, the
   site follows the browser's language, English if it's neither) and *Share*. On its right,
   what's yours: the save selector (the Knight and the save you're playing, or *Select save* in
-  free mode; it opens [its screen](#saves)). Behind
+  free mode; it opens [its screen](#saves)). It isn't a footnote link: the Knight stands under a
+  lamp's light that breathes, the label goes in the game's menu capitals, and on hover or focus
+  the Knight lights up and the menu's pointers appear either side. Behind
   it, **20 dust motes** rising slowly, as in the main menu; with `prefers-reduced-motion` they
   don't appear. On mobile it stays in one row, so content starts sooner: the title on the left,
   smaller and without its filigree, and the Knight (with the save's number, if you're in one),
@@ -204,6 +206,36 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   plate; a charm you mark as found lights up on its grid. Screens fade in when you switch
   between them. It's all fades and light, no slides or bounces (`design/00-system.md`, Motion),
   and with `prefers-reduced-motion` only the result is seen.
+- **With a mouse, what can be pressed says what it will do.** The nail damage and the six figures
+  open the full sheet at their row: on hover the label takes the accent and the figure a soft
+  white glow. The HUD previews the click, like Your game's pieces: the masks it
+  would fill come up to half light and the ones it would empty go dim; a vessel shows whether it
+  would fill or empty; and the orb shows the level a spell would leave, orb first and then the
+  vessels. The spell, art and effect plates light their artwork and their halo swells a little.
+  What can't be pressed (health, soul, the nail) doesn't react.
+  Across the site the same rule holds: the screen bar shows the current tab's rule, faint, under
+  the one you point at; on Your game the nail you point at takes a faint spotlight and the plates
+  light up; in Combat an attack's artwork takes the light and the Journal picker's row its
+  portrait; in the Hall a difficulty you haven't marked shows its symbol at half and the statue
+  brightens; on the Pantheons a binding not marked on the door previews its light; and the Journal's
+  rows light their medallion.
+- **What's only to look at moves by itself**, slowly, as the game's lights and objects do (and not
+  at all with `prefers-reduced-motion`): the Hunter's light and the Void Idol's breathe, and so
+  does the chosen pantheon's boss; the enemy on the arena's stage floats; the diamond of each
+  screen's rule glints now and then. On the HUD the soul's surface rises and falls a hair, a
+  lifeblood mask breathes its blue, and the orb's rim glints while there's enough for a spell or a
+  Focus.
+- **The buttons are the game's menu items** (`.btn`), like the save slots': the menu's capitals, no
+  box, and on hover or focus the menu's two pointers either side, which are also the focus mark.
+  The one the screen leads to (*Enter the pantheon*, *Again*, *Import from the game*…) goes in bone
+  with a soft light behind it; *Give up* turns red under the pointer, like *Clear Save*. The
+  segmented choices (the import's systems, the Journal picker's kinds, what to compare the sheet
+  with) are words in a row with the chosen one over the accent's rule.
+- **The notices** (*Link copied*, a charm you can't touch in a pantheon, no soul for a spell…) are
+  the game's on-screen messages, not a web card: the text in the game's face just under the
+  screen bar —where the Journal's notice goes, and under the arena's band when it's out—, between two short rules with their diamond, over a soft dark veil so it reads on
+  anything. It fades in, holds 2.4 s and fades out (`toast` in `js/app.js`). Every notice goes
+  through it, the Journal's included, and its figures go in the numbers' face, not in Cinzel.
 - **One tint per section**, the system of the game's map screen (`design/00-system.md` §3):
   Charms, the guide and Your game, in City of Tears' (`--tint-sheet`); combat, in Crystal
   Peak's (`--tint-combat`); the Hall and the Pantheons, in Godhome's. It tints the section
@@ -485,8 +517,10 @@ can be touched goes without a background, and your attacks and the enemy's are t
 with a thin rule (yours carry their artwork from the game). On hover it's veiled
 (`--veil`), and the chosen one carries the accent's veil and rule (`--picked`, the same as on
 Your game). The enemy has behind it the same cold spotlight as the Knight opposite, and who
-you're hitting is marked by an accent rule on its left. The pantheons are chosen like statues:
-their final boss standing on Godhome's light, with the pedestal's stone rule.
+you're hitting is marked by an accent rule on its left. The pantheons aren't statues but doors:
+each final boss stands in an arch of Godhome's light with a thin gold frame, rising from the
+threshold, lit on the chosen one and under the pointer (`--pantheon-door*`), so they don't
+repeat the Hall's niches.
 
 - **The picker is the Hunter's Journal**, traced from the game's screen. On the left, the list
   **in Journal order** (roughly the order in which you run into them, not alphabetical), each
@@ -506,9 +540,9 @@ their final boss standing on Godhome's light, with the pedestal's stone rule.
     bosses leaves *Bosses 0 · Enemies 1* and tells you where to look. The arrows move the entry
     being read (from the search box or from the list), `Esc` clears what's typed and, if it
     was already empty, closes the Journal.
-  - Whoever hasn't picked anyone **starts against False Knight**, the game's first boss, so
+  - Whoever hasn't picked anyone **starts against Crawlid**, the Journal's first entry, so
     that combat never comes out empty. *No enemy* is at the foot of the list and then
-    **combat opens on the Journal**; on reload False Knight comes back.
+    **combat opens on the Journal**; on reload Crawlid comes back.
     It isn't a dropdown: it pushes the arena down and doesn't close on a tap outside.
   - The 23 entries without their own Journal entry go **after their original**: the dreams
     (Failed Champion after False Knight), the Godhome versions and the Zotelings of the Eternal
@@ -793,8 +827,10 @@ it's for rehearsing a boss.
   and down go to the closest one in the neighbouring row, which with the double pedestals isn't
   always the same column.
 - **The entrance tablet.** In the game, at the Hall's entrance there's a tablet you read that
-  shows all 44 at a glance; here it's the *Read the tablet* button, next to the Idol, and it
-  shows the same screen, traced from its screenshot on the wiki ("Screenshot HK Hall of Gods 03"):
+  shows all 44 at a glance. Here it's always in view in miniature on the Idol's row, in the full
+  one's shape: its two ornaments and the 44 in four columns of eleven, each with its highest
+  symbol and its name, small (in the dense cells' sans; a name too long for its column takes two lines). On a phone the names don't fit and it shows the symbols alone.
+  Tapping it reads the full tablet, which shows the same screen, traced from its screenshot on the wiki ("Screenshot HK Hall of Gods 03"):
   the two Godmaster ornaments (`GMHr` and `GMFtr`, which are exactly the screenshot's), the title
   *Hall of Gods* —the only place in the game where that name appears, `GG_SUMMARY_TITLE`— and
   **four columns of eleven**, each name with **the highest symbol you have** in front of it; the
@@ -868,14 +904,22 @@ room to the next, and **the rests are the only thing that heals**.
   the run, everything responds again.
 - **The rest of the build freezes on entry** —nail, masks, vessels, spells and arts—, as in the
   game: changing them on *Your game* halfway doesn't touch the pantheon.
-- **The timeline** has one tile per room: cleared ones dimmed and with their mark, the current
-  one with the accent, the one you fell in in red. The rests can be spotted at a glance by the
-  bench's banner.
-- **You can go straight to any room** by tapping its tile, to rehearse a fight or try a rest
+- **The timeline is a path through Godhome** (`pathHtml`): the rooms as round medallions on a
+  thin gold thread, which lights up as far as you've walked. The benches and the Godseeker's rooms
+  are larger marks on it, cutting it into the stretches the pantheon is played in, and the final
+  boss goes last and largest, in its doorway of light. The rooms still to go show their boss, a
+  little quieter, so you see everyone you have left; the cleared ones, a gold ring and a small tick; the current one, larger, with the accent's ring glowing and the Knight floating over it, like
+  his pin on the game's map, so you find it at a glance; the one
+  you fell in, in red. The number goes under each one. The pantheons of 12 rooms fill a row with
+  larger medallions; Hallownest's 53 wrap onto several.
+- **The way through, before going in**: on the picker, under *Enter the pantheon*, the chosen
+  pantheon's path with every room lit, to see who you'll face and where the benches are. Tapping
+  a room enters the pantheon straight into it (what's before counts as skipped).
+- **You can go straight to any room** by tapping it, to rehearse a fight or try a rest
   without going through everything before it. You arrive with whatever you had —also if you
-  skip halfway through a fight—, and **what's skipped doesn't count as cleared**: those tiles
-  carry a dash and, if you finish that way, the ending says "finished, with N rooms skipped",
-  not "completed".
+  skip halfway through a fight—, and **what's skipped doesn't count as cleared**: those rooms
+  are struck through and, if you finish that way, the ending says "finished, with N rooms
+  skipped", not "completed".
 - **The fights** use the usual arena, with Attuned health, and on winning they offer the next room.
 - **At the rests you choose what to do and in what order**: bathing in the hot springs (soul and
   masks to the maximum), sitting on the bench (all health and the charms' lifeblood; not soul;
@@ -953,9 +997,8 @@ inside. The game's notice when marking shows fixed just below the bar.
   the two achievements,
   *Keen Hunter* (encountering the 146) and *True Hunter* (the Mark).
 - On marking, **the game's notice** shows, "New Journal Entry" or "Journal Updated", with the
-  medallion, at the top, level with the header: at the bottom it covered the buttons you'd just
-  touched. It goes inside the Journal, because the page's notice sits below the dialog, and it
-  doesn't catch clicks.
+  entry's medallion: it's the site's notice (the same look and place as every other one, just
+  under the bar), and it doesn't catch clicks.
 - **Mark in bulk**, at the foot of the list, collapsed. Open, **each row carries its checkbox**
   to pick several: with Shift the range from the last one touched is picked, and from the
   keyboard, Space picks the row being read (the checkboxes aren't tab stops: there would be

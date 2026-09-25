@@ -35,7 +35,6 @@
   const hjStateKey = (s) => (s.done ? 'done' : s.seen ? 'seen' : 'unseen');
   const hjShowAll = () => hjShow.size === HJ_STATES.length;
   let hjQuery = '';
-  let hjTimer = 0;
   let hjBulkOpen = false;           // the "Mark in bulk" panel, open
   let hjInk = null;                 // the entry just completed: its notes ink in
   let hjWas = null;                 // the book before a change by hand, only for its repaint: what changed moves once
@@ -291,8 +290,7 @@
           </div>
           <article class="hj-page" aria-live="polite"></article>
         </div>
-      </div>
-      <div class="hj-note" role="status" hidden></div>`;
+      </div>`;
     paintHunter();
   }
   function paintHunter(focusCount = false) {
@@ -360,15 +358,8 @@
     hjNav.title = lbl;
   }
 
-  /* The game's notice when an entry changes, with the entry's artwork, just below the bar. */
-  function hjNotify(text, id) {
-    const n = hjSec.querySelector('.hj-note');
-    if (!n) return;
-    n.innerHTML = `<img src="${D.art('journal', id)}" alt="" width="42" height="48"><span>${esc(text).replace(/\d+/g, '<b class="hj-note-num">$&</b>')}</span>`;
-    n.hidden = false;
-    clearTimeout(hjTimer);
-    hjTimer = setTimeout(() => { n.hidden = true; }, 2400);
-  }
+  /* The game's notice when an entry changes, with the entry's medallion: the site's notice (toast). */
+  const hjNotify = (text, id) => App.toast(text, D.art('journal', id));
 
   /* Each change: it's saved, announced like the game does and repainted. If the Hunter's Mark
      goes because the 146 are no longer all there, that's said too. */

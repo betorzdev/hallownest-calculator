@@ -1124,7 +1124,7 @@
     const fresh = titleSeen !== prefs.fightTab + '|' + f.id;
     titleSeen = prefs.fightTab + '|' + f.id;
     const cls = [fresh && 'is-fresh', hit && 'is-hit', newPhase && 'is-phase', fight.over && 'is-over', dying && 'is-dying', down && 'is-staggered',
-      st && st.minion && 'is-minion'].filter(Boolean).join(' ');
+      st && st.minion && 'is-minion', (f.kind !== 'boss' || (st && st.minion)) && 'is-common'].filter(Boolean).join(' ');
 
     // The header (the enemy's name for the screen reader, the phase, the total and the "?") and its notes.
     const phaseList = phasesOf(f);

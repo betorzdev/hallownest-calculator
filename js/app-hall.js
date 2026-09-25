@@ -91,9 +91,10 @@
       { diff: t(DIFF_KEY[hallUndo.d]), n: App.NF[0].format(hallUndo.n) }))}</span>
       <button type="button" class="btn hall-undo" data-act="hallUndo">${esc(t('hallUndo'))}</button></p>` : '';
     const bulk = `<button type="button" class="btn hall-bulk-toggle" data-act="hallBulk" aria-expanded="${hallBulk}"
-        title="${esc(t('hallBulkHint', { n: total }))}">${esc(t('hallBulk'))}${chevron(hallBulk)}</button>
-      ${hallBulk ? `<div class="hall-bulk">${rowEl(true)}${rowEl(false)}
-        <p class="hall-bulk-rule">${esc(t('hallBulkRule'))}</p>${undoNote}</div>` : ''}`;
+        title="${esc(t('hallBulkHint', { n: total }))}">${esc(t('hallBulk'))}${chevron(hallBulk)}</button>`;
+    // Open, the panel goes on a row of its own under the Idol and the tablet: neither moves.
+    const bulkPanel = hallBulk ? `<div class="hall-bulk">${rowEl(true)}${rowEl(false)}
+        <p class="hall-bulk-rule">${esc(t('hallBulkRule'))}</p>${undoNote}</div>` : '';
     // The Idol changing tier (all 44 at a difficulty) lights up like what you get on Your game.
     const idolFx = markFx && markFx.tier !== tier ? (tier ? ' is-lit' : ' is-out') : '';
     const idol = `<div class="hall-idol ${tier ? '' : 'is-off'} ${hallBulk ? 'is-bulk' : ''}${idolFx}">
@@ -106,8 +107,8 @@
         <p class="hall-rules">${esc(t('hallRules'))}</p>
         ${bulk}
       </div>
-      <button type="button" class="btn hall-tablet-btn" data-act="tablet" aria-pressed="${App.hallTablet}" title="${esc(t('hallTabletHint'))}">
-        <img src="assets/hall/tablet.png" alt="" width="28" height="40">${esc(t('hallTablet'))}</button>
+      ${tabletMini()}
+      ${bulkPanel}
     </div>`;
 
     const tile = (s) => {
@@ -244,6 +245,27 @@
      It has no box: the frame's black is already its screen's. */
   // The arrow of "‹ Statues", drawn like the cross of "Close": the serif's "‹" comes out tiny.
   const TABLET_BACK = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.5 L3.5 6 L8 10.5"/></svg>';
+  /* The tablet in miniature, on the Idol's row: the same shape as the full one —its two ornaments
+     and the 44 in four columns of eleven, each with its highest symbol and its name—, small, and
+     the names in the dense cells' sans (Cinzel doesn't read at this size). At a glance, how much of
+     the Hall you have and at what difficulty; tapping it reads the full tablet, and while that's
+     open the miniature stays lit. */
+  function tabletMini() {
+    const marks = HG.TABLET.map((id) => {
+      const d = HG.tabletMark(App.marks, id), s = HG.STATUE_BY_ID[id];
+      const name = (s.tablet ? pick(s.tablet) : statueName(s)) + ' · ' + (d ? t(DIFF_KEY[d]) : t('hallNoMarks'));
+      const label = s.tablet ? pick(s.tablet) : statueName(s);
+      const mark = d ? `<img class="mini-mark m-${d}" src="assets/hall/badge-${d}.png" alt="">` : '<span class="mini-mark is-empty"></span>';
+      return `<span class="mini-row" title="${esc(name)}">${mark}<span class="mini-name"${NT}>${esc(label)}</span></span>`;
+    }).join('');
+    return `<button type="button" class="hall-tablet-btn hall-mini" data-act="tablet" aria-pressed="${App.hallTablet}"
+        aria-label="${esc(t('hallTablet'))}" title="${esc(t('hallTabletHint'))}">
+        <img class="mini-orn" src="assets/hall/tablet-hdr.png" alt="" width="862" height="111">
+        <span class="mini-grid" aria-hidden="true">${marks}</span>
+        <img class="mini-orn is-ftr" src="assets/hall/tablet-ftr.png" alt="" width="520" height="70">
+        <span class="mini-lbl">${esc(t('hallTablet'))}</span>
+      </button>`;
+  }
   function tabletHtml() {
     const rowEl = (id, i) => {
       const s = HG.STATUE_BY_ID[id], d = HG.tabletMark(App.marks, id);

@@ -10,7 +10,7 @@
   const HK = globalThis.HK;
   const D = HK.data, C = HK.codec, S = HK.saves, HJ = HK.hunter, HG = HK.hall, F = HK.savefile, PN = HK.pantheons;
   const App = HK.app;
-  const { t, pick, el, NT, esc, prefs, savePrefs, brackets, screenHead, render, actions, here, PAGE_LANG, toast, track, pctSpace } = App;
+  const { t, pick, el, NT, esc, FLEURS, prefs, savePrefs, brackets, screenHead, render, actions, here, PAGE_LANG, toast, track, pctSpace } = App;
 
   let store = null;
   try { store = localStorage; } catch (e) { store = null; }
@@ -112,8 +112,6 @@
      game's interface arrows are abstracted stone pinnacles, design/02 §5). Their icons are the
      usual ones, drawn with the site's line: a tray with an arrow coming in (which dips when
      you're on it) and a bin (whose lid lifts). */
-  const FLEUR = '<svg viewBox="0 0 12 20" fill="currentColor" aria-hidden="true"><path d="M1 10 C4.5 9.4 7.2 7.2 8.6 2.4 C9 6.4 10 8.8 11.6 10 C10 11.2 9 13.6 8.6 17.6 C7.2 12.8 4.5 10.6 1 10 Z"/><circle cx="2.4" cy="10" r="1.3"/></svg>';
-  const FLEURS = `<span class="save-fleur is-l">${FLEUR}</span><span class="save-fleur is-r">${FLEUR}</span>`;
   const ICON_IMPORT = '<svg class="save-ico" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12.5 V16.5 H17 V12.5"/><g class="save-ico-arrow"><path d="M10 2.5 V11.5"/><path d="M6.2 8 L10 11.8 L13.8 8"/></g></svg>';
   const ICON_CLEAR = '<svg class="save-ico" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g class="save-ico-lid"><path d="M3 5.5 H17"/><path d="M7.8 5.5 V3.5 H12.2 V5.5"/></g><path d="M4.8 5.5 L5.8 17.5 H14.2 L15.2 5.5"/><path d="M8.3 8.8 V14.2"/><path d="M11.7 8.8 V14.2"/></svg>';
   const importBtn = (n) => `<button type="button" class="save-act is-import" data-act="saveImport" data-value="${n}"

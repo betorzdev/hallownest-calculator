@@ -102,6 +102,8 @@
     const orbTitle = soulNow >= cost ? t('soulCastTitle', { n: cost }) : t('soulRefillTitle');
     const hud = hudHtml({
       masks: white, maxMasks: masks, lb: lbOn, lbSlots: lb, soul: soulNow, main: mainNow, mainMax: main, vessels,
+      // What a tap on the orb would leave: a spell's cost less, or everything refilled if there isn't enough.
+      castSoul: soulNow >= cost ? soulNow - cost : total, ready: mainNow >= cost,
       hive: App.sheetHas(App.sheet, 'hiveblood'), lbJoni: App.sheet.joniLifeblood || 0,
       over: !!App.sheet.notches.overcharmed,
       orbAttrs: ` data-act="soulOrb" title="${esc(orbTitle)}" aria-label="${esc(orbTitle)}"`,
@@ -135,14 +137,14 @@
       </div>
       <div class="inv-lead">
         <div class="inv-nail"><img class="hero-nail" src="${D.art('nails', App.state.nail)}" alt="" width="80" height="360"></div>
-        <div class="hero${flashCls('nail.damage')}">
-          <div class="lbl">${esc(t('heroLabel'))}</div>
-          <div class="hero-row">
+        <button type="button" class="hero${flashCls('nail.damage')}" data-act="kpi" data-id="nail.damage" title="${esc(t('goTo', { label: s['nail.damage'].label }))}">
+          <span class="lbl">${esc(t('heroLabel'))}</span>
+          <span class="hero-row">
             <span class="hero-num">${fmtStatRich(s['nail.damage'])}</span>
             ${changeChip('nail.damage')}<span class="pv" data-pv="nail.damage"></span>
-          </div>
-          <div class="hero-note">${esc(heroNote())}</div>
-        </div>
+          </span>
+          <span class="hero-note">${esc(heroNote())}</span>
+        </button>
       </div>
       <div class="inv-stats">
         ${metric('nail.dps', t('dps'), { note: esc(t('apsNote', { aps: fmtStat(s['nail.aps']) })) })}
