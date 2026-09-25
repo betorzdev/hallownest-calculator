@@ -3339,6 +3339,13 @@ button.tl-go:focus-visible { outline-offset: 3px; }
   align-self: stretch; margin-block: var(--sp-4); padding-inline: var(--sp-4) var(--sp-6);
   border-left: 1px solid var(--inv-line);
 }
+/* The file the slot follows, above its buttons; on the one you're in, how the link is. */
+.save-link { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-1); padding: 0 var(--sp-4) var(--sp-2); font-size: var(--fs-xs); color: var(--ink-2); }
+.save-link-t { font-family: var(--font-num); overflow-wrap: anywhere; }
+.save-link b { font-family: var(--font-body); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; font-size: var(--fs-2xs); color: var(--ink-strong); }
+.save-link.is-live b { color: var(--good); }
+.save-link.is-paused b, .save-link.is-lost b { color: var(--cond); }
+.save-link .text-btn { font-size: var(--fs-xs); }
 .save-ask { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-1); }
 .save-ask-q { padding-inline: var(--sp-4); font-size: var(--fs-sm); color: var(--ink-strong); }
 .save-ask-yn { display: flex; gap: var(--sp-2); }
@@ -3373,6 +3380,8 @@ button.tl-go:focus-visible { outline-offset: 3px; }
 .save-ico-lid { transform-origin: 100% 100%; }
 .save-act.is-import:hover .save-ico-arrow, .save-act.is-import:focus-visible .save-ico-arrow { transform: translateY(1.5px); }
 .save-act.is-clear:hover .save-ico-lid, .save-act.is-clear:focus-visible .save-ico-lid { transform: translate(0.5px, -1.5px) rotate(14deg); }
+.save-ico-turn { transform-origin: 50% 50%; transition: transform var(--dur-slow) var(--ease); transform-box: fill-box; }
+.save-act.is-follow:hover .save-ico-turn, .save-act.is-follow:focus-visible .save-ico-turn { transform: rotate(180deg); }
 /* Free mode, above the four and apart from them: nobody's game, so a sheet of its own, with the
    Knight under a bench's lamp instead of a number and its name on its own row. */
 .saves-list.is-free {
@@ -3531,7 +3540,7 @@ kbd {
 
 .imp-found {
   display: grid; grid-template-columns: auto auto; justify-content: center; align-items: center;
-  grid-template-areas: "fname fname" "nail hud" "nail meta" "facts facts" "pans pans" "warn warn" "actions actions";
+  grid-template-areas: "fname fname" "nail hud" "nail meta" "facts facts" "pans pans" "warn warn" "sync sync" "actions actions";
   gap: var(--sp-3) var(--sp-6); text-align: center;
 }
 .imp-fname { grid-area: fname; margin: 0 0 var(--sp-2); display: inline-flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: var(--sp-2); font-family: var(--font-num); font-size: var(--fs-sm); color: var(--ink-2); }
@@ -3553,6 +3562,19 @@ kbd {
 .imp-pan { width: var(--sp-3); height: var(--sp-3); transform: rotate(45deg); border: 1px solid color-mix(in oklab, var(--tint) 45%, transparent); }
 .imp-pan.is-done { background: var(--ink-strong); border-color: var(--ink-strong); box-shadow: 0 0 8px color-mix(in oklab, var(--ink-strong) 45%, transparent); }
 .imp-warn { grid-area: warn; margin: 0; font-size: var(--fs-sm); color: var(--bad); }
+/* Following the game (js/live.js): a row of the game's options menu. What it is in the text's
+   ink, and its value on a button (.btn, its hairlines say it can be pressed) with the rule's
+   diamond: lit in bone when it's on, hollow and dimmer when it's off. */
+.imp-sync { grid-area: sync; justify-self: center; display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); max-width: 44ch; margin-top: var(--sp-3); }
+.imp-sync-k { font-size: var(--fs-md); color: var(--ink-strong); }
+.imp-sync-v { min-width: calc(var(--sp-16) * 2.5); gap: var(--sp-3); color: var(--ink-strong); }
+.imp-sync-dot {
+  width: var(--sp-2); height: var(--sp-2); transform: rotate(45deg); border: 1px solid currentColor;
+  transition: background-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.imp-sync-v[aria-checked="true"] .imp-sync-dot { background: var(--ink-strong); box-shadow: 0 0 8px color-mix(in oklab, var(--ink-strong) 55%, transparent); }
+.imp-sync-v[aria-checked="false"] { color: var(--label); }
+.imp-sync-note { margin: 0; font-size: var(--fs-sm); line-height: 1.45; color: var(--muted); text-wrap: pretty; }
 .imp-actions { grid-area: actions; display: flex; flex-direction: column; align-items: center; gap: var(--sp-3); margin-top: var(--sp-3); }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -3597,6 +3619,18 @@ kbd {
   .mh-save:is(:hover, :focus-visible) .mh-save-light { animation: none; }
 }
 .mh-save-n { display: none; font-family: var(--font-num); font-variant-numeric: tabular-nums; }
+/* Following the game (js/live.js): under the label, the rule's diamond and the state in small
+   capitals. Live, the diamond lit in bone, breathing like the lamp; paused or with the file
+   missing, hollow, in the notice's tint. On mobile, only the diamond, over the save's number. */
+.mh-save-lbl:has(.mh-live) { display: inline-flex; flex-direction: column; align-items: flex-start; gap: var(--sp-half); }
+.mh-live { display: inline-flex; align-items: center; gap: var(--sp-2); font-family: var(--font-body); font-weight: 600; font-size: var(--fs-2xs); letter-spacing: 0.08em; color: var(--ink-2); }
+.mh-live-dot { width: var(--sp-2); height: var(--sp-2); transform: rotate(45deg); border: 1px solid currentColor; }
+.mh-save.is-live .mh-live-dot { background: var(--ink-strong); border-color: var(--ink-strong); box-shadow: 0 0 8px color-mix(in oklab, var(--ink-strong) 55%, transparent); }
+.mh-save.is-paused .mh-live, .mh-save.is-lost .mh-live { color: var(--cond); }
+@media (prefers-reduced-motion: no-preference) {
+  .mh-save.is-live .mh-live-dot { animation: live-breathe 2.4s var(--ease-fade) infinite alternate; }
+}
+@keyframes live-breathe { from { opacity: 0.55; } to { opacity: 1; } }
 @media (max-width: 899px) {
   /* A full slot (and free mode) takes the whole row, and its menu (or note) goes under it. */
   .save:not(.is-empty) .save-main { grid-column: 1 / -1; }
@@ -3606,12 +3640,13 @@ kbd {
     margin: calc(var(--sp-2) * -1) 0 0; padding: 0 var(--sp-2) var(--sp-2); border-left: 0;
   }
   .save-ask { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: flex-end; }
+  .save-link { flex: 1 0 100%; flex-direction: row; flex-wrap: wrap; align-items: baseline; justify-content: flex-end; gap: var(--sp-1) var(--sp-4); padding: 0 var(--sp-3); }
   .imp-grid { grid-template-columns: minmax(0, 1fr); }
   .imp-drop { min-height: calc(var(--sp-16) * 6); }
 }
 @media (max-width: 599px) {
   .saves-body { --inv-pad: var(--sp-4); }
-  .imp-found { grid-template-areas: "fname fname" "nail hud" "meta meta" "facts facts" "pans pans" "warn warn" "actions actions"; }
+  .imp-found { grid-template-areas: "fname fname" "nail hud" "meta meta" "facts facts" "pans pans" "warn warn" "sync sync" "actions actions"; }
   .imp-meta { justify-content: center; }
   .imp-bar { margin-bottom: var(--sp-2); }
   /* On a phone an empty slot's import says only «Import», beside New Game, with no rule. */
@@ -3637,8 +3672,15 @@ kbd {
   .save-vessels img { height: var(--sp-3); }
   .save-nail img { height: var(--sp-12); }
   .save-nail span { display: none; }
-  .mh-save-lbl { display: none; }
+  .mh-save-lbl, .mh-save-lbl:has(.mh-live) { display: none; }
   .mh-save-n { display: inline; }
+  /* Out of the flow: the selector keeps its width and the Knight his place. */
+  .mh-save-n { position: relative; }
+  .mh-save:is(.is-live, .is-paused, .is-lost) .mh-save-n::after {
+    content: ''; position: absolute; left: 50%; bottom: calc(100% + var(--sp-1)); width: 6px; height: 6px;
+    transform: translateX(-50%) rotate(45deg); border: 1px solid var(--cond);
+  }
+  .mh-save.is-live .mh-save-n::after { border-color: var(--ink-strong); background: var(--ink-strong); box-shadow: 0 0 8px color-mix(in oklab, var(--ink-strong) 55%, transparent); }
   .mh-save { gap: 0; min-width: var(--sp-6); justify-content: center; }  /* 24 px: the minimum target (WCAG 2.5.8) */
   .mh-save-fig { width: var(--sp-8); height: var(--sp-8); }
   .mh-save-fig img { height: var(--sp-6); }

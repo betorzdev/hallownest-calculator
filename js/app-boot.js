@@ -38,4 +38,5 @@
   persist();
   recompute();           // and with it fightSync(), which hands out combat health and soul
   render();
+  App.liveStart();       // the slot linked to the game's file starts following it (js/app-saves.js)
 })();

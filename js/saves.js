@@ -117,6 +117,22 @@
     return true;
   }
 
-  HK.saves = { COUNT, FREE, SAVES_KEY, KEYS, SLOT_IDS, ALL_IDS, read, snapshot, fresh, list, select, clear, importTo };
+  /* The same game, read again because the real one saved (js/live.js): it replaces what the slot
+     holds but the site's own keys, which a real save doesn't carry (a half-done pantheon and the
+     pinned build). Returns whether anything changed. */
+  const SITE_ONLY = Object.freeze(['hollow.run', 'hollow.baseline']);
+  function sync(store, n, snap) {
+    if (!SLOT_IDS.includes(n)) return false;
+    const saves = read(store);
+    const was = n === saves.active ? snapshot(store) : saves.slots[n] || {};
+    const next = cleanSnap(snap);
+    for (const k of SITE_ONLY) { if (was[k] != null) next[k] = was[k]; else delete next[k]; }
+    if (KEYS.every((k) => (was[k] == null ? null : was[k]) === (next[k] == null ? null : next[k]))) return false;
+    if (n === saves.active) restore(store, next);
+    else { saves.slots[n] = next; write(store, saves); }
+    return true;
+  }
+
+  HK.saves = { COUNT, FREE, SAVES_KEY, KEYS, SITE_ONLY, SLOT_IDS, ALL_IDS, read, snapshot, fresh, list, select, clear, importTo, sync };
   if (typeof module !== 'undefined' && module.exports) module.exports = HK.saves;
 })();
