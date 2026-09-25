@@ -365,7 +365,8 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   states, and the entrance tablet with the two ornaments of its screen (`npm run hall`,
   364 KB already paletted).
 - `docs/` — this guide, and in `docs/screenshots/` the README's captures (WebP, taken with
-  `debug.html` at 1440 × 900 and 390 px). Not part of the page.
+  `debug.html` at 1440 × 900 and 390 px; `spells-effects.webp` is cut from a taller Charms
+  capture, with a build whose charms have effects and synergies). Not part of the page.
 - `design/` — design material: the audit and the system (`00-system.md`), web best practices,
   the game's visual language with the measured palettes, and which Hollow Knight websites
   already exist. It isn't part of the page. **Read it before touching the design.**
