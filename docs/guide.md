@@ -598,21 +598,29 @@ scoreboard in a row, the enemy, their attacks before yours, and the log.
   mask** he gives off black smoke (`Knight_One_Mask.gif`), on falling **his Shade** remains, and
   when overcharmed the HUD carries **its purple aura** behind the masks (`Overcharm.png`).
   Without motion (`prefers-reduced-motion`) you see how it ends up, not how it changes.
-- On the right, **whoever you're hitting**, on a mirrored foreground and lit by **the light of
-  its area**, with the palettes measured on the game (`design/02-hollow-knight.md` §3, the
-  `--area-*` tokens): the spotlight takes the area's accent, a haze of its mid-tone rises from the
-  ground and the black foreground catches a hairline of that light on its edge. False Knight
+- On the right, **whoever you're hitting**, on a mirrored foreground and in **the ambience of
+  its area**, with the palettes measured on the game (`design/02-hollow-knight.md` §2–3, the
+  `--area-*` tokens): the scene behind it is the area's value ramp, as the game paints each area
+  in one hue family darkening towards you, the upper mid-tone at the top, the lower one in the
+  middle and black at the foot, where the black rocks catch a hairline of the area's accent. It
+  fades to black at the sides and the top, so it reads as a lit place and not as a box, and a
+  pale, neutral light behind the enemy lifts its silhouette. Godhome and the Radiance, the two
+  bright ones, go at a little over half. False Knight
   stands in the Crossroads' blue, Hornet in Greenpath's green, the Crystal Guardian in Crystal
   Peak's violet, the Hive Knight in the Hive's amber, the Sisters of Battle in Godhome's gold;
-  Grimm and the Nightmare King (and the Grimmkin) bring the Troupe's crimson, and both Radiances
-  their own gold. The area is the entry's zone in `js/enemies.js`; where the game's map paints
+  Grimm and the Nightmare King (and the Grimmkin) bring the Troupe's crimson, darkened towards
+  black, and both Radiances Godhome's ramp with their own gold on the rocks' edge. The area is the entry's zone in `js/enemies.js`; where the game's map paints
   two regions in one tint, the one without a palette takes the other's (the Royal Waterways, the
   Fungal Wastes'; Fog Canyon, the Queen's Gardens'), and the Soul Sanctum and the Tower of Love
   take the City of Tears'. In the Hall of Gods and the Pantheons it keeps its boss's area, since
   Godhome recreates each arena. Only the scene is tinted: the title card, the bar and the
-  figures stay in bone. The common enemies carry no zone, and neither do the Howling Cliffs have
-  a measured palette: they keep the cold spotlight the Knight has opposite. Beaten, its light
-  goes down with it.
+  figures stay in bone. A common enemy's area is the first place its wiki page's
+  «Location» section names, as its region of the game's map (the Mantis Youth, the Fungal Wastes;
+  the Kingsmould, the White Palace; the Sibling, the Abyss), and your game's Journal shows it under
+  each name. The arena's card doesn't: there it's beside the point. Two turn up
+  all over the kingdom (Bluggsac and Lifeseed) and keep "Hallownest"; they, and the Howling Cliffs,
+  which have no measured palette, keep the plain black and the cold spotlight. Beaten, its place goes
+  dark with it.
   under **the title card the game shows when the fight starts**: the small line, the big name
   and, in some, the line below («Madre» big and «Gruz» under it, as the Spanish game has it).
   They come from the game's text (`<KEY>_SUPER`, `_MAIN`, `_SUB`), 46 bosses in `TITLES` in
@@ -802,10 +810,10 @@ flukes don't always land, and the "×2"), **Cyclone Slash** (its figure is one s
 78, and up to 6 if you mash), **Focus** (1.141 s, 0.25 of wind-up plus 0.891, during which a hit
 takes away the heal and the soul; with Baldur Shell, no damage but no heal) and the **Dream
 Nail** (it doesn't hit: it draws soul). On the enemy's side, a single "?" in its header opens
-**the legend of its cards**, with only what's on them: that their attacks are pressed when they
-reach you, the stagger with its figures ("at 13, or at 9 in a row under 1 s"), "♪ Negated" with
-Carefree Melody's ladder, "Blocked", "☠" on Radiant and how to change who you're hitting. The
-rest carries no "?", because its note already says it or it's what it looks like. It's a real
+**the legend of its cards**, with only what's on them: the stagger with its figures ("at 13, or
+at 9 in a row under 1 s"), "♪ Negated" with Carefree Melody's ladder, "Blocked", "☠" on Radiant
+and how to change who you're hitting. That its attacks are pressed when they reach you goes
+without saying, so an enemy with nothing else to explain has no "?". The rest carries no "?", because its note already says it or it's what it looks like. It's a real
 button (`aria-expanded`), it works the same with a finger as with the keyboard, and it isn't
 saved: it's opened to read.
 
@@ -1076,6 +1084,13 @@ inside. The game's notice when marking shows fixed just below the bar.
   there, until the next change. Collapsing also drops the selection.
 - The search runs in both languages, the arrows move the entry being read and, on mobile, the
   list and the page take turns, as in the combat Journal.
+- Under each creature's name, **where it's found**: its region of the game's map (the entry's
+  zone in `js/enemies.js`), in italics, even before you've encountered it, since that's what
+  helps you go looking. The entries that aren't creatures, and Bluggsac and Lifeseed, found all
+  over the kingdom, carry none. (The site's addition: the game's Journal doesn't say it.)
+- The portrait stands in **its area's light, the same as on the arena's stage**: the area's value
+  ramp faded to black all round, with the pale neutral light behind it (a trace of it while not
+  encountered). With no area, the arena's cold spotlight.
 - **All the Journal's text is the game's** (the dump of its texts, with the key alongside in
   `js/i18n.js`), with its Spanish typos; what the site writes comes in both languages.
 

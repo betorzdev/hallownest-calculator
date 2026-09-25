@@ -161,8 +161,11 @@ aimed at making the site feel like the game without breaking §6:
 - **Your game** has its focal point: the nail picker, at the head of the left column, with the one
   you carry taller and lit. A separate large nail (it repeated the picker) and the picker across
   the full width (too much empty space) were tried and removed.
-- **The arena**: the enemy's stage takes its area's measured palette (§3 of the game study,
-  `data-area`), your attacks are plates and the enemy's are rows (the last boxes are gone), and
+- **The arena**: the enemy's stage is its area's ambience, the measured value ramp of §2–3 of the
+  game study (`data-area`) faded to black at the edges, with a neutral pale light behind the enemy.
+  A first version tinted only the spotlight with the area's accent: too many areas came out the
+  same grey-blue, and the game doesn't light that way. The common enemies now carry their region
+  too (the first place their wiki page names), so they take their area as well. Your attacks are plates and the enemy's are rows (the last boxes are gone), and
   the answer, hits to win, is the hero. A verdict sentence under it (§5.12) was tried and
   removed: it repeated the scoreboard.
 - **The Hall of Gods opens on the statues**: the Idol in one row with its counts, and the

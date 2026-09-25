@@ -504,11 +504,12 @@
     return null;
   }
 
-  /* The legend on the enemy's side: only what's on their cards right now. */
+  /* The legend on the enemy's side: only what's on their cards right now. With nothing to
+     explain, no legend and no "?" (that its attacks are buttons goes without saying). */
   function foeHelp(f) {
     const n0 = (x) => App.NF[0].format(x), n1 = (x) => App.NF[1].format(x);
     const radiant = diffOf() === 'radiant';
-    const lines = [radiant ? th('helpFoeRadiant', {}, { diff: t('diffRa') }) : th('helpFoeAttacks')];
+    const lines = radiant ? [th('helpFoeRadiant', {}, { diff: t('diffRa') })] : [];
     // The stagger, with the figures from their card (Heavy Blow already subtracted, as there).
     const stg = staggerCfg();
     if (stg && !radiant) {
@@ -1125,7 +1126,8 @@
      Canyon, the Queen's Gardens'. The Soul Sanctum and the Tower of Love are inside the City of
      Tears, and the Black Egg Temple in the Crossroads. A Hall of Gods or pantheon fight keeps its
      boss's area, because Godhome recreates each boss's own arena. The Howling Cliffs have no
-     measured palette and the common enemies no zone ("Hallownest"): the cold spotlight. */
+     measured palette, and the two common enemies found all over the kingdom (Bluggsac, Lifeseed)
+     no zone ("Hallownest"): the cold spotlight. */
   const ZONE_AREA = {
     'Dirtmouth': 'dirtmouth', 'Forgotten Crossroads': 'crossroads', 'Temple of the Black Egg': 'crossroads',
     'Greenpath': 'greenpath', 'Fungal Wastes': 'fungal', 'Royal Waterways': 'fungal',
@@ -1133,7 +1135,7 @@
     'Crystal Peak': 'crystal', 'Deepnest': 'deepnest', 'Resting Grounds': 'resting',
     'Ancient Basin': 'basin', 'Kingdom’s Edge': 'edge', 'Queen’s Gardens': 'gardens', 'Fog Canyon': 'gardens',
     'The Hive': 'hive', 'Colosseum of Fools': 'colosseum', 'Godhome': 'godhome', 'Pantheon of Hallownest': 'godhome',
-    'Dream No More': 'radiance',
+    'Dream No More': 'radiance', 'White Palace': 'palace', 'The Abyss': 'abyss',
   };
   /* Light that isn't the place's: the Troupe brings its crimson to Dirtmouth (and the Grimmkin,
      with no zone, are its own), and both Radiances are the Radiance's gold. */
@@ -1142,6 +1144,7 @@
     'the-radiance': 'radiance', 'absolute-radiance': 'radiance',
   };
   const areaOf = (f) => FOE_LIGHT[f.id] || (f.zone && ZONE_AREA[f.zone.en]) || '';
+  App.areaOf = areaOf;   // the Journal's page lights its portrait the same way (js/app-journal.js)
 
   function foeStageHtml(f, total) {
     if (!f) {
@@ -1178,14 +1181,15 @@
       : phaseList.length > 1 ? t('fightPhase', { n: fight.phase + 1, total: phaseList.length }) : '';
     const nailDmg = fs().stats['nail.damage'].value;
     const meta = total === null ? esc(t('fightInvuln'))
-      : `${esc(t('fightTotal', { n: App.NF[0].format(total) }))} · ${esc(t('hitsToKill', { n: nailDmg ? Math.ceil(total / nailDmg) : 0 }))} · ${esc(pick(f.zone))}`;
+      : `${esc(t('fightTotal', { n: App.NF[0].format(total) }))} · ${esc(t('hitsToKill', { n: nailDmg ? Math.ceil(total / nailDmg) : 0 }))}`;
+    const foeLegend = total === null ? [] : foeHelp(f);
     const head = `<div class="foes-head">
         <h3 class="sr-only"${NT}>${esc(foeName(f))}</h3>
         ${countLbl ? `<span class="fighter-phase">${esc(countLbl)}</span>` : ''}
         <span class="foes-total">${meta}</span>
-        ${total === null ? '' : helpBtn('foe', t('helpFoe'))}
+        ${foeLegend.length ? helpBtn('foe', t('helpFoe')) : ''}
       </div>
-      ${total === null ? '' : helpBox('foe', foeHelp(f), 'is-foe')}
+      ${foeLegend.length ? helpBox('foe', foeLegend, 'is-foe') : ''}
       ${(f.notes || []).map((n) => `<p class="foecard-note is-warn">${esc(pick(n))}</p>`).join('')}
       ${phaseNote(f) ? `<p class="foecard-note">${esc(phaseNote(f))}</p>` : ''}`;
 

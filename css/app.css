@@ -1913,46 +1913,53 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
   width: 340px; height: 260px; transform: translateX(-50%);
   background: radial-gradient(closest-side, var(--scene-glow), transparent);
 }
-/* The area's light (css/tokens.css, --area-*; js/app-arena.js, areaOf): the enemy is lit by its
-   place, as the game lights each area in one hue family. The spotlight takes the area's accent,
-   a haze of its mid-tone rises from the ground, and the black foreground catches a hairline of
-   that light along its edge, like the game's silhouettes against a lit background. Only the
-   scene: the title card, the bar and the figures above it stay in bone, so their contrast
-   doesn't change. The darker, greyer areas (Deepnest, the Basin) need more of their light to
-   show the enemy at all (--area-mix); Godhome and the Radiance, the game's two lit places, a
-   little more still. With no area, the cold spotlight. */
-.fstage[data-area="dirtmouth"]  { --area-mid: var(--area-dirtmouth-mid); --area-light: var(--area-dirtmouth-light); }
-.fstage[data-area="crossroads"] { --area-mid: var(--area-crossroads-mid); --area-light: var(--area-crossroads-light); }
-.fstage[data-area="greenpath"]  { --area-mid: var(--area-greenpath-mid); --area-light: var(--area-greenpath-light); }
-.fstage[data-area="fungal"]     { --area-mid: var(--area-fungal-mid); --area-light: var(--area-fungal-light); }
-.fstage[data-area="city"]       { --area-mid: var(--area-city-mid); --area-light: var(--area-city-light); }
-.fstage[data-area="crystal"]    { --area-mid: var(--area-crystal-mid); --area-light: var(--area-crystal-light); }
-.fstage[data-area="deepnest"]   { --area-mid: var(--area-deepnest-mid); --area-light: var(--area-deepnest-light); }
-.fstage[data-area="resting"]    { --area-mid: var(--area-resting-mid); --area-light: var(--area-resting-light); }
-.fstage[data-area="basin"]      { --area-mid: var(--area-basin-mid); --area-light: var(--area-basin-light); }
-.fstage[data-area="edge"]       { --area-mid: var(--area-edge-mid); --area-light: var(--area-edge-light); }
-.fstage[data-area="gardens"]    { --area-mid: var(--area-gardens-mid); --area-light: var(--area-gardens-light); }
-.fstage[data-area="hive"]       { --area-mid: var(--area-hive-mid); --area-light: var(--area-hive-light); }
-.fstage[data-area="colosseum"]  { --area-mid: var(--area-colosseum-mid); --area-light: var(--area-colosseum-light); }
-.fstage[data-area="grimm"]      { --area-mid: var(--area-grimm-mid); --area-light: var(--area-grimm-light); }
-.fstage[data-area="radiance"]   { --area-mid: var(--area-radiance-mid); --area-light: var(--area-radiance-light); }
-.fstage[data-area="godhome"]    { --area-mid: var(--area-godhome-mid); --area-light: var(--area-godhome-light); }
-.fstage[data-area] { --area-mix: 38%; }
-.fstage:is([data-area="deepnest"], [data-area="basin"], [data-area="crossroads"], [data-area="dirtmouth"], [data-area="city"]) { --area-mix: 52%; }
-.fstage:is([data-area="godhome"], [data-area="radiance"]) { --area-mix: 44%; }
+/* The area's ambience (css/tokens.css, --area-*; js/app-arena.js, areaOf): the scene behind the
+   enemy is its area's value ramp, as the game paints each area in one hue family darkening towards
+   the viewer: the upper mid-tone at the top, the lower one in the middle and black at the foot,
+   where the black rocks stand and catch a hairline of the area's accent on their edge. It fades
+   to black at the sides and the top, so it reads as a lit place and not as a coloured box; the
+   two bright ones (Godhome, the Radiance) go at a little over half. A pale,
+   neutral light behind the enemy lifts its silhouette. Only the scene: the title card, the bar
+   and the figures above it stay in bone, so their contrast doesn't change. With no area, the
+   plain black and the cold spotlight. */
+[data-area="dirtmouth"]  { --area-mid: var(--area-dirtmouth-mid); --area-deep: var(--area-dirtmouth-deep); --area-light: var(--area-dirtmouth-light); }
+[data-area="crossroads"] { --area-mid: var(--area-crossroads-mid); --area-deep: var(--area-crossroads-deep); --area-light: var(--area-crossroads-light); }
+[data-area="greenpath"]  { --area-mid: var(--area-greenpath-mid); --area-deep: var(--area-greenpath-deep); --area-light: var(--area-greenpath-light); }
+[data-area="fungal"]     { --area-mid: var(--area-fungal-mid); --area-deep: var(--area-fungal-deep); --area-light: var(--area-fungal-light); }
+[data-area="city"]       { --area-mid: var(--area-city-mid); --area-deep: var(--area-city-deep); --area-light: var(--area-city-light); }
+[data-area="crystal"]    { --area-mid: var(--area-crystal-mid); --area-deep: var(--area-crystal-deep); --area-light: var(--area-crystal-light); }
+[data-area="deepnest"]   { --area-mid: var(--area-deepnest-mid); --area-deep: var(--area-deepnest-deep); --area-light: var(--area-deepnest-light); }
+[data-area="resting"]    { --area-mid: var(--area-resting-mid); --area-deep: var(--area-resting-deep); --area-light: var(--area-resting-light); }
+[data-area="basin"]      { --area-mid: var(--area-basin-mid); --area-deep: var(--area-basin-deep); --area-light: var(--area-basin-light); }
+[data-area="edge"]       { --area-mid: var(--area-edge-mid); --area-deep: var(--area-edge-deep); --area-light: var(--area-edge-light); }
+[data-area="gardens"]    { --area-mid: var(--area-gardens-mid); --area-deep: var(--area-gardens-deep); --area-light: var(--area-gardens-light); }
+[data-area="hive"]       { --area-mid: var(--area-hive-mid); --area-deep: var(--area-hive-deep); --area-light: var(--area-hive-light); }
+[data-area="colosseum"]  { --area-mid: var(--area-colosseum-mid); --area-deep: var(--area-colosseum-deep); --area-light: var(--area-colosseum-light); }
+[data-area="palace"]     { --area-mid: var(--area-palace-mid); --area-deep: var(--area-palace-deep); --area-light: var(--area-palace-light); }
+[data-area="abyss"]      { --area-mid: var(--area-abyss-mid); --area-deep: var(--area-abyss-deep); --area-light: var(--area-abyss-light); }
+[data-area="grimm"]      { --area-mid: var(--area-grimm-mid); --area-deep: var(--area-grimm-deep); --area-light: var(--area-grimm-light); }
+[data-area="radiance"]   { --area-mid: var(--area-radiance-mid); --area-deep: var(--area-radiance-deep); --area-light: var(--area-radiance-light); }
+[data-area="godhome"]    { --area-mid: var(--area-godhome-mid); --area-deep: var(--area-godhome-deep); --area-light: var(--area-godhome-light); }
+.fstage:not([data-area]) .fscene::before { background: radial-gradient(closest-side, var(--scene-cold), transparent); }
+.fstage:not([data-area]).is-over .fscene::before { background: radial-gradient(closest-side, var(--scene-cold-off), transparent); }
+.fstage[data-area] { --area-k: 78%; }
+.fstage:is([data-area="godhome"], [data-area="radiance"]) { --area-k: 55%; }
 .fstage[data-area] .fscene {
-  background: linear-gradient(to top, color-mix(in oklab, var(--area-mid) 30%, var(--scene-bg)), var(--scene-bg) 72%);
+  background:
+    radial-gradient(62% 78% at 50% 62%, transparent 30%, var(--scene-bg) 100%),
+    linear-gradient(to bottom,
+      color-mix(in oklab, var(--area-mid) var(--area-k), var(--scene-bg)) 0%,
+      color-mix(in oklab, var(--area-deep) var(--area-k), var(--scene-bg)) 55%,
+      var(--scene-bg) 100%);
+  transition: background var(--dur-slow) var(--ease-fade);
 }
-.fstage[data-area] .fscene::before {
-  background: radial-gradient(closest-side, color-mix(in oklab, var(--area-light) var(--area-mix), transparent), transparent);
-}
+.fstage[data-area] .fscene::before { background: radial-gradient(closest-side, var(--area-spot), transparent); }
 .fstage[data-area] .fscene :is(.kfloor, .krock) {
-  filter: drop-shadow(0 -1px 0 color-mix(in oklab, var(--area-light) 60%, transparent));
+  filter: drop-shadow(0 -1px 0 color-mix(in oklab, var(--area-light) 55%, transparent));
 }
-/* Beaten, its light goes down with it, as the Knight's does when he falls. */
-.fstage[data-area].is-over .fscene::before {
-  background: radial-gradient(closest-side, color-mix(in oklab, var(--area-light) 14%, transparent), transparent);
-}
+/* Beaten, its place goes dark with it, as the Knight's light does when he falls. */
+.fstage[data-area].is-over { --area-k: 28%; }
+.fstage[data-area].is-over .fscene::before { background: radial-gradient(closest-side, var(--area-spot-off), transparent); }
 .fscene-art {
   position: absolute; left: 50%; bottom: 26px; height: 188px; width: auto; max-width: 86%;
   object-fit: contain; object-position: bottom; transform: translateX(-50%); transform-origin: 50% 100%;
@@ -3140,11 +3147,32 @@ button.tl-go:focus-visible { outline-offset: 3px; }
   background: radial-gradient(closest-side, var(--scene-glow), transparent);
 }
 .hj-art.is-shadow::before { background: radial-gradient(closest-side, var(--scene-glow-low), transparent); }
+/* A creature's portrait stands in its area's light, the arena's (js/app-arena.js, areaOf): the
+   area's value ramp, the upper mid-tone above and the lower one below, faded to black all round so
+   it reads as light and not as a box, with the same pale neutral light behind it. Not yet
+   encountered, only a trace of it. */
+.hj-art[data-area] { --area-k: 78%; }
+.hj-art:is([data-area="godhome"], [data-area="radiance"]) { --area-k: 55%; }
+.hj-art[data-area]::before {
+  background:
+    radial-gradient(closest-side, var(--area-spot), transparent 70%),
+    linear-gradient(to bottom,
+      color-mix(in oklab, var(--area-mid) var(--area-k), var(--scene-bg)),
+      color-mix(in oklab, var(--area-deep) var(--area-k), var(--scene-bg)) 60%,
+      var(--scene-bg));
+  -webkit-mask: radial-gradient(closest-side, #000 40%, transparent); mask: radial-gradient(closest-side, #000 40%, transparent);
+}
+.hj-art.is-shadow[data-area] { --area-k: 22%; }
+/* With no area, the arena's cold spotlight, as on its stage. */
+.hj-art:not([data-area])::before { background: radial-gradient(closest-side, var(--scene-cold), transparent); }
+.hj-art.is-shadow:not([data-area])::before { background: radial-gradient(closest-side, var(--scene-cold-off), transparent); }
 .hj-art img { max-height: 100%; max-width: 100%; object-fit: contain; }
 .hj-art.is-medal img { height: 168px; }
 .hj-art.is-shadow img { filter: var(--hj-unseen-art); }
 .hj-art img.is-missing { visibility: hidden; }
 .hj-page-name { font-family: var(--font-display); font-size: var(--fs-2xl); font-weight: 600; letter-spacing: 0.06em; line-height: 1.15; text-wrap: balance; color: var(--ink-strong); margin-top: var(--sp-3); }
+/* Where it's found, under the name: a quiet line in the body serif, as the game sets a place. */
+.hj-zone { margin: 0; font-style: italic; font-size: var(--fs-sm); color: var(--muted); }
 /* The Journal's flourish: the screen's only ornament. */
 .hj-fleur { flex: none; width: min(237px, 70%); height: auto; }
 .hj-text {

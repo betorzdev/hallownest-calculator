@@ -113,32 +113,43 @@
   --focus-glow: rgba(242, 244, 250, 0.85);     /* Focus's white glow */
   --void-wisp: #000;                           /* the black smoke of the last mask */
 
-  /* The enemy's stage takes the light of its area (design/02-hollow-knight.md §3, "By area",
-     measured): each area is one hue family, a ramp from black to a pale tint. Two steps per
-     area: --area-*-mid, the upper mid-tone (the haze that rises from the ground), and
-     --area-*-light, the area's accent (the spotlight and the rim of light on the foreground).
-     They only light the scene, never text or a figure: the title card and the bar stay in bone
-     above it. css/app.css (.fstage[data-area]) mixes them in; js/app-arena.js (FOE_AREA) says
-     which area each enemy's is. Grimm and the Radiance aren't areas but carry the game's own
-     light (§3, base palette); Godhome is the existing gold. With no known area (the common
-     enemies), the cold spotlight above. The Abyss, the White Palace and the Path of Pain are
-     measured too, but no enemy in js/enemies.js is set there, so they aren't carried. */
-  --area-dirtmouth-mid: #27335d;   --area-dirtmouth-light: #50608c;
-  --area-crossroads-mid: #303a6e;  --area-crossroads-light: #5f699e;
-  --area-greenpath-mid: #2c535a;   --area-greenpath-light: #579b8c;
-  --area-fungal-mid: #3f6969;      --area-fungal-light: #8bc093;
-  --area-city-mid: #1d4879;        --area-city-light: #4577a8;
-  --area-crystal-mid: #2d2961;     --area-crystal-light: #9660ce;
-  --area-deepnest-mid: #263350;    --area-deepnest-light: #4a596c;
-  --area-resting-mid: #0c193b;     --area-resting-light: #75afcf;
-  --area-basin-mid: #2d2b2d;       --area-basin-light: #61616a;
-  --area-edge-mid: #46535c;        --area-edge-light: #9daca1;
-  --area-gardens-mid: #1c4242;     --area-gardens-light: #419582;
-  --area-hive-mid: #523a3c;        --area-hive-light: #c39b6e;
-  --area-colosseum-mid: #48404d;   --area-colosseum-light: #a7a59e;
-  --area-grimm-mid: #922748;       --area-grimm-light: #b2385a;
-  --area-radiance-mid: #997464;    --area-radiance-light: #ffe08d;
-  --area-godhome-mid: var(--godhome-line);  --area-godhome-light: var(--godhome);
+  /* The enemy's stage is its area's ambience (design/02-hollow-knight.md §2 and §3, "By area",
+     measured): each area of the game is one hue family, a value ramp that darkens towards the
+     viewer, with the foreground a pure black silhouette. So the scene behind the enemy is that
+     ramp: --area-*-mid (the upper mid-tone, the distance) at the top, --area-*-deep (the lower
+     mid-tone, the playfield) in the middle, and the scene's black at the bottom, where the black
+     rocks stand. --area-*-light, the area's accent, only catches the rocks' edge as a hairline.
+     The spotlight behind the enemy is no longer the area's: it's a pale, neutral light
+     (--area-spot, soul's white), like the game's few small lights, just to lift the silhouette.
+     They only paint the scene, never text or a figure. css/app.css (.fstage[data-area]) uses
+     them; js/app-arena.js (ZONE_AREA, FOE_LIGHT) says which area each enemy's is.
+     Grimm and the Radiance aren't areas: Grimm's ramp is his measured crimson (#922748) darkened
+     towards black, the Radiance's is Godhome's measured ramp with her own gold on the edge. With no
+     known area (the common enemies), the cold spotlight (--scene-cold) on the plain black.
+     The Path of Pain is measured too, but no enemy in js/enemies.js is set there, so it isn't
+     carried. */
+  --area-spot: rgba(236, 236, 236, 0.13);
+  --area-spot-off: rgba(236, 236, 236, 0.04);
+  --scene-cold: rgba(116, 142, 196, 0.26);
+  --scene-cold-off: rgba(116, 142, 196, 0.08);
+  --area-dirtmouth-mid: #27335d;   --area-dirtmouth-deep: #191f42;   --area-dirtmouth-light: #50608c;
+  --area-crossroads-mid: #303a6e;  --area-crossroads-deep: #141c40;  --area-crossroads-light: #5f699e;
+  --area-greenpath-mid: #2c535a;   --area-greenpath-deep: #0c2839;   --area-greenpath-light: #579b8c;
+  --area-fungal-mid: #3f6969;      --area-fungal-deep: #143248;      --area-fungal-light: #8bc093;
+  --area-city-mid: #1d4879;        --area-city-deep: #0a1739;        --area-city-light: #4577a8;
+  --area-crystal-mid: #2d2961;     --area-crystal-deep: #1b163d;     --area-crystal-light: #9660ce;
+  --area-deepnest-mid: #263350;    --area-deepnest-deep: #0e132c;    --area-deepnest-light: #4a596c;
+  --area-resting-mid: #0c193b;     --area-resting-deep: #050714;     --area-resting-light: #75afcf;
+  --area-basin-mid: #2d2b2d;       --area-basin-deep: #111219;       --area-basin-light: #61616a;
+  --area-edge-mid: #46535c;        --area-edge-deep: #29343f;        --area-edge-light: #9daca1;
+  --area-gardens-mid: #1c4242;     --area-gardens-deep: #101e29;     --area-gardens-light: #419582;
+  --area-hive-mid: #523a3c;        --area-hive-deep: #352328;        --area-hive-light: #c39b6e;
+  --area-colosseum-mid: #48404d;   --area-colosseum-deep: #331f28;   --area-colosseum-light: #a7a59e;
+  --area-palace-mid: #555b76;      --area-palace-deep: #363a53;      --area-palace-light: #dae8f2;
+  --area-abyss-mid: #45423e;       --area-abyss-deep: #262523;       --area-abyss-light: #bdb6af;
+  --area-grimm-mid: color-mix(in oklab, #922748 55%, #000);  --area-grimm-deep: color-mix(in oklab, #922748 24%, #000);  --area-grimm-light: #b2385a;
+  --area-godhome-mid: var(--godhome-line);  --area-godhome-deep: #58403f;  --area-godhome-light: var(--godhome);
+  --area-radiance-mid: var(--godhome-line); --area-radiance-deep: #58403f; --area-radiance-light: #ffe08d;
 
   /* Notches: the glowing dot from the game's charm screen.
      Measured from the wiki's video: used #f4f6f8, free #32363e, overcharm magenta. */
