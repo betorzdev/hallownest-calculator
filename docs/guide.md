@@ -433,8 +433,8 @@ are still here with their Attuned health, which is the only one they have outsid
 Its three tabs —Arena, Hall of Gods and Pantheons— are the screen's title, centred over its
 rule, and it's **another Inventory screen**: the same black, with the corner brackets in the section's tint (Crystal
 Peak's on the Arena, Godhome's in the Hall and the Pantheons), and no slate boxes inside. What
-can be touched goes without a background: your attacks, which carry their artwork from the
-game, without a rule; the enemy's, which are just text, with a thin one. On hover it's veiled
+can be touched goes without a background, and your attacks and the enemy's are the same cell
+with a thin rule (yours carry their artwork from the game). On hover it's veiled
 (`--veil`), and the chosen one carries the accent's veil and rule (`--picked`, the same as on
 Your game). The enemy has behind it the same cold spotlight as the Knight opposite, and who
 you're hitting is marked by an accent rule on its left. The pantheons are chosen like statues:
@@ -469,9 +469,15 @@ their final boss standing on Godhome's light, with the pedestal's stone rule.
     its text.
   - On mobile the list and the page take turns: tapping a row moves to the page, and
     *‹ Journal* goes back.
+The arena comes in three bands, so a whole exchange fits on one screen without scrolling:
+**the stage** (you and whoever is in front, face to face), **the commands** (your attacks and
+theirs, side by side) and **the log**. On mobile they go one under the other: your scene, the
+scoreboard in a row, the enemy, their attacks before yours, and the log.
+
 **An enemy isn't a health bar**, and that's why the arena is one card per entity:
 
-- On the left, **you**, as a scene from the game. At the top, the **HUD** as the game paints
+- On the left of the stage, **you**, as a scene from the game, under your name in the same
+  capitals as the enemy's title. At the top, the **HUD** as the game paints
   it: the soul orb **filled up to the soul you carry** (the sprite is clipped between the edges
   of its disc, so empty not even the halo shows), the frame's tail with the masks on it —the
   lost ones, shadowed; lifeblood, blue and leaving no gap— and the reserve vessels, each with
@@ -484,10 +490,45 @@ their final boss standing on Godhome's light, with the pedestal's stone rule.
   mask** he gives off black smoke (`Knight_One_Mask.gif`), on falling **his Shade** remains, and
   when overcharmed the HUD carries **its purple aura** behind the masks (`Overcharm.png`).
   Without motion (`prefers-reduced-motion`) you see how it ends up, not how it changes.
-- Below, **your attacks**, each with its artwork from the game. They come from your sheet, so
-  they change with you: the nail (and the soul it gives), the arts and spells you've learnt
-  —with what they cost— and *Focus*.
-- Opposite, **one card for each thing in front of you**, and each with **its own attack
+- On the right, **whoever you're hitting**, on its own cold spotlight and a mirrored foreground,
+  under **the title card the game shows when the fight starts**: the small line, the big name
+  and, in some, the line below («Madre» big and «Gruz» under it, as the Spanish game has it).
+  They come from the game's text (`<KEY>_SUPER`, `_MAIN`, `_SUB`), 46 bosses in `TITLES` in
+  `js/enemies.js`; whoever has none shows its name. Under the title, the phase, the total and
+  the "?"; then its bar, like a boss's, with its figures. What happens to it is animated from the
+  last thing painted, like your HUD: the hit **flashes it white** and pushes it back a little,
+  **the figure it took rises and fades**, the bar leaves **a pale trail** of what was lost, a
+  **new phase** is announced like an area on entry, staggered it bows and dims, and when the fight
+  ends **it dissolves into the main menu's dust**. With several bars, the stage shows the one
+  you're hitting.
+- Between the two, **the scoreboard**: your **nail hits to win** (what's standing, what's
+  waiting in the queue and the phases to come; with a decisive part standing, only that one)
+  and how many of **its strongest attack you can still take** (its title says which and how many
+  masks; on Radiant, one). It moves with each action. Under it, **Undo**.
+- **The band.** Your attacks and theirs are a long list, and scrolling down it would leave
+  the Knight and the enemy out of view. When the stage leaves the screen (less than 160 px of it
+  still in view), **a band sticks under the bar with the same face-off in small**: the Knight with
+  his HUD, the scoreboard and Undo, and whoever you're hitting with its portrait and bar. It's
+  painted from what the stage has just painted, so the same hit flashes and its figure rises
+  there too. It takes the place of the bar's scoreboard (on mobile it covers that row, in two rows
+  of its own: your HUD and the scoreboard, and the enemy below) and goes when you scroll back
+  up. It repeats what the stage says, so the screen reader skips it.
+- **Undo** (and **Ctrl+Z**, Cmd+Z on a Mac) takes back the last action: yours, theirs, a summon
+  or closing the heal. The whole fight is copied before each one —with Carefree Melody's
+  counter and, in a pantheon, the run's health—, up to 50. Choosing who you hit or which
+  impacts land isn't undone: they're changed with a tap. The stack empties on reset, when the
+  enemy or the room changes and when the build changes mid-fight. The finishing blow can be
+  undone too.
+- In the commands, **your attacks**, in four groups: **Nail** (the nail and its arts),
+  **Spells**, **Soul** (Focus and the Dream Nail) and **Charms** (Sharp Shadow, the Weaverlings,
+  Dreamshield and *Wait*); only the ones you have show. Each is a cell with its artwork from the
+  game on a small spotlight, the figure opposite, the name and, below, the soul it costs or gives
+  with the game's soul. When it can't be done right now, it says why ("Not enough soul",
+  "Already at full health"). They come from your sheet, so they change with you.
+- Next to them, **their attacks**: the same cell without artwork, with the figure in bone and
+  the game's mask, which already says what it takes. With a single entity in front, its card
+  doesn't repeat the stage: only its attacks show. With several, **one card for each thing in
+  front of you**, and each with **its own attack
   buttons**. The Mantis Lords open with one of 210 and in phase 2 they're two of 160; the
   Watcher Knights are six of 220 but **never more than two standing**; the Sisters of Battle,
   one of 500 and then three of 750. What you see is the game's bar, not the sum. **Each card
@@ -497,8 +538,9 @@ their final boss standing on Godhome's light, with the pedestal's stone rule.
   attacks** (the attack's `by` field, from each boss's wiki page): the Tamer only has the Jump
   and the Beast, Roll and Spew; Oro carries Dash-Slash and Mato Cyclone Slash; and the maggot
   doesn't attack, because it's False Knight's stagger: its card says *Does not attack*.
-- **The minions come out for real**: the *Summon* button gives them their own card, smaller and
-  indented, with their attack and their health. Broken Vessel's Infected Balloon is worth
+- **The minions come out for real**: the *Summon* button, with the minion's portrait on it so
+  you see what comes out, gives them their own card, smaller and indented, with their attack
+  and their health. Broken Vessel's Infected Balloon is worth
   **1**, not the 15 it's worth on its own. Killing them gives soul, which is what they're for.
   - **It isn't only bosses that summon**: so do Aspid Mother (Aspid Hatchling), Carver Hatcher
     (Dirtcarver), Elder Baldur (Baldur) and Husk Hive (Hiveling), and some husks in Deepnest
@@ -515,7 +557,12 @@ their final boss standing on Godhome's light, with the pedestal's stone rule.
 - **Their attacks** are the ones the wiki documents, each with the masks it takes from you.
   Almost everything deals 1; the late bosses deal 2, and that's marked attack by attack (False
   Knight's Slam deals 2, his shockwave 1).
-- The **log** notes each hit with its sum, which is the point: the arithmetic is visible.
+- The **log** notes each hit with its sum, which is the point: the arithmetic is visible. It
+  speaks in two voices and a narrator: yours with a small nail stroke, theirs with the mask they
+  took, and the phases, the stagger and whoever comes in, centred between two rules.
+- **The ending** carries the fight in figures under its title: the time your actions took and
+  the damage per second (if the clock ran), the hits dealt, the health lost, the soul spent and
+  the heals, and *Again*. The Hall and the pantheon rooms show the same figures.
 
 Rules of their own that the simulator honours because the wiki documents them: **False
 Knight** alternates armour (65) and maggot (40) over seven phases —three of armour and four of
@@ -621,7 +668,7 @@ and Flukenest doesn't damage the other two on the ground.
 
 **What doesn't read on its own, explained where it is.** In front of each row of notches, the
 word **land** acts as a legend, and "left · right" says in its title that it's the side where
-you have the enemy. For the rest, a **"?"** at the end of the row opens below it, pushing and
+you have the enemy. For the rest, a **"?"** at the right of the attack's name opens below it, pushing and
 covering nothing, one to three lines with your sheet's figures and the sum in view. Only four
 of your attacks carry it: the **spells with notches** (which impact each one is —the fall, only
 if you land on them; the 1st burst, 35 on your left and 30 on your right—, why the bursts or the

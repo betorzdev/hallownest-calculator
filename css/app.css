@@ -1310,17 +1310,28 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
 }
 
 /* ── The arena ────────────────────────────────────────────────────────
-   You on the left with your attacks; opposite, one card per entity. The boss and each of
-   its parts carry a normal card; the minions, a smaller one. Each card brings ITS OWN
-   buttons, because an Infected Balloon attacks on its own, and the header is a button
+   Three bands. The stage: you and whoever is in front, face to face on their two spotlights,
+   with the scoreboard between. The commands: your attacks and theirs, side by side, so
+   answering a hit doesn't mean scrolling. And the log. Opposite, one card per entity: the boss
+   and each of its parts carry a normal card; the minions, a smaller one. Each card brings ITS
+   OWN buttons, because an Infected Balloon attacks on its own, and the header is a button
    because you have to be able to choose who you hit. */
-.arena { display: grid; grid-template-columns: minmax(0, 330px) minmax(0, 1fr); gap: var(--sp-4); align-items: start; }
+.arena { display: flex; flex-direction: column; gap: var(--sp-8); }
+.stage {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(136px, auto) minmax(0, 1fr);
+  gap: var(--sp-4); align-items: end;
+}
+.commands { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 4fr); gap: var(--sp-8); align-items: start; }
 .side-knight, .side-foes { display: flex; flex-direction: column; gap: var(--sp-3); min-width: 0; }
 
 /* The arena's two headers, yours and the enemy's: name and figures on one line. */
 .foes-head, .kside-head { display: flex; align-items: baseline; gap: var(--sp-3); flex-wrap: wrap; }
 .foes-head h3, .kside-head h3 { font-size: var(--fs-md); color: var(--ink-strong); }
 .foes-total, .kside-read { font-size: var(--fs-xs); color: var(--muted); }
+/* On the stage, the Knight's header answers the enemy's title card: his name in the same
+   capitals, centred, and his figures below. */
+.stage .kside-head { flex-direction: column; align-items: center; gap: var(--sp-2); text-align: center; }
+.stage .kside-head h3 { font-family: var(--font-display); font-size: var(--fs-2xl); font-weight: 600; letter-spacing: 0.06em; line-height: 1.1; }
 
 .foecard { border-top: 1px solid var(--inv-line); min-width: 0;
   transition: box-shadow var(--dur) var(--ease), background-color var(--dur-fast) var(--ease); }
@@ -1526,9 +1537,6 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
    underneath: nothing floats on top, which on mobile would cover the buttons. The card lights up
    whole, like the spell's (this rule comes from it), while the attack can be cast. */
 .moveset { --help-w: 32px; }
-/* The space is kept by the figure, not the button: the note below ("no soul; it breaks on
-   impact…") still has the full width. */
-.moveset > .move .move-num { margin-right: var(--help-w); }
 .move-card {
   display: grid; grid-template-columns: minmax(0, 1fr) var(--help-w);
   border: 1px solid transparent;
@@ -1597,6 +1605,262 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
 .moveset-notes b { color: var(--ink-2); font-weight: 500; }
 /* The clock counts your actions, not the fight: it's said at the foot of the log. */
 .fight-clock-note { margin-top: var(--sp-2); font-size: var(--fs-2xs); color: var(--muted); font-style: italic; }
+
+/* ── The stage: the enemy opposite the Knight ───────────────────────────
+   The same scene as yours, mirrored: its cold spotlight, the black foreground with the rocks
+   swapped round, and above it what the game shows when a boss fight starts, its title card,
+   with the bar under it. The title is Cinzel (design/00 §4: labels, never figures), the figures
+   go in --font-num. What happens to it is animated from the last thing painted (js/app-arena.js,
+   foePrev): the white flash of the hit and a small recoil, the figure rising and fading, the
+   bar's pale trail, the new phase announced like an area, and the dust it leaves on falling.
+   Slow fades and no bounce (design/02 §5); prefers-reduced-motion leaves only the result. */
+.fstage { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; text-align: center; }
+.ftitle {
+  display: flex; flex-direction: column; align-items: center; gap: var(--sp-half);
+  font-family: var(--font-display); color: var(--ink-strong); line-height: 1.1; text-wrap: balance;
+}
+.ftitle-main { font-size: var(--fs-2xl); font-weight: 600; letter-spacing: 0.06em; }
+.ftitle-sup, .ftitle-sub { font-size: var(--fs-lg); letter-spacing: 0.14em; color: var(--ink-2); }
+.fstage.is-fresh .ftitle { animation: title-in 1.6s var(--ease-fade) both; }
+.fstage .foes-head { justify-content: center; }
+.fstage .foecard-note { text-align: center; }
+.fhero-bar { display: flex; flex-direction: column; gap: var(--sp-1); text-align: left; }
+.fhero-line { display: flex; justify-content: space-between; align-items: baseline; gap: var(--sp-3); }
+.fhero-name { font-size: var(--fs-sm); color: var(--ink-2); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fhero-num { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-xl); font-weight: 600; color: var(--ink-strong); line-height: 1; }
+.fhero-num .u { font-size: var(--fs-xs); color: var(--muted); font-style: normal; font-weight: 400; }
+.fbar.is-hero { position: relative; height: 10px; }
+.fbar.is-hero .fbar-fill { position: relative; z-index: 1; }
+/* What the hit took, pale for a moment before it goes. */
+.fbar.is-hero .fbar-trail {
+  position: absolute; left: 0; top: 0; bottom: 0; background: var(--ink-strong); opacity: 0.55;
+  animation: bar-trail var(--dur-flash) var(--ease) var(--dur-slow) forwards;
+}
+.fbar.is-hero.is-low .fbar-trail { background: var(--bad); }
+
+.fscene {
+  position: relative; min-height: 248px; overflow: hidden; isolation: isolate;
+  background: var(--scene-bg);
+}
+.fscene::before {
+  content: ''; position: absolute; z-index: -1; left: 50%; bottom: -24px;
+  width: 340px; height: 260px; transform: translateX(-50%);
+  background: radial-gradient(closest-side, var(--scene-glow), transparent);
+}
+.fscene-art {
+  position: absolute; left: 50%; bottom: 26px; height: 188px; width: auto; max-width: 86%;
+  object-fit: contain; object-position: bottom; transform: translateX(-50%); transform-origin: 50% 100%;
+  transition: opacity var(--dur-slow) var(--ease), filter var(--dur-slow) var(--ease), transform var(--dur-slow) var(--ease);
+}
+.fscene-art.is-missing { visibility: hidden; }
+/* The foreground, mirrored: the tall rock on the left, facing the Knight's. */
+.fscene .krock.is-left { left: auto; right: 0; transform: scaleX(-1); }
+.fscene .krock.is-right { right: auto; left: 0; transform: scaleX(-1); }
+.fscene-q { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--font-display); font-size: var(--fs-hero); color: var(--line-ctl); }
+
+.fstage.is-hit .fscene-art { animation: foe-hit 520ms var(--ease); }
+.fscene-dmg {
+  position: absolute; left: 50%; top: 32%; z-index: 2; pointer-events: none;
+  font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-2xl); font-weight: 600;
+  color: var(--ink-strong); text-shadow: 0 0 var(--sp-3) var(--scene-bg);
+  opacity: 0; animation: dmg-rise 1100ms var(--ease) forwards;
+}
+.fscene-phase {
+  position: absolute; left: 0; right: 0; top: 38%; z-index: 2; pointer-events: none;
+  font-family: var(--font-body); font-variant: small-caps; font-size: var(--fs-xl); letter-spacing: 0.08em;
+  color: var(--ink-strong); text-shadow: 0 0 var(--sp-4) var(--scene-bg);
+  opacity: 0; animation: phase-title 2.4s var(--ease-fade) forwards;
+}
+/* Staggered: dimmed and bowed, as its card was. */
+.fstage.is-staggered .fscene-art { filter: grayscale(0.6) brightness(0.75); transform: translateX(-50%) rotate(-8deg); }
+/* Beaten: it stays as a shadow; if it has just happened, it dissolves into the menu's dust. */
+.fstage.is-over .fscene-art { opacity: 0.18; filter: grayscale(1) blur(1px); }
+.fstage.is-dying .fscene-art { animation: foe-fade 1.8s var(--ease-fade) both; }
+.fdust {
+  position: absolute; z-index: 2; bottom: 40%; left: calc(32% + var(--i) * 4%);
+  width: 3px; height: 3px; border-radius: 50%; background: var(--mote); pointer-events: none;
+  opacity: 0; animation: dust-rise 2.2s var(--ease) calc(var(--i) * 80ms) forwards;
+  --dx: calc((var(--i) - 4.5) * 5px);
+}
+.fdust:nth-child(3n) { width: 2px; height: 2px; bottom: 52%; }
+.fdust:nth-child(4n) { width: 4px; height: 4px; bottom: 30%; }
+
+@keyframes title-in { from { opacity: 0; } }
+@keyframes bar-trail { to { opacity: 0; } }
+@keyframes foe-hit {
+  0% { filter: brightness(0) invert(1); transform: translateX(-50%) translateX(10px); }
+  35% { filter: brightness(0) invert(0.85); }
+  100% { filter: none; transform: translateX(-50%); }
+}
+@keyframes dmg-rise {
+  0% { opacity: 0; transform: translate(-50%, 6px); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -40px); }
+}
+@keyframes phase-title { 18% { opacity: 1; } 72% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes foe-fade { from { opacity: 1; filter: none; } }
+@keyframes dust-rise {
+  0% { opacity: 0; transform: translate(0, 0); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx), -110px); }
+}
+
+/* ── The scoreboard, between the two ─────────────────────────────────────
+   Two figures and the diamond from the ending's flourish: your nail hits to win and how many
+   of its strongest attack you can still take. Figures in bone and large; the words small. */
+.vs { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--sp-6); align-self: center; }
+.vs-score { display: flex; flex-direction: column; align-items: center; gap: var(--sp-3); margin: 0; }
+.vs-score > div { display: flex; flex-direction: column-reverse; align-items: center; gap: var(--sp-1); text-align: center; }
+.vs-score dd {
+  margin: 0; font-family: var(--font-num); font-variant-numeric: tabular-nums;
+  font-size: var(--fs-2xl); font-weight: 600; line-height: 1; color: var(--ink-strong);
+}
+.vs-score dt { font-size: var(--fs-2xs); line-height: 1.3; color: var(--muted); max-width: 13ch; text-wrap: balance; }
+.vs-fall[title] { cursor: help; }
+.vs-mark { display: flex; align-items: center; gap: var(--sp-2); color: var(--bracket); line-height: 0; }
+.vs-mark i { width: var(--sp-8); height: 1px; background: linear-gradient(to left, currentColor, transparent); }
+.vs-mark i:last-child { background: linear-gradient(to right, currentColor, transparent); }
+.vs-mark svg { fill: none; stroke: currentColor; stroke-width: 1; }
+.fight-undo { display: inline-flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-sm); }
+.fight-undo:disabled { opacity: 0.4; cursor: default; }
+.fight-undo:disabled:hover { color: var(--ink-2); border-bottom-color: var(--line-ctl); }
+
+/* ── Your attacks, in their four groups ──────────────────────────────────
+   Each one is a cell: the game's artwork on its small spotlight, the figure opposite, the name
+   and, below, the soul it costs or gives with the game's own soul. The enemy's are the same
+   cell without artwork: one thin rule for both, the accent's on hover. */
+.moveset { gap: var(--sp-4); }
+.moveset > .block-head, .side-foes > .block-head { margin: 0; }
+.mgroup { display: flex; flex-direction: column; gap: var(--sp-2); }
+.mgroup-head {
+  display: flex; align-items: center; gap: var(--sp-3);
+  font-family: var(--font-body); font-size: var(--fs-xs); font-style: italic; font-weight: 400; color: var(--muted);
+}
+.mgroup-head::after { content: ''; flex: 1; height: 1px; background: var(--inv-line); }
+.mgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: var(--sp-2); }
+.mgroup.is-spell .mgrid { grid-template-columns: repeat(auto-fill, minmax(184px, 1fr)); }
+
+.moveset .move-card {
+  position: relative; display: flex; flex-direction: column;
+  border: 1px solid var(--inv-line);
+  transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+.moveset .move-card:has(.move:not(:disabled)):hover { border-color: var(--accent-line); background: var(--veil); }
+.moveset .move-card .move, .moveset .move-card .move:hover:not(:disabled) { border: 0; background: transparent; }
+.moveset .move.has-art {
+  grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: 44px auto auto;
+  align-items: center; gap: var(--sp-1) var(--sp-2); padding: var(--sp-3); flex: 1; align-content: start;
+}
+.moveset .move-art {
+  grid-row: 1; grid-column: 1; justify-self: start; width: 64px; height: 44px; grid-template-rows: 44px;
+  background: radial-gradient(closest-side, var(--scene-glow), transparent);
+}
+.moveset .move-art.is-nail img { height: 64px; }
+.moveset .move-num { grid-row: 1; grid-column: 2; display: inline-flex; align-items: center; gap: var(--sp-1); font-size: var(--fs-xl); line-height: 1; }
+.moveset .move-num .move-mask { height: 22px; }
+.moveset .move-name { grid-row: 2; grid-column: 1 / -1; }
+.moveset .move.has-art .move-cost { grid-row: 3; grid-column: 1 / -1; }
+.move-cost { display: flex; align-items: center; gap: var(--sp-1); }
+.mc-soul { width: 14px; height: 14px; }
+.move-why { grid-column: 1 / -1; font-size: var(--fs-2xs); font-style: italic; color: var(--cond); }
+/* The "?" at the right of the name, so the figure stays alone in its corner. */
+.moveset .move-card > .help-q { position: absolute; top: calc(var(--sp-3) + 44px); right: var(--sp-1); min-height: 24px; height: 24px; }
+.moveset .move-card:has(> .help-q) .move-name { padding-right: var(--sp-6); }
+.moveset .move-card > .arena-help { padding: 0 var(--sp-3) var(--sp-3); }
+/* The spell's notches, under the whole cell, with "land" in front as a word and not in a column. */
+.moveset .spell-dots { gap: var(--sp-1); padding: 0 var(--sp-3) var(--sp-3); }
+.moveset .sd-lbl { position: static; flex-basis: 100%; width: auto; text-align: left; line-height: 1; }
+
+/* The enemy's attacks: the figure in bone with the game's mask, which already says what it takes. */
+.move-foe .move-num { display: inline-flex; align-items: center; gap: var(--sp-1); color: var(--ink-strong); }
+.move-mask { height: 18px; width: auto; }
+/* Summoning: the minion's portrait on its small spotlight, on the left, so you see what comes out. */
+.move-summon { grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; }
+.summon-art {
+  grid-row: 1 / span 2; display: grid; place-items: center; width: 44px; height: 44px;
+  background: radial-gradient(closest-side, var(--scene-glow), transparent);
+}
+.summon-art img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
+.summon-art.is-missing img { visibility: hidden; }
+.move-summon .move-cost { grid-column: 2 / -1; }
+.move-summon:disabled .summon-art img { filter: grayscale(0.8); }
+/* With a single entity in front, its card doesn't repeat the stage: only its attacks. */
+.foecard.is-solo { border-top: 0; box-shadow: none; }
+.foecard.is-solo .foecard-head { display: none; }
+.foecard.is-solo .foecard-moves { padding: 0; }
+.foecard.is-solo[data-act]:hover { background: none; }
+
+/* ── The log, in two voices and a narrator ───────────────────────────────
+   Yours with a small nail stroke, theirs with the mask they took, and the narrator (phases,
+   stagger, who comes in) centred between two rules, like a chapter. */
+.fight-log ol { max-width: var(--measure); }
+.fight-log li { display: flex; align-items: center; gap: var(--sp-2); }
+.fight-log li.is-you::before { content: ''; flex: none; width: 12px; height: 1px; background: currentColor; opacity: 0.7; }
+.log-mask { flex: none; height: 12px; width: auto; opacity: 0.8; }
+.fight-log li.is-sys { justify-content: center; font-style: italic; text-align: center; }
+.fight-log li.is-sys::before, .fight-log li.is-sys::after { content: ''; flex: 0 1 var(--sp-12); height: 1px; background: var(--inv-line); }
+
+/* The fight in figures, under its ending. */
+.fight-sum { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-3) var(--sp-8); margin: var(--sp-2) 0 0; }
+.fight-sum > div { display: flex; flex-direction: column-reverse; align-items: center; gap: var(--sp-1); }
+.fight-sum dd { margin: 0; font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-xl); font-weight: 600; color: var(--ink-strong); line-height: 1; }
+.fight-sum dt { font-size: var(--fs-2xs); color: var(--muted); }
+
+/* ── The band: the stage, small and stuck under the bar ───────────────────
+   A zero-height anchor at the top of the arena sticks under the bar (--band-top, measured in
+   js/app-arena.js: the bar's height; on mobile, where the minihud has its own row, over that row),
+   and the band hangs from it. It fades in when the stage leaves the screen and out when it comes
+   back. The same face-off in small: the Knight with his HUD (the arena's, at a smaller scale), the
+   scoreboard and Undo, and whoever you're hitting with its bar. Its reactions are the stage's. */
+.fband-anchor { position: sticky; top: var(--band-top, var(--sticky-h)); z-index: 31; height: 0; }
+.fband {
+  position: absolute; left: 0; right: 0; top: 0;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: var(--sp-4);
+  padding: var(--sp-2) var(--sp-4); min-height: 88px;
+  background: var(--inv-bg); border-bottom: 1px solid var(--inv-line); box-shadow: var(--shadow-md);
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: opacity var(--dur) var(--ease), visibility 0s linear var(--dur);
+}
+.fband-anchor.is-on .fband { opacity: 1; visibility: visible; pointer-events: auto; transition: opacity var(--dur) var(--ease); }
+.minihud.is-fight.is-banded { visibility: hidden; }
+
+.fband-me { --orb: 44px; --pip-h: 17px; --pip-w: calc(var(--pip-h) * 51 / 66); --hud-row: 170px;
+  display: flex; align-items: center; gap: var(--sp-3); min-width: 0; }
+.fband-me .hud { flex: none; }
+.fband-knight {
+  flex: none; height: 64px; width: auto; padding: var(--sp-1);
+  background: radial-gradient(closest-side, var(--scene-glow), transparent);
+}
+.fband-me.is-hit .fband-knight { animation: kn-blink 900ms steps(1, end); }
+.fband-me.is-focus .fband-knight { animation: kn-focus 700ms var(--ease); }
+
+.fband-vs { display: flex; flex-direction: column; align-items: center; gap: var(--sp-1); }
+.fband-score { display: flex; align-items: center; gap: var(--sp-2); color: var(--bracket); line-height: 1; }
+.fband-score b { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-xl); font-weight: 600; color: var(--ink-strong); }
+.fband-score svg { fill: none; stroke: currentColor; stroke-width: 1; }
+.fband .fight-undo { font-size: var(--fs-xs); padding: 0; }
+
+.fband-foe { display: flex; align-items: center; gap: var(--sp-3); min-width: 0; }
+.fband-art {
+  position: relative; flex: none; display: block; width: 72px; height: 64px;
+  background: radial-gradient(closest-side, var(--scene-glow), transparent);
+}
+.fband-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.fband-art img.is-missing { visibility: hidden; }
+.fband-art .fscene-dmg { top: 0; font-size: var(--fs-lg); }
+.fband-foe.is-hit .fband-art img { animation: foe-hit-mini 520ms var(--ease); }
+.fband-foe.is-over .fband-art img { opacity: 0.25; filter: grayscale(1); }
+.fband-foe.is-staggered .fband-art img { filter: grayscale(0.6) brightness(0.75); transform: rotate(-8deg); }
+.fband-body { flex: 1; display: flex; flex-direction: column; gap: var(--sp-1); min-width: 0; }
+.fband-line { display: flex; justify-content: space-between; align-items: baseline; gap: var(--sp-2); }
+.fband-name { min-width: 0; font-size: var(--fs-sm); color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fband-num { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-lg); font-weight: 600; color: var(--ink-strong); }
+.fband-num .u { font-size: var(--fs-2xs); color: var(--muted); font-style: normal; font-weight: 400; }
+@keyframes foe-hit-mini {
+  0% { filter: brightness(0) invert(1); transform: translateX(6px); }
+  35% { filter: brightness(0) invert(0.85); }
+  100% { filter: none; transform: none; }
+}
 
 
 /* Screen readers only: the timeline is seen through pictures and heard through words. */
@@ -1818,15 +2082,33 @@ button.tl-go:hover .tl-art { opacity: 0.9; filter: none; }
 }
 
 @media (max-width: 899px) {
-  /* In one column, the enemy before your attacks: you tap one and see who it hits without
-     scrolling the whole list. Your scene on top, then their cards, your attacks and, at the
-     end, the log (which on wide screens goes under the enemy). The two columns dissolve and each piece takes its place. */
-  .arena { display: flex; flex-direction: column; align-items: stretch; gap: var(--sp-3); }
-  .arena > .side-knight, .arena > .side-foes { display: contents; }
-  .side-knight > * { order: 1; }
-  .side-foes > * { order: 2; }
-  .side-knight > .moveset { order: 3; margin-top: var(--sp-4); }
-  .side-foes > .fight-log, .side-foes > .fight-clock-note { order: 4; }
+  /* In one column: your scene, the scoreboard in a row, the enemy on its stage; then their
+     attacks before yours, so you tap one of theirs and see who it hits without scrolling the
+     whole list; and, at the end, the log. */
+  .arena { gap: var(--sp-6); }
+  .stage { grid-template-columns: minmax(0, 1fr); gap: var(--sp-4); }
+  .vs { flex-direction: row; flex-wrap: wrap; }
+  .vs-score { flex-direction: row; gap: var(--sp-4); }
+  .vs-mark i { width: var(--sp-4); }
+  .fscene { min-height: 196px; }
+  .fscene-art { height: 132px; }
+  .stage .kside-head h3, .ftitle-main { font-size: var(--fs-xl); }
+  .mgroup.is-spell .mgrid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  /* The band, on mobile: the Knight without his figure (the HUD says it), the scoreboard and the enemy. */
+  .fband {
+    grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "me vs" "foe foe";
+    gap: var(--sp-1) var(--sp-3); padding: var(--sp-2) var(--sp-3); min-height: 0;
+  }
+  .fband-me { grid-area: me; --orb: 36px; --pip-h: 13px; --hud-row: 130px; }
+  .fband-vs { grid-area: vs; flex-direction: row; gap: var(--sp-3); }
+  .fband-foe { grid-area: foe; gap: var(--sp-2); }
+  .fband-knight, .fband .fight-undo span { display: none; }
+  .fband .fight-undo { min-width: 32px; min-height: 32px; justify-content: center; border-bottom: 0; }
+  .fband-art { width: 40px; height: 36px; }
+  .fband-score b { font-size: var(--fs-lg); }
+  .fband-num { font-size: var(--fs-md); }
+  .commands { grid-template-columns: minmax(0, 1fr); gap: var(--sp-8); }
+  .commands > .side-foes { order: -1; }
   .foecard.is-minion { margin-left: var(--sp-4); }
   .timeline { grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); }
 }

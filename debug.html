@@ -156,7 +156,8 @@ f.addEventListener('load', () => {
   /* Your side of the arena mid-fight: ?hits=<n> hits n times with the nail, ?take=<n> lets
      the enemy hit you n times with its first attack (or ?focus=<n> you focus), and
      ?freeze=<ms> freezes the scene's animations at that instant: with 5000 all the ones from
-     a single hit have finished and you can see how it ends up. */
+     a single hit have finished and you can see how it ends up. It also freezes the enemy's stage
+     (the hit's flash, the figure rising, the phase title, the dust). */
   const clickN = (sel, n) => {
     for (let i = 0; i < n; i++) { const b = f.contentDocument.querySelector(sel); if (b && !b.disabled) b.click(); }
   };
@@ -169,7 +170,7 @@ f.addEventListener('load', () => {
   for (const act of (q.get('click') || '').split(',').filter(Boolean)) clickN(`[data-act="${act}"]`, 1);
   if (q.get('freeze') !== null) {
     const st = f.contentDocument.createElement('style');
-    st.textContent = `.kscene, .kscene *, .kscene::before, .kscene::after, #panel .hud * { animation-delay: -${Number(q.get('freeze'))}ms !important; animation-play-state: paused !important; }`;
+    st.textContent = `.kscene, .kscene *, .kscene::before, .kscene::after, .fstage, .fstage *, #panel .hud * { animation-delay: -${Number(q.get('freeze'))}ms !important; animation-play-state: paused !important; }`;
     f.contentDocument.head.appendChild(st);
   }
   // ?fx=<ms> freezes the overcharm flash at that instant of the animation; with &fxgold=1,

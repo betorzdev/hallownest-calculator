@@ -462,6 +462,40 @@ f.addEventListener('load', async () => {
     await click('[data-act="fightReset"]');
     ok('reset gives the health back', foeHp() === '65' && masks() === '5', foeHp() + ' / ' + masks());
 
+    /* ── The stage, the scoreboard, the groups, undo and the log's voices ── */
+    ok("the stage shows the game's title card", txt('.fstage .ftitle-main') === 'Falso Caballero', txt('.fstage .ftitle'));
+    ok('your attacks come in groups, the nail first', [...d.querySelectorAll('.mgroup-head')].map((n) => n.textContent.trim())[0] === 'Aguijón',
+       [...d.querySelectorAll('.mgroup-head')].map((n) => n.textContent.trim()).join(' · '));
+    const vs = () => [...d.querySelectorAll('.vs-score dd')].map((n) => n.textContent.trim()).join(' / ');
+    // 355 of health with a 21 nail: 17 hits; 5 masks against a slam of 2: 3 hits.
+    ok('the scoreboard: nail hits to win and hits to fall', vs() === '17 / 3', vs());
+    ok('undo starts disabled', !!q('[data-act="undo"]') && q('[data-act="undo"]').disabled);
+    await click('[data-act="hit"]');
+    await click('[data-act="foehit"]');
+    ok('the scoreboard follows the fight', vs() === '16 / 2', vs());
+    ok('the log speaks in two voices', !!q('.fight-log li.is-foe') && !!q('.fight-log li.is-you') && !!q('.fight-log li.is-sys'),
+       [...d.querySelectorAll('.fight-log li')].map((n) => n.className).join(' '));
+    await click('[data-act="undo"]');
+    ok('undo gives back the hit taken', masks() === '5' && foeHp() === '44', masks() + ' / ' + foeHp());
+    await click('[data-act="undo"]');
+    ok('and then your own hit', foeHp() === '65' && vs() === '17 / 3' && q('[data-act="undo"]').disabled, foeHp() + ' · ' + vs());
+    await click('[data-act="hit"]');
+    d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'z', ctrlKey: true, bubbles: true }));
+    await wait(40);
+    ok('Ctrl+Z undoes too', foeHp() === '65', foeHp());
+    // Scrolling down to the attacks, the face-off comes along in the band; back up, it goes.
+    // The scroll event comes with the next frame, which headless doesn't always paint: it's sent by hand.
+    const frames = () => { w.dispatchEvent(new w.Event('scroll')); return wait(40); };
+    const stageBox = q('.stage').getBoundingClientRect();
+    w.scrollTo(0, w.scrollY + stageBox.bottom);
+    await frames();
+    const bandWhy = () => `scrollY ${w.scrollY} · stage ${Math.round(q('.stage').getBoundingClientRect().bottom)} · ${q('.fband-anchor') ? q('.fband-anchor').className : '(no band)'}`;
+    ok('scrolling past the stage brings in the band', !!q('.fband-anchor.is-on') && !!q('.fband .hud') && !!q('.fband-art img')
+       && q('#minihud').classList.contains('is-banded'), bandWhy());
+    w.scrollTo(0, 0);
+    await frames();
+    ok('and back up it goes', !q('.fband-anchor.is-on') && !q('#minihud').classList.contains('is-banded'));
+
     /* ── Multi-part bosses ────────────────────────────────────────────── */
     for (let i = 0; i < 4; i++) await click('[data-act="hit"]');
     ok('when the armour falls the maggot comes in', txt('.fighter-phase') === 'Fase 2 de 7' && foeHp() === '40',
@@ -511,6 +545,8 @@ f.addEventListener('load', async () => {
     for (let i = 0; i < 22; i++) await click('[data-act="hit"]');
     ok('killing the Beast ends the fight', txt('.fight-end-title') === 'Victoria' && bars()[0].indexOf('600/600') > 0,
        bars().join(' | '));
+    const sum = () => [...d.querySelectorAll('.fight-sum dt')].map((n) => n.textContent.trim()).join(' · ');
+    ok('the ending gives the fight in figures', /Golpes dados/.test(sum()) && /Vida perdida/.test(sum()) && !!q('.fight-end [data-act="fightReset"]'), sum());
 
     /* ── Minions ──────────────────────────────────────────────────────── */
     await pick('broken-vessel');
@@ -832,6 +868,9 @@ f.addEventListener('load', async () => {
     const summonHps = () => [...d.querySelectorAll('[data-act="summon"] .move-num')].map((n) => n.textContent.trim()).join(' ');
     ok('the Collector on Ascended brings out another three, all at 26', summons().length === 3 && summonHps() === '26 26 26' &&
        summons()[0] === 'Invocar Aspid primigenio', summons().join(' | ') + ' · ' + summonHps());
+    ok('each summon button shows who comes out', [...d.querySelectorAll('[data-act="summon"] .summon-art img')].length === 3
+       && (q('[data-act="summon"] .summon-art img') || {}).getAttribute('src') === w.HK.data.art('enemies', 'primal-aspid'),
+       (q('[data-act="summon"] .summon-art img') || {}).getAttribute('src'));
     await click('.hall-head [data-act="hallBack"]');
 
     await click('.ped-btn[data-id="vengefly-king"]');

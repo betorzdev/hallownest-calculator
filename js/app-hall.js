@@ -7,7 +7,7 @@
   const F = HK.foes, HG = HK.hall;
   const App = HK.app;
   const { t, pick, KEY, el, NT, esc, load, save, prefs, savePrefs, brackets, chevron, rule, fight, fs, alive,
-    hallFight, foe, phasesOf, totalHp, fightReset, jrNarrow, enduranceOf, fightEndHtml, wonNote, dealtOf,
+    hallFight, foe, phasesOf, totalHp, fightReset, jrNarrow, enduranceOf, fightEndHtml, fightSumHtml, wonNote, dealtOf,
     arenaHtml, render, underNav, actions } = App;
 
   /* The Hall of Gods marks: { id: ['at', 'asra', 'radiant'] }. They are your real game's,
@@ -254,8 +254,8 @@
       <button type="button" class="btn" data-act="hallBack">‹ ${esc(t('hallBack'))}</button>`;
     // Winning leaves no symbol: the Hall's are your real game's, and they're marked on the plaque.
     const ending = fight.over && alive()
-      ? fightEndHtml({ won: true, cls: 'hall-done', title: t('fightWon'), acts, note: wonNote(foe()) })
-      : !alive() ? fightEndHtml({ won: false, cls: 'hall-done', title: t('fightDead'), note: t('hallDied', dealtOf(foe())), acts }) : '';
+      ? fightEndHtml({ won: true, cls: 'hall-done', title: t('fightWon'), acts, note: wonNote(foe()), sum: fightSumHtml() })
+      : !alive() ? fightEndHtml({ won: false, cls: 'hall-done', title: t('fightDead'), note: t('hallDied', dealtOf(foe())), sum: fightSumHtml(), acts }) : '';
     return `<div class="run-head hall-head">
         <h3>${esc(statueName(s))}</h3>
         <span class="fighter-phase hall-diff">${hallBadge(d, hasMark(s.id, d))}${esc(t(DIFF_KEY[d]))}</span>

@@ -8,7 +8,7 @@
   const App = HK.app;
   const { t, pick, KEY, NT, esc, load, save, prefs, savePrefs, bindAllFx, brackets, pageCharms,
     renderLoadout, renderQuickCharms, fight, runRooms, runRoom, runFight, foe, fightReset, knightSide,
-    fightEndHtml, wonNote, logHtml, arenaHtml, render, go, screenOf, toast, actions } = App;
+    fightEndHtml, fightSumHtml, wonNote, logHtml, arenaHtml, render, go, screenOf, toast, actions } = App;
 
   /* Godhome's lifeblood door (js/pantheons.js): the bindings you've finished each pantheon
      with. Your real game, marked by hand. From here comes how many
@@ -250,7 +250,7 @@
     if (r.type === 'rest') return restHtml();
     if (r.type === 'godseeker') return godseekerHtml(r);
     const next = fight.over
-      ? fightEndHtml({ won: true, cls: 'room-done', title: t('runWonRoom'), note: wonNote(foe()),
+      ? fightEndHtml({ won: true, cls: 'room-done', title: t('runWonRoom'), note: wonNote(foe()), sum: fightSumHtml(),
           acts: `<button type="button" class="btn btn-primary" data-act="runNext">${esc(App.run.room + 1 >= runRooms().length ? t('runFinish') : t('runNext'))}</button>` })
       : '';
     return `${r.note ? `<p class="foecard-note is-warn">${esc(pick(r.note))}</p>` : ''}${arenaHtml(next)}`;

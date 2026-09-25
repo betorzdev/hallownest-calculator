@@ -47,7 +47,10 @@
        lostMask     there's a lost mask that Hiveblood could give back
        sporeAt      instant on the clock when Spore Shroom is ready again
        shieldAt     instant on the clock when Dreamshield is whole again
-       acc          accumulators for the passives that run with the clock */
+       acc          accumulators for the passives that run with the clock
+       taken        health the enemy's hits took away (masks and lifeblood), for the summary
+       soulSpent    soul paid for spells, Focus and Glowing Womb's hatchlings
+       focuses      times you Focused */
   function reset(f, sheet, carry) {
     const s = sheet.stats;
     const joni = sheet.joniLifeblood || 0;
@@ -66,7 +69,7 @@
     f.focusing = false; f.healed = 0;
     f.clock = 0; f.sinceHit = 0; f.lostMask = false; f.sporeAt = 0; f.shieldAt = 0;
     f.acc = { kingsoul: 0, grimm: 0, womb: 0 };
-    f.dealt = 0; f.hits = 0;
+    f.dealt = 0; f.hits = 0; f.taken = 0; f.soulSpent = 0; f.focuses = 0;
     if (typeof f.melody !== 'number') f.melody = 0;
     return f;
   }
@@ -268,6 +271,7 @@
       return;
     }
     if (ctx.radiant) {
+      f.taken = (f.taken || 0) + total(f);
       f.masks = 0; f.lbJoni = 0; f.lbCharm = 0; f.lbCocoon = 0;
       f.focusing = false; f.healed = 0;
       events.push({ kind: 'radiant', label: a.label });
@@ -287,9 +291,11 @@
         f.shell -= 1;
         events.push({ kind: 'shell', label: a.label, n: a.dmg, left: f.shell });
       } else {
+        const before = total(f);
         let d = a.dmg;
         for (const k of ['lbCocoon', 'lbCharm', 'lbJoni']) { const x = Math.min(f[k] || 0, d); f[k] -= x; d -= x; }
         f.masks = Math.max(0, f.masks - d);
+        f.taken = (f.taken || 0) + before - total(f);
         f.sinceHit = 0; f.lostMask = true; f.sporeAt = 0;
         if (has('joni') && has('elegy')) f.elegyHalted = true;
         const left = total(f);
@@ -334,7 +340,7 @@
     if (has('womb')) {
       const n = ticks('womb', D.PETS.hatchlingEvery);
       let born = 0;
-      for (let i = 0; i < n && canHit && f.soul >= D.SOUL.hatchlingCost; i++) { f.soul -= D.SOUL.hatchlingCost; born += 1; }
+      for (let i = 0; i < n && canHit && f.soul >= D.SOUL.hatchlingCost; i++) { f.soul -= D.SOUL.hatchlingCost; f.soulSpent = (f.soulSpent || 0) + D.SOUL.hatchlingCost; born += 1; }
       if (born) hurt(f, ctx, born * s['pet.hatchling'].value, { kind: 'womb', ticks: born, soul: born * D.SOUL.hatchlingCost }, events, born);
     }
     // The bats gather and it's Grimm again.
@@ -385,6 +391,7 @@
       case 'spell': {
         own(); f.hits += 1;
         f.soul -= s['soul.spellCost'].value;
+        f.soulSpent = (f.soulSpent || 0) + s['soul.spellCost'].value;
         // Zero impacts is a miss: the soul is already paid.
         const r = spellOutcome(s['spell.' + action.key], action.sel, ctx);
         const ev = { kind: 'hit', move: 'spell:' + action.key, landed: r.landed, of: r.of, twice: r.twice };
@@ -395,6 +402,8 @@
       }
       case 'focus': {
         f.soul -= s['soul.focusCost'].value;
+        f.soulSpent = (f.soulSpent || 0) + s['soul.focusCost'].value;
+        f.focuses = (f.focuses || 0) + 1;
         const gained = Math.max(0, Math.min(s['heal.masksPerFocus'].value, s['health.masks'].value - f.masks));
         f.masks += gained; f.healed = gained; f.focusing = true;
         f.lostMask = false;   // healing with Focus cancels Hiveblood's regeneration
