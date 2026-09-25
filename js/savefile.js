@@ -23,8 +23,8 @@
      journal   killed<X> (encountered) and kills<X> (defeats left), as js/hunter.js keeps them.
      hall      statueState<X>.completedTier1 … 3 → Attuned, Ascended, Radiant.
      bindings  bossDoorStateTier1 … 5: boundNail … boundSoul and allBindings.
-     progress  the rest of the 112% (equipment, Dreamers, Colosseum, pantheons cleared…): the
-               playerData each one comes from is in js/completion.js (PROGRESS).
+     progress  everything else a game has: equipment and key items, what you carry, the rest of
+               the 112%, your bench and your shade (js/progress.js says which field is which).
    The pantheon in progress and the pinned build aren't in a real save: they're left empty. */
 (() => {
   'use strict';
@@ -33,7 +33,7 @@
   const HJ = HK.hunter || require('./hunter.js');
   const HG = HK.hall || require('./hall.js');
   const PN = HK.pantheons || require('./pantheons.js');
-  const CP = HK.completion || require('./completion.js');
+  const P = HK.progress || require('./progress.js');
 
   const KEY = 'UKu52ePUBwetZ9wNX88o54dnfKRu0T1l';
   const HEADER = [0, 1, 0, 0, 0, 255, 255, 255, 255, 1, 0, 0, 0, 0, 0, 0, 0, 6, 1, 0, 0, 0];
@@ -224,7 +224,7 @@
     return text.startsWith('{') ? text : null;
   }
 
-  /* The file → { ok: true, pd } or { ok: false, error }, error being 'unreadable' (not a save
+  /* The file → { ok: true, pd, mods } or { ok: false, error }, error being 'unreadable' (not a save
      from the game: it can't be decrypted or isn't JSON) or 'notSave' (JSON, but without a
      playerData that looks like the Knight's). */
   function read(bytes) {
@@ -236,7 +236,10 @@
     if (!pd || typeof pd !== 'object' || typeof pd.charmSlots !== 'number' || typeof pd.maxHealthBase !== 'number') {
       return { ok: false, error: 'notSave' };
     }
-    return { ok: true, pd };
+    // The mods loaded when it was saved (the Modding API writes their names beside playerData).
+    const lm = json.LoadedMods;
+    const mods = lm && Array.isArray(lm.keys) ? lm.keys.filter((k) => typeof k === 'string' && k).slice(0, 20) : [];
+    return { ok: true, pd, mods };
   }
 
   /* ── playerData → the site's keys ───────────────────────────────────── */
@@ -323,17 +326,19 @@
     if (Object.keys(book).length) snap['hollow.journal'] = JSON.stringify(book);
     if (Object.keys(marks).length) snap['hollow.hall'] = JSON.stringify(marks);
     if (PN.doorNotches(d)) snap['hollow.bindings'] = JSON.stringify(d);
-    const prog = CP.fromSave(pd);
-    if (prog.ids.length) snap['hollow.progress'] = JSON.stringify(prog);
+    const prog = P.fromSave(pd);
+    if (!P.isEmpty(prog)) snap['hollow.progress'] = JSON.stringify(prog);
     return snap;
   }
 
   /* What the game's own profile screen shows of a save and the site doesn't keep: the time
      played (playTime, in seconds), the completion (completionPercentage), the geo and whether
      it's Steel Soul (permadeathMode 1, or 2 once the Knight has died in it); and the pantheons
-     completed (bossDoorStateTier<n>.completed), which the site keeps only as their bindings.
-     Only for the preview before importing. */
+     completed (bossDoorStateTier<n>.completed), which the site keeps only as their bindings;
+     and the version of the game that wrote it. Only for the preview before importing. */
   const meta = (pd) => ({
+    // The game's version when it saved (1.5.78.11833…): a save from before 1.5 counts some things otherwise.
+    version: typeof pd.version === 'string' && /^[0-9.]{1,24}$/.test(pd.version) ? pd.version : '',
     time: Math.max(0, Number(pd.playTime) || 0),
     completion: Math.max(0, Number(pd.completionPercentage) || 0),
     geo: Math.max(0, int(pd.geo)),

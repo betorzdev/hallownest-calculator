@@ -3,16 +3,21 @@
 (() => {
   'use strict';
   const HK = globalThis.HK;
-  const D = HK.data, E = HK.engine, C = HK.codec;
+  const D = HK.data, E = HK.engine, C = HK.codec, PR = HK.progress;
   const App = HK.app;
   const { t, pick, el, SPELL_KEYS, ART_KEYS, ART_STAT, NT, esc, fmtStatRich, spellArt, badgeText, compute,
     commit, brackets, screenHead, QUICK_PER_ROW, QUICK_SLOTS, render, actions, isMaxOwned, saveOwned,
-    isOwned, setOwned, justFound } = App;
+    isOwned, setOwned, justFound, setProgress } = App;
 
   /* Right after a change (App.was): what you just got lights up from the dark, and what you just
      lost goes out from its light. "was" reads the value before; with nothing to compare, the current one. */
   const was = (get) => (App.was ? get(App.was.state) : get(App.state));
   const fx = (on, before) => (on && !before ? ' is-lit' : !on && before ? ' is-out' : '');
+  // The same for what your game has beyond the numbers (js/progress.js).
+  const hasP = (id) => PR.has(App.progress, id);
+  const wasP = (id) => (App.was && App.was.progress ? PR.has(App.was.progress, id) : hasP(id));
+  const countP = (id) => PR.count(App.progress, id);
+  const countWas = (id) => (App.was && App.was.progress ? PR.count(App.was.progress, id) : countP(id));
 
   /* ── Your game ───────────────────────────────────────────────────────── */
   /* A line with the two main changes between two sheets, with the condition in front
@@ -63,9 +68,9 @@
   /* A level to choose under a plate: each level with its own artwork (Vengeful Spirit and Shade
      Soul, the two cloaks) and, first, the dimmed "not learnt" one. The chosen one carries the
      accent's veil, like the nail picks. */
-  function levelPick(key, value, levels, label) {
+  function levelPick(key, value, levels, label, act = 'seg') {
     return `<span class="lvlpick" role="group" aria-label="${esc(label)}">${levels.map((l, i) => `<button type="button" class="lvl${i === value ? ' is-on' : ''}${l.art ? '' : ' is-none'}"
-        data-act="seg" data-key="${key}" data-value="${i}" aria-pressed="${i === value}" title="${esc(l.title)}" aria-label="${esc(l.title)}">
+        data-act="${act}" data-key="${key}" data-value="${i}" aria-pressed="${i === value}" title="${esc(l.title)}" aria-label="${esc(l.title)}">
         ${l.art ? `<img src="${l.art}" alt="">` : '<span aria-hidden="true">—</span>'}</button>`).join('')}</span>`;
   }
 
@@ -134,11 +139,18 @@
         title="${esc(o.title)}" aria-label="${esc(o.title)}" ${o.off ? 'disabled' : ''}><i class="notch${v <= value ? ' is-used' : ' is-free'}"></i><small>${o.text}</small></button>`;
     }).join('')}</span>`;
     const A = D.ABILITIES;
-    const dream = `<button type="button" class="gplate${App.state.dream ? ' is-on' : ''}${fx(App.state.dream, was((st) => st.dream))}" data-act="seg" data-key="dream" data-value="${App.state.dream ? 0 : 1}" aria-pressed="${App.state.dream}" title="${esc(A.dream.en)}">
-        <span class="gplate-art"><img src="${D.art('abilities', A.dream.art)}" alt=""></span>
-        <span class="gplate-name"${NT}>${esc(pick(A.dream))}</span>
-        <span class="gplate-val${App.state.dream ? '' : ' is-none'}">${App.state.dream ? fmtStatRich(App.sheet.stats['soul.dreamNail']) : esc(t('notFound'))}</span>
-      </button>`;
+    /* The Dream Nail in its three steps, as the Inventory draws it: not found, found, and awoken
+       by the Seer (1800 essence). Awoken it's the same for the figures; it's part of the 112%. */
+    const dv = !App.state.dream ? 0 : hasP('dream-awakened') ? 2 : 1;
+    const dvWas = !was((st) => st.dream) ? 0 : wasP('dream-awakened') ? 2 : 1;
+    const dreamShown = dv === 2 ? A.awoken : A.dream;
+    const dream = `<div class="gplate${dv ? ' is-on' : ''}${dv && dvWas && dv !== dvWas ? ' is-lit' : fx(!!dv, !!dvWas)}">
+        <span class="gplate-art"><img src="${D.art('abilities', dreamShown.art)}" alt=""></span>
+        <span class="gplate-name"${NT}>${esc(pick(dreamShown))}</span>
+        <span class="gplate-val${dv ? '' : ' is-none'}">${dv ? fmtStatRich(App.sheet.stats['soul.dreamNail']) : esc(t('notFound'))}</span>
+        ${levelPick('dream', dv, [{ title: t('notFound') }, { art: D.art('abilities', A.dream.art), title: pick(A.dream) },
+          { art: D.art('abilities', A.awoken.art), title: pick(A.awoken) }], pick(A.dream), 'dreamLevel')}
+      </div>`;
     const cloak = A.cloaks[App.state.cloak];
     const cloakWas = was((st) => st.cloak);
     const cloakPlate = `<div class="gplate${cloak ? ' is-on' : ''}${cloak && cloakWas && cloak !== A.cloaks[cloakWas] ? ' is-lit' : fx(!!cloak, !!cloakWas)}">
@@ -159,6 +171,72 @@
           off: i === 3 && !App.state.dream, title: i === 3 && !App.state.dream ? t('grimmNeedsDream') : t('grimmPhase', { n: i + 1 }) })), pick(D.CHARM_BY_ID.grimmchild))}
       </div>`;
     return `<section class="block is-abilities"><h3 class="block-head">${esc(t('abilities'))}</h3><div class="gplates">${dream}${cloakPlate}${grimm}</div></section>`;
+  }
+
+  /* An item of your game as a plate you tap, like the nail arts: as a silhouette until you have
+     it. None of these changes a figure, so under the name there's only whether you have it. */
+  function itemPlate(it) {
+    const on = hasP(it.id);
+    return `<button type="button" class="gplate${on ? ' is-on' : ''}${fx(on, wasP(it.id))}" data-act="progToggle" data-id="${it.id}" aria-pressed="${on}" title="${esc(it.en)}">
+        <span class="gplate-art"><img src="${D.art('items', it.id)}" alt=""></span>
+        <span class="gplate-name"${NT}>${esc(pick(it))}</span>
+        <span class="gplate-val is-none">${on ? '' : esc(t('notFound'))}</span>
+      </button>`;
+  }
+  // The Inventory's equipment: what takes you places (the cloaks are in Abilities: they change a figure).
+  function renderEquipmentBlock() {
+    const n = D.EQUIPMENT.filter((it) => hasP(it.id)).length;
+    return `<section class="block is-equipment"><h3 class="block-head">${esc(t('equipmentTitle'))}<span class="block-note">${n}/${D.EQUIPMENT.length}</span></h3>
+      <div class="gplates">${D.EQUIPMENT.map(itemPlate).join('')}</div></section>`;
+  }
+
+  /* What you carry: a plate per item with how many under it, in the Journal's [− N +] (the number
+     can be typed: geo and essence run into the thousands). The geo plate says what's in
+     Millibelle's bank, and the block's head what Lemm would pay for your relics. */
+  function countPlate(it) {
+    const v = countP(it.id), max = PR.COUNTS[it.id][1];
+    const name = pick(it);
+    const lit = v > countWas(it.id) ? ' is-lit' : '';
+    const bank = it.id === 'geo' && countP('bank') ? `<span class="gcount-note">${esc(t('bankNote', { geo: App.NF[0].format(countP('bank')) }))}</span>` : '';
+    return `<div class="gplate is-count${v ? ' is-on' : ''}${lit}">
+        <span class="gplate-art"><img src="${D.art('items', it.id)}" alt=""></span>
+        <span class="gplate-name"${NT}>${esc(name)}</span>
+        <span class="gcount">
+          <span class="stepper">
+            <button type="button" class="step" data-act="progStep" data-id="${it.id}" data-value="-1" ${v ? '' : 'disabled'} aria-label="${esc(t('countLess', { what: name }))}" title="${esc(t('countLess', { what: name }))}">−</button>
+            <input type="number" class="step-count${String(max).length > 3 ? ' is-wide' : ''}" data-change="progInput" data-id="${it.id}" value="${v}" min="0" max="${max}" step="1" inputmode="numeric" aria-label="${esc(name)}">
+            <button type="button" class="step" data-act="progStep" data-id="${it.id}" data-value="1" ${v < max ? '' : 'disabled'} aria-label="${esc(t('countMore', { what: name }))}" title="${esc(t('countMore', { what: name }))}">+</button>
+          </span>${bank}
+        </span>
+      </div>`;
+  }
+  function renderItemsBlock() {
+    const worth = D.CARRIED.reduce((n, it) => n + (it.sell || 0) * countP(it.id), 0);
+    const note = worth ? `<span class="block-note">${esc(t('relicsWorth', { geo: App.NF[0].format(worth) }))}</span>` : '';
+    return `<section class="block is-items"><h3 class="block-head">${esc(t('itemsTitle'))}${note}</h3>
+      <div class="gplates">${D.KEY_ITEMS.map(itemPlate).join('')}</div>
+      <div class="gplates is-counts">${D.CARRIED.map(countPlate).join('')}</div></section>`;
+  }
+
+  /* The loose mask shards and vessel fragments, under their row: the game's own pieces, lit up
+     to how many you have. The fourth shard makes a mask (and the third fragment a vessel), so
+     with every mask there are none left to show. */
+  function shardRow(id, name, max, art, note) {
+    const v = countP(id), had = countWas(id);
+    const btns = Array.from({ length: max }, (_, i) => {
+      const n = i + 1, on = n <= v;
+      const lit = fx(on, n <= had);
+      const label = t('pieceOf', { what: pick(name), n, max: max + 1 });
+      return `<button type="button" class="piece is-shard${on ? ' is-on' : ''}${lit}" data-act="progCount" data-id="${id}" data-value="${on ? n - 1 : n}"
+        aria-pressed="${on}" aria-label="${esc(label)}" title="${esc(label)}"><img src="${D.art('hud', art)}" alt=""></button>`;
+    }).join('');
+    return `<div class="field is-shards">
+      <div class="field-row">
+        <span class="field-text"><span class="field-name"${NT}>${esc(pick(name))}</span><span class="field-note">${esc(note)}</span></span>
+        <span class="field-num">${v}<i class="u">/${max + 1}</i></span>
+      </div>
+      <div class="pieces is-${id}" role="group" aria-label="${esc(pick(name))}" style="--n:${max}">${btns}</div>
+    </div>`;
   }
 
   /* The charms you've found, on the grid from the game's charm screen: the same one as on
@@ -208,8 +286,10 @@
     return `<section class="block is-body"><h3 class="block-head">${esc(t('body'))}</h3>
       ${pieceRow('masks', App.state.masks, D.HEALTH.baseMasks, D.HEALTH.maxMasks, t('masksField'), t('masksNote'), maskPiece,
         App.state.masks < D.HEALTH.maxMasks ? C.set(App.state, 'masks', App.state.masks + 1) : null)}
+      ${App.state.masks < D.HEALTH.maxMasks ? shardRow('shards', D.SHARDS, 3, 'mask-shard', t('shardsNote')) : ''}
       ${pieceRow('vessels', App.state.vessels, 0, D.SOUL.maxVessels, t('vesselsField'), t('vesselsNote'), vesselPiece,
         App.state.vessels < D.SOUL.maxVessels ? C.set(App.state, 'vessels', App.state.vessels + 1) : null)}
+      ${App.state.vessels < D.SOUL.maxVessels ? shardRow('fragments', D.FRAGMENTS, 2, 'vessel-frag', t('fragmentsNote')) : ''}
       ${pieceRow('notches', App.state.notches, D.CHARM_NOTCHES.base, D.CHARM_NOTCHES.max, t('notchesField'), t('notchesNote'), notchPiece,
         App.state.notches < D.CHARM_NOTCHES.max ? C.set(App.state, 'notches', App.state.notches + 1) : null)}
     </section>`;
@@ -230,10 +310,19 @@
     </div>`;
     el.gear.innerHTML = `<div class="gear-body">${brackets}
       ${screenHead(esc(t('navGame')), presets)}
-      <div class="gear-col">${renderNailBlock()}${renderArtsBlock()}${renderSpellsBlock()}${renderAbilitiesBlock()}</div>
-      <div class="gear-col">${renderBodyBlock()}${renderOwnedBlock()}</div>
+      <div class="gear-col">${renderNailBlock()}${renderArtsBlock()}${renderSpellsBlock()}${renderAbilitiesBlock()}${renderEquipmentBlock()}</div>
+      <div class="gear-col">${renderBodyBlock()}${renderOwnedBlock()}${renderItemsBlock()}</div>
     </div>`;
   }
+
+  const KNIGHT_IDS = [...D.EQUIPMENT, ...D.KEY_ITEMS].map((it) => it.id).concat(['dream-awakened']);
+
+  /* Geo and essence, typed: taken when the field is left or Enter is pressed. */
+  el.gear.addEventListener('change', (ev) => {
+    const box = ev.target.closest('[data-change="progInput"]');
+    if (!box) return;
+    setProgress(PR.setCount(App.progress, box.dataset.id, Number(box.value)));
+  });
 
   Object.assign(actions, {
     step(node) {
@@ -261,6 +350,24 @@
     },
     ownPick(node) { setOwned(C.ownSet(App.owned, node.dataset.value, node.dataset.token || null)); },
     ownAll(node) { setOwned(node.dataset.value === '1' ? C.OWN_MAX : []); },
+    /* The Dream Nail's step: finding it is the build's (it changes a figure); awoken is your
+       game's record. Losing it takes the awakening with it. */
+    dreamLevel(node) {
+      const v = Number(node.dataset.value);
+      const nextP = PR.toggle(App.progress, 'dream-awakened', v === 2);
+      if (App.state.dream === v > 0) { setProgress(nextP); return; }
+      const wasP = App.progress;
+      App.progress = nextP;
+      App.was = { state: App.state, owned: App.owned, progress: wasP };
+      if (commit(C.set(App.state, 'dream', v > 0))) App.saveProgress(); else { App.progress = wasP; App.was = null; render(); }
+      App.was = null;
+    },
+    progToggle(node) { setProgress(PR.toggle(App.progress, node.dataset.id)); },
+    progCount(node) { setProgress(PR.setCount(App.progress, node.dataset.id, Number(node.dataset.value))); },
+    progStep(node) {
+      const id = node.dataset.id;
+      setProgress(PR.setCount(App.progress, id, countP(id) + Number(node.dataset.value)));
+    },
     art(node) {
       const k = node.dataset.key;
       commit(C.set(App.state, 'arts.' + k, !App.state.arts[k]));
@@ -275,10 +382,14 @@
     preset(node) {
       const max = node.dataset.value === 'max';
       const next = max ? C.normalize({ ...C.PRESETS.max, charms: App.state.charms, hp: App.state.hp }) : C.normalize(C.PRESETS.base);
-      const was = App.owned;
-      App.was = { state: App.state, owned: was };   // so the repaint lights up what the preset brings
+      const was = App.owned, wasP = App.progress;
+      App.was = { state: App.state, owned: was, progress: wasP };   // so the repaint lights up what the preset brings
       App.owned = max ? C.OWN_MAX.slice() : [];  // before commit(), so its repaint already carries it
-      if (commit(next)) saveOwned(); else { App.owned = was; App.was = null; render(); }
+      // The Knight's own things go with it: equipment, key items and the Dream Nail awoken; and a
+      // new game carries nothing (the loose pieces, geo, relics…). The rest of the 112% stays.
+      App.progress = KNIGHT_IDS.reduce((p, id) => PR.toggle(p, id, max), App.progress);
+      if (!max) App.progress = PR.COUNT_LIST.reduce((p, id) => PR.setCount(p, id, 0), App.progress);
+      if (commit(next)) { saveOwned(); App.saveProgress(); } else { App.owned = was; App.progress = wasP; App.was = null; render(); }
     },
   });
 

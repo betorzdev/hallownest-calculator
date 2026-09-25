@@ -1017,7 +1017,8 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
 .lvlpick { display: flex; justify-content: center; gap: var(--sp-1); width: 100%; min-width: 0; margin-top: var(--sp-1); }
 .lvl {
   flex: 0 1 56px; min-width: 0;
-  display: grid; place-items: center; height: 40px; padding: var(--sp-1);
+  /* A row of definite height, so an upright picture (the Awoken Dream Nail) is held by max-height. */
+  display: grid; grid-template-rows: minmax(0, 1fr); place-items: center; height: 40px; padding: var(--sp-1);
   border-bottom: 2px solid transparent; color: var(--muted);
   transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease);
 }
@@ -1079,6 +1080,21 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
 .field-text { display: flex; flex-direction: column; flex-grow: 1; min-width: 0; }
 .field-name { font-size: var(--fs-sm); line-height: 1.3; color: var(--ink); }
 .field-note { font-size: var(--fs-xs); line-height: 1.3; color: var(--muted); }
+/* The loose mask shards and vessel fragments, under their row: the same pieces, smaller. */
+.field.is-shards { margin-top: var(--sp-2); }
+.pieces.is-shards, .pieces.is-fragments { grid-template-columns: repeat(var(--n), minmax(0, 30px)); }
+.piece.is-shard { height: 32px; }
+.field.is-shards .field-num { font-size: var(--fs-md); }
+
+/* Your game's items (js/app-game.js): the key items as plates, and under them what you carry,
+   each with its [− N +]. The geo plate carries Millibelle's bank in a note. */
+.gplates + .gplates { margin-top: var(--sp-6); }
+.gcount { display: flex; flex-direction: column; align-items: center; gap: var(--sp-1); }
+.gcount-note { font-size: var(--fs-xs); line-height: 1.25; color: var(--muted); }
+.step-count.is-wide { width: 8ch; }
+/* On a phone, two to a row: the [− N +] with touch-sized buttons doesn't fit in a third. */
+@media (max-width: 599px) { .gplates.is-counts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.gplate.is-count.is-lit .step-count { animation: num-flash var(--dur-flash) var(--ease); }
 @media (pointer: coarse) { .piece { min-height: 44px; } }
 
 /* ── Your game, right after a change (js/app-game.js, App.was) ─────────────
@@ -1206,7 +1222,9 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
   .gear-body section.block.is-arts { order: 3; }
   .gear-body section.block.is-spells { order: 4; }
   .gear-body section.block.is-abilities { order: 5; }
-  .gear-body section.block.is-owned { order: 6; }
+  .gear-body section.block.is-equipment { order: 6; }
+  .gear-body section.block.is-owned { order: 7; }
+  .gear-body section.block.is-items { order: 8; }
 }
 @media (max-width: 599px) {
   .panel, .gear-body { --inv-pad: var(--sp-4); }
@@ -3203,20 +3221,21 @@ button.tl-go:focus-visible { outline-offset: 3px; }
 /* "Defeat [−] N [+] more to decipher the Hunter's notes.": the game's sentence, and the
    number is the control. The number goes in --font-num, like every figure. */
 .hj-kills { font-size: var(--fs-md); color: var(--ink-2); line-height: 2.2; }
-.hj-stepper { display: inline-flex; align-items: center; vertical-align: middle; margin: 0 var(--sp-1); border: 1px solid var(--line-ctl); background: var(--card); line-height: 1; }
-.hj-step { width: 32px; min-height: 32px; font-family: var(--font-num); font-size: var(--fs-md); color: var(--ink-2); }
-.hj-step:hover:not(:disabled) { color: var(--accent); background: var(--card-idle); }
-.hj-step:disabled { color: var(--line-ctl); }
-.hj-count {
+.hj-stepper, .stepper { display: inline-flex; align-items: center; vertical-align: middle; margin: 0 var(--sp-1); border: 1px solid var(--line-ctl); background: var(--card); line-height: 1; }
+.hj-step, .step { width: 32px; min-height: 32px; font-family: var(--font-num); font-size: var(--fs-md); color: var(--ink-2); }
+.hj-step:hover:not(:disabled), .step:hover:not(:disabled) { color: var(--accent); background: var(--card-idle); }
+.hj-step:disabled, .step:disabled { color: var(--line-ctl); }
+.hj-count, .step-count {
   width: 4.5ch; min-height: 32px; padding: 0 var(--sp-1); text-align: center;
   font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-md); font-weight: 600; color: var(--ink-strong);
   background: var(--card); border: 0; border-left: 1px solid var(--line-ctl); border-right: 1px solid var(--line-ctl); border-radius: 0;
   -moz-appearance: textfield; appearance: textfield;
 }
-.hj-count::-webkit-outer-spin-button, .hj-count::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.hj-count::-webkit-outer-spin-button, .hj-count::-webkit-inner-spin-button,
+.step-count::-webkit-outer-spin-button, .step-count::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 @media (pointer: coarse) {
-  .hj-step { width: 44px; min-height: 44px; }
-  .hj-count { min-height: 44px; }
+  .hj-step, .step { width: 44px; min-height: 44px; }
+  .hj-count, .step-count { min-height: 44px; }
 }
 /* The entry's state, at the top of the page and in view on entering: the states as text,
    like the tabs, with the chosen one underlined. "In your game" is left only for the screen
@@ -3431,6 +3450,16 @@ button.tl-go:focus-visible { outline-offset: 3px; }
    (a flash and gone, as on the HUD), the vessels drain after them, and the rest of the slot fades
    while dust rises out of it. Then the slot is cleared and New Game fades in. */
 .save { position: relative; }
+/* Where you'd wake up (js/app-saves.js): the area of your last bench, as the game's profile
+   screen says it, and its light (--where, the area's deep tone) rising from the right, behind
+   the nail. Your shade, if it waits, closes the line. */
+.save.is-where { isolation: isolate; }
+.save.is-where::after {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(270deg, color-mix(in oklab, var(--where) 70%, transparent), transparent 65%);
+}
+.save-where { flex-basis: 100%; font-family: var(--font-display); font-size: var(--fs-sm); letter-spacing: 0.06em; color: var(--ink); }
+.save-shade { flex-basis: 100%; font-size: var(--fs-xs); color: var(--muted); }
 .save.is-clearing { pointer-events: none; }
 .save.is-clearing .save-foot { opacity: 0; transition: opacity var(--dur) var(--ease); }
 .save.is-clearing .save-masks img { animation: save-break 420ms var(--ease) both; animation-delay: calc(var(--r) * 70ms); }
@@ -3557,6 +3586,7 @@ kbd {
 .imp-nail img { height: calc(var(--sp-16) + var(--sp-8)); width: auto; }
 .imp-meta { grid-area: meta; margin: 0; display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-4); align-items: baseline; font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-sm); color: var(--ink); }
 .imp-meta b { font-weight: 600; color: var(--ink-strong); }
+.imp-ver { font-family: var(--font-body); font-size: var(--fs-xs); color: var(--muted); }
 .imp-meta .save-k { margin-right: var(--sp-1); }
 .imp-facts { grid-area: facts; justify-content: center; margin: var(--sp-2) 0 0; }
 /* The pantheons completed: five diamonds like the rule's, outlined, and filled in bone when done. */

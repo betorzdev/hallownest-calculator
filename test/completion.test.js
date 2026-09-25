@@ -6,6 +6,7 @@ const assert = require('node:assert');
 require('../js/data.js');
 const C = require('../js/codec.js');
 const HJ = require('../js/hunter.js');
+const P = require('../js/progress.js');
 const CP = require('../js/completion.js');
 const F = require('../js/savefile.js');
 
@@ -29,10 +30,10 @@ test("the categories are the wiki's, and they add up to 112", () => {
 
 test('a new game is at 0%, and everything is 112%', () => {
   assert.equal(count({}).total, 0);
-  const all = count({ build: C.PRESETS.max, owned: C.OWN_MAX, book: fullBook(), progress: { ids: CP.IDS } });
+  const all = count({ build: C.PRESETS.max, owned: C.OWN_MAX, book: fullBook(), progress: { ids: P.ID_LIST } });
   // divine-* means the fragile one is away: with them the three fragile charms don't count.
   assert.equal(all.total, 112 - 3);
-  const ids = CP.IDS.filter((id) => !id.startsWith('divine-'));
+  const ids = P.ID_LIST.filter((id) => !id.startsWith('divine-'));
   assert.equal(count({ build: C.PRESETS.max, owned: C.OWN_MAX, book: fullBook(), progress: { ids } }).total, 112);
 });
 
@@ -68,24 +69,9 @@ test('Grimm: Nightmare King or the banishment are the same point', () => {
   assert.equal(cat(count({ book: HJ.normalize({ nkg: 0 }), progress: { ids: ['banishment'] } }), 'grimm').got, 1);
 });
 
-test('the progress key keeps only what it knows, once and in order', () => {
-  assert.deepEqual(CP.normalize({ ids: ['lurien', 'nope', 'monomon', 'lurien'] }), { ids: ['monomon', 'lurien'] });
-  assert.deepEqual(CP.normalize(null), { ids: [] });
-});
-
 // The Knight of a new game, as playerData carries it.
 const BASE = { charmSlots: 3, maxHealthBase: 5, MPReserveMax: 0, nailSmithUpgrades: 0, grimmChildLevel: 0,
   fireballLevel: 0, quakeLevel: 0, screamLevel: 0, royalCharmState: 0, equippedCharms: [] };
-
-test('a save brings its progress: equipment, Dreamers, Colosseum, pantheons, the Divine', () => {
-  const pd = { ...BASE, hasWalljump: true, hasDoubleJump: true, monomonDefeated: true, colosseumBronzeCompleted: true,
-    hornetOutskirtsDefeated: true, dreamNailUpgraded: true, destroyedNightmareLantern: true, hasGodfinder: true,
-    bossDoorStateTier2: { completed: true }, bossDoorStateTier3: { completed: false },
-    gaveFragileGreed: true, gaveFragileHeart: true, fragileHealth_unbreakable: true };
-  assert.deepEqual(CP.fromSave(pd).ids, ['hornet-sentinel', 'mantis-claw', 'monarch-wings', 'dream-awakened',
-    'monomon', 'trial-warrior', 'banishment', 'godtuner', 'pantheon-artist', 'divine-greed']);
-  assert.equal(F.toSnapshot(pd)['hollow.progress'], JSON.stringify({ ids: CP.fromSave(pd).ids }));
-});
 
 test('a save counts what the game counts', () => {
   const pd = { ...BASE, maxHealthBase: 6, MPReserveMax: 33, fireballLevel: 1, hasDash: true, hasDreamNail: true,

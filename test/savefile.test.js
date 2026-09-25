@@ -112,6 +112,8 @@ test("the preview's extras: time, completion, geo, Steel Soul and the pantheons 
   const m = F.meta({ ...BASE, playTime: 3725.5, completionPercentage: 87, geo: 1200, permadeathMode: 2,
     bossDoorStateTier1: { completed: true }, bossDoorStateTier3: { completed: true, boundNail: true },
     bossDoorStateTier5: { completed: false, boundNail: false } });
-  assert.deepEqual(m, { time: 3725.5, completion: 87, geo: 1200, steel: true, pantheons: ['master', 'sage'] });
+  assert.deepEqual(m, { version: '', time: 3725.5, completion: 87, geo: 1200, steel: true, pantheons: ['master', 'sage'] });
+  assert.equal(F.meta({ ...BASE, version: '1.5.78.11833' }).version, '1.5.78.11833');
+  assert.equal(F.meta({ ...BASE, version: '<b>' }).version, '');
   assert.deepEqual(F.meta(BASE).pantheons, []);
 });

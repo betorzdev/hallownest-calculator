@@ -14,13 +14,13 @@
 (() => {
   'use strict';
   const HK = globalThis.HK;
-  const D = HK.data, E = HK.engine, C = HK.codec, I = HK.i18n, F = HK.foes, PN = HK.pantheons, HG = HK.hall;
+  const D = HK.data, E = HK.engine, C = HK.codec, I = HK.i18n, F = HK.foes, PN = HK.pantheons, HG = HK.hall, P = HK.progress;
   const App = HK.app = {};
 
   const t = (k, v) => I.t(k, v);
   const pick = (v) => I.pick(v);
 
-  const KEY = { build: 'hollow.build', baseline: 'hollow.baseline', prefs: 'hollow.prefs', run: 'hollow.run', hall: 'hollow.hall', owned: 'hollow.owned', door: 'hollow.bindings' };
+  const KEY = { build: 'hollow.build', baseline: 'hollow.baseline', prefs: 'hollow.prefs', run: 'hollow.run', hall: 'hollow.hall', owned: 'hollow.owned', door: 'hollow.bindings', progress: 'hollow.progress' };
   // With no enemy, half of Combat comes out empty: whoever has none starts with the Journal's first entry.
   const DEFAULT_FOE = 'crawlid';
   /* The page's own language: es/index.html is the Spanish copy, with its own address so that
@@ -622,7 +622,7 @@
       : '';
     // On the Pantheons tab you're already there: the notice doesn't send you where you are.
     const lock = prefs.view === 'fight' && prefs.fightTab === 'pantheon' ? '' : runLockBanner();
-    el.banner.innerHTML = over + lock + App.liveBanner() + App.importHint();
+    el.banner.innerHTML = over + lock + App.liveBanner() + App.shadeBanner() + App.importHint();
   }
 
   /* The notice that you're in a pantheon, with the button that takes you to the room and the one
@@ -995,6 +995,24 @@
   const withFixed = (st) => (isOwned('voidheart') && !st.charms.includes('voidheart')
     ? C.normalize({ ...st, charms: [...st.charms, 'voidheart'] }) : st);
   const isFixed = (id) => id === 'voidheart' && isOwned('voidheart');
+  /* What your game has beyond the Knight's numbers (js/progress.js): equipment and key items,
+     what you carry, the rest of the 112%, your bench and your shade. With nothing saved, none of
+     it: unlike the charms, none of it changes a figure. */
+  App.progress = P.normalize(null);
+  const loadProgress = () => {
+    try { App.progress = P.normalize(JSON.parse(load(KEY.progress) || 'null')); } catch (e) { App.progress = P.normalize(null); }
+  };
+  const saveProgress = () => save(KEY.progress, P.isEmpty(App.progress) ? null : JSON.stringify(App.progress));
+  // A change by hand: kept and repainted, with what changed lighting up (App.was).
+  function setProgress(next) {
+    const was = App.progress;
+    App.progress = P.normalize(next);
+    saveProgress();
+    App.was = { state: App.state, owned: App.owned, progress: was };
+    render();
+    App.was = null;
+  }
+
   /* Changes the collection. You never wear something you don't have: whatever leaves is removed,
      and Void Heart goes in by itself. */
   function setOwned(list) {
@@ -1015,8 +1033,9 @@
     App.loadMarks();
     App.loadDoor();
     App.loadJournal();
-    const ownedWas = App.owned;
+    const ownedWas = App.owned, progressWas = App.progress;
     loadOwned();
+    loadProgress();
     const kept = App.state;
     // The stored build, not the link's: the link still carries the one that was on screen.
     const stored = load(KEY.build);
@@ -1026,7 +1045,7 @@
     persist();
     recompute();
     // What arrived lights up, as after any change (App.was): a charm found, one now worn.
-    App.was = { state: kept, owned: ownedWas };
+    App.was = { state: kept, owned: ownedWas, progress: progressWas };
     render();
     App.was = null;
   }
@@ -1036,5 +1055,5 @@
     masksText, notchText, spellArt, shortOf, badgeText, goodClass, deltaChip, changeChip, prefs, loadPrefs,
     savePrefs, justWorn, justFound, splitHash, here, loadState, persist, compareLabel, compute, impact, recompute, commit, bindAllFx,
     brackets, chevron, cross, FLEURS, rule, screenHead, hudHtml, restoreFocus, focusDescriptor, render, go, navTo, screenOf,
-    underNav, toast, track, actions, isMaxOwned, loadOwned, saveOwned, isOwned, withFixed, isFixed, setOwned, reloadGame });
+    underNav, toast, track, actions, isMaxOwned, loadOwned, saveOwned, isOwned, withFixed, isFixed, setOwned, loadProgress, saveProgress, setProgress, reloadGame });
 })();

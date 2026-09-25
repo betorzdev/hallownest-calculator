@@ -10,48 +10,14 @@
                only has it from royalCharmState 3), 37–40 in the Grimm Troupe's
      journal   the bosses, the warrior dreams, Grimm, Nightmare King and the Hive Knight: the game
                marks them with the same killed<X> the Hunter's Journal reads
-   The rest goes in PROGRESS, a slot's new key (hollow.progress): { ids: [...] }, only the ones
-   you have. Hornet Sentinel is apart because the Journal has one Hornet for both fights.
-   A fragile charm eaten by the Divine doesn't count until it comes back (divine-*). */
+   The rest is in the slot's hollow.progress (js/progress.js): the equipment, the Dreamers, the
+   Colosseum, Hornet Sentinel (the Journal has one Hornet for both fights), the pantheons
+   cleared… A fragile charm eaten by the Divine doesn't count until it comes back (divine-*). */
 (() => {
   'use strict';
   const HK = globalThis.HK || (globalThis.HK = {});
   const HJ = HK.hunter || require('./hunter.js');
-
-  /* What hollow.progress can hold, and the playerData that says it (a bool, or a test).
-     The pantheons completed are the door's: its bindings are kept in hollow.bindings, whether
-     it was cleared at all isn't. */
-  const PROGRESS = Object.freeze({
-    'hornet-sentinel': 'hornetOutskirtsDefeated',
-    'mantis-claw': 'hasWalljump', 'monarch-wings': 'hasDoubleJump', 'crystal-heart': 'hasSuperDash',
-    'isma-tear': 'hasAcidArmour', 'kings-brand': 'hasKingsBrand',
-    'dream-awakened': 'dreamNailUpgraded', 'seer-ascended': 'mothDeparted',
-    'monomon': 'monomonDefeated', 'lurien': 'lurienDefeated', 'herrah': 'hegemolDefeated',
-    'trial-warrior': 'colosseumBronzeCompleted', 'trial-conqueror': 'colosseumSilverCompleted',
-    'trial-fool': 'colosseumGoldCompleted',
-    'banishment': 'destroyedNightmareLantern',
-    'godtuner': 'hasGodfinder',
-    'pantheon-master': (pd) => doorDone(pd, 1), 'pantheon-artist': (pd) => doorDone(pd, 2),
-    'pantheon-sage': (pd) => doorDone(pd, 3), 'pantheon-knight': (pd) => doorDone(pd, 4),
-    'pantheon-hallownest': (pd) => doorDone(pd, 5),
-    // Given to the Divine and not yet back unbreakable: the charm is gone meanwhile.
-    'divine-heart': (pd) => !!pd.gaveFragileHeart && !pd.fragileHealth_unbreakable,
-    'divine-greed': (pd) => !!pd.gaveFragileGreed && !pd.fragileGreed_unbreakable,
-    'divine-strength': (pd) => !!pd.gaveFragileStrength && !pd.fragileStrength_unbreakable,
-  });
-  const IDS = Object.keys(PROGRESS);
-  function doorDone(pd, n) {
-    const st = pd['bossDoorStateTier' + n];
-    return !!st && typeof st === 'object' && !!st.completed;
-  }
-
-  // Anything → a valid progress: the known ids, once each, in PROGRESS's order.
-  function normalize(raw) {
-    const ids = raw && typeof raw === 'object' && Array.isArray(raw.ids) ? raw.ids : [];
-    return { ids: IDS.filter((id) => ids.includes(id)) };
-  }
-  // playerData → progress.
-  const fromSave = (pd) => ({ ids: IDS.filter((id) => (typeof PROGRESS[id] === 'function' ? PROGRESS[id](pd) : !!pd[PROGRESS[id]])) });
+  const P = HK.progress || require('./progress.js');
 
   /* The categories, in the wiki's order, and what each one is out of. Each item is
      [id, where it's read, points]: 'journal' (the entry of that id encountered), 'progress',
@@ -94,7 +60,7 @@
   /* The game's parts, read from the site: { build, owned, book, progress } (decoded, as the
      screens hold them) → { total, max: 112, categories: [{ id, got, max, items: [{ id, got, max }] }] }. */
   function count({ build, owned = [], book = {}, progress = {} }) {
-    const ids = normalize(progress).ids;
+    const ids = P.normalize(progress).ids;
     const has = (id) => ids.includes(id);
     const charms = new Set(owned.map((id) => BASE[id] || id).filter((id) => !(DIVINE[id] && has(DIVINE[id]))));
     const x = { book, has, charm: (id) => charms.has(id) };
@@ -110,6 +76,6 @@
     return { total: categories.reduce((n, c) => n + c.got, 0), max: TOTAL, categories };
   }
 
-  HK.completion = { PROGRESS, IDS, CATEGORIES, TOTAL, normalize, fromSave, count };
+  HK.completion = { CATEGORIES, TOTAL, count };
   if (typeof module !== 'undefined' && module.exports) module.exports = HK.completion;
 })();

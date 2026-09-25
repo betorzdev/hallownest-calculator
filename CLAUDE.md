@@ -27,7 +27,7 @@ Neither folder is part of the page: `index.html` doesn't load them.
 
 ## Hard constraints
 
-- **No framework and no build.** `index.html` loads **twenty-three classic scripts**, not modules.
+- **No framework and no build.** `index.html` loads **twenty-five classic scripts**, not modules.
   The page is `js/app.js` (the core) and one script per screen (`js/app-*.js`), sharing the
   `HK.app` object, and `js/app-boot.js` starts it; the rules for sharing are in `js/app.js`'s header.
   Plus GoatCounter's (`async`, external), the visit counter: the site has to work the same

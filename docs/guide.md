@@ -275,17 +275,17 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   notches, 9 used and a 3-notch charm: nine white and three magenta, twelve in total).
 - **Your game**: another page of the Inventory, with the same black and corner brackets and no
   boxes inside: what you've achieved in the game. Under the title, two starting points, as text:
-  *Base Knight* (a new game's: Old Nail, 5 masks, 3 notches, no Dream Nail, no cloak and no
-  charms: it removes those too) and *Everything maxed* (every upgrade, keeping
-  your charms). The screen's focal point is **the nail picker**, at the head of the left column:
+  *Base Knight* (a new game's: Old Nail, 5 masks, 3 notches, no Dream Nail, no cloak, no
+  charms, no equipment, no key items and nothing carried: it removes those too) and *Everything maxed* (every
+  upgrade, all the equipment and key items, keeping your charms). The screen's focal point is **the nail picker**, at the head of the left column:
   the five nails standing in a row on one baseline, the one you carry taller, with the cold
   spotlight behind it and its damage larger (the nail's own, without charms: with them it's on
   Charms), the others in half-light with their damage below; under the row, its name. (A separate large nail beside the picker, and then the picker
   across the full width, were tried the same day and removed: one repeated it, the other left
   too much empty space.) The page goes in **two columns that don't share rows**, so a tall block leaves no hole
-  beside it: on the left what you learn (the nail, its arts, the spells and the abilities), on
-  the right what you collect (the body and the charms found); on mobile, one column in the
-  order nail, body, arts, spells, abilities, charms. The body —masks,
+  beside it: on the left what you learn (the nail, its arts, the spells, the abilities and the
+  equipment), on the right what you collect (the body, the charms found and the items); on
+  mobile, one column in the order nail, body, arts, spells, abilities, equipment, charms, items. The body —masks,
   soul vessels and notches— **with the game's own pieces**: a row of masks, the vessels and the
   notches, lit up to what you have and shadowed after, like the HUD's lost mask. Tapping a
   dark one lights up to it; tapping a lit one takes it off with every one after it, so one tap
@@ -298,7 +298,9 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   haven't learnt, with its figure what you have), and under each spell **its two levels as
   their own artwork** (Vengeful Spirit and Shade Soul…) after a dimmed "—" for not learnt; the
   chosen one carries the accent's veil. Below, the **abilities** that change some number, with
-  the same plates: the Dream Nail (yes or no), the cloak (no cloak, Mothwing Cloak or Shade
+  the same plates: the Dream Nail in its three steps (not found, the Dream Nail, and the *Awoken
+  Dream Nail* the Seer gives for 1800 essence: the same for the figures, but part of the 112%),
+  the cloak (no cloak, Mothwing Cloak or Shade
   Cloak, chosen by their artwork) and Grimmchild's phase (I–IV, four of the game's notches), which only shows if you have it among
   your charms found —it belongs to the charm, and whoever banishes the troupe has Carefree
   Melody in its place— and whose IV needs the Dream Nail, because it's won by defeating
@@ -324,10 +326,20 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   resting on one (0.4 s) does, and leaving the grid ends the pin. They're
   saved apart from the build (`hollow.owned`), because they're your game and not what you're
   wearing, and the two starting points set them: the Base Knight, none; Everything maxed, all. On mobile, in one column.
-  Masks and vessels are added whole, one at a time: the site doesn't keep count of your
-  fragments, because it doesn't measure your progress in the game but what you can do with what
-  you have; and that way each step previews a real effect, whereas counting fragments three out
-  of four changed nothing. Health isn't set here either: it's set on the health meter, by
+  **Equipment and items**, the rest of the game's Inventory, which changes no figure but is your
+  game: the **equipment** (Mantis Claw, Monarch Wings, Crystal Heart, Isma's Tear, Dreamgate) and
+  the **key items** (King's Brand, Lumafly Lantern, the City Crest and the three keys, the Tram
+  Pass, the Godtuner) as plates you tap, a silhouette until you have them; and **what you carry**
+  (geo, essence, Pale Ore, Simple Keys, Rancid Eggs and the four relics), each with the Journal's
+  [− N +], where the number can also be typed. The geo plate says what's in Millibelle's bank,
+  and the head of the block what Lemm would pay for your relics (200, 450, 800 and 1200 geo each).
+  All of it is kept in `hollow.progress` (`js/progress.js`) and comes in with an imported save.
+  With nothing saved, none of it: unlike the charms, none of it changes a figure.
+  Masks and vessels are added whole, one at a time, because that's what changes a figure and
+  each step previews a real effect. **The loose pieces go under their row**: *Mask Shards* (up to
+  three: the fourth makes a mask) and *Vessel Fragments* (up to two), the game's own pieces lit
+  up to how many you have, as the Inventory keeps them; with every mask (or every vessel) the
+  row isn't there. They're your game's record (`hollow.progress`), not the build's. Health isn't set here either: it's set on the health meter, by
   pressing your masks. Whoever comes in for the first time starts with *Everything maxed*, to
   see everything. The abilities default to what the sheet took for granted before it had
   them —Shade Cloak, Dream Nail and Grimmchild at phase 4, which hits for 11—, so an old link
@@ -357,7 +369,7 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
 
 ## Files
 
-- `index.html` — the page; twenty-three classic scripts (it works over `file://`) and GoatCounter's,
+- `index.html` — the page; twenty-five classic scripts (it works over `file://`) and GoatCounter's,
   the visit counter: no cookies, one visit per page load and, as events, the screen switches
   (`screen-*`), the language (`lang-*`) and *Share*. The hash with the build is never sent, and it
   counts nothing over `file://`, on `localhost` or in an iframe. Without it the site works the
@@ -404,11 +416,21 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
 - `js/hunter.js` — the rules of your game's Journal: what's saved (the defeats you have left,
   like the game), how it's marked, the counts, the Hunter's Mark and what the Hunter says.
   Pure, no DOM, with its test (`test/hunter.test.js`).
+- `js/progress.js` — what a game has beyond the Knight's numbers, a slot's `hollow.progress`:
+  `ids` (equipment and key items, the Dreamers, the Colosseum's trials, the pantheons
+  cleared…), `counts` (geo, essence, the loose shards and fragments, Pale Ore, Rancid Eggs,
+  Simple Keys, the relics, Millibelle's bank), `bench` and `shade` (their rooms), each with the
+  `playerData` field it comes from; and marking by hand (`toggle`, `setCount`). Pure, with its
+  test (`test/progress.test.js`).
+- `js/rooms.js` — generated by `npm run rooms` (`tools/fetch-rooms.js`): each of the game's
+  rooms (its scene, `Crossroads_47`) with its area, and each area's name as the game writes it
+  (`MAP_NAME_*`) and the area light it takes. The room table comes from the community
+  randomizer's `rooms.json` (homothetyhk/RandomizerMod, pinned to a commit).
 - `js/completion.js` — your game's completion, the 112%: the wiki's fifteen categories and
   what each item is read from. Most of it is already in the slot (the build, the charms found,
   the Journal: the game marks the bosses with the same `killed<X>` the Journal reads); the rest
   (equipment, Dreamers, Colosseum, Hornet Sentinel, pantheons cleared, a fragile charm with the
-  Divine…) goes in the slot's `hollow.progress`, `{ ids }`. `count()` gives the total and each
+  Divine…) is in the slot's `hollow.progress` (`js/progress.js`). `count()` gives the total and each
   category's part. Checked against the game's own figure in 51 real saves (`tools/check-pack.js`);
   pure, with its test (`test/completion.test.js`). No screen shows it yet.
 - `js/pantheons.js` — the five Pantheons room by room: fight (with its entry), rest or
@@ -454,7 +476,8 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   script (the rules, in its header).
   - `js/app-charms.js` — Charms: the status block, the charm band and its detail, the plates,
     the effects and the full sheet.
-  - `js/app-game.js` — Your game: nail, body, arts, spells, abilities and the charms you've found.
+  - `js/app-game.js` — Your game: nail, body (with the loose shards and fragments), arts, spells,
+    abilities, equipment, the charms you've found and the items you carry.
   - `js/app-arena.js` — Combat: the simulator, the combat Journal to pick an enemy and the arena.
   - `js/app-hall.js` — the Hall of Gods tab: marks, statues, plaque and tablet.
   - `js/app-pantheons.js` — the Pantheons tab: the lifeblood door and the run room by room.
@@ -1119,7 +1142,10 @@ inside. The game's notice when marking shows fixed just below the bar.
 it (`view=saves`); it isn't a tab in the screen bar. The selector shows the Knight and the save
 you're playing (*Save 2*), or *Select save* in free mode. Each row shows its masks and soul
 vessels with the HUD's sprites, its nail, and what that game carries: charms found (out of 40)
-and the Journal's completed entries over its total. The Hall of Gods is left out as secondary
+and the Journal's completed entries over its total. A save imported from the game also says,
+as the game's profile screen does, **the area of your last bench** (`respawnScene`, its area from
+`js/rooms.js`), whose light tints the card from the right, and **where your shade waits** and
+with how much geo, if it does. The Hall of Gods is left out as secondary
 (the import's preview does show it). The one you're in is lit from its left edge, carries the accent's line and, at the head
 of its card, a lit diamond with *You're here*. The rows share their columns, so the numbers, the
 masks, the nails and the buttons line up from one slot to the next.
@@ -1133,7 +1159,8 @@ masks, the nails and the buttons line up from one slot to the next.
 
 - **What goes in a slot** is everything that describes one game: the build (`hollow.build`),
   the charms found (`hollow.owned`), the Journal (`hollow.journal`), the Hall's symbols
-  (`hollow.hall`), the lifeblood door (`hollow.bindings`), the half-done pantheon (`hollow.run`)
+  (`hollow.hall`), the lifeblood door (`hollow.bindings`), the rest of what the game has
+  (`hollow.progress`: equipment, items, the rest of the 112%, bench and shade), the half-done pantheon (`hollow.run`)
   and the pinned build (`hollow.baseline`). **What doesn't** is yours, not the game's:
   `hollow.prefs` (the language, the screen, the enemy chosen).
 - Those keys always hold **the active slot** (free mode included, slot 0), so no screen has to
@@ -1225,6 +1252,13 @@ masks, the nails and the buttons line up from one slot to the next.
   *Import from the game*, opens the import view for Save 1; its ✕ closes it. Either of the two,
   or opening the import view from Saves, puts it away for good (`importHintOff` in
   `hollow.prefs`), and choosing a save hides it as well.
+- **Your shade**: when the save you're in comes from the game and your shade waits somewhere, a
+  notice above every screen but Saves (*Your shade*) says where and with how much geo, drawn
+  like the import notice. Its ✕ hides it until the shade is another one (`shadeOff` in
+  `hollow.prefs`); a save without a shade takes it away.
+- **The import's preview** also says, quietly at the end of its line, the game's version that
+  wrote the save and the mods it had (a save from before 1.5 counts some things otherwise:
+  Oblobbles needed three defeats).
 - A shared link still lands where you are (free mode or a save): its build replaces that one's.
 
 ## State and link
@@ -1318,6 +1352,8 @@ linking to the repo), in the footer under every screen
   and the notes and data in `kb/`) keeps that licence. Thanks to their editors.
 - **Artwork** in `assets/` (except `assets/fonts/`): the game's, downloaded from the wikis
   (`npm run icons` and the other `fetch-*` scripts). © Team Cherry.
+- **Which area each room is in** (`js/rooms.js`): from the `rooms.json` of the community's
+  [RandomizerMod](https://github.com/homothetyhk/RandomizerMod) (LGPL-2.1); only that fact is taken.
 - **The game's texts**: its official Spanish and English names come from the dump of its
   TextAssets in [stradivari96/hollow-knight-translator](https://github.com/stradivari96/hollow-knight-translator).
   The dump isn't in this repo: `npm run text` downloads it to `kb/data/all_text.json`.

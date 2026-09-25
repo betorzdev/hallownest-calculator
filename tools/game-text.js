@@ -74,6 +74,11 @@ function audit(dump) {
   Object.entries(D.ARTS).forEach(([k, v]) => add('ARTS.' + k, v));
   Object.values(D.SPELLS).forEach((s) => { add('SPELLS.' + s.key + '.slot', s.slot); s.levels.forEach((l, i) => l && add('SPELLS.' + s.key + i, l)); });
   add('ABILITIES.dream', D.ABILITIES.dream);
+  add('ABILITIES.awoken', D.ABILITIES.awoken);
+  [...D.EQUIPMENT, ...D.KEY_ITEMS, ...D.CARRIED].forEach((it) => add('ITEMS.' + it.id, it));
+  add('SHARDS', D.SHARDS); add('FRAGMENTS', D.FRAGMENTS);
+  const R = require(JS('rooms.js'));
+  Object.entries(R.AREAS).forEach(([id, a]) => add('AREAS.' + id, a));
   D.ABILITIES.cloaks.forEach((c, i) => c && add('ABILITIES.cloak' + i, c));
   const zones = new Map();
   for (const f of F.FOES) { add('FOES.' + f.id, f.name); if (f.zone && !zones.has(f.zone.en)) zones.set(f.zone.en, f.zone); }

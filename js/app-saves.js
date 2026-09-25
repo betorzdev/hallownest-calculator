@@ -11,6 +11,7 @@
   'use strict';
   const HK = globalThis.HK;
   const D = HK.data, C = HK.codec, S = HK.saves, HJ = HK.hunter, HG = HK.hall, F = HK.savefile, PN = HK.pantheons, L = HK.live;
+  const P = HK.progress, R = HK.rooms;
   const App = HK.app;
   const { t, pick, el, NT, esc, FLEURS, prefs, savePrefs, brackets, screenHead, render, actions, here, PAGE_LANG, toast, track, pctSpace } = App;
 
@@ -64,12 +65,17 @@
     const owned = snap['hollow.owned'] != null ? C.ownNormalize(parse(snap['hollow.owned'], [])) : C.OWN_MAX;
     const book = HJ.normalize(parse(snap['hollow.journal'], {}));
     const marks = HG.normalizeMarks(parse(snap['hollow.hall'], {}));
+    const prog = P.normalize(parse(snap['hollow.progress'], {}));
     return {
       st, charms: owned.length,
       journal: HJ.counts(book),
       hall: HG.STATUES.filter((s) => (marks[s.id] || []).length).length,
+      where: R.areaOf(prog.bench), shade: prog.shade,
     };
   }
+  // An area's name and the light it takes (js/rooms.js), for a card or a notice.
+  const areaName = (id) => (R.AREAS[id] ? pick(R.AREAS[id]) : '');
+  const areaLight = (id) => (R.AREAS[id] && R.AREAS[id].light ? ` style="--where: var(--area-${R.AREAS[id].light}-deep)"` : '');
 
   const num = (n) => App.NF[0].format(n);
   function card(slot) {
@@ -104,7 +110,11 @@
           <span class="save-act-t">${esc(t('saveClear'))}</span></button>`;
     // You're here: at the head of the card, over the masks (beside the name, in free mode).
     const here = slot.active ? `<span class="save-tag">${esc(t('saveCurrent'))}</span>` : '';
-    return `<li class="save${slot.active ? ' is-active' : ''}${free ? ' is-free' : ''}" data-slot="${n}">
+    /* Where you'd wake up, as the game's profile screen says it: the area of your last bench,
+       whose light tints the card. And where your shade waits, if it does. */
+    const where = s.where ? `<span class="save-where"${NT}>${esc(areaName(s.where))}</span>` : '';
+    const shade = s.shade ? `<span class="save-shade">${esc(t('shadeCard', { area: areaName(R.areaOf(s.shade.scene)) || '?', geo: num(s.shade.geo) }))}</span>` : '';
+    return `<li class="save${slot.active ? ' is-active' : ''}${free ? ' is-free' : ''}${s.where ? ' is-where' : ''}" data-slot="${n}"${areaLight(s.where)}>
       <button type="button" class="save-main" data-act="savePick" data-value="${n}"${slot.active ? ' aria-current="true"' : ''}
         aria-label="${esc(label + (slot.active ? ', ' + t('saveCurrent') : ''))}" title="${esc(slot.active ? t('saveContinue') : t('saveLoad'))}">
         <span class="save-n">${free ? `<img src="${D.art('hud', 'knight')}" alt="">` : n}</span>
@@ -114,7 +124,7 @@
           ${vessels ? `<span class="save-vessels">${vessels}</span>` : ''}
         </span>
         <span class="save-nail"><img src="${D.art('nails', s.st.nail)}" alt="" width="80" height="360"><span${NT}>${esc(pick(D.NAILS[s.st.nail]))}</span></span>
-        <span class="save-facts">${facts}</span>
+        <span class="save-facts">${where}${facts}${shade}</span>
       </button>
       ${free ? `<span class="save-foot save-note">${esc(t('freeModeNote'))}</span>` : `<span class="save-foot">${linked}${confirm}</span>`}
     </li>`;
@@ -233,6 +243,10 @@
         `<span><span class="save-k">${esc(t('impCompletion'))}</span> <b>${num(Math.floor(m.completion))}${pctSpace()}</b></span>`,
         `<span><span class="save-k">${esc(t('impGeo'))}</span> <b>${num(m.geo)}</b></span>`,
       ].join('');
+      // The game's version and the mods it had, quiet at the end of the line: they explain a figure
+      // that counts differently (a save from before 1.5).
+      const verText = [m.version ? t('impVersion', { v: m.version }) : '', m.mods.length ? t('impMods', { mods: m.mods.join(', ') }) : ''].filter(Boolean).join(' · ');
+      const ver = verText ? `<span class="imp-ver" translate="no">${esc(verText)}</span>` : '';
       const facts = [
         [t('navCharms'), s.charms, C.OWN_MAX.length],
         [t('navJournal'), s.journal.completed, s.journal.total],
@@ -252,7 +266,7 @@
           <p class="imp-fname" translate="no">${FILE_ICON}${esc(f.name)}${m.steel ? `<span class="imp-steel"${NT}>${esc(t('impSteel'))}</span>` : ''}</p>
           <div class="imp-hud"><span class="save-masks">${masks}</span>${vessels ? `<span class="save-vessels">${vessels}</span>` : ''}</div>
           <div class="imp-nail"><img src="${D.art('nails', s.st.nail)}" alt="" width="80" height="360"><span${NT}>${esc(pick(D.NAILS[s.st.nail]))}</span></div>
-          <p class="imp-meta">${metaBits}</p>
+          <p class="imp-meta">${metaBits}${ver}</p>
           <p class="save-facts imp-facts">${facts}</p>
           ${pantheons}
           ${full ? `<p class="imp-warn">${esc(t('impReplace', { n: imp.n }))}</p>` : ''}
@@ -378,6 +392,7 @@
     App.loadDoor();
     App.loadJournal();
     App.loadOwned();
+    App.loadProgress();
     App.state = App.withFixed(App.loadState());
     App.persist();
     App.recompute();
@@ -627,7 +642,7 @@
     reader.onload = () => {
       const r = F.read(new Uint8Array(reader.result));
       if (!r.ok) { imp.state = 'error'; paintDrop(); return; }
-      imp.file = { name: file.name, snap: F.toSnapshot(r.pd), meta: F.meta(r.pd), handle, stamp: L.stampOf(file) };
+      imp.file = { name: file.name, snap: F.toSnapshot(r.pd), meta: { ...F.meta(r.pd), mods: r.mods }, handle, stamp: L.stampOf(file) };
       imp.state = 'ready';
       paintDrop();
       focusIn('[data-act="importDo"]');
@@ -738,6 +753,21 @@
       <button type="button" class="btn btn-primary" data-act="${paused ? 'liveResume' : 'liveRelink'}">${esc(t(paused ? 'liveResume' : 'liveRelink'))}</button>
     </div>`;
   };
+  /* Your shade, above the screen, as long as it waits (only a save says so: js/progress.js):
+     where and with how much geo. The ✕ hides it until the shade is another one. */
+  const shadeKey = (sh) => sh.scene + ':' + sh.geo;
+  App.shadeBanner = () => {
+    const sh = App.progress.shade;
+    if (!sh || prefs.shadeOff === shadeKey(sh) || prefs.view === 'saves') return '';
+    const area = R.areaOf(sh.scene);
+    return `<div class="banner is-run is-hint">
+      <span class="banner-tag">${esc(t('shadeTag'))}</span>
+      <span class="banner-text">${esc(t('shadeBanner', { area: areaName(area) || '?', geo: num(sh.geo) }))}</span>
+      <button type="button" class="banner-close" data-act="shadeOff" aria-label="${esc(t('shadeOff'))}" title="${esc(t('shadeOff'))}">${CLOSE}</button>
+    </div>`;
+  };
+  actions.shadeOff = () => { if (App.progress.shade) { prefs.shadeOff = shadeKey(App.progress.shade); savePrefs(); render(); } };
+
   // The link of the save you're in, for the header: { state, name }, or null if it follows no file.
   App.liveInfo = () => (live.watcher && live.state ? { state: live.state, name: live.name } : null);
   Object.assign(App, { renderSaves, activeSlot, liveStart });
