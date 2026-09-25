@@ -80,7 +80,7 @@
   const fst = () => (runFight() ? runBuild() : App.state);  // combat build
 
   /* While a pantheon lasts, charms can't be touched from ANYWHERE on the site —the grid,
-     the equipped ones, the examples, the presets or a link— except at its benches: the
+     the equipped ones, the presets or a link— except at its benches: the
      game only lets you change them sitting on one, and here the benches are the rest
      rooms. The notches go with them, since they decide what fits. With the Charms
      binding, not even at the bench. It also holds from the Combat tab: the run is still

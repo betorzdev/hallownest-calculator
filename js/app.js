@@ -29,7 +29,7 @@
   const PAGE_LANG = document.documentElement.lang === 'es' ? 'es' : 'en';
   const $ = (sel) => document.querySelector(sel);
   const el = {
-    page: $('.page'), masthead: $('#masthead'), colophon: $('#colophon'), nav: $('#nav'), guide: $('#guide'), panel: $('#panel'),
+    page: $('.page'), masthead: $('#masthead'), colophon: $('#colophon'), nav: $('#nav'), panel: $('#panel'),
     mini: $('#minihud'), banner: $('#banner'), gear: $('#gear'), hj: $('#hj'),
     toast: $('#toast'), fx: $('#overcharm-fx'), fight: $('#fight'),
   };
@@ -42,13 +42,6 @@
   const ART_STAT = { cyclone: 'nail.cyclone', dash: 'nail.dashSlash', great: 'nail.greatSlash' };
   // Positional charms: the arena doesn't simulate them, it names them (design/04 §3.3, family E).
   const POSITIONAL = ['sprintmaster', 'steady', 'heavy', 'longnail', 'pride', 'crest', 'unn'];
-
-  // Example builds for first use: upgrades maxed out and a handful of charms with synergy.
-  const EXAMPLES = [
-    { id: 'nail', name: 'exNail', desc: 'exNailDesc', charms: ['ustrength', 'fury', 'quickslash', 'pride'], hp: 1 },
-    { id: 'spells', name: 'exSpells', desc: 'exSpellsDesc', charms: ['shaman', 'twister', 'eater', 'catcher'], hp: 0 },
-    { id: 'lifeblood', name: 'exLifeblood', desc: 'exLifebloodDesc', charms: ['joni', 'lbcore', 'lbheart', 'stalwart'], hp: 0 },
-  ];
 
   const NEED_KEY = {
     'spell:vs': 'needSpellVs', 'spell:any': 'needSpellAny', 'art:any': 'needArtAny',
@@ -166,7 +159,7 @@
   /* ── State ───────────────────────────────────────────────────────────── */
   App.state = C.normalize({});
   App.baseline = null;              // state pinned for comparison, or null
-  let prefs = { lang: 'en', langChosen: false, compare: 'base', open: [], view: 'charms', detailOpen: false, guideSeen: false,
+  let prefs = { lang: 'en', langChosen: false, compare: 'base', open: [], view: 'charms', detailOpen: false,
                 foeId: '', foeKind: 'all',
                 fightTab: 'combat', pantheon: 'master',
                 hallId: HG.STATUES[0].id, hallDiff: '',
@@ -493,29 +486,6 @@
     el.hj.hidden = prefs.view !== 'journal';
   }
 
-  function exampleButtons() {
-    return EXAMPLES.map((ex) => `<button type="button" class="example" data-act="example" data-value="${ex.id}" title="${esc(t(ex.desc))}">${ex.charms.slice(0, 3).map((id) => `<img src="assets/charms/${id}.png" alt="">`).join('')}<span class="example-name">${esc(t(ex.name))}</span></button>`)
-      .join('<span class="presets-sep" aria-hidden="true">·</span>');
-  }
-
-  // The first-use guide, on Charms. Step 1 leads to Your game.
-  function renderGuide() {
-    if (prefs.guideSeen || prefs.view !== 'charms') { el.guide.innerHTML = ''; return; }
-    const game = `<button type="button" class="guide-link" data-act="view" data-value="game">${esc(t('navGame'))}</button>`;
-    el.guide.innerHTML = `<section class="guide">
-      ${brackets}
-      <button type="button" class="btn guide-close" data-act="guide-dismiss" title="${esc(t('guideDismissHint'))}">${esc(t('guideDismiss'))}</button>
-      <h2>${esc(t('guideTitle'))}</h2>${rule}
-      <p class="guide-lede">${esc(t('tagline'))}</p>
-      <ol class="steps">
-        <li><span class="n">1</span><span>${t('guideStep1', { game })}</span></li>
-        <li><span class="n">2</span><span>${t('guideStep2')}</span></li>
-        <li><span class="n">3</span><span>${t('guideStep3')}</span></li>
-      </ol>
-      <div class="examples"><span class="lbl">${esc(t('tryBuild'))}</span>${exampleButtons()}</div>
-    </section>`;
-  }
-
   /* The mini-bar, in the screen bar: what you look at while touching charms, with the game's
      sprites instead of labels —the nail, the mask (the blue one if it's all lifeblood), soul and
      a notch— and the DPS, and the same flash as the sheet: on mobile, when you scroll down to the
@@ -712,7 +682,6 @@
     renderMasthead();
     renderColophon();
     renderNav();                           // with your game's Journal button
-    renderGuide();
     renderBanner();
     App.renderPanel();
     renderMiniHud();
@@ -744,7 +713,7 @@
     }
   }
   /* Leaves a history entry and scrolls up to the top of the screen, which sits just below the
-     bar. If you arrive from inside another screen (the pantheon notice, the guide), focus goes
+     bar. If you arrive from inside another screen (the pantheon notice), focus goes
      to its title: the control that had it is no longer visible. */
   function go(v, focusHead) {
     const changed = v !== prefs.view;
@@ -775,10 +744,9 @@
   }
 
   /* ── Actions ─────────────────────────────────────────────────────────── */
-  /* What each data-act does. Here, the header's, the guide's and the link's; each screen's
+  /* What each data-act does. Here, the header's and the link's; each screen's
      script adds its own with Object.assign(actions, …). */
   const actions = {
-    'guide-dismiss'() { prefs.guideSeen = true; savePrefs(); render(); },
     lang(node) {
       const next = node.dataset.value;
       if (next === prefs.lang) return;
@@ -791,12 +759,6 @@
       recompute();
       render();
     },
-    example(node) {
-      const ex = EXAMPLES.find((x) => x.id === node.dataset.value);
-      if (!ex) return;
-      const next = C.normalize({ ...C.PRESETS.max, charms: ex.charms, hp: ex.hp });
-      if (commit(next)) toast(t(ex.desc));
-    },
     // The link carries the build and the language, not the screen.
     share() {
       persist();
@@ -806,7 +768,7 @@
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, () => prompt(t('copyThis'), url));
       else prompt(t('copyThis'), url);
     },
-    // From another screen (the notice, the guide), focus goes to the new one's title; from the bar or
+    // From another screen (the notice), focus goes to the new one's title; from the bar or
     // the site's title, it stays on the link pressed.
     view(node) { go(node.dataset.value, !node.closest('#nav, .masthead')); },
   };

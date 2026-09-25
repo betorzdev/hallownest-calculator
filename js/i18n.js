@@ -13,8 +13,6 @@
   const UI = {
     /* Header */
     title:          { es: 'Calculadora de Hallownest', en: 'Hallownest Calculator' },
-    tagline:        { es: 'Forja tu aguijón, equipa amuletos y mira cómo cambia cada número al instante.',
-                      en: 'Forge your nail, equip charms, and watch every number change at once.' },
     goHome:         { es: 'Ir a Amuletos, la pantalla de inicio', en: 'Go to Charms, the home screen' },
     langGroup:      { es: 'Idioma', en: 'Language' },
     // The tab and search-result title: carries the game's name and what the site is.
@@ -48,27 +46,6 @@
     navFight:       { es: 'Combate', en: 'Combat' },
     navJournal:     { es: 'Diario', en: 'Journal' },           // PANE_JOURNAL
     presetsLbl:     { es: 'Empezar desde', en: 'Start from' },
-
-    /* First-use guide */
-    guideTitle:     { es: 'Cómo funciona', en: 'How it works' },
-    guideDismiss:   { es: 'Entendido', en: 'Got it' },
-    guideDismissHint: { es: 'Ocultar la guía', en: 'Hide the guide' },
-    guideStep1:     { es: '<b>Ajusta tu partida</b> en {game}: aguijón, artes, hechizos, habilidades, máscaras, vasijas y muescas.',
-                      en: '<b>Set up your game</b> in {game}: nail, Nail Arts, spells, abilities, masks, vessels and notches.' },
-    guideStep2:     { es: '<b>Equipa amuletos</b> en la rejilla. Al lado ves qué cambia cada uno en tu build, antes y después.',
-                      en: '<b>Equip charms</b> from the grid. Beside it you see what each one changes in your build, before and after.' },
-    guideStep3:     { es: '<b>Lee la ficha</b>: cada estadística, cuánto cambia respecto al Caballero base y qué amuleto lo provoca.',
-                      en: '<b>Read the sheet</b>: every stat, how much it moves from the base Knight, and which charm moved it.' },
-    tryBuild:       { es: 'Prueba una build:', en: 'Try a build:' },
-    exNail:         { es: 'Aguijón al límite', en: 'Nail to the limit' },
-    exNailDesc:     { es: 'Fuerza irrompible, Furia de los caídos, Corte rápido y Marca de orgullo, a 1 máscara',
-                      en: 'Unbreakable Strength, Fury of the Fallen, Quick Slash and Mark of Pride, at 1 mask' },
-    exSpells:       { es: 'Hechicero', en: 'Spellcaster' },
-    exSpellsDesc:   { es: 'Piedra de chamán, Tuercehechizos, Devoraalmas y Atrapaalmas',
-                      en: 'Shaman Stone, Spell Twister, Soul Eater and Soul Catcher' },
-    exLifeblood:    { es: 'Saviavida', en: 'Lifeblood' },
-    exLifebloodDesc:{ es: 'Bendición de Joni, Núcleo y Corazón de saviavida, Coraza robusta',
-                      en: "Joni's Blessing, Lifeblood Core and Heart, Stalwart Shell" },
 
     /* Sheet panel */
     heroLabel:      { es: 'Daño del aguijón', en: 'Nail damage' },

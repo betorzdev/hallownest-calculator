@@ -23,10 +23,10 @@ const view = q.get('view') || (q.get('journal') ? 'journal' : q.get('tab') ? 'fi
 try {
   localStorage.removeItem('hollow.run');
   if (q.get('journal') && !q.get('tab')) {
-    localStorage.setItem('hollow.prefs', JSON.stringify({ guideSeen: true, lang: q.get('lang') || 'en', langChosen: !!q.get('lang') }));
+    localStorage.setItem('hollow.prefs', JSON.stringify({ lang: q.get('lang') || 'en', langChosen: !!q.get('lang') }));
   }
   if (q.get('tab')) {
-    localStorage.setItem('hollow.prefs', JSON.stringify({ guideSeen: true, view, fightTab: q.get('tab'),
+    localStorage.setItem('hollow.prefs', JSON.stringify({ view, fightTab: q.get('tab'),
       lang: q.get('lang') || 'en', langChosen: !!q.get('lang'), hallId: q.get('statue') || 'gruz-mother', hallDiff: q.get('hdiff') || '' }));
   }
   if (q.get('run')) {

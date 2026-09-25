@@ -225,7 +225,7 @@
      black with each region in a pale, desaturated tint, all above 12:1.
      It goes on section titles, corner brackets and ornaments; never on a figure or on
      what responds to the finger, which still belongs to the accent. */
-  --tint-sheet: #d5ddfd;      /* City of Tears: Charms, Your game and the guide */
+  --tint-sheet: #d5ddfd;      /* City of Tears: Charms and Your game */
   --tint-combat: #f8cffc;     /* Crystal Peak: combat */
   --tint-godhome: var(--godhome);   /* the Hall of Gods and the Pantheons */
   --tint-journal: #bce6f4;    /* Fungal Wastes: the Hunter's Journal (in the study, "Enemies") */

@@ -309,7 +309,6 @@ f.addEventListener('load', async () => {
        && q('#nav [aria-current="page"]').dataset.value === 'game', visible() + ' · ' + w.location.hash);
     ok('with its two starting points', !!q('#gear [data-act="preset"][data-value="base"]') && !!q('#gear [data-act="preset"][data-value="max"]'));
     ok('and there overcharm is flagged at the top', !!q('#banner .banner:not(.is-run)'));
-    ok('the guide only shows on Charms', !q('#guide .guide'));
     await click('#gear [data-act="seg"][data-key="nail"][data-value="2"]');
     ok("changing the nail doesn't change screen", visible() === 'gear' && w.location.hash.indexOf('nail=2') >= 0
        && w.location.hash.indexOf('view=game') >= 0, w.location.hash);

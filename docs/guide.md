@@ -38,11 +38,7 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   Switching screens scrolls up to its start, just below the bar. Only the chosen one shows,
   but the others keep being painted, hidden (`showScreen` in `js/app.js`): that way one's HUD
   doesn't animate on return what happened while you were looking at another.
-- **Charms**, the start screen. At the top, the **first-use guide**: the site's line, three
-  steps —the first leads to *Your game*— and three example builds (Nail to the limit,
-  Spellcaster, Lifeblood) to see the effect at once; it hides with "Got it". It carries the
-  sheet's language: its corner brackets, the title in Cinzel with the diamond and the unboxed steps.
-- **The sheet, which is the game's Inventory screen** (the mould is the wiki's
+- **Charms**, the start screen: **the sheet, which is the game's Inventory screen** (the mould is the wiki's
   `Inventory_Godseeker_Mode.png`; the mockup, `design/06-sheet-variants.html`): almost pure
   black, corner brackets, the screen's title, "Charms", and, from top to bottom, **the status
   block** —everything that matters, above the charm grid and in one row, so that on an 800 px
@@ -753,7 +749,7 @@ room to the next, and **the rests are the only thing that heals**.
   bench, changing charms leaves you at the new full health.
 - **Outside the benches, charms can't be touched from anywhere.** As in the game, which only
   lets you change them sitting on a bench: while the run is still half-done (also from other
-  combat tabs), the grid, the equipped ones, "Clear", the example builds, the presets and the
+  combat tabs), the grid, the equipped ones, "Clear", the presets and the
   notch steps don't change them. A notice above the screen says which pantheon and which room
   you're in, with a button that takes you there and another that abandons it without going
   (it says so in a notice, and focus moves to the screen's title); on the Pantheons tab it
