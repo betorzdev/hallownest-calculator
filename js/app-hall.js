@@ -43,7 +43,13 @@
   // The glyph for a double pedestal's lever (the wiki has no sprite): base, rod and knob.
   const LEVER_SVG = `<svg class="ped-lever" viewBox="0 0 18 18" width="18" height="18" aria-hidden="true"><path d="M3 15h12M9 15L5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="5" cy="5" r="1.9" fill="currentColor"/></svg>`;
   const hasMark = (id, d) => (App.marks[id] || []).includes(d);
-  const hallBadge = (d, on) => `<img class="hall-badge m-${d} ${on ? 'is-on' : ''}" src="assets/hall/badge-${d}.png" alt="" width="20" height="20">`;
+  /* Only on the repaint after a change, so what changed moves once and the next repaint is still:
+     markFx { id, d, on, tier } after marking on the plaque; filterWas, the filter before the new
+     one; tabletFx, 'open' or 'close'. */
+  let markFx = null, filterWas = null, tabletFx = '';
+  // The symbol just marked inks in; just removed, its light goes out.
+  const inkOf = (id, d) => (markFx && markFx.id === id && markFx.d === d ? (markFx.on ? ' is-inking' : ' is-out') : '');
+  const hallBadge = (d, on, fx = '') => `<img class="hall-badge m-${d} ${on ? 'is-on' : ''}${fx}" src="assets/hall/badge-${d}.png" alt="" width="20" height="20">`;
   const statueName = (s) => pick(F.FOE_BY_ID[s.id].name);
   // A double pedestal's partner, both ways, and how to switch to it.
   const partnerOf = (s) => (s.of ? HG.STATUE_BY_ID[s.of] : HG.STATUES.find((y) => y.of === s.id) || null);
@@ -60,7 +66,7 @@
        difficulty and leaves lit the ones still to go. Tapping the active one turns it off. */
     const counts = HG.DIFFS.map((d) => {
       const n = won[d], on = hallFilter === d;
-      return `<li class="hall-count"><button type="button" class="hall-count-btn ${on ? 'is-on' : ''}" data-act="hallFilter" data-value="${d}"
+      return `<li class="hall-count${markFx && markFx.d === d ? ' is-flash' : ''}"><button type="button" class="hall-count-btn ${on ? 'is-on' : ''}" data-act="hallFilter" data-value="${d}"
         aria-pressed="${on}" title="${esc(t('hallFilterBtn', { diff: t(DIFF_KEY[d]) }))}">${hallBadge(d, n > 0)}
         <span class="hall-count-num"><b>${App.NF[0].format(n)}</b><i class="u">/${total}</i></span>
         <span class="hall-count-lbl">${esc(t(DIFF_KEY[d]))}</span></button></li>`;
@@ -88,7 +94,9 @@
         title="${esc(t('hallBulkHint', { n: total }))}">${esc(t('hallBulk'))}${chevron(hallBulk)}</button>
       ${hallBulk ? `<div class="hall-bulk">${rowEl(true)}${rowEl(false)}
         <p class="hall-bulk-rule">${esc(t('hallBulkRule'))}</p>${undoNote}</div>` : ''}`;
-    const idol = `<div class="hall-idol ${tier ? '' : 'is-off'} ${hallBulk ? 'is-bulk' : ''}">
+    // The Idol changing tier (all 44 at a difficulty) lights up like what you get on Your game.
+    const idolFx = markFx && markFx.tier !== tier ? (tier ? ' is-lit' : ' is-out') : '';
+    const idol = `<div class="hall-idol ${tier ? '' : 'is-off'} ${hallBulk ? 'is-bulk' : ''}${idolFx}">
       <span class="hall-idol-art"><img src="assets/hall/idol-${tier || 'at'}.png" alt=""></span>
       <div class="hall-idol-body">
         <h3>${esc(t('hallIdol'))}</h3>
@@ -108,14 +116,18 @@
       const title = statueName(s) + ' · ' + (got.length ? got.join(', ') : t('hallNoMarks'));
       // With a filter, the one already beaten at that difficulty dims: the ones still to go stay lit.
       const dim = !!hallFilter && hasMark(s.id, hallFilter);
+      // Changing the filter, the light fades out on the ones that dim and back on the ones that wake.
+      const dimWas = filterWas !== null && !!filterWas && hasMark(s.id, filterWas);
+      const dimFx = filterWas === null || dim === dimWas ? '' : dim ? 'is-dimming' : 'is-waking';
+      const marked = markFx && markFx.id === s.id && markFx.on ? 'is-marked' : '';
       // A double pedestal's second fight carries its glyph: the Dream Nail or the lever.
       const via = s.via === 'dream' ? '<img class="ped-dream" src="assets/abilities/dream1.png" alt="">' : s.via === 'lever' ? LEVER_SVG : '';
       // A single tab stop in the grid: the chosen one; the arrows move (hallMove).
-      return `<button type="button" class="ped-btn ${s.via === 'dream' ? 'is-dream' : ''} ${on ? 'is-on' : ''} ${dim ? 'is-dim' : ''}"
+      return `<button type="button" class="ped-btn ${s.via === 'dream' ? 'is-dream' : ''} ${on ? 'is-on' : ''} ${dim ? 'is-dim' : ''} ${dimFx} ${marked}"
         data-act="hallPick" data-id="${s.id}" aria-pressed="${on}" tabindex="${on ? 0 : -1}" title="${esc(title)}">
         <span class="ped-niche"><img src="assets/hall/${HG.artOf(s)}.png" alt="" loading="lazy">${via}</span>
         <span class="ped-name"${NT}>${esc(s.short ? pick(s.short) : statueName(s))}</span>
-        <span class="ped-marks" aria-hidden="true">${HG.DIFFS.map((d) => hallBadge(d, hasMark(s.id, d))).join('')}</span>
+        <span class="ped-marks" aria-hidden="true">${HG.DIFFS.map((d) => hallBadge(d, hasMark(s.id, d), inkOf(s.id, d))).join('')}</span>
         <span class="sr-only">${esc(got.length ? got.join(', ') : t('hallNoMarks'))}${s.via ? ' · ' + esc(t(s.via === 'dream' ? 'hallViaDream' : 'hallViaLever')) : ''}</span>
       </button>`;
     };
@@ -129,7 +141,7 @@
 
     // The tablet, when open, takes the place of the grid and the plaque; the Idol stays on top.
     return `${idol}
-      ${App.hallTablet ? tabletHtml() : `<div class="hall-room ${hallReading ? 'is-reading' : ''}">
+      ${App.hallTablet ? tabletHtml() : `<div class="hall-room ${hallReading ? 'is-reading' : ''}${tabletFx === 'close' ? ' is-fresh' : ''}">
         <div class="hall-grid" role="group" aria-label="${esc(t('fightTabHall'))}">${grid}</div>
         <article class="hall-plaque jr-page" aria-live="polite">${hallPlaqueHtml()}</article>
       </div>`}`;
@@ -150,7 +162,7 @@
       const c = perDiff[d], won = hasMark(s.id, d);
       return `<tr class="${won ? 'is-won' : ''}">
         <th scope="row"><button type="button" class="hall-mark" data-act="hallMark" data-value="${d}" aria-pressed="${won}"
-          title="${esc(t(won ? 'hallMarkUnset' : 'hallMarkSet', { diff: t(DIFF_KEY[d]) }))}">${hallBadge(d, won)}${esc(t(DIFF_KEY[d]))}</button></th>
+          title="${esc(t(won ? 'hallMarkUnset' : 'hallMarkSet', { diff: t(DIFF_KEY[d]) }))}">${hallBadge(d, won, inkOf(s.id, d))}${esc(t(DIFF_KEY[d]))}</button></th>
         <td>${App.NF[0].format(c.total)}</td>
         <td>${App.NF[0].format(Math.ceil(c.total / nail))}</td>
         <td>${App.NF[0].format(c.n)}</td>
@@ -181,7 +193,7 @@
       </div>`;
     return `${brackets}
       <button type="button" class="btn jr-back" data-act="hallList">‹ ${esc(t('fightTabHall'))}</button>
-      <div class="hall-art"><img src="assets/hall/${HG.artOf(s)}.png" alt=""></div>
+      <div class="hall-art${markFx && markFx.id === s.id && markFx.on ? ' is-marked' : ''}"><img src="assets/hall/${HG.artOf(s)}.png" alt=""></div>
       <h3 class="jr-title"${NT}>${esc(pick(x.name))}</h3>
       <p class="hall-title"${NT}>${esc(pick(s.title))}</p>
       ${rule}
@@ -233,13 +245,13 @@
   // The arrow of "‹ Statues", drawn like the cross of "Close": the serif's "‹" comes out tiny.
   const TABLET_BACK = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.5 L3.5 6 L8 10.5"/></svg>';
   function tabletHtml() {
-    const rowEl = (id) => {
+    const rowEl = (id, i) => {
       const s = HG.STATUE_BY_ID[id], d = HG.tabletMark(App.marks, id);
       const markIcon = d ? `<img class="tablet-mark m-${d}" src="assets/hall/badge-${d}.png" alt="" width="36" height="36">` : '<span class="tablet-mark is-empty"></span>';
-      return `<li class="tablet-row">${markIcon}<span class="tablet-name"${NT}>${esc(s.tablet ? pick(s.tablet) : statueName(s))}</span>`
+      return `<li class="tablet-row" style="--i:${i}">${markIcon}<span class="tablet-name"${NT}>${esc(s.tablet ? pick(s.tablet) : statueName(s))}</span>`
         + `<span class="sr-only"> · ${esc(d ? t(DIFF_KEY[d]) : t('hallNoMarks'))}</span></li>`;
     };
-    return `<section class="tablet" aria-labelledby="tablet-title">
+    return `<section class="tablet${tabletFx === 'open' ? ' is-fresh' : ''}" aria-labelledby="tablet-title">
       <div class="tablet-bar"><button type="button" class="tablet-back" data-act="tabletClose">${TABLET_BACK}${esc(t('hallStatues'))}</button></div>
       <div class="tablet-page">
         <img class="tablet-hdr" src="assets/hall/tablet-hdr.png" alt="" width="862" height="111">
@@ -311,10 +323,13 @@
     /* Mark or remove a difficulty's symbol by hand: it's your real game, not the simulator. */
     hallMark(node) {
       const d = node.dataset.value;
+      const tier = HG.idolTier(App.marks);
       App.marks = HG.toggleMark(App.marks, prefs.hallId, d);
       hallUndo = null;
       saveMarks();
+      markFx = { id: prefs.hallId, d, on: hasMark(prefs.hallId, d), tier };
       render();
+      markFx = null;
       const b = el.fight.querySelector(`.hall-mark[data-value="${d}"]`);
       if (b) b.focus({ preventScroll: true });
     },
@@ -354,7 +369,9 @@
     tabletOpen() {
       App.hallTablet = true;
       hallReading = false;              // back to the grid: on mobile, not to the plaque that was being read
+      tabletFx = 'open';
       render();
+      tabletFx = '';
       const tab = el.fight.querySelector('.tablet'), h = el.fight.querySelector('.tablet-title');
       if (!tab) return;
       /* Make it visible: if it isn't already fully in view, scroll up to it. If it fits under the bar
@@ -367,7 +384,9 @@
     },
     tabletClose() {
       App.hallTablet = false;
+      tabletFx = 'close';
       render();
+      tabletFx = '';
       const b = el.fight.querySelector('.hall-tablet-btn');
       if (b) b.focus();
     },
@@ -375,9 +394,11 @@
        tablet open, it goes back to the grid: that's where the filter shows. */
     hallFilter(node) {
       const d = node.dataset.value;
+      filterWas = App.hallTablet ? null : hallFilter;   // from the tablet the grid is new: nothing to fade
       hallFilter = hallFilter === d || !HG.DIFFS.includes(d) ? '' : d;
       App.hallTablet = false;
       render();
+      filterWas = null;
       const b = el.fight.querySelector(`.hall-count-btn[data-value="${d}"]`);
       if (b) b.focus({ preventScroll: true });
     },

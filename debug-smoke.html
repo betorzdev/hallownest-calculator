@@ -237,7 +237,7 @@ f.addEventListener('load', async () => {
     ok('with Void Heart, equipped by itself', isOn('voidheart'), onIds());
     await equip('voidheart');
     ok("and it can't be removed", isOn('voidheart') && txt('#charm-detail .insp-state').indexOf('No se puede quitar') >= 0, txt('#charm-detail .insp-state'));
-    await click('[data-act="clear"]');
+    await click('[data-act="clear"]'); await wait(1000);   // the charms leave one by one first
     ok('not even with Clear', isOn('voidheart'), onIds());
     // The double slots: one whole slot on Your game that switches none → first → second → none.
     ok('Your game: five whole double slots', d.querySelectorAll('#gear .quick-owned .qc-dual').length === 5 && !q('#gear .qslot-pair'));
@@ -298,7 +298,7 @@ f.addEventListener('load', async () => {
     ok('the link saves the build', w.location.hash.indexOf('joni') >= 0, w.location.hash);
     ok('and Share copies it', copied.indexOf('joni') >= 0 && copied.indexOf('#') > 0, copied);
 
-    await click('[data-act="clear"]');
+    await click('[data-act="clear"]'); await wait(1000);   // the charms leave one by one first
     ok('clearing removes all charms', onCount() === 0, onIds());
     ok('with no charms, Equipped is just the empty slot, with no text in view', !q('#panel .is-eq .eq') && !!q('#panel .is-eq .eq-slot')
        && !q('#panel .is-eq .muted-p') && !!q('#panel .is-eq .sr-only'));

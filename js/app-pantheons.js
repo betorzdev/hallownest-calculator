@@ -129,19 +129,22 @@
     return `<div class="fight-body">${brackets}${head}${runHeadHtml()}${timelineHtml()}${App.run.over ? runEndHtml() : roomHtml()}</div>`;
   }
 
+  let doorFx = null;                // { pid, k, all } only on the repaint after marking the door (doorBind)
   function pantheonPickHtml(head) {
     const cards = PN.PANTHEONS.map((p) => {
       const lastFoe = F.FOE_BY_ID[p.rooms[p.rooms.length - 1].foe];
       const on = prefs.pantheon === p.id;
       // Below, the bindings you've finished it with in your game: the door's notches.
       const boundDone = door.done[p.id] || [], allDone = door.all.includes(p.id), pantheonName = pick(p.name);
-      const bindBtns = `<div class="pdone ${allDone ? 'is-all' : ''}" role="group" aria-label="${esc(t('doorDoneLbl', { name: pantheonName }))}">
-        ${BINDS.map((k) => `<button type="button" class="pdone-bind ${boundDone.includes(k) ? 'is-on' : ''}" data-act="doorBind" data-value="${p.id}:${k}"
+      // Just marked (doorFx): the binding lights up; the four at once, one after another in gold.
+      const fx = doorFx && doorFx.pid === p.id ? doorFx : null;
+      const bindBtns = `<div class="pdone ${allDone ? 'is-all' : ''}${fx && fx.all ? ' is-sealing' : ''}" role="group" aria-label="${esc(t('doorDoneLbl', { name: pantheonName }))}">
+        ${BINDS.map((k, i) => `<button type="button" class="pdone-bind ${boundDone.includes(k) ? 'is-on' : ''}${fx && !fx.all && fx.k === k && boundDone.includes(k) ? ' is-lit' : ''}" style="--i:${i}" data-act="doorBind" data-value="${p.id}:${k}"
           aria-pressed="${boundDone.includes(k)}" title="${esc(t('bind_' + k))}"><img src="assets/pantheon/bind-${k}.png" alt="${esc(t('bind_' + k))}" width="22" height="22"></button>`).join('')}
         <button type="button" class="pdone-all ${allDone ? 'is-on' : ''}" data-act="doorBind" data-value="${p.id}:all" aria-pressed="${allDone}"
           title="${esc(t('doorAllTip'))}" aria-label="${esc(t('doorAllTip'))}">×4</button>
       </div>`;
-      return `<div class="pcard-wrap"><button type="button" class="pcard ${on ? 'is-on' : ''}" data-act="pantheonPick" data-value="${p.id}" aria-pressed="${on}">
+      return `<div class="pcard-wrap${fx && fx.all ? ' is-sealed' : ''}"><button type="button" class="pcard ${on ? 'is-on' : ''}" data-act="pantheonPick" data-value="${p.id}" aria-pressed="${on}">
         <img class="pcard-art" src="${D.art('enemies', lastFoe.id)}" alt="" loading="lazy">
         <span class="pcard-body">
           <span class="pcard-name"${NT}>${esc(pick(p.name))}</span>
@@ -358,8 +361,11 @@
     // Your game: the bindings you finished each pantheon with.
     doorBind(node) {
       const [pid, k] = node.dataset.value.split(':');
+      const wasAll = door.all.includes(pid);
       door = k === 'all' ? PN.toggleAll(door, pid) : PN.toggleBind(door, pid, k);
+      doorFx = { pid, k, all: !wasAll && door.all.includes(pid) };
       saveDoor(); render();
+      doorFx = null;
     },
     runStart() { startRun(); render(); },
     runAgain() {

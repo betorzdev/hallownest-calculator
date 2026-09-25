@@ -7,7 +7,12 @@
   const App = HK.app;
   const { t, pick, el, SPELL_KEYS, ART_KEYS, ART_STAT, NT, esc, fmtStatRich, spellArt, badgeText, compute,
     commit, brackets, screenHead, QUICK_PER_ROW, QUICK_SLOTS, render, actions, isMaxOwned, saveOwned,
-    isOwned, setOwned } = App;
+    isOwned, setOwned, justFound } = App;
+
+  /* Right after a change (App.was): what you just got lights up from the dark, and what you just
+     lost goes out from its light. "was" reads the value before; with nothing to compare, the current one. */
+  const was = (get) => (App.was ? get(App.was.state) : get(App.state));
+  const fx = (on, before) => (on && !before ? ' is-lit' : !on && before ? ' is-out' : '');
 
   /* ── Your game ───────────────────────────────────────────────────────── */
   /* A line with the two main changes between two sheets, with the condition in front
@@ -32,10 +37,14 @@
      spell notches). The ones every Knight starts with can't be removed. Below, what would
      change with one more. */
   function pieceRow(key, value, min, max, label, range, piece, previewNext) {
+    // The ones you add light up in order from the first new one; the ones you remove, from the last.
+    const had = was((st) => st[key]);
     const btns = Array.from({ length: max }, (_, i) => {
       const n = i + 1, on = n <= value, base = n <= min;
       const next = on && n === value ? n - 1 : n;
-      return `<button type="button" class="piece${on ? ' is-on' : ''}${base ? ' is-base' : ''}" data-act="setv" data-key="${key}" data-value="${next}"
+      const lit = fx(on, n <= had);
+      const order = lit ? ` style="--i:${on ? n - had - 1 : had - n}"` : '';
+      return `<button type="button" class="piece${on ? ' is-on' : ''}${base ? ' is-base' : ''}${lit}"${order} data-act="setv" data-key="${key}" data-value="${next}"
         ${base ? 'disabled' : ''} aria-pressed="${on}" aria-label="${esc(t('pieceOf', { what: label, n, max }))}" title="${esc(t('pieceOf', { what: label, n, max }))}">${piece(on)}</button>`;
     }).join('');
     return `<div class="field">
@@ -65,7 +74,7 @@
   function renderNailBlock() {
     const nails = D.NAILS.map((n) => {
       const on = App.state.nail === n.level;
-      return `<button type="button" class="nailpick${on ? ' is-on' : ''}" data-act="seg" data-key="nail" data-value="${n.level}" aria-pressed="${on}" aria-label="${esc(pick(n) + ', ' + n.damage)}" title="${esc(pick(n))}">
+      return `<button type="button" class="nailpick${on ? ' is-on' : ''}${fx(on, was((st) => st.nail) === n.level)}" data-act="seg" data-key="nail" data-value="${n.level}" aria-pressed="${on}" aria-label="${esc(pick(n) + ', ' + n.damage)}" title="${esc(pick(n))}">
         <span class="nailpick-art"><img src="${D.art('nails', n.level)}" alt="" width="80" height="360"></span>
         <span class="nailpick-num">${n.damage}</span>
       </button>`;
@@ -81,7 +90,7 @@
   function renderArtsBlock() {
     const plates = ART_KEYS.map((k) => {
       const on = !!App.state.arts[k];
-      return `<button type="button" class="gplate${on ? ' is-on' : ''}" data-act="art" data-key="${k}" aria-pressed="${on}" title="${esc(D.ARTS[k].en)}">
+      return `<button type="button" class="gplate${on ? ' is-on' : ''}${fx(on, was((st) => !!st.arts[k]))}" data-act="art" data-key="${k}" aria-pressed="${on}" title="${esc(D.ARTS[k].en)}">
         <span class="gplate-art"><img src="${D.art('arts', k)}" alt=""></span>
         <span class="gplate-name"${NT}>${esc(pick(D.ARTS[k]))}</span>
         <span class="gplate-val${on ? '' : ' is-none'}">${on ? fmtStatRich(App.sheet.stats[ART_STAT[k]]) : esc(t('notLearned'))}</span>
@@ -96,7 +105,10 @@
       const lvl = App.state.spells[k];
       const has = (id) => App.state.charms.includes(id);
       const levels = [{ title: t('notLearned') }, { art: spellArt(k, 1, has), title: pick(sp.levels[1]) }, { art: spellArt(k, 2, has), title: pick(sp.levels[2]) }];
-      return `<div class="gplate${lvl ? ' is-on' : ''}">
+      // A new level (Vengeful Spirit → Shade Soul) lights up too: it's another spell.
+      const lvlWas = was((st) => st.spells[k]);
+      const lit = lvl && lvlWas && lvl !== lvlWas ? ' is-lit' : fx(!!lvl, !!lvlWas);
+      return `<div class="gplate${lvl ? ' is-on' : ''}${lit}">
         <span class="gplate-art"><img src="${spellArt(k, lvl, (id) => App.state.charms.includes(id))}" alt=""></span>
         <span class="gplate-name"${NT}>${esc(lvl ? pick(sp.levels[lvl]) : pick(sp.slot))}</span>
         <span class="gplate-val${lvl ? '' : ' is-none'}">${lvl ? fmtStatRich(App.sheet.stats['spell.' + k]) : esc(t('notLearned'))}</span>
@@ -112,17 +124,20 @@
     // Grimmchild's phases: four of the game's notches with their numeral, lit up to the phase.
     const phases = (key, value, opts, label) => `<span class="lvlpick is-dots" role="group" aria-label="${esc(label)}">${opts.map((o, i) => {
       const v = i + (o.from || 0);
-      return `<button type="button" class="sd-dot${v <= value ? '' : ' is-off'}" data-act="seg" data-key="${key}" data-value="${v}" aria-pressed="${v === value}"
+      const had = was((st) => st[key]);
+      const lit = v <= value && v > had ? ` is-lit" style="--i:${v - had - 1}` : '';
+      return `<button type="button" class="sd-dot${v <= value ? '' : ' is-off'}${lit}" data-act="seg" data-key="${key}" data-value="${v}" aria-pressed="${v === value}"
         title="${esc(o.title)}" aria-label="${esc(o.title)}" ${o.off ? 'disabled' : ''}><i class="notch${v <= value ? ' is-used' : ' is-free'}"></i><small>${o.text}</small></button>`;
     }).join('')}</span>`;
     const A = D.ABILITIES;
-    const dream = `<button type="button" class="gplate${App.state.dream ? ' is-on' : ''}" data-act="seg" data-key="dream" data-value="${App.state.dream ? 0 : 1}" aria-pressed="${App.state.dream}" title="${esc(A.dream.en)}">
+    const dream = `<button type="button" class="gplate${App.state.dream ? ' is-on' : ''}${fx(App.state.dream, was((st) => st.dream))}" data-act="seg" data-key="dream" data-value="${App.state.dream ? 0 : 1}" aria-pressed="${App.state.dream}" title="${esc(A.dream.en)}">
         <span class="gplate-art"><img src="${D.art('abilities', A.dream.art)}" alt=""></span>
         <span class="gplate-name"${NT}>${esc(pick(A.dream))}</span>
         <span class="gplate-val${App.state.dream ? '' : ' is-none'}">${App.state.dream ? fmtStatRich(App.sheet.stats['soul.dreamNail']) : esc(t('notFound'))}</span>
       </button>`;
     const cloak = A.cloaks[App.state.cloak];
-    const cloakPlate = `<div class="gplate${cloak ? ' is-on' : ''}">
+    const cloakWas = was((st) => st.cloak);
+    const cloakPlate = `<div class="gplate${cloak ? ' is-on' : ''}${cloak && cloakWas && cloak !== A.cloaks[cloakWas] ? ' is-lit' : fx(!!cloak, !!cloakWas)}">
         <span class="gplate-art"><img src="${D.art('abilities', (cloak || A.cloaks[1]).art)}" alt=""></span>
         <span class="gplate-name"${NT}>${esc(pick(cloak || A.cloaks[1]))}</span>
         <span class="gplate-val${cloak ? '' : ' is-none'}">${cloak ? fmtStatRich(App.sheet.stats['move.dashCooldown']) : esc(t('notFound'))}</span>
@@ -151,7 +166,7 @@
     const n = QUICK_SLOTS.filter((sl) => sl.some((c) => isOwned(c.id))).length;
     const tile = (c) => {
       const on = isOwned(c.id);
-      return `<button type="button" class="qc${on ? '' : ' is-missing'}" data-act="own" data-id="${c.id}" aria-pressed="${on}" title="${esc(pick(c) + (on ? '' : ' · ' + t('notFound')))}">
+      return `<button type="button" class="qc${on ? '' : ' is-missing'}${justFound(c.id) ? ' is-new' : ''}" data-act="own" data-id="${c.id}" aria-pressed="${on}" title="${esc(pick(c) + (on ? '' : ' · ' + t('notFound')))}">
         <img src="assets/charms/${c.id}.png" alt="${esc(pick(c))}" loading="lazy">
       </button>`;
     };
@@ -164,7 +179,7 @@
       const shown = cur || sl[0];
       const label = cur ? pick(cur) : `${pick(sl[0])} / ${pick(sl[1])} · ${t('notFound')}`;
       const pips = sl.map((c) => `<span class="qc-pip${c === cur ? ' is-on' : ''}"></span>`).join('');
-      return `<button type="button" class="qc qc-dual${cur ? '' : ' is-missing'}" data-act="ownPick" data-value="${shown.group}" data-token="${next}" aria-label="${esc(label)}" title="${esc(label)}">
+      return `<button type="button" class="qc qc-dual${cur ? '' : ' is-missing'}${cur && justFound(cur.id) ? ' is-new' : ''}" data-act="ownPick" data-value="${shown.group}" data-token="${next}" aria-label="${esc(label)}" title="${esc(label)}">
         <img src="assets/charms/${shown.id}.png" alt="" loading="lazy">
         <span class="qc-pips" aria-hidden="true">${pips}</span>
       </button>`;
@@ -257,8 +272,9 @@
       const max = node.dataset.value === 'max';
       const next = max ? C.normalize({ ...C.PRESETS.max, charms: App.state.charms, hp: App.state.hp }) : C.normalize(C.PRESETS.base);
       const was = App.owned;
+      App.was = { state: App.state, owned: was };   // so the repaint lights up what the preset brings
       App.owned = max ? C.OWN_MAX.slice() : [];  // before commit(), so its repaint already carries it
-      if (commit(next)) saveOwned(); else { App.owned = was; render(); }
+      if (commit(next)) saveOwned(); else { App.owned = was; App.was = null; render(); }
     },
   });
 

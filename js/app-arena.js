@@ -1088,7 +1088,8 @@
     document.documentElement.style.setProperty('--band-top', top + 'px');
   }
   function bandCheck() {
-    const stage = prefs.view === 'fight' ? el.fight.querySelector('.stage') : null;
+    // Hidden, the stage measures zero and would read as scrolled away: render() checks again once it shows.
+    const stage = prefs.view === 'fight' && !el.fight.hidden ? el.fight.querySelector('.stage') : null;
     if (!stage) { bandSet(false); return; }
     if (navBottom < 0) bandMeasure();
     const r = stage.getBoundingClientRect();
@@ -1564,7 +1565,7 @@
     if (l) l.scrollTop = 0;
   });
 
-  Object.assign(App, { fight, runRooms, runRoom, runFight, baseSheet, fs, fst, charmLock, touchesCharms,
+  Object.assign(App, { bandCheck, fight, runRooms, runRoom, runFight, baseSheet, fs, fst, charmLock, touchesCharms,
     alive, hallFight, foe, phasesOf, totalHp, targetOf, fightReset, fightSync, plain, jrNarrow, enduranceOf,
     jrPage, paintJournal, paintPage, scrollToCur, stepCursor, jrScroll, jrKeepCursor, openJournal, jrMove,
     sheetHas, knightSide, fightEndHtml, fightSumHtml, wonNote, dealtOf, logHtml, arenaHtml, renderFight });

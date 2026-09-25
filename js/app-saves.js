@@ -33,6 +33,15 @@
      the veil goes all the same. */
   const unveil = () => document.documentElement.classList.remove('is-landing');
   if (document.documentElement.classList.contains('is-landing')) setTimeout(unveil, 2000);
+  /* Entering a game (leave) veils the page too: the new one comes in with a fade once the boot's
+     first render is painted, like the game's loading screen lifting. */
+  const ENTERED_KEY = 'hollow.entered';
+  try {
+    if (sessionStorage.getItem(ENTERED_KEY)) {
+      sessionStorage.removeItem(ENTERED_KEY);
+      requestAnimationFrame(() => requestAnimationFrame(unveil));
+    }
+  } catch (e) { /* it came in unveiled */ }
   if (justCleared) setTimeout(() => { justCleared = 0; }, 1000);
   /* The import view: the slot it's for (0: the list shows), the system whose steps it shows,
      and the file: 'idle' (none yet), 'reading', 'ready' (read: { name, snap, meta }) or 'error'.
@@ -323,12 +332,39 @@
     location.reload();
   }
 
+  /* Going into a game, seen: a full slot's nail catches the light and its masks glow; an empty
+     one (New Game) shows the base Knight's masks appearing one by one, as a new game's HUD does.
+     Then the page fades to black and reloads (enter), and the next one fades in. Without motion, at once. */
+  function leave(n) {
+    let still = false;
+    try { still = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { still = false; }
+    if (still) { enter(); return; }
+    try { sessionStorage.setItem(ENTERED_KEY, '1'); } catch (e) { /* it comes in without fading */ }
+    const li = n ? el.saves.querySelector(`.save[data-slot="${n}"]`) : null;
+    let wait = 0;
+    if (li && li.classList.contains('is-empty')) {
+      const base = D.HEALTH.baseMasks;
+      const masks = Array.from({ length: base }, (_, i) => `<img src="${D.art('hud', 'mask')}" alt="" style="--i:${i}">`).join('');
+      li.querySelector('.save-main').insertAdjacentHTML('beforeend', `<span class="save-hud save-born" aria-hidden="true"><span class="save-masks">${masks}</span></span>`);
+      li.classList.add('is-starting');
+      wait = base * 70 + 550;
+    } else if (li) {
+      li.classList.add('is-loading');
+      wait = 350;
+    }
+    if (li) li.setAttribute('aria-busy', 'true');
+    setTimeout(() => {
+      document.documentElement.classList.add('is-leaving');
+      setTimeout(() => enter(), 250);
+    }, wait);
+  }
+
   Object.assign(actions, {
     savePick(node) {
       const n = Number(node.dataset.value);
       if (!store) { toast(t('savesNoStorage')); return; }
       if (S.read(store).active === n) { App.go('charms', true); return; }
-      if (S.select(store, n)) enter();
+      if (S.select(store, n)) leave(n);
     },
     saveNew(node) { actions.savePick(node); },
     saveImport(node) {
@@ -375,7 +411,7 @@
       track('save-import');
       // It goes straight into the imported game, as picking the slot would.
       if (S.read(store).active !== n) S.select(store, n);
-      enter();
+      leave(0);
     },
     saveClear(node) { clearing = Number(node.dataset.value); render(); focusIn('[data-act="saveClearNo"]'); },
     saveClearNo(node) { const n = clearing; clearing = 0; render(); focusIn(`[data-act="saveClear"][data-value="${n || node.dataset.value}"]`); },

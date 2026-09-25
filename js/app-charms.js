@@ -8,7 +8,7 @@
   const App = HK.app;
   const { t, pick, KEY, el, hoverable, SPELL_KEYS, ART_KEYS, ART_STAT, NEED_KEY, NT, namedSrc, esc, save,
     pctSpace, fmtValue, fmtStat, fmtStatRich, sign, masksText, notchText, spellArt, shortOf, goodClass,
-    deltaChip, changeChip, prefs, savePrefs, compareLabel, compute, impact, recompute, commit, brackets,
+    deltaChip, changeChip, justWorn, justFound, prefs, savePrefs, compareLabel, compute, impact, recompute, commit, brackets,
     chevron, cross, screenHead, hudHtml, render, underNav, toast, actions, isOwned, isFixed, setOwned } = App;
 
   /* ── Sheet panel: figures, meters, spells and arts ───────────────────── */
@@ -155,6 +155,10 @@
     </div>`;
   }
 
+  // "Clear": each charm fades as dust (css: .eq-row.is-clearing), one every CLEAR_STEP_MS.
+  const CLEAR_MS = 320, CLEAR_STEP_MS = 50;
+  let clearing = false;
+
   /* ── Equipped and notches: the pair of blocks from the game's screen ──
      In Hollow Knight, under "Equipped" go the charms you wear, and below them the row
      of "Notches": a lit white dot per notch used, a dark ring per free notch. When you
@@ -198,10 +202,15 @@
     const n = ctx.notches;
     const { white, over } = overcharmSplit(ctx);
     const slots = Math.max(n.max, n.used);
+    /* Right after a change (App.was), the notches the charm takes fill one by one from the left,
+       and the ones it gives back empty from the right. */
+    const had = App.was ? C.notchesUsed(App.was.state.charms) : n.used;
     let dots = '';
     for (let i = 0; i < slots; i++) {
       const cls = i < white ? 'is-used' : i < white + over ? 'is-over' : 'is-free';
-      dots += `<i class="notch ${cls}"></i>`;
+      const fx = i < n.used && i >= had ? ` is-filling" style="--i:${i - had}`
+        : i >= n.used && i < had ? ` is-draining" style="--i:${had - 1 - i}` : '';
+      dots += `<i class="notch ${cls}${fx}"></i>`;
     }
     return dots;
   }
@@ -213,7 +222,7 @@
     const n = ctx.notches;
     const dots = notchDots(ctx);
     const worn = ctx.st.charms.map((id) => D.CHARM_BY_ID[id]).filter(Boolean);
-    const tiles = worn.map((c) => `<button type="button" class="eq" data-act="${ctx.act}" data-id="${c.id}" ${ctx.locked ? 'aria-disabled="true"' : ''} title="${esc(ctx.locked || (isFixed(c.id) ? pick(c) + ' · ' + t('inspFixed') : t('unequipTitle', { charm: pick(c) })))}">
+    const tiles = worn.map((c) => `<button type="button" class="eq${justWorn(c.id) ? ' is-new' : ''}" data-act="${ctx.act}" data-id="${c.id}" ${ctx.locked ? 'aria-disabled="true"' : ''} title="${esc(ctx.locked || (isFixed(c.id) ? pick(c) + ' · ' + t('inspFixed') : t('unequipTitle', { charm: pick(c) })))}">
       <img src="assets/charms/${c.id}.png" alt="${esc(pick(c))}">
     </button>`).join('');
     // The game leaves a dark dot marking the next slot while something still fits.
@@ -262,6 +271,8 @@
     const cls = ['qc'];
     if (half) cls.push('qc-half');
     if (imp.equipped) cls.push('is-on');
+    // What was just equipped or found lights up once.
+    if (justWorn(c.id) || justFound(c.id)) cls.push('is-new');
     if (a.action === 'blocked') cls.push('is-locked');
     if (!imp.equipped && a.overcharm && isOwned(c.id)) cls.push('is-over');
     if (ctx.sel === c.id) cls.push('is-sel');
@@ -410,6 +421,7 @@
 
   /* Repaints only the detail and the preview, not the sheet: repainting it rebuilds the grid under
      the pointer. With the mouse over it, the full sheet's rows it would change light up. */
+  let detailShown = '';             // the charm the detail painted last, to fade only when it changes
   function paintDetail(live = true) {
     const box = el.panel.querySelector('#charm-detail');
     if (!box) return;
@@ -418,6 +430,9 @@
     box.setAttribute('aria-live', live ? 'polite' : 'off');
     box.innerHTML = charmDetail();
     const id = detailId();
+    // Another charm: the detail fades into it, so the change of charm reads as such.
+    if (id !== detailShown) { box.classList.remove('is-swap'); void box.offsetWidth; box.classList.add('is-swap'); }
+    detailShown = id;
     for (const n of el.panel.querySelectorAll('.quick-grid .qc')) n.classList.toggle('is-sel', n.dataset.id === id);
     if (App.detailHover) highlightRows(App.detailHover); else clearHits();
     paintPreview();
@@ -529,6 +544,7 @@
      the notice come out), their column grows, but the grid stays attached to Equipped. */
   function charmBand() {
     const ctx = { ...pageCharms(), sel: detailId(), clear: true, over: true };
+    detailShown = detailId();
     const b = loadoutBlocks(ctx);
     return `<div class="inv-band">
       <div class="band-col">${b.equipped}${renderQuickCharms(ctx)}</div>
@@ -815,7 +831,21 @@
       App.detailSel = id;
       setOwned(slot ? C.ownSet(App.owned, slot, id) : [...App.owned, id]);
     },
-    clear() { if (App.state.charms.length) commit(C.normalize({ ...App.state, charms: [] })); },
+    /* The equipped ones leave one after another, from the last, as dust; then the notches empty.
+       The fixed one (Void Heart) stays. Without motion, at once. */
+    clear() {
+      if (!App.state.charms.length || clearing) return;
+      const lock = App.charmLock();
+      if (lock) { toast(lock); return; }
+      // From the state when it's applied, not when pressed: whatever changed meanwhile stays.
+      const empty = () => commit(C.normalize({ ...App.state, charms: [] }));
+      const tiles = [...el.panel.querySelectorAll('.inv-band .eq-row .eq')].filter((n) => !isFixed(n.dataset.id));
+      if (calm.matches || !tiles.length) { empty(); return; }
+      tiles.reverse().forEach((n, i) => n.style.setProperty('--i', i));
+      el.panel.querySelector('.inv-band .eq-row').classList.add('is-clearing');
+      clearing = true;
+      setTimeout(() => { clearing = false; empty(); }, CLEAR_STEP_MS * (tiles.length - 1) + CLEAR_MS);
+    },
     detail(node) {
       prefs.detailOpen = !prefs.detailOpen;
       savePrefs();

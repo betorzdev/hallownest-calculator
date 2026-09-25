@@ -127,6 +127,9 @@
     if (ch.kind === 'loss') return t('withoutShort', { what: ch.short });
     return fmtDelta(ch) + ' ' + ch.short;
   }
+  /* What just arrived with the last change (App.was): a charm equipped or found. */
+  const justWorn = (id) => !!(App.was && App.state.charms.includes(id) && !App.was.state.charms.includes(id));
+  const justFound = (id) => !!(App.was && App.owned.includes(id) && !App.was.owned.includes(id));
   const goodClass = (good) => (good === true ? 'good' : good === false ? 'bad' : '');
 
   // Delta chip for a stat against the same stat on the reference sheet.
@@ -170,6 +173,10 @@
   App.cmpSheet = null;              // sheet for the build being compared against
   let impacts = {};                 // charm id → impact on the current build, computed on demand (impact)
   App.flashIds = null;              // id → diff() change for what just changed: only commit()'s render paints it (flash and chip)
+  /* What there was before the change, only during the repaint that follows it: the build (commit())
+     and the charms found (setOwned()). What just arrived compares against it to light up once
+     —the charm equipped, the notches it fills, the mask you add—; the next repaint no longer has it. */
+  App.was = null;                   // { state, owned } or null
   App.detailSel = '';               // the charm in the band's detail: the last one touched, pressed or focused
   App.detailHover = '';             // the one under the mouse: it takes over from the chosen one while it lasts
   App.pickerOpen = false;           // the Hunter's Journal, open, to pick an enemy
@@ -337,14 +344,17 @@
     if (lock && App.touchesCharms(next)) { toast(lock); return false; }
     const prev = App.sheet;
     const wasOvercharmed = !!(prev && prev.notches.overcharmed);
+    const before = App.state;
     App.state = next;
     persist();
     recompute();
     const changes = prev ? E.diff(prev, App.sheet) : [];
     // What just changed flashes once, with its chip: on the next repaint, no longer.
     App.flashIds = new Map(changes.map((c) => [c.id, c]));
+    App.was = App.was || { state: before, owned: App.owned };
     render();
     App.flashIds = null;
+    App.was = null;
     // Only on the jump to overcharmed: when equipping too much or when notches are taken away.
     if (!wasOvercharmed && App.sheet.notches.overcharmed) overcharmFx();
     return true;
@@ -704,6 +714,7 @@
     App.renderSaves();
     if (prefs.view === 'journal') { if (App.hjSec.querySelector('.hj-list')) App.paintHunter(); else App.renderHunter(); }
     showScreen();
+    App.bandCheck();                       // the arena's band measures the stage once it's visible
     App.hjFit();
     // On entering the Journal, the entry you're reading shows in its list (already visible, so it can be measured).
     if (App.hjEnter && prefs.view === 'journal') { App.hjEnter = false; App.hjScroll(true); }
@@ -735,7 +746,7 @@
     setView(v);
     writeUrl(changed);
     render();
-    if (changed) track('screen-' + prefs.view);
+    if (changed) { track('screen-' + prefs.view); fadeIn(screenOf(prefs.view)); }
     if (changed) {
       const start = el.masthead.offsetTop + el.masthead.offsetHeight;   // where the bar stays stuck
       if (scrollY > start) scrollTo(0, start);
@@ -745,6 +756,8 @@
       if (h) h.focus({ preventScroll: true });
     }
   }
+  /* The screen you arrive at fades in, like the game's fades between areas (css: .is-entering). */
+  const fadeIn = (node) => { node.classList.remove('is-entering'); void node.offsetWidth; node.classList.add('is-entering'); };
   const screenOf = (v) => (v === 'game' ? el.gear : v === 'fight' ? el.fight : v === 'journal' ? el.hj : v === 'saves' ? el.saves : el.panel);
   // Is the sticky bar covering it? Then you have to scroll up to it.
   const underNav = (node) => node.getBoundingClientRect().top < el.nav.getBoundingClientRect().bottom;
@@ -866,9 +879,11 @@
     if (history.state && history.state.hk) {
       const v = h.view || 'charms';
       if (v === prefs.view && location.hash === hashFor()) return;
-      if (v !== prefs.view) setView(v);
+      const changed = v !== prefs.view;
+      if (changed) setView(v);
       writeUrl(false);
       render();
+      if (changed) fadeIn(screenOf(prefs.view));
       return;
     }
     if (h.lang && h.lang !== prefs.lang) { prefs.lang = I.setLang(h.lang); prefs.langChosen = true; savePrefs(); rebuildNF(); }
@@ -913,14 +928,16 @@
     const was = App.owned;
     App.owned = C.ownNormalize(list);
     const next = withFixed(C.normalize({ ...App.state, charms: App.state.charms.filter((id) => isOwned(id)) }));
-    if (C.equal(next, App.state)) { saveOwned(); render(); return; }
-    if (commit(next)) saveOwned(); else { App.owned = was; render(); }
+    App.was = { state: App.state, owned: was };
+    if (C.equal(next, App.state)) { saveOwned(); render(); App.was = null; return; }
+    if (commit(next)) saveOwned(); else { App.owned = was; App.was = null; render(); }
+    App.was = null;
   }
 
   Object.assign(App, { t, pick, KEY, PAGE_LANG, $, el, hoverable, SPELL_KEYS, ART_KEYS, ART_STAT, POSITIONAL,
     NEED_KEY, NT, namedSrc, esc, load, save, rebuildNF, pctSpace, fmtValue, fmtStat, fmtStatRich, sign,
     masksText, notchText, spellArt, shortOf, badgeText, goodClass, deltaChip, changeChip, prefs, loadPrefs,
-    savePrefs, splitHash, here, loadState, persist, compareLabel, compute, impact, recompute, commit, bindAllFx,
+    savePrefs, justWorn, justFound, splitHash, here, loadState, persist, compareLabel, compute, impact, recompute, commit, bindAllFx,
     brackets, chevron, cross, rule, screenHead, hudHtml, restoreFocus, focusDescriptor, render, go, screenOf,
     underNav, toast, track, actions, isMaxOwned, loadOwned, saveOwned, isOwned, withFixed, isFixed, setOwned });
 })();

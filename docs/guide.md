@@ -193,6 +193,17 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   **it goes away by itself** after 4 s (`--dur-delta`, `changeChip`): it's a notice. The
   distance to the reference (base, no charms or pinned) is read on the full sheet, which is
   where it's chosen. The deltas are coloured text, unboxed.
+- **What arrives moves once, too** (`App.was` in `js/app.js`: the build and the charms found
+  before the change, only for the repaint that follows it). The charm you equip comes into
+  *Equipped* as a light that settles and lights up once on the grid, and its notches fill one
+  by one from the left; removing it, they drain from the right. *Clear* sends the equipped
+  ones away one after another, from the last, fading as dust, and only then empties. The detail
+  fades into another charm when it changes. On Your game, the masks, vessels and notches you add
+  light up from the dark in order (the ones you remove let their light go), the nail you pick
+  takes the spotlight, and a spell, art or ability you learn (or a new level of it) lights its
+  plate; a charm you mark as found lights up on its grid. Screens fade in when you switch
+  between them. It's all fades and light, no slides or bounces (`design/00-system.md`, Motion),
+  and with `prefers-reduced-motion` only the result is seen.
 - **One tint per section**, the system of the game's map screen (`design/00-system.md` §3):
   Charms, the guide and Your game, in City of Tears' (`--tint-sheet`); combat, in Crystal
   Peak's (`--tint-combat`); the Hall and the Pantheons, in Godhome's. It tints the section
@@ -765,7 +776,11 @@ it's for rehearsing a boss.
   simulator only shows how your build performs against that statue. That's why the three
   difficulties are always open, just as you can skip to any room in a pantheon.
 - **Each count is a filter**: tapping *33/44 Attuned* dims on the grid the statues already
-  beaten at that difficulty and leaves lit the ones still to go; a line says how many.
+  beaten at that difficulty and leaves lit the ones still to go; a line says how many. Switching
+  filters, the lights fade out and back on instead of snapping.
+- **Marking on the plaque is seen**: the symbol inks in from a blur with a burst of light, on the
+  plaque and on the statue's tile, its count flashes and the statue's light swells once; removed,
+  its light goes out. If the Idol changes level, it lights up too.
 - **Mark in bulk**, collapsed under the Idol's rules, marks or removes a symbol on all 44 at
   once, difficulty by difficulty, with the same Radiant-and-Ascended rule as the plaque.
   What wouldn't change anything is dimmed. Removing wipes your real game, so the last bulk
@@ -787,6 +802,7 @@ it's for rehearsing a boss.
   measured on the screenshot of a half-finished game. **It doesn't cover the site**: it's read
   inside the Hall, in place of the grid and the plaque (the Idol and its counts stay on top), on
   the frame's black, with no veil or box; until 22 September it was a full-screen `<dialog>`.
+  Opening, it fades in and the names appear down the columns; closing, the statues fade back in.
   You go back to the statues with *‹ Statues*, at the top left, in the tablet's typeface and ink
   (the game's *Exit* sits by the bottom ornament because that's a controller spot), with Esc or
   with *Read the tablet*, which stays pressed while it's being read. It isn't saved: on leaving
@@ -827,7 +843,9 @@ room to the next, and **the rests are the only thing that heals**.
   finished it with (and "×4" if it was with all four at once). They're the notches of Godhome's
   door, next to the Hall of Gods: each binding of each pantheon counts once (20 in total) and
   with 8 it opens: every pantheon bench carries a cocoon of 3, 4 or 5 germs (with 8, 12 or 16). The site deduces it and
-  the rest room uses it; the simulator marks nothing (it's saved in `hollow.bindings`).
+  the rest room uses it; the simulator marks nothing (it's saved in `hollow.bindings`). A binding
+  you mark lights up; completing the four, they light up one after another in Godhome's gold and
+  the final boss's light swells.
 - **The bindings really change your numbers**, because the engine applies them: the Nail
   Binding leaves the hit at 4/7/10/13/13 (6/10/15/20/20 with Strength) and the arts go on that
   value; the Shell Binding, 4 masks without touching Lifeblood Heart's +2; the Charms Binding,
@@ -915,13 +933,17 @@ inside. The game's notice when marking shows fixed just below the bar.
   - **the Hunter's Mark** waits for the 146 completed (it says how many are left) and then
     offers the Hunter's button, "Ready to receive reward?". For Flukemunga one is enough,
     according to the wiki. Removing one of the 146 removes the Mark, just as removing Ascended
-    removes Radiant.
+    removes Radiant. Receiving it is its own moment: the Hunter's light swells in the Journal's
+    tint and dust rises from him.
 - **Tabs by state**, under the search box, each with its count and with the words of each
   entry's control: *All · Not encountered · Encountered · Completed*. From *All*, a tab keeps
   only those; with one chosen, another adds or removes itself, so the combinations fit (not
   encountered and encountered is what you're missing; encountered and completed, the game's
   list), and with none *All* comes back. The counts follow the search, and the entry you're
-  reading never disappears because of a filter.
+  reading never disappears because of a filter. Changing tabs, the list fades in.
+- **Marking is seen**: an entry just encountered lights its medallion up from the shadow, one just
+  completed lights its frame, the number of defeats and the counts that moved flash, and a feat
+  reached (*Keen Hunter*, *True Hunter*) lights up.
 - **The Hunter** says at the top what he'd tell you if you went to see him, with the
   thresholds from his wiki page: fewer than 50 entries, 50 to 99, 100 or more, the 146
   encountered, the 146 completed and, with the Mark, the one after. Next to it, the game's two
@@ -977,7 +999,10 @@ masks, the nails and the buttons line up from one slot to the next.
   know slots exist; the others wait in `hollow.saves` as copies.
 - **Tapping a slot** loads it: the page reloads —like the game's loading screen— on Charms, so
   nothing of the game you leave (an undo, the fight in progress) is left over. Tapping the one
-  you're in takes you back to Charms.
+  you're in takes you back to Charms. It's seen: the slot's nail catches the light and its masks
+  glow, the page fades to black and the new one fades in (`leave`, and `hollow.entered` in
+  `sessionStorage` veils it in `index.html`); *New Game* shows the base Knight's five masks
+  appearing one by one first, as a new game's HUD does.
 - **A slot's buttons are the game's menu items**, stacked in a column of their own behind a rule
   and quieter than the slot (they're what you do to it): capitals in the menu's face, no box, and on
   hover or focus the menu's two pointers on either side (*New Game* gets them too) (drawn in SVG; they're also the focus

@@ -38,6 +38,8 @@
   let hjTimer = 0;
   let hjBulkOpen = false;           // the "Mark in bulk" panel, open
   let hjInk = null;                 // the entry just completed: its notes ink in
+  let hjWas = null;                 // the book before a change by hand, only for its repaint: what changed moves once
+  let hjListFx = false;             // the list's states just changed (the tabs): it fades in
   let hjUndo = null;                // { prev, what, n, picked }: the last bulk action, to undo it
   let hjPicked = new Set();         // the ones picked with their checkbox, to mark in bulk
   let hjPickAnchor = '';            // the last checkbox touched: with Shift the range up to it is picked
@@ -101,6 +103,9 @@
     if (!visibleRows.length) return `<li class="hj-empty" role="presentation">${esc(t('fightNoMatch'))}</li>`;
     return visibleRows.map((r) => {
       const s = hjState(r.id), cur = r.id === App.hjCursor, entryName = pick(hjNameOf(r));
+      // Just encountered, its medallion lights up from the shadow; just completed, its frame.
+      const was = hjWas && HJ.stateOf(hjWas, r.id, App.marks);
+      const fx = !was ? '' : s.done && !was.done ? ' is-new-done' : s.seen && !was.seen ? ' is-new-seen' : '';
       const isPicked = hjBulkOpen && hjPicked.has(r.id);
       const leftBadge = s.seen && !s.done && HJ.kindOf(r.id) === 'count'
         ? `<span class="hj-left" title="${esc(t('hjLeftShort', { n: App.NF[0].format(s.left) }))}">${App.NF[0].format(s.left)}</span>` : '';
@@ -109,7 +114,7 @@
             aria-label="${esc(t('hjPick', { name: entryName }))}"><span class="hj-box">${isPicked ? HJ_CHECK : ''}</span></button>`
         : '<span class="hj-pick is-fixed" aria-hidden="true"></span>';
       return `<li role="presentation" class="${hjBulkOpen ? 'is-picking' : ''}">${pickBox}<button type="button" role="option" id="hj-e-${r.id}"
-        class="hj-row ${cur ? 'is-cur' : ''} ${s.seen ? '' : 'is-unseen'} ${s.done ? 'is-done' : ''} ${isPicked ? 'is-picked' : ''}"
+        class="hj-row ${cur ? 'is-cur' : ''} ${s.seen ? '' : 'is-unseen'} ${s.done ? 'is-done' : ''} ${isPicked ? 'is-picked' : ''}${fx}"
         aria-selected="${cur}" tabindex="${cur ? 0 : -1}" data-act="hjRead" data-id="${r.id}">
         ${hjMedal(r, s)}<span class="hj-name"${NT}>${esc(entryName)}</span>${leftBadge}
         <span class="sr-only"> · ${esc(hjStateText(s))}${isPicked ? ' · ' + esc(t('hjPicked')) : ''}</span></button></li>`;
@@ -143,7 +148,7 @@
     return `<p class="hj-kills">${esc(t('hjKill1'))}
       <span class="hj-stepper">
         <button type="button" class="hj-step" data-act="hjStep" data-id="${r.id}" data-value="-1" title="${esc(t('hjStepDown'))}" aria-label="${esc(t('hjStepDown'))}">−</button>
-        <input type="number" class="hj-count" data-id="${r.id}" value="${s.left}" min="0" max="${max}" step="1" inputmode="numeric" aria-label="${esc(t('hjLeftLbl'))}">
+        <input type="number" class="hj-count${hjWas && HJ.stateOf(hjWas, r.id, App.marks).left !== s.left ? ' is-flash' : ''}" data-id="${r.id}" value="${s.left}" min="0" max="${max}" step="1" inputmode="numeric" aria-label="${esc(t('hjLeftLbl'))}">
         <button type="button" class="hj-step" data-act="hjStep" data-id="${r.id}" data-value="1" title="${esc(t('hjStepUp'))}" aria-label="${esc(t('hjStepUp'))}" ${s.left >= max ? 'disabled' : ''}>+</button>
       </span>
       ${esc(t('hjKill2'))}</p>`;
@@ -187,27 +192,36 @@
   /* The Hunter and the counts, loose on the black like the Charms sheet. He says what he'd say if you went to see him (hunterLine); the
      counts are the game's with World Sense, and they're read-only: filtering is the list
      tabs' job. */
+  // The dust that rises from the Hunter on receiving his Mark: the main menu's motes, in fixed places.
+  const HJ_DUST = Array.from({ length: 16 }, (_, i) => {
+    const r = (n) => { const x = Math.sin(i * 12.9898 + n * 78.233) * 43758.5453; return x - Math.floor(x); };
+    return `<i style="--x:${(10 + r(1) * 80).toFixed(1)}%;--y:${(30 + r(2) * 60).toFixed(1)}%;--dx:${((r(3) - 0.5) * 40).toFixed(0)}px;--s:${(2 + r(4) * 2).toFixed(1)}px;--d:${(r(5) * 0.9).toFixed(2)}s;--o:${(0.45 + r(6) * 0.5).toFixed(2)}"></i>`;
+  }).join('');
   function hjTopHtml() {
     const c = HJ.counts(book);
     const lineKey = HJ.hunterLine(book);
     const saysHtml = t('hjSays' + lineKey[0].toUpperCase() + lineKey.slice(1)).split(/\n\n+/).map((p) => `<p>${esc(p.trim())}</p>`).join('');
-    const tally = (key, n) => `<li class="hj-tally">
+    // What moved with the last change flashes; a feat reached lights up; and receiving the Hunter's
+    // Mark is its own moment: his light swells and dust rises from it (.hj-hunter.is-marked).
+    const w = hjWas && HJ.counts(hjWas);
+    const tally = (key, n, before) => `<li class="hj-tally${w && before !== n ? ' is-flash' : ''}">
         <span class="hj-count-num"><b>${App.NF[0].format(n)}</b><i class="u">/${App.NF[0].format(c.total)}</i></span>
         <span class="hj-count-lbl">${esc(t(key))}</span></li>`;
     const markDone = hjState(HJ.MARK).done;
-    const feat = (key, textKey, n, isDone) => `<li class="hj-feat ${isDone ? 'is-done' : ''}" title="${esc(t(textKey))}">
+    const feat = (key, textKey, n, isDone, wasDone) => `<li class="hj-feat ${isDone ? 'is-done' : ''}${w && isDone && !wasDone ? ' is-lit' : ''}" title="${esc(t(textKey))}">
       <span class="hj-feat-lbl">${esc(t(key))}</span>
       <span class="hj-feat-num"><b>${App.NF[0].format(n)}</b><i class="u">/${App.NF[0].format(c.required)}</i></span></li>`;
-    return `<div class="hj-hunter">
-        <span class="hj-hunter-fig"><img class="hj-hunter-art" src="${D.art('hunter', 'hunter')}" alt=""></span>
+    const marked = w && markDone && !HJ.stateOf(hjWas, HJ.MARK).done;
+    return `<div class="hj-hunter${marked ? ' is-marked' : ''}">
+        <span class="hj-hunter-fig"><img class="hj-hunter-art" src="${D.art('hunter', 'hunter')}" alt="">${marked ? `<span class="hj-dust" aria-hidden="true">${HJ_DUST}</span>` : ''}</span>
         <div class="hj-hunter-body">
           <h3 class="hj-hunter-name"><small>${esc(t('hjSuper'))}</small> ${esc(t('hjMain'))}</h3>
           <blockquote class="hj-says">${saysHtml}</blockquote>
         </div>
         <div class="hj-hunter-side">
-          <ul class="hj-counts" aria-label="${esc(t('hjCountsTitle'))}" title="${esc(t('hjRules'))}">${tally('hjSeen', c.encountered)}${tally('hjDone', c.completed)}</ul>
+          <ul class="hj-counts" aria-label="${esc(t('hjCountsTitle'))}" title="${esc(t('hjRules'))}">${tally('hjSeen', c.encountered, w && w.encountered)}${tally('hjDone', c.completed, w && w.completed)}</ul>
           <p class="hj-total-note">${esc(t('hjTotalNote', { req: App.NF[0].format(c.required), max: App.NF[0].format(c.max) }))}</p>
-          <ul class="hj-feats">${feat('hjKeen', 'hjKeenText', c.reqSeen, c.reqSeen === c.required)}${feat('hjTrue', 'hjTrueText', c.reqDone, markDone)}</ul>
+          <ul class="hj-feats">${feat('hjKeen', 'hjKeenText', c.reqSeen, c.reqSeen === c.required, w && w.reqSeen === w.required)}${feat('hjTrue', 'hjTrueText', c.reqDone, markDone, hjWas && HJ.stateOf(hjWas, HJ.MARK).done)}</ul>
           <p class="hj-howto">${esc(t('hjHowTo'))}</p>
         </div>
       </div>`;
@@ -296,6 +310,7 @@
     if (searchBox.value !== hjQuery) searchBox.value = hjQuery;
     listEl.setAttribute('aria-label', t('jrTitle'));
     listEl.innerHTML = hjRowsHtml();
+    if (hjListFx) { listEl.classList.remove('is-fresh'); void listEl.offsetWidth; listEl.classList.add('is-fresh'); hjListFx = false; }
     hjSec.querySelector('.hj-show').innerHTML = hjTabsHtml();
     hjSec.querySelector('.hj-bulkbar').innerHTML = hjBulkHtml();
     App.hjPeek = null;
@@ -365,7 +380,9 @@
     const kind = HJ.change(prev, next, id);
     if (kind === 'full') hjInk = id;
     const markLost = HJ.stateOf(prev, HJ.MARK).done && !HJ.stateOf(next, HJ.MARK).done && id !== HJ.MARK;
+    hjWas = prev;
     paintHunter(focusCount);
+    hjWas = null;
     paintHjNav();
     if (markLost) hjNotify(t('hjMarkDropped', { total: App.NF[0].format(HJ.REQUIRED) }), HJ.MARK);
     else if (kind) hjNotify(id === HJ.MARK ? t('hjMarkKept') : t(kind === 'full' ? 'hjUpdated' : 'hjNewEntry'), id);
@@ -421,6 +438,7 @@
         if (hjShow.has(v)) hjShow.delete(v); else hjShow.add(v);
         if (!hjShow.size) hjShow = new Set(HJ_STATES);
       }
+      hjListFx = true;
       paintHunter();
     },
     hjBulk() {
@@ -463,9 +481,11 @@
       hjUndo = { prev: book, what, n, picked: hjPicked };
       hjPicked = new Set();
       hjPickAnchor = '';
+      hjWas = book;
       book = next;
       saveJournal();
       paintHunter();
+      hjWas = null;
       paintHjNav();
       const b = hjSec.querySelector('[data-act="hjUndo"]');
       if (b) b.focus({ preventScroll: true });

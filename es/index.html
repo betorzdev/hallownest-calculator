@@ -57,8 +57,9 @@
 <link rel="icon" href="assets/site/icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="assets/site/apple-touch-icon.png">
 <!-- Back from clearing the save you were in (js/app-saves.js, land): the page starts veiled, so the
-     reload isn't seen jumping from the top to the row; it comes in once the row is in place. -->
-<script>try { if (sessionStorage.getItem('hollow.cleared')) document.documentElement.classList.add('is-landing'); } catch (e) { /* no veil */ }</script>
+     reload isn't seen jumping from the top to the row; it comes in once the row is in place. The
+     same entering a game (leave): it fades in, like the game's loading screen lifting. -->
+<script>try { if (sessionStorage.getItem('hollow.cleared') || sessionStorage.getItem('hollow.entered')) document.documentElement.classList.add('is-landing'); } catch (e) { /* no veil */ }</script>
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/app.css">
 </head>
