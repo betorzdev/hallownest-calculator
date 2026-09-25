@@ -15,9 +15,10 @@ const BASE = { charmSlots: 3, maxHealthBase: 5, MPReserveMax: 0, nailSmithUpgrad
 test('it keeps only what it knows: ids once and in order, counts clamped, rooms by name', () => {
   assert.deepEqual(P.normalize({ ids: ['lurien', 'nope', 'monomon', 'lurien'],
     counts: { shards: 7, geo: -3, 'pale-ore': 2.4, nope: 5 }, bench: 'Town', shade: { scene: 'Fungus3_02', geo: 120 } }),
-  { ids: ['monomon', 'lurien'], counts: { shards: 3, 'pale-ore': 2 }, bench: 'Town', shade: { scene: 'Fungus3_02', geo: 120 } });
-  assert.deepEqual(P.normalize(null), { ids: [], counts: {}, bench: '', shade: null });
-  assert.deepEqual(P.normalize({ bench: '<b>', shade: { scene: 'None', geo: 5 } }), { ids: [], counts: {}, bench: '', shade: null });
+  { ids: ['monomon', 'lurien'], counts: { shards: 3, 'pale-ore': 2 }, found: [], bench: 'Town', shade: { scene: 'Fungus3_02', geo: 120 } });
+  assert.deepEqual(P.normalize(null), { ids: [], counts: {}, found: [], bench: '', shade: null });
+  assert.deepEqual(P.normalize({ bench: '<b>', shade: { scene: 'None', geo: 5 } }), { ids: [], counts: {}, found: [], bench: '', shade: null });
+  assert.deepEqual(P.normalize({ found: ['grub-crossroads-acid', 'nope', 'grub-crossroads-acid'] }).found, ['grub-crossroads-acid']);
 });
 
 test('a save brings its progress: equipment, keys, Dreamers, Colosseum, pantheons, the Divine', () => {
@@ -70,4 +71,42 @@ test('every room a save can name has an area, and every area its two names', () 
     assert.ok(R.AREAS[R.areaOf(s)], s);
   }
   assert.equal(R.areaOf('Nowhere_99'), '');
+});
+
+const CO = require('../js/collectibles.js');
+const room = (sceneName, id, activated = true) => ({ sceneName, id, activated });
+
+test("the catalogue: the wiki's totals, unique ids, and every room in an area", () => {
+  const TOTAL = { 'grub': 46, 'mask-shard': 16, 'vessel-fragment': 9, 'pale-ore': 6, 'charm-notch': 8, 'simple-key': 4,
+    'rancid-egg': 21, 'wanderers-journal': 14, 'hallownest-seal': 17, 'kings-idol': 8, 'arcane-egg': 4,
+    'whispering-root': 15, 'grimmkin-flame': 10, 'map': 13, 'stag': 11 };
+  assert.deepEqual(CO.KINDS, Object.keys(TOTAL));
+  for (const [k, n] of Object.entries(TOTAL)) assert.equal(CO.ITEMS.filter((it) => it.kind === k).length, n, k);
+  assert.equal(new Set(CO.ITEMS.map((it) => it.id)).size, CO.ITEMS.length);
+  for (const it of CO.ITEMS) assert.ok(R.AREAS[R.areaOf(it.scene)], it.id + ' ' + it.scene);
+});
+
+test('a save says which collectibles you have', () => {
+  const pd = { ...BASE, slyShellFrag1: true, dreamReward7: true, grubRewards: 16, collectorDefeated: true,
+    scenesEncounteredDreamPlantC: ['Crossroads_07'], scenesFlameCollected: ['Fungus1_10'], mapGreenpath: true, openedCrossroads: true };
+  const sd = { persistentBoolItems: [room('Crossroads_35', 'Grub Bottle'), room('Crossroads_05', 'Grub Bottle', false),
+    room('Fungus1_36', 'Heart Piece'), room('Fungus1_13', 'Dream Plant')] };
+  const f = new Set(P.detect(pd, sd));
+  for (const id of ['grub-crossroads-acid', 'mask-shard-sly-1', 'mask-shard-seer', 'mask-shard-5-grubs', 'rancid-egg-grubs',
+    'mask-shard-stone-sanctuary', 'whispering-root-crossroads', 'whispering-root-greenpath', 'grimmkin-flame-greenpath',
+    'greenpath-map', 'crossroads-stag', 'grub-collector-1']) assert.ok(f.has(id), id);
+  for (const id of ['grub-crossroads-center', 'hallownest-seal-grubs', 'mask-shard-sly-2']) assert.ok(!f.has(id), id);
+  // After the ritual its nine flames were taken, whatever the list says; Brumm's is the banishment's.
+  const flames = P.detect({ ...BASE, grimmChildLevel: 4 }, null).filter((id) => id.startsWith('grimmkin-flame'));
+  assert.equal(flames.length, 9);
+  assert.ok(!flames.includes('grimmkin-flame-brumm'));
+  assert.deepEqual(P.fromSave({ ...pd, respawnScene: '', shadeScene: 'None' }, sd).found, P.detect(pd, sd));
+});
+
+test('a collectible marked by hand', () => {
+  let p = P.toggleFound({}, 'grub-crossroads-acid');
+  assert.equal(P.hasFound(p, 'grub-crossroads-acid'), true);
+  p = P.toggleFound(p, 'grub-crossroads-acid');
+  assert.equal(P.hasFound(p, 'grub-crossroads-acid'), false);
+  assert.deepEqual(P.toggleFound({}, 'nope').found, []);
 });

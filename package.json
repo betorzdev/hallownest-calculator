@@ -16,6 +16,7 @@
     "text": "node tools/game-text.js",
     "es": "node tools/es-page.js",
     "check-pack": "node tools/check-pack.js",
-    "rooms": "node tools/fetch-rooms.js"
+    "rooms": "node tools/fetch-rooms.js",
+    "collectibles": "node tools/fetch-collectibles.js"
   }
 }

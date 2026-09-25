@@ -2,7 +2,7 @@
    The game's areas, each with its name as the game writes it (the text key alongside) and the
    area light it takes (css/tokens.css, --area-*); and which area each room (scene) is in, from
    the community randomizer's rooms.json. areaOf(scene) → the area id, or ''. Godhome's rooms
-   (GG_*) are all Godhome. */
+   (GG_*) are all Godhome. placeOf(scene) → the place inside its area (Mantis Village…), or ''. */
 (() => {
   'use strict';
   const HK = globalThis.HK || (globalThis.HK = {});
@@ -43,13 +43,76 @@
     abyss: ['Abyss_06_Core', 'Abyss_08', 'Abyss_09', 'Abyss_10', 'Abyss_12', 'Abyss_15', 'Abyss_16', 'Abyss_Lighthouse_room'],
     edge: ['Abyss_03_c', 'Deepnest_East_01', 'Deepnest_East_02', 'Deepnest_East_03', 'Deepnest_East_04', 'Deepnest_East_06', 'Deepnest_East_07', 'Deepnest_East_08', 'Deepnest_East_09', 'Deepnest_East_10', 'Deepnest_East_11', 'Deepnest_East_12', 'Deepnest_East_13', 'Deepnest_East_14', 'Deepnest_East_14b', 'Deepnest_East_15', 'Deepnest_East_16', 'Deepnest_East_17', 'Deepnest_East_18', 'Deepnest_East_Hornet', 'GG_Lurker', 'Room_Wyrm', 'Room_nailmaster_03'],
     hive: ['Hive_01', 'Hive_02', 'Hive_03', 'Hive_03_c', 'Hive_04', 'Hive_05'],
-    colosseum: ['Room_Colosseum_01', 'Room_Colosseum_02', 'Room_Colosseum_Spectate'],
+    colosseum: ['Room_Colosseum_01', 'Room_Colosseum_02', 'Room_Colosseum_Bronze', 'Room_Colosseum_Gold', 'Room_Colosseum_Silver', 'Room_Colosseum_Spectate'],
     cliffs: ['Cliffs_01', 'Cliffs_02', 'Cliffs_03', 'Cliffs_04', 'Cliffs_05', 'Cliffs_06', 'Fungus1_28', 'Room_nailmaster'],
     palace: ['White_Palace_01', 'White_Palace_02', 'White_Palace_03_hub', 'White_Palace_04', 'White_Palace_05', 'White_Palace_06', 'White_Palace_07', 'White_Palace_08', 'White_Palace_09', 'White_Palace_11', 'White_Palace_12', 'White_Palace_13', 'White_Palace_14', 'White_Palace_15', 'White_Palace_16', 'White_Palace_17', 'White_Palace_18', 'White_Palace_19', 'White_Palace_20'],
   };
-  const SCENE = {};
+  /* The places inside an area, with the title the game shows on entering them, and their rooms. */
+  const PLACES = {
+    'kingspass': { es: 'Paso del Rey', en: 'King\'s Pass' },   // KINGSPASS_SUPER/_MAIN/_SUB
+    'eggtemple': { es: 'Templo del Huevo Negro', en: 'Temple of the Black Egg' },   // EGGTEMPLE_SUPER/_MAIN/_SUB
+    'shamantemple': { es: 'Montículo Ancestral', en: 'Ancestral Mound' },   // SHAMANTEMPLE_SUPER/_MAIN/_SUB
+    'acid_lake': { es: 'Lago de Unn', en: 'Lake of Unn' },   // ACID_LAKE_SUPER/_MAIN/_SUB
+    'noeyes_temple': { es: 'Santuario de Piedra', en: 'Stone Sanctuary' },   // NOEYES_TEMPLE_SUPER/_MAIN/_SUB
+    'overgrown_mound': { es: 'Montículo Descuidado', en: 'Overgrown Mound' },   // OVERGROWN_MOUND_SUPER/_MAIN/_SUB
+    'queens_station': { es: 'Estación de la Reina', en: 'Queen\'s Station' },   // QUEENS_STATION_SUPER/_MAIN/_SUB
+    'mantis_village': { es: 'Poblado Mantis', en: 'Mantis Village' },   // MANTIS_VILLAGE_SUPER/_MAIN/_SUB
+    'fungus_core': { es: 'Núcleo Fúngico', en: 'Fungal Core' },   // FUNGUS_CORE_SUPER/_MAIN/_SUB
+    'monomon_archive': { es: 'Archivos de la Maestra', en: 'Teacher\'s Archives' },   // MONOMON_ARCHIVE_SUPER/_MAIN/_SUB
+    'mage_tower': { es: 'Santuario de Almas', en: 'Soul Sanctum' },   // MAGE_TOWER_SUPER/_MAIN/_SUB
+    'kings_station': { es: 'Estación del Rey', en: 'King\'s Station' },   // KINGS_STATION_SUPER/_MAIN/_SUB
+    'love_tower': { es: 'Torre del Amor', en: 'Tower of Love' },   // LOVE_TOWER_SUPER/_MAIN/_SUB
+    'bathhouse': { es: 'Casa de los Placeres', en: 'Pleasure House' },   // BATHHOUSE_SUPER/_MAIN/_SUB
+    'peak': { es: 'Corona de Hallownest', en: 'Hallownest\'s Crown' },   // PEAK_SUPER/_MAIN/_SUB
+    'crystal_mound': { es: 'Montículo Cristalizado', en: 'Crystalised Mound' },   // CRYSTAL_MOUND_SUPER/_MAIN/_SUB
+    'spider_village': { es: 'Poblado Distante', en: 'Distant Village' },   // SPIDER_VILLAGE_SUPER/_MAIN/_SUB
+    'ruined_tramway': { es: 'Tranvía Fallido', en: 'Failed Tramway' },   // RUINED_TRAMWAY_SUPER/_MAIN/_SUB
+    'weavers_den': { es: 'Guarida de las Tejedoras', en: 'Weavers\' Den' },   // WEAVERS_DEN_SUPER/_MAIN/_SUB
+    'hegemol_nest': { es: 'Guarida de las Bestias', en: 'Beast\'s Den' },   // HEGEMOL_NEST_SUPER/_MAIN/_SUB
+    'stagnest': { es: 'Nido de ciervos', en: 'Stag Nest' },   // STAGNEST_SUPER/_MAIN/_SUB
+    'wyrmskin': { es: 'Coraza desechada', en: 'Cast-Off Shell' },   // WYRMSKIN_SUPER/_MAIN/_SUB
+    'blue_lake': { es: 'Lago Azul', en: 'Blue Lake' },   // BLUE_LAKE_SUPER/_MAIN/_SUB
+    'glade': { es: 'Claro de la Esperanza', en: 'Spirits\' Glade' },   // GLADE_SUPER/_MAIN/_SUB
+    'godseeker_waste': { es: 'Pila de Basura', en: 'Junk Pit' },   // GODSEEKER_WASTE_SUPER/_MAIN/_SUB
+    'ismas_grove': { es: 'Arboleda de Isma', en: 'Isma\'s Grove' },   // ISMAS_GROVE_SUPER/_MAIN/_SUB
+    'palace_grounds': { es: 'Tierras de Palacio', en: 'Palace Grounds' },   // PALACE_GROUNDS_SUPER/_MAIN/_SUB
+    'path_of_sacrifice': { es: 'Sendero del Dolor', en: 'Path Of Pain' },   // PATH_OF_SACRIFICE_SUPER/_MAIN/_SUB
+  };
+  const BY_PLACE = {
+    kingspass: ['Tutorial_01'],
+    eggtemple: ['Room_temple'],
+    shamantemple: ['Crossroads_ShamanTemple'],
+    acid_lake: ['Fungus1_26', 'Fungus1_Slug', 'Room_Slug_Shrine'],
+    noeyes_temple: ['Fungus1_35', 'Fungus1_36'],
+    overgrown_mound: ['Room_Fungus_Shaman'],
+    queens_station: ['Fungus2_01', 'Fungus2_02', 'Fungus2_34'],
+    mantis_village: ['Fungus2_12', 'Fungus2_13', 'Fungus2_14', 'Fungus2_15', 'Fungus2_23', 'Fungus2_31'],
+    fungus_core: ['Fungus2_29', 'Fungus2_30'],
+    monomon_archive: ['Fungus3_archive', 'Fungus3_archive_02'],
+    mage_tower: ['Ruins1_09', 'Ruins1_23', 'Ruins1_24', 'Ruins1_25', 'Ruins1_30', 'Ruins1_32'],
+    kings_station: ['Ruins2_05', 'Ruins2_06', 'Ruins2_07', 'Ruins2_08', 'Ruins2_09', 'Ruins2_10b'],
+    love_tower: ['Ruins2_11', 'Ruins2_11_b'],
+    bathhouse: ['Ruins_Bathhouse', 'Ruins_Elevator'],
+    peak: ['Mines_25', 'Mines_34'],
+    crystal_mound: ['Mines_35'],
+    spider_village: ['Deepnest_09', 'Deepnest_10', 'Room_spider_small'],
+    ruined_tramway: ['Deepnest_14', 'Deepnest_26', 'Deepnest_26b'],
+    weavers_den: ['Deepnest_45_v02'],
+    hegemol_nest: ['Deepnest_Spider_Town'],
+    stagnest: ['Cliffs_03'],
+    wyrmskin: ['Deepnest_East_Hornet', 'Room_Wyrm'],
+    blue_lake: ['Crossroads_50'],
+    glade: ['RestingGrounds_08'],
+    godseeker_waste: ['GG_Waterways', 'Room_GG_Shortcut'],
+    ismas_grove: ['Waterways_13'],
+    palace_grounds: ['Abyss_05', 'Abyss_22'],
+    path_of_sacrifice: ['White_Palace_17', 'White_Palace_18', 'White_Palace_19', 'White_Palace_20'],
+  };
+  const SCENE = {}, SCENE_PLACE = {};
   for (const [id, list] of Object.entries(BY_AREA)) for (const s of list) SCENE[s] = id;
+  for (const [id, list] of Object.entries(BY_PLACE)) for (const s of list) SCENE_PLACE[s] = id;
   const areaOf = (scene) => (typeof scene !== 'string' ? '' : SCENE[scene] || (scene.startsWith('GG_') ? 'godhome' : ''));
-  HK.rooms = { AREAS, SCENE, areaOf };
+  const placeOf = (scene) => (typeof scene === 'string' && SCENE_PLACE[scene]) || '';
+  HK.rooms = { AREAS, PLACES, SCENE, areaOf, placeOf };
   if (typeof module !== 'undefined' && module.exports) module.exports = HK.rooms;
 })();

@@ -52,8 +52,24 @@ const MAP_AREA = {
   'Ancient Basin': 'basin', "Kingdom's Edge": 'edge', 'Howling Cliffs': 'cliffs', 'White Palace': 'palace',
 };
 const TITLED = { 'Hive': 'hive', 'Colosseum': 'colosseum', 'Abyss': 'abyss' };
+/* The places inside an area, each with the title the game shows on entering it (<X>_SUPER,
+   <X>_MAIN and <X>_SUB, the ones that exist, in that order in both languages: the game already
+   orders the Spanish pieces). The randomizer's titled area → the key's base. */
+const PLACES = {
+  "King's Pass": 'KINGSPASS', 'Black Egg Temple': 'EGGTEMPLE', 'Ancestral Mound': 'SHAMANTEMPLE',
+  'Lake of Unn': 'ACID_LAKE', 'Stone Sanctuary': 'NOEYES_TEMPLE', 'Overgrown Mound': 'OVERGROWN_MOUND',
+  "Queen's Station": 'QUEENS_STATION', 'Mantis Village': 'MANTIS_VILLAGE', 'Fungal Core': 'FUNGUS_CORE',
+  "Teacher's Archives": 'MONOMON_ARCHIVE', 'Soul Sanctum': 'MAGE_TOWER', "King's Station": 'KINGS_STATION',
+  'Tower of Love': 'LOVE_TOWER', 'Pleasure House': 'BATHHOUSE', "Hallownest's Crown": 'PEAK',
+  'Crystallized Mound': 'CRYSTAL_MOUND', 'Distant Village': 'SPIDER_VILLAGE', 'Failed Tramway': 'RUINED_TRAMWAY',
+  "Weaver's Den": 'WEAVERS_DEN', "Beast's Den": 'HEGEMOL_NEST', 'Stag Nest': 'STAGNEST', 'Cast Off Shell': 'WYRMSKIN',
+  'Blue Lake': 'BLUE_LAKE', "Spirits' Glade": 'GLADE', 'Junk Pit': 'GODSEEKER_WASTE', "Isma's Grove": 'ISMAS_GROVE',
+  'Palace Grounds': 'PALACE_GROUNDS', 'Path of Pain': 'PATH_OF_SACRIFICE',
+};
 // Rooms the randomizer doesn't list. The trams' cars are counted where their line runs.
-const EXTRA = { 'Room_Tram': 'deepnest', 'Room_Tram_RG': 'resting' };
+const EXTRA = { 'Room_Tram': 'deepnest', 'Room_Tram_RG': 'resting',
+  // The three trials' arenas, where their rewards are given.
+  'Room_Colosseum_Bronze': 'colosseum', 'Room_Colosseum_Silver': 'colosseum', 'Room_Colosseum_Gold': 'colosseum' };
 
 const norm = (s) => String(s).replace(/[’‘]/g, "'").replace(/[“”]/g, '"').replace(/\s+/g, ' ').trim();
 const q = (s) => `'${s.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
@@ -65,12 +81,23 @@ const q = (s) => `'${s.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
   if (!res.ok) throw new Error('HTTP ' + res.status);
   const rooms = await res.json();
 
-  const scenes = {};
+  const scenes = {}, placeOf = {};
   for (const r of Object.values(rooms)) {
     const id = TITLED[r.TitledArea] || MAP_AREA[r.MapArea];
     if (id) scenes[r.SceneName] = id;
+    if (PLACES[r.TitledArea]) placeOf[r.SceneName] = PLACES[r.TitledArea];
   }
   Object.assign(scenes, EXTRA);
+  const placeName = (base, lang) => {
+    const parts = ['_SUPER', '_MAIN', '_SUB'].map((x) => text[lang][base + x]).filter(Boolean);
+    if (!parts.length) throw new Error('no title ' + base);
+    return norm(parts.join(' '));
+  };
+  const placeIds = [...new Set(Object.values(PLACES))];
+  const placeLines = placeIds.map((b) => `    ${q(b.toLowerCase())}: { es: ${q(placeName(b, 'ES'))}, en: ${q(placeName(b, 'EN'))} },   // ${b}_SUPER/_MAIN/_SUB`);
+  const byPlace = {};
+  for (const [scene, b] of Object.entries(placeOf).sort()) (byPlace[b] = byPlace[b] || []).push(scene);
+  const placeSceneLines = placeIds.filter((b) => byPlace[b]).map((b) => `    ${b.toLowerCase()}: [${byPlace[b].map(q).join(', ')}],`);
 
   const lines = AREAS.map(([id, keys, light]) => {
     const name = (lang) => norm(keys.map((k) => {
@@ -88,7 +115,7 @@ const q = (s) => `'${s.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
     '   The game\'s areas, each with its name as the game writes it (the text key alongside) and the',
     '   area light it takes (css/tokens.css, --area-*); and which area each room (scene) is in, from',
     '   the community randomizer\'s rooms.json. areaOf(scene) → the area id, or \'\'. Godhome\'s rooms',
-    '   (GG_*) are all Godhome. */',
+    '   (GG_*) are all Godhome. placeOf(scene) → the place inside its area (Mantis Village…), or \'\'. */',
     '(() => {',
     "  'use strict';",
     '  const HK = globalThis.HK || (globalThis.HK = {});',
@@ -98,13 +125,22 @@ const q = (s) => `'${s.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
     '  const BY_AREA = {',
     ...sceneLines,
     '  };',
-    '  const SCENE = {};',
+    '  /* The places inside an area, with the title the game shows on entering them, and their rooms. */',
+    '  const PLACES = {',
+    ...placeLines,
+    '  };',
+    '  const BY_PLACE = {',
+    ...placeSceneLines,
+    '  };',
+    '  const SCENE = {}, SCENE_PLACE = {};',
     '  for (const [id, list] of Object.entries(BY_AREA)) for (const s of list) SCENE[s] = id;',
+    '  for (const [id, list] of Object.entries(BY_PLACE)) for (const s of list) SCENE_PLACE[s] = id;',
     "  const areaOf = (scene) => (typeof scene !== 'string' ? '' : SCENE[scene] || (scene.startsWith('GG_') ? 'godhome' : ''));",
-    '  HK.rooms = { AREAS, SCENE, areaOf };',
+    "  const placeOf = (scene) => (typeof scene === 'string' && SCENE_PLACE[scene]) || '';",
+    '  HK.rooms = { AREAS, PLACES, SCENE, areaOf, placeOf };',
     "  if (typeof module !== 'undefined' && module.exports) module.exports = HK.rooms;",
     '})();',
     '',
   ].join('\n'));
-  console.log(`js/rooms.js: ${AREAS.length} areas, ${Object.keys(scenes).length} rooms`);
+  console.log(`js/rooms.js: ${AREAS.length} areas, ${placeIds.length} places, ${Object.keys(scenes).length} rooms`);
 })().catch((e) => { console.error(e.message); process.exitCode = 1; });

@@ -93,6 +93,34 @@
     'trial-conqueror': { es: 'Prueba del Conquistador', en: 'Trial of the Conqueror' }, // COLOSSEUM_2_TEXT
     'trial-fool': { es: 'Prueba de los Insensatos', en: 'Trial of the Fool' },         // COLOSSEUM_3_TEXT
     'seer-ascended': { es: 'Vidente', en: 'Seer' },                             // DREAM_MOTH_MAIN
+    ascension: { es: 'Ascensión', en: 'Ascension' },                            // ASCENSION_TITLE
+  };
+  /* The collectibles' kinds (js/collectibles.js), each with its name as the game writes it (the
+     Inventory's, or the map's legend, KEY_*) and its picture. The flames have no name of their
+     own in the game: "Grimmkin" is its name for their bearers (NAME_FLAMEBEARER_*). */
+  const COLLECTIBLE_KINDS = {
+    'grub': { es: 'Larva cautiva', en: 'Captive Grub', art: ['effects', 'grub'] },                    // KEY_GRUB
+    'mask-shard': { es: 'Fragmento de máscara', en: 'Mask Shard', art: ['hud', 'mask-shard'] },       // INV_NAME_HEARTPIECE_1
+    'vessel-fragment': { es: 'Fragmento de vasija', en: 'Vessel Fragment', art: ['hud', 'vessel-frag'] }, // INV_NAME_SOULORBS_1
+    'pale-ore': { es: 'Mineral Pálido', en: 'Pale Ore', art: ['items', 'pale-ore'] },                // INV_NAME_ORE
+    'charm-notch': { es: 'Muesca de amuletos', en: 'Charm Notch', art: ['hud', 'notch'] },            // INV_NAME_NOTCH
+    'simple-key': { es: 'Llave simple', en: 'Simple Key', art: ['items', 'simple-key'] },             // INV_NAME_SIMPLEKEY
+    'rancid-egg': { es: 'Huevo podrido', en: 'Rancid Egg', art: ['items', 'rancid-egg'] },            // INV_NAME_RANCIDEGG
+    'wanderers-journal': { es: 'Diario del errante', en: "Wanderer's Journal", art: ['items', 'wanderers-journal'] }, // INV_NAME_TRINKET1
+    'hallownest-seal': { es: 'Sello de Hallownest', en: 'Hallownest Seal', art: ['items', 'hallownest-seal'] },     // INV_NAME_TRINKET2
+    'kings-idol': { es: 'Ídolo del rey', en: "King's Idol", art: ['items', 'kings-idol'] },           // INV_NAME_TRINKET3
+    'arcane-egg': { es: 'Huevo arcano', en: 'Arcane Egg', art: ['items', 'arcane-egg'] },             // INV_NAME_TRINKET4
+    'whispering-root': { es: 'Raíz susurrante', en: 'Whispering Root', art: ['items', 'whispering-root'] }, // KEY_DREAMPLANT
+    'grimmkin-flame': { es: 'Llama de los Grimarios', en: 'Grimmkin Flame', art: ['items', 'grimmkin-flame'] },
+    'map': { es: 'Mapa', en: 'Map', art: ['effects', 'map'] },                                         // INV_NAME_MAP
+    'stag': { es: 'Estación de ciervos', en: 'Stag Station', art: ['items', 'stag'] },                // KEY_STAG
+  };
+  // Who gives rewards for what you bring (the Grubfather, from the Spanish wiki's page «Padre Larva»,
+  // and the Seer), and who sells collectibles.
+  const GIVERS = {
+    grubfather: { es: 'Padre Larva', en: 'Grubfather' },
+    seer: { es: 'Vidente', en: 'Seer' },                                        // DREAM_MOTH_MAIN
+    sly: { es: 'Sly', en: 'Sly' }, salubra: { es: 'Salubra', en: 'Salubra' },
   };
   const SHARDS = { es: 'Fragmentos de máscara', en: 'Mask Shards' };             // INV_NAME_HEARTPIECE_0
   const FRAGMENTS = { es: 'Fragmentos de vasija', en: 'Vessel Fragments' };     // INV_NAME_SOULORBS_0
@@ -261,6 +289,12 @@
       'hallownest-seal':   'Hallownest_Seal.png',
       'kings-idol':        "King's_Idol.png",
       'arcane-egg':        'Arcane_Egg.png',
+      // The collectibles' kinds that have no inventory icon (COLLECTIBLE_KINDS), and the two who give rewards.
+      'whispering-root':   'Whispering_Root.png',
+      'grimmkin-flame':    'FlameConsumed.png',
+      'stag':              'Stag_Circle.png',
+      'grubfather':        'Grubfather_Circle.png',
+      'seer':              'Seer_Circle.png',
     },
     hud: {
       'mask':        'HK_Mask.png',
@@ -794,7 +828,7 @@
   const STAT_BY_ID = Object.fromEntries(STAT_DEFS.map((d) => [d.id, d]));
 
   HK.data = {
-    NAILS, NAIL, ARTS, ABILITIES, EQUIPMENT, KEY_ITEMS, CARRIED, SHARDS, FRAGMENTS, COMPLETION_NAMES, SPELLS, SPELL_COST, SPELL_COST_TWISTER,
+    NAILS, NAIL, ARTS, ABILITIES, EQUIPMENT, KEY_ITEMS, CARRIED, SHARDS, FRAGMENTS, COMPLETION_NAMES, COLLECTIBLE_KINDS, GIVERS, SPELLS, SPELL_COST, SPELL_COST_TWISTER,
     SOUL, HEALTH, FOCUS, MOVE, PETS, CHARM_NOTCHES,
     CHARMS, CHARM_BY_ID, EFFECT_WHEN, CHARM_EFFECTS, GROUPS, STAT_DEFS, STAT_BY_ID, ART, art,
   };

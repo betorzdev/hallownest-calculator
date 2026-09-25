@@ -5,6 +5,7 @@
              Colosseum's trials, the pantheons cleared… (IDS, each with where the save says it)
      counts  what you carry, numbers: geo, essence, the loose mask shards and vessel fragments,
              pale ore, rancid eggs, simple keys, the four relics and the geo in Millibelle's bank
+     found   the collectibles you have (js/collectibles.js): each grub, shard, relic, root…
      bench   the room of the bench you'd wake up at (its area: js/rooms.js)
      shade   where your shade waits and the geo it carries, or null
    Everything is marked by hand as well, like the Journal; a save linked to the game overwrites
@@ -13,6 +14,8 @@
 (() => {
   'use strict';
   const HK = globalThis.HK || (globalThis.HK = {});
+  const CO = HK.collectibles || require('./collectibles.js');
+  const FOUND = CO.ITEMS.map((it) => it.id);
 
   const doorDone = (n) => (pd) => {
     const st = pd['bossDoorStateTier' + n];
@@ -68,31 +71,56 @@
   const SCENE = /^[A-Za-z0-9_]{1,64}$/;
   const scene = (s) => (typeof s === 'string' && SCENE.test(s) && s !== 'None' ? s : '');
 
-  const EMPTY = Object.freeze({ ids: [], counts: {}, bench: '', shade: null });
+  const EMPTY = Object.freeze({ ids: [], counts: {}, found: [], bench: '', shade: null });
 
   /* Anything → a valid progress: the known ids once each in IDS's order, the known counts
-     clamped (a 0 isn't kept), a room name for the bench, and the shade with its room and geo. */
+     clamped (a 0 isn't kept), the known collectibles in the catalogue's order, a room name for
+     the bench, and the shade with its room and geo. */
   function normalize(raw) {
     const o = raw && typeof raw === 'object' ? raw : {};
     const ids = Array.isArray(o.ids) ? ID_LIST.filter((id) => o.ids.includes(id)) : [];
+    const found = Array.isArray(o.found) ? FOUND.filter((id) => o.found.includes(id)) : [];
     const counts = {};
     const c = o.counts && typeof o.counts === 'object' ? o.counts : {};
     for (const id of COUNT_LIST) { const v = clamp(id, c[id]); if (v) counts[id] = v; }
     const s = o.shade && typeof o.shade === 'object' ? o.shade : null;
     const shade = s && scene(s.scene) ? { scene: scene(s.scene), geo: Math.max(0, int(s.geo)) } : null;
-    return { ids, counts, bench: scene(o.bench), shade };
+    return { ids, counts, found, bench: scene(o.bench), shade };
   }
 
-  // playerData → progress.
-  function fromSave(pd) {
+  /* Which collectibles a save says you have (js/collectibles.js, `how`). sd is the save's
+     sceneData: a thing picked up from the floor is its room's object, activated. */
+  function detect(pd, sd) {
+    const picked = new Set();
+    const items = sd && Array.isArray(sd.persistentBoolItems) ? sd.persistentBoolItems : [];
+    for (const x of items) if (x && x.activated && typeof x.sceneName === 'string' && typeof x.id === 'string') picked.add(x.sceneName + '|' + x.id);
+    const list = (k) => (Array.isArray(pd[k]) ? pd[k] : []);
+    const flames = list('scenesFlameCollected'), roots = list('scenesEncounteredDreamPlantC');
+    // Once the Troupe's ritual is over, every flame was taken, whatever the lists say now.
+    const ritualDone = int(pd.grimmChildLevel) >= 4 || !!pd.killedNightmareGrimm || !!pd.destroyedNightmareLantern;
+    const has = (it) => {
+      const [t, a] = it.how;
+      if (t === 'o') return picked.has(it.scene + '|' + a);
+      if (t === 'pd') return !!pd[a];
+      if (t === 'seer') return !!pd['dreamReward' + a];
+      if (t === 'grubs') return picked.has('Crossroads_38|Reward ' + a) || int(pd.grubRewards) >= a;
+      if (t === 'root') return picked.has(it.scene + '|Dream Plant') || roots.includes(it.scene);
+      if (t === 'flame') return ritualDone || flames.includes(it.scene);
+      return false;
+    };
+    return CO.ITEMS.filter(has).map((it) => it.id);
+  }
+
+  // playerData (and its sceneData) → progress.
+  function fromSave(pd, sd) {
     const ids = ID_LIST.filter((id) => (typeof IDS[id] === 'function' ? IDS[id](pd) : !!pd[IDS[id]]));
     const counts = {};
     for (const id of COUNT_LIST) counts[id] = pd[COUNTS[id][0]];
     const shade = scene(pd.shadeScene) ? { scene: pd.shadeScene, geo: pd.geoPool } : null;
-    return normalize({ ids, counts, bench: pd.respawnScene, shade });
+    return normalize({ ids, counts, found: detect(pd, sd), bench: pd.respawnScene, shade });
   }
 
-  const isEmpty = (p) => { const n = normalize(p); return !n.ids.length && !Object.keys(n.counts).length && !n.bench && !n.shade; };
+  const isEmpty = (p) => { const n = normalize(p); return !n.ids.length && !Object.keys(n.counts).length && !n.found.length && !n.bench && !n.shade; };
 
   /* Marking by hand, like the Journal's: they return a new progress without touching the one
      they receive. */
@@ -108,9 +136,18 @@
     if (!COUNTS[id]) return n;
     return normalize({ ...n, counts: { ...n.counts, [id]: v } });
   }
+  // A collectible found, by hand.
+  function toggleFound(p, id, on) {
+    const n = normalize(p);
+    if (!FOUND.includes(id)) return n;
+    const had = n.found.includes(id);
+    const want = on === undefined ? !had : !!on;
+    return normalize({ ...n, found: want ? [...n.found, id] : n.found.filter((x) => x !== id) });
+  }
   const has = (p, id) => normalize(p).ids.includes(id);
+  const hasFound = (p, id) => normalize(p).found.includes(id);
   const count = (p, id) => normalize(p).counts[id] || 0;
 
-  HK.progress = { IDS, ID_LIST, COUNTS, COUNT_LIST, EMPTY, normalize, fromSave, isEmpty, toggle, setCount, has, count };
+  HK.progress = { IDS, ID_LIST, COUNTS, COUNT_LIST, EMPTY, normalize, detect, fromSave, isEmpty, toggle, toggleFound, setCount, has, hasFound, count };
   if (typeof module !== 'undefined' && module.exports) module.exports = HK.progress;
 })();

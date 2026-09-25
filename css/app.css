@@ -3834,7 +3834,25 @@ kbd {
 .pg-plates .gplate.is-part .gplate-art::before { background: var(--halo-plate-off); }
 /* The build's things are marked on Your game: they say so, and take you there. */
 .pg-plates .gplate.is-far .gplate-val { font-family: var(--font-body); }
+/* The collectibles, under the 112%: their own title, the filter by area (each area's light as
+   a dot, the chosen one with the accent's line) and the same tablet; then the reward ladders. */
+.pg-coll { margin-top: var(--sp-16); }
+.pg-title { margin: 0; text-align: center; font-family: var(--font-display); font-size: var(--fs-lg); letter-spacing: 0.08em; color: var(--ink-strong); }
+.pg-coll > .pg-lead { margin: var(--sp-2) auto var(--sp-6); text-align: center; }
+.pg-sub { max-width: 900px; margin: var(--sp-8) auto var(--sp-2); font-size: var(--fs-2xs); letter-spacing: 0.12em; text-transform: uppercase; color: var(--label); }
+.pg-areas { max-width: 900px; margin: 0 auto var(--sp-4); display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-2); }
+.pg-area {
+  display: inline-flex; align-items: center; gap: var(--sp-2); padding: var(--sp-1) var(--sp-2);
+  font-size: var(--fs-sm); color: var(--ink-2); border-bottom: 1px solid transparent; transition: color var(--dur) var(--ease);
+}
+.pg-area:hover { color: var(--accent); }
+.pg-area.is-on { color: var(--ink-strong); background: var(--picked); border-bottom-color: var(--accent-line); }
+.pg-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--dot, var(--ink-2)); flex: none; }
 @media (max-width: 599px) {
+  /* The areas in one strip that slides sideways, inside its own box: nineteen would fill the screen. */
+  .pg-areas { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: var(--sp-1); }
+  .pg-areas::-webkit-scrollbar { display: none; }
+  .pg-area { flex: none; }
   .pg-head { grid-template-columns: minmax(0, 1fr) auto; }
   .pg-pips { grid-column: 1 / -1; grid-row: 2; }
   .pg-plates { grid-template-columns: repeat(3, minmax(0, 1fr)); }

@@ -21,13 +21,15 @@ Before touching anything, check whether it's already solved:
   `js/journal.js` (the Hunter's Journal: the combat picker and your game's book) doesn't come
   from `kb/`: `npm run journal` generates it from the two wikis and the dump of the game's texts
   (for what the wikis don't carry cleanly), and it isn't edited by hand. Its marking rules are
-  in `js/hunter.js`.
+  in `js/hunter.js`. The same goes for `js/rooms.js` (`npm run rooms`) and `js/collectibles.js`
+  (`npm run collectibles`): generated from the community's randomizer data and the game's
+  texts, never edited by hand.
 
 Neither folder is part of the page: `index.html` doesn't load them.
 
 ## Hard constraints
 
-- **No framework and no build.** `index.html` loads **twenty-six classic scripts**, not modules.
+- **No framework and no build.** `index.html` loads **twenty-seven classic scripts**, not modules.
   The page is `js/app.js` (the core) and one script per screen (`js/app-*.js`), sharing the
   `HK.app` object, and `js/app-boot.js` starts it; the rules for sharing are in `js/app.js`'s header.
   Plus GoatCounter's (`async`, external), the visit counter: the site has to work the same

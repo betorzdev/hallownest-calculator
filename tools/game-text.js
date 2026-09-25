@@ -79,6 +79,8 @@ function audit(dump) {
   add('SHARDS', D.SHARDS); add('FRAGMENTS', D.FRAGMENTS);
   const R = require(JS('rooms.js'));
   Object.entries(R.AREAS).forEach(([id, a]) => add('AREAS.' + id, a));
+  Object.entries(R.PLACES).forEach(([id, a]) => add('PLACES.' + id, a));
+  Object.entries(D.COLLECTIBLE_KINDS).forEach(([id, k]) => add('COLLECTIBLE_KINDS.' + id, k));
   D.ABILITIES.cloaks.forEach((c, i) => c && add('ABILITIES.cloak' + i, c));
   const zones = new Map();
   for (const f of F.FOES) { add('FOES.' + f.id, f.name); if (f.zone && !zones.has(f.zone.en)) zones.set(f.zone.en, f.zone); }

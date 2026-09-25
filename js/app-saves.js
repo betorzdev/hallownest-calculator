@@ -514,7 +514,7 @@
       try { [h] = await pickSave(); } catch (e) { return; }
       try { file = await h.getFile(); r = F.read(new Uint8Array(await file.arrayBuffer())); } catch (e) { r = null; }
       if (!r || !r.ok) { toast(t('saveImportBad')); return; }
-      S.sync(store, n, F.toSnapshot(r.pd));
+      S.sync(store, n, F.toSnapshot(r.pd, r.sd));
       if (!(await L.links.put(n, { handle: h, name: file.name, stamp: L.stampOf(file) }))) { toast(t('liveFollowNo')); return; }
       live.links[n] = file.name;
       track('save-link');
@@ -642,7 +642,7 @@
     reader.onload = () => {
       const r = F.read(new Uint8Array(reader.result));
       if (!r.ok) { imp.state = 'error'; paintDrop(); return; }
-      imp.file = { name: file.name, snap: F.toSnapshot(r.pd), meta: { ...F.meta(r.pd), mods: r.mods }, handle, stamp: L.stampOf(file) };
+      imp.file = { name: file.name, snap: F.toSnapshot(r.pd, r.sd), meta: { ...F.meta(r.pd), mods: r.mods }, handle, stamp: L.stampOf(file) };
       imp.state = 'ready';
       paintDrop();
       focusIn('[data-act="importDo"]');
@@ -713,7 +713,7 @@
      file in (the game wins over what was changed here since) and every screen repaints. The
      stamp is kept with the link, so that a reload doesn't take in again a file already taken
      in, over what you've changed since. */
-  const parseSave = (bytes) => { const r = F.read(bytes); return r.ok ? r.pd : null; };
+  const parseSave = (bytes) => { const r = F.read(bytes); return r.ok ? r : null; };
   function stopLive() {
     if (live.watcher) live.watcher.stop();
     Object.assign(live, { n: 0, name: '', state: '', watcher: null });
@@ -730,9 +730,9 @@
     live.watcher = L.watch({
       source: L.fileSource(rec.handle, parseSave),
       since: stamp,
-      async onData(pd, next) {
+      async onData(r, next) {
         stamp = next;
-        const changed = S.sync(store, n, F.toSnapshot(pd));
+        const changed = S.sync(store, n, F.toSnapshot(r.pd, r.sd));
         await L.links.put(n, { ...rec, stamp });
         if (!changed || activeSlot() !== n) return;
         App.reloadGame();

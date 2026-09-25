@@ -51,6 +51,9 @@ one that grows best when the collectibles come (a row more per kind, not a page 
 ## What comes after the choice
 
 - Phase 4 built the tablet in `js/app-progress.js` with `js/completion.js` behind it (26 September 2026). What changes your figures is marked on Your game, not here; the Map tab comes with phase 6.
-- Phase 5 adds the collectibles with their location (grubs, shards, relics…): in A a
-  category's page, in B more blocks, in C more rows; and a filter by area with the areas' light.
+- Phase 5 added the collectibles (26 September 2026): 202, from `js/collectibles.js`, as more
+  rows of the tablet under their own title, each thing with its area and place (the game's
+  titles) or who sells or gives it; a filter by area with the areas' light; and the Grubfather's
+  and the Seer's ladders as two rows. The written hints were left out: the map (phase 6) gives
+  the exact spot.
 - Phase 6, the map, goes in the second tab whichever is chosen.

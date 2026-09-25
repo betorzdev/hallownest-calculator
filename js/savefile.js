@@ -224,7 +224,7 @@
     return text.startsWith('{') ? text : null;
   }
 
-  /* The file → { ok: true, pd, mods } or { ok: false, error }, error being 'unreadable' (not a save
+  /* The file → { ok: true, pd, sd, mods } or { ok: false, error }, error being 'unreadable' (not a save
      from the game: it can't be decrypted or isn't JSON) or 'notSave' (JSON, but without a
      playerData that looks like the Knight's). */
   function read(bytes) {
@@ -239,7 +239,9 @@
     // The mods loaded when it was saved (the Modding API writes their names beside playerData).
     const lm = json.LoadedMods;
     const mods = lm && Array.isArray(lm.keys) ? lm.keys.filter((k) => typeof k === 'string' && k).slice(0, 20) : [];
-    return { ok: true, pd, mods };
+    // The rooms' state (what's been picked up, broken, opened): the collectibles are read from it.
+    const sd = json.sceneData && typeof json.sceneData === 'object' ? json.sceneData : null;
+    return { ok: true, pd, sd, mods };
   }
 
   /* ── playerData → the site's keys ───────────────────────────────────── */
@@ -319,14 +321,14 @@
   /* playerData → a slot's snapshot, the keys written as the screens write them (an empty
      Journal, Hall or door isn't written; the charms found always are: with no list, the site
      would take them all as found). */
-  function toSnapshot(pd) {
+  function toSnapshot(pd, sd = null) {
     const have = owned(pd);
     const snap = { 'hollow.build': C.encode(build(pd, have)), 'hollow.owned': JSON.stringify(have) };
     const book = journal(pd), marks = hall(pd), d = door(pd);
     if (Object.keys(book).length) snap['hollow.journal'] = JSON.stringify(book);
     if (Object.keys(marks).length) snap['hollow.hall'] = JSON.stringify(marks);
     if (PN.doorNotches(d)) snap['hollow.bindings'] = JSON.stringify(d);
-    const prog = P.fromSave(pd);
+    const prog = P.fromSave(pd, sd);
     if (!P.isEmpty(prog)) snap['hollow.progress'] = JSON.stringify(prog);
     return snap;
   }

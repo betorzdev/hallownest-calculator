@@ -6,11 +6,15 @@
    Hunter's Journal entry, a charm is your collection, and the rest (equipment, Dreamers,
    Colosseum…) is hollow.progress. What changes your figures (masks, vessels, the nail, spells,
    arts, the cloaks, the Dream Nail) is marked on Your game: its plate takes you there.
+   Below, the same tablet for the collectibles (js/collectibles.js): a row per kind, each thing
+   with the area and place it's in, or who sells or gives it; a filter by area; and the two who
+   give rewards, the Grubfather and the Seer, as their ladders. They're marked in
+   hollow.progress (found); a save says them itself.
    Shares HK.app with js/app.js (see there). */
 (() => {
   'use strict';
   const HK = globalThis.HK;
-  const D = HK.data, HJ = HK.hunter, F = HK.foes, PN = HK.pantheons, P = HK.progress, CP = HK.completion, R = HK.rooms;
+  const D = HK.data, HJ = HK.hunter, F = HK.foes, PN = HK.pantheons, P = HK.progress, CP = HK.completion, R = HK.rooms, CO = HK.collectibles;
   const App = HK.app;
   const { t, pick, el, NT, esc, brackets, screenHead, render, actions, prefs, savePrefs, setProgress, setOwned, pctSpace } = App;
 
@@ -109,6 +113,106 @@
     </li>`;
   }
 
+  /* ── The collectibles ── */
+  // A map's area is the one it draws (the room is where Cornifer sells it).
+  const MAP_AREA = { mapCrossroads: 'crossroads', mapGreenpath: 'greenpath', mapFogCanyon: 'fog', mapFungalWastes: 'fungal',
+    mapDeepnest: 'deepnest', mapAbyss: 'basin', mapOutskirts: 'edge', mapCity: 'city', mapWaterways: 'waterways',
+    mapCliffs: 'cliffs', mapMines: 'crystal', mapRoyalGardens: 'gardens', mapRestingGrounds: 'resting' };
+  const areaOfItem = (it) => (it.kind === 'map' ? MAP_AREA[it.how[1]] : R.areaOf(it.scene));
+  const AREA_ORDER = Object.keys(R.AREAS);
+  const ITEMS = CO.ITEMS.slice().sort((a, b) => a.kind === b.kind ? AREA_ORDER.indexOf(areaOfItem(a)) - AREA_ORDER.indexOf(areaOfItem(b)) : 0);
+  const ITEM = Object.fromEntries(CO.ITEMS.map((it) => [it.id, it]));
+  const found = (id) => P.hasFound(App.progress, id);
+  const kindArt = (k) => D.art(...D.COLLECTIBLE_KINDS[k].art);
+  // Where it is: its area and the place inside it, as the game titles them.
+  function whereOf(it) {
+    const a = areaOfItem(it), pl = it.kind === 'map' ? '' : R.placeOf(it.scene);
+    return [a && pick(R.AREAS[a]), pl && pick(R.PLACES[pl])].filter(Boolean).join(' · ');
+  }
+  // Who sells or gives it, when it isn't found.
+  function sourceOf(it) {
+    if (!it.src) return '';
+    const [k, v] = it.src;
+    if (k === 'sly' || k === 'salubra') return t('pgSrcShop', { who: pick(D.GIVERS[k]), geo: num(v) });
+    if (k === 'seer') return t('pgSrcSeer', { who: pick(D.GIVERS.seer), n: num(v) });
+    if (k === 'grubs') return t('pgSrcGrubs', { who: pick(D.GIVERS.grubfather), n: num(v) });
+    if (k === 'colosseum') return pick(D.COMPLETION_NAMES['trial-' + v]);
+    return '';
+  }
+  function findPlate(it) {
+    const on = found(it.id);
+    const name = whereOf(it) || pick(D.COLLECTIBLE_KINDS[it.kind]);
+    const src = sourceOf(it);
+    return `<button type="button" class="gplate${on ? ' is-on' : ''}" data-act="pgFind" data-id="${it.id}" aria-pressed="${on}"
+        title="${esc(pick(D.COLLECTIBLE_KINDS[it.kind]) + ' · ' + name + ' · ' + t(on ? 'pgUnmark' : 'pgMark'))}">
+        <span class="gplate-art"><img src="${kindArt(it.kind)}" alt="" loading="lazy"></span>
+        <span class="gplate-name">${esc(name)}</span>
+        <span class="gplate-val is-none">${esc(src || (on ? '' : t('notFound')))}</span>
+      </button>`;
+  }
+  // A row of the tablet: its head (name, pips, points) and, open, its plates.
+  function tabletRow(key, name, cells, got, max) {
+    const open = prefs.pgOpen === key;
+    return `<li class="pg-row${open ? ' is-open' : ''}${got === max ? ' is-full' : ''}">
+      <button type="button" class="pg-head" data-act="pgRow" data-value="${key}" aria-expanded="${open}"
+        aria-label="${esc(t('pgOpen', { cat: name, got: num(got), max: num(max) }))}">
+        <span class="pg-name"${NT}>${esc(name)}</span>
+        <span class="pg-pips" aria-hidden="true">${cells.map((c) => `<span class="pg-pip${c.on ? ' is-on' : ''}"><img src="${c.art}" alt="" loading="lazy"></span>`).join('')}</span>
+        <span class="pg-pts"><b>${num(got)}</b><i class="u">/${num(max)}</i></span>
+      </button>
+      ${open ? `<div class="pg-open"><div class="pg-plates">${cells.map((c) => c.plate()).join('')}</div></div>` : ''}
+    </li>`;
+  }
+
+  /* The Grubfather's and the Seer's ladders: what each step gives, which is a collectible (i), a
+     charm (c) or your game's (p); each marked where it's kept. */
+  const LADDERS = {
+    grubfather: [[5, 'i', 'mask-shard-5-grubs'], [10, 'c', 'grubsong'], [16, 'i', 'rancid-egg-grubs'], [23, 'i', 'hallownest-seal-grubs'],
+      [31, 'i', 'pale-ore-grubs'], [38, 'i', 'kings-idol-grubs'], [46, 'c', 'elegy']],
+    seer: [[100, 'i', 'hallownest-seal-seer'], [300, 'i', 'pale-ore-seer'], [500, 'c', 'wielder'], [700, 'i', 'vessel-fragment-seer'],
+      [900, 'p', 'dreamgate'], [1200, 'i', 'arcane-egg-seer'], [1500, 'i', 'mask-shard-seer'], [1800, 'p', 'dream-awakened'],
+      [2400, 'p', 'seer-ascended']],
+  };
+  function stepOf(giver, [n, t2, id]) {
+    const on = t2 === 'i' ? found(id) : t2 === 'c' ? App.owned.includes(id) : P.has(App.progress, id);
+    const art = t2 === 'i' ? kindArt(ITEM[id].kind) : t2 === 'c' ? `assets/charms/${id}.png`
+      : id === 'dreamgate' ? D.art('items', 'dreamgate') : id === 'dream-awakened' ? D.art('abilities', D.ABILITIES.awoken.art) : D.art('items', 'essence');
+    const what = t2 === 'i' ? pick(D.COLLECTIBLE_KINDS[ITEM[id].kind]) : t2 === 'c' ? pick(D.CHARM_BY_ID[id])
+      : id === 'dreamgate' ? pick(D.EQUIPMENT.find((x) => x.id === 'dreamgate')) : id === 'dream-awakened' ? pick(D.ABILITIES.awoken) : pick(D.COMPLETION_NAMES.ascension);
+    const at = giver === 'seer' ? t('pgSrcSeer', { who: pick(D.GIVERS.seer), n: num(n) }) : t('pgSrcGrubs', { who: pick(D.GIVERS.grubfather), n: num(n) });
+    const act = t2 === 'i' ? `data-act="pgFind" data-id="${id}"` : `data-act="pgStep" data-key="${t2}" data-id="${id}"`;
+    return { on, art, plate: () => `<button type="button" class="gplate${on ? ' is-on' : ''}" ${act} aria-pressed="${on}" title="${esc(what + ' · ' + at)}">
+        <span class="gplate-art"><img src="${art}" alt="" loading="lazy"></span>
+        <span class="gplate-name"${NT}>${esc(what)}</span>
+        <span class="gplate-val is-none">${esc(at)}</span></button>` };
+  }
+
+  function renderCollectibles() {
+    const area = prefs.pgArea && R.AREAS[prefs.pgArea] ? prefs.pgArea : '';
+    const inArea = (it) => !area || areaOfItem(it) === area;
+    const present = AREA_ORDER.filter((a) => CO.ITEMS.some((it) => areaOfItem(it) === a));
+    const chip = (id, label, light) => `<button type="button" class="pg-area${area === id ? ' is-on' : ''}" data-act="pgArea" data-value="${id}" aria-pressed="${area === id}"
+        ${light ? `style="--dot: var(--area-${light}-light)"` : ''}><i class="pg-dot" aria-hidden="true"></i><span${NT}>${esc(label)}</span></button>`;
+    const chips = chip('', t('pgAllAreas'), '') + present.map((a) => chip(a, pick(R.AREAS[a]), R.AREAS[a].light)).join('');
+    const rows = CO.KINDS.map((k) => {
+      const list = ITEMS.filter((it) => it.kind === k && inArea(it));
+      if (!list.length) return '';
+      const cells = list.map((it) => ({ on: found(it.id), art: kindArt(k), plate: () => findPlate(it) }));
+      return tabletRow('c:' + k, pick(D.COLLECTIBLE_KINDS[k]), cells, cells.filter((c) => c.on).length, cells.length);
+    }).join('');
+    const ladders = area ? '' : `<h4 class="pg-sub">${esc(t('pgRewards'))}</h4><ol class="pg-rows">${Object.entries(LADDERS).map(([giver, steps]) => {
+      const cells = steps.map((st) => stepOf(giver, st));
+      return tabletRow('l:' + giver, pick(D.GIVERS[giver]), cells, cells.filter((c) => c.on).length, cells.length);
+    }).join('')}</ol>`;
+    return `<section class="pg-coll">
+      <h3 class="pg-title">${esc(t('pgCollectibles'))}</h3>
+      <p class="pg-lead">${esc(t('pgCollLead'))}</p>
+      <div class="pg-areas" role="group" aria-label="${esc(t('pgAreaFilter'))}">${chips}</div>
+      <ol class="pg-rows">${rows}</ol>
+      ${ladders}
+    </section>`;
+  }
+
   function renderProgress() {
     if (prefs.view !== 'progress') return;
     const r = count();
@@ -120,6 +224,7 @@
         <p class="pg-lead">${esc(t('pgLead'))}</p>
       </div>
       <ol class="pg-rows">${r.categories.map(row).join('')}</ol>
+      ${renderCollectibles()}
     </div>`;
   }
 
@@ -142,6 +247,17 @@
     setOwned(has ? App.owned.filter((x) => !vs.includes(x)) : [...App.owned, vs[0]]);
   }
   Object.assign(actions, {
+    pgFind(node) { setProgress(P.toggleFound(App.progress, node.dataset.id)); },
+    pgStep(node) {
+      const id = node.dataset.id;
+      if (node.dataset.key === 'c') markCharm(id);
+      else setProgress(P.toggle(App.progress, id));
+    },
+    pgArea(node) {
+      prefs.pgArea = node.dataset.value;
+      savePrefs();
+      render();
+    },
     pgRow(node) {
       prefs.pgOpen = prefs.pgOpen === node.dataset.value ? '' : node.dataset.value;
       savePrefs();
