@@ -453,14 +453,17 @@
      hudHtml(), on the sheet and in the arena. */
 
   /* ── Header and screen bar ───────────────────────────────────────────── */
-  /* 20 dust motes rising slowly, like the ones in the game's main menu. They sit in fixed
-     places, spread without randomness so that two paints come out the same; the CSS only moves
-     them if reduced motion hasn't been requested, and places them relative to .page, across the
-     full width. Between 4 and 92% of the width, with their ±30 px drift: none peeks over the edge. */
-  const MOTES = Array.from({ length: 20 }, (_, i) => {
+  /* The atmosphere behind the whole page (css/app.css, .atmos): the main menu's vignette and 22
+     dust motes rising slowly from the bottom of the window to the top, at the design's low
+     density (15–25). They sit in fixed places, spread without randomness so that two loads come
+     out the same; the CSS only moves them if reduced motion hasn't been requested. It's put in
+     once and never repainted, so changing language or screen doesn't restart them. Between 4 and
+     92% of the width, with their ±30 px drift: none peeks over the edge. */
+  const MOTES = Array.from({ length: 22 }, (_, i) => {
     const r = (n) => { const x = Math.sin(i * 12.9898 + n * 78.233) * 43758.5453; return x - Math.floor(x); };
-    return `<i style="--x:${(4 + r(1) * 88).toFixed(1)}%;--s:${(1 + r(2) * 2.6).toFixed(1)}px;--t:${(16 + r(3) * 14).toFixed(1)}s;--d:${(-r(4) * 30).toFixed(1)}s;--o:${(0.25 + r(5) * 0.5).toFixed(2)};--dx:${((r(6) - 0.5) * 60).toFixed(0)}px"></i>`;
+    return `<i style="--x:${(4 + r(1) * 88).toFixed(1)}%;--s:${(1 + r(2) * 2.6).toFixed(1)}px;--t:${(38 + r(3) * 26).toFixed(1)}s;--d:${(-r(4) * 64).toFixed(1)}s;--o:${(0.25 + r(5) * 0.5).toFixed(2)};--dx:${((r(6) - 0.5) * 60).toFixed(0)}px"></i>`;
   }).join('');
+  el.page.insertAdjacentHTML('afterbegin', `<div class="atmos" aria-hidden="true">${MOTES}</div>`);
 
   /* The header, in one row: the title under the game's filigree —the one from the Hall of Gods
      screen (assets/hall/tablet-hdr.png, white stroke), small—, on its left what belongs to the
@@ -493,7 +496,6 @@
     // In the corner, as text: the abbreviation in view and the full name for screen readers and the mouse.
     const langBtn = (code, label) => `<button type="button" lang="${code}" data-act="lang" data-value="${code}" aria-pressed="${prefs.lang === code}" aria-label="${label}" title="${label}">${code.toUpperCase()}</button>`;
     el.masthead.innerHTML = `
-      <div class="motes" aria-hidden="true">${MOTES}</div>
       <div class="mh-tools">
         <div class="langsel" role="group" aria-label="${esc(t('langGroup'))}">${langBtn('en', 'English')}${langBtn('es', 'Español')}</div>
         <button type="button" class="mh-link" data-act="share" title="${esc(t('shareHint'))}">${esc(t('share'))}</button>

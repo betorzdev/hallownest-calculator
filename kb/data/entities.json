@@ -12,7 +12,7 @@
   "name": "Aluba",
   "kind": "Enemy",
   "health": "1",
-  "location": "",
+  "location": "Greenpath",
   "drops": "None",
   "journal": "1",
   "tactics": true
@@ -21,7 +21,7 @@
   "name": "Ambloom",
   "kind": "Enemy",
   "health": "12",
-  "location": "",
+  "location": "Fungal Wastes",
   "drops": "2-3 geo",
   "journal": "15",
   "tactics": true
@@ -30,7 +30,7 @@
   "name": "Armoured Squit",
   "kind": "Enemy",
   "health": "40 | [Godmaster] 26 (Spawned by Ascended/Radiant Collector)",
-  "location": "",
+  "location": "Colosseum of Fools",
   "drops": "None",
   "journal": "15",
   "tactics": true
@@ -39,7 +39,7 @@
   "name": "Aspid Hatchling",
   "kind": "Enemy",
   "health": "5",
-  "location": "",
+  "location": "Forgotten Crossroads",
   "drops": "None",
   "journal": "30",
   "tactics": true
@@ -48,7 +48,7 @@
   "name": "Aspid Hunter",
   "kind": "Enemy",
   "health": "15",
-  "location": "",
+  "location": "Forgotten Crossroads",
   "drops": "6-8 geo | None (Spawned by the Collector)",
   "journal": "20",
   "tactics": true
@@ -57,7 +57,7 @@
   "name": "Aspid Mother",
   "kind": "Enemy",
   "health": "20",
-  "location": "",
+  "location": "Forgotten Crossroads",
   "drops": "10-12 geo",
   "journal": "15",
   "tactics": true
@@ -66,7 +66,7 @@
   "name": "Baldur",
   "kind": "Enemy",
   "health": "15",
-  "location": "",
+  "location": "Forgotten Crossroads",
   "drops": "4-5 geo | None (Spawned by the Collector)",
   "journal": "20",
   "tactics": true
@@ -75,7 +75,7 @@
   "name": "Battle Obble",
   "kind": "Enemy",
   "health": "70",
-  "location": "",
+  "location": "Colosseum of Fools",
   "drops": "None",
   "journal": "15",
   "tactics": true
@@ -84,7 +84,7 @@
   "name": "Belfly",
   "kind": "Enemy",
   "health": "5",
-  "location": "",
+  "location": "Royal Waterways",
   "drops": "None",
   "journal": "15",
   "tactics": true
@@ -102,7 +102,7 @@
   "name": "Boofly",
   "kind": "Enemy",
   "health": "40",
-  "location": "",
+  "location": "Kingdom’s Edge",
   "drops": "8-10 geo",
   "journal": "20",
   "tactics": true
@@ -138,7 +138,7 @@
   "name": "Carver Hatcher",
   "kind": "Enemy",
   "health": "35",
-  "location": "",
+  "location": "Deepnest",
   "drops": "25-32 geo",
   "journal": "15",
   "tactics": true
@@ -147,7 +147,7 @@
   "name": "Charged Lumafly",
   "kind": "Enemy",
   "health": "-",
-  "location": "",
+  "location": "Fog Canyon",
   "drops": "None",
   "journal": "Entry",
   "tactics": true
@@ -156,7 +156,7 @@
   "name": "Corpse Creeper",
   "kind": "Enemy",
   "health": "18 | 15 (After transformation)",
-  "location": "",
+  "location": "Deepnest",
   "drops": "10-12 geo",
   "journal": "15",
   "tactics": true
@@ -165,7 +165,7 @@
   "name": "Cowardly Husk",
   "kind": "Enemy",
   "health": "20",
-  "location": "",
+  "location": "City of Tears",
   "drops": "9-15 geo",
   "journal": "25",
   "tactics": true
@@ -174,7 +174,7 @@
   "name": "Crawlid",
   "kind": "Enemy",
   "health": "8",
-  "location": "",
+  "location": "Forgotten Crossroads",
   "drops": "2-3 geo",
   "journal": "0",
   "tactics": true
@@ -183,7 +183,7 @@
   "name": "Crystal Crawler",
   "kind": "Enemy",
   "health": "15",
-  "location": "",
+  "location": "Crystal Peak",
   "drops": "8-10 geo",
   "journal": "15",
   "tactics": true
@@ -201,7 +201,7 @@
   "name": "Crystal Hunter",
   "kind": "Enemy",
   "health": "25",
-  "location": "",
+  "location": "Crystal Peak",
   "drops": "7-13 geo",
   "journal": "20",
   "tactics": true
@@ -210,7 +210,7 @@
   "name": "Crystallised Husk",
   "kind": "Enemy",
   "health": "35",
-  "location": "",
+  "location": "Crystal Peak",
   "drops": "20-27 geo",
   "journal": "15",
   "tactics": true
@@ -219,7 +219,7 @@
   "name": "Death Loodle",
   "kind": "Enemy",
   "health": "45",
-  "location": "",
+  "location": "Colosseum of Fools",
   "drops": "None",
   "journal": "15",
   "tactics": true
@@ -228,7 +228,7 @@
   "name": "Deephunter",
   "kind": "Enemy",
   "health": "18",
-  "location": "",
+  "location": "Deepnest",
   "drops": "7-13 geo",
   "journal": "20",
   "tactics": true
@@ -237,7 +237,7 @@
   "name": "Deepling",
   "kind": "Enemy",
   "health": "15",
-  "location": "",
+  "location": "Deepnest",
   "drops": "None",
   "journal": "25",
   "tactics": true
@@ -246,7 +246,7 @@
   "name": "Dirtcarver",
   "kind": "Enemy",
   "health": "20",
-  "location": "",
+  "location": "Deepnest",
   "drops": "6-12 geo",
   "journal": "35",
   "tactics": true
@@ -264,7 +264,7 @@
   "name": "Duranda",
   "kind": "Enemy",
   "health": "30",
-  "location": "",
+  "location": "Greenpath",
   "drops": "4-5 geo",
   "journal": "8",
   "tactics": true
@@ -273,7 +273,7 @@
   "name": "Durandoo",
   "kind": "Enemy",
   "health": "30",
-  "location": "",
+  "location": "Greenpath",
   "drops": "6-8 geo",
   "journal": "8",
   "tactics": true
@@ -282,7 +282,7 @@
   "name": "Elder Baldur",
   "kind": "Enemy",
   "health": "60",
-  "location": "",
+  "location": "Forgotten Crossroads",
   "drops": "50-60 geo",
   "journal": "1",
   "tactics": true
@@ -309,7 +309,7 @@
   "name": "Entombed Husk",
   "kind": "Enemy",
   "health": "45",
-  "location": "",
+  "location": "Resting Grounds",
   "drops": "15-21 geo",
   "journal": "10",
   "tactics": true
@@ -336,7 +336,7 @@
   "name": "Fluke Larva",
   "kind": "Enemy",
   "health": "1",
-  "location": "",
+  "location": "Royal Waterways",
   "drops": "None",
   "journal": "",
   "tactics": false
@@ -345,7 +345,7 @@
   "name": "Flukefey",
   "kind": "Enemy",
   "health": "13 | [Godmaster] 35 (First 6 for Ascended/Radiant Flukemarm)",
-  "location": "",
+  "location": "Royal Waterways",
   "drops": "None",
   "journal": "15",
   "tactics": true
@@ -363,7 +363,7 @@
   "name": "Flukemon",
   "kind": "Enemy",
   "health": "55 Total: | 25 (Whole), 15 (Per Half)",
-  "location": "",
+  "location": "Royal Waterways",
   "drops": "12-16 geo | (6-8 geo per half)",
   "journal": "20",
   "tactics": true
@@ -372,7 +372,7 @@
   "name": "Flukemunga",
   "kind": "Enemy",
   "health": "150",
-  "location": "",
+  "location": "Royal Waterways",
   "drops": "23-30 geo",
   "journal": "8",
   "tactics": true
@@ -381,7 +381,7 @@
   "name": "Folly",
   "kind": "Enemy",
   "health": "13",
-  "location": "",
+  "location": "Soul Sanctum",
   "drops": "5-6 geo | None (Colosseum of Fools, Spawned by Soul Warrior)",
   "journal": "15",
   "tactics": true
@@ -390,7 +390,7 @@
   "name": "Fool Eater",
   "kind": "Enemy",
   "health": "16",
-  "location": "",
+  "location": "Greenpath",
   "drops": "9-11 geo",
   "journal": "15",
   "tactics": true
@@ -399,7 +399,7 @@
   "name": "Fungified Husk",
   "kind": "Enemy",
   "health": "15",
-  "location": "",
+  "location": "Fungal Wastes",
   "drops": "5-6 geo",
   "journal": "10",
   "tactics": true
@@ -408,7 +408,7 @@
   "name": "Fungling",
   "kind": "Enemy",
   "health": "10",
-  "location": "",
+  "location": "Fungal Wastes",
   "drops": "2-3 geo",
   "journal": "30",
   "tactics": true
@@ -417,7 +417,7 @@
   "name": "Fungoon",
   "kind": "Enemy",
   "health": "15",
-  "location": "",
+  "location": "Fungal Wastes",
   "drops": "6-8 geo",
   "journal": "20",
   "tactics": true
@@ -426,7 +426,7 @@
   "name": "Furious Vengefly",
   "kind": "Enemy",
   "health": "40",
-  "location": "",
+  "location": "Forgotten Crossroads",
   "drops": "20-26 geo | None (Colosseum of Fools)",
   "journal": "15",
   "tactics": true
@@ -444,7 +444,7 @@
   "name": "Garpede",
   "kind": "Enemy",
   "health": "-",
-  "location": "",
+  "location": "Deepnest",
   "drops": "None",
   "journal": "Entry",
   "tactics": true
@@ -453,7 +453,7 @@
   "name": "Glimback",
   "kind": "Enemy",
   "health": "35",
-  "location": "",
+  "location": "Crystal Peak",
   "drops": "6-8 geo",
   "journal": "15",
   "tactics": true
@@ -462,7 +462,7 @@
   "name": "Gluttonous Husk",
   "kind": "Enemy",
   "health": "30",
-  "location": "",
+  "location": "City of Tears",
   "drops": "11-18 geo",
   "journal": "25",
   "tactics": true
@@ -471,7 +471,7 @@
   "name": "Goam",
   "kind": "Enemy",
   "health": "-",
-  "location": "",
+  "location": "Forgotten Crossroads",
   "drops": "None",
   "journal": "Entry",
   "tactics": true
@@ -498,7 +498,7 @@
   "name": "Gorgeous Husk",
   "kind": "Enemy",
   "health": "220",
-  "location": "",
+  "location": "City of Tears",
   "drops": "420-504 geo",
   "journal": "1",
   "tactics": true
@@ -507,7 +507,7 @@
   "name": "Great Hopper",
   "kind": "Enemy",
   "health": "130",
-  "location": "",
+  "location": "Kingdom’s Edge",
   "drops": "30-56 geo None (Colosseum of Fools)",
   "journal": "10",
   "tactics": true
@@ -516,7 +516,7 @@
   "name": "Great Husk Sentry",
   "kind": "Enemy",
   "health": "170",
-  "location": "",
+  "location": "City of Tears",
   "drops": "50-80 geo",
   "journal": "10",
   "tactics": true
@@ -543,7 +543,7 @@
   "name": "Grimmkin Master",
   "kind": "Enemy",
   "health": "75 / 120 / 180 / 210 / 240 | (Nail 0/1/2/3/4)",
-  "location": "",
+  "location": "Dirtmouth",
   "drops": "Flame (for Grimmchild)",
   "journal": "1",
   "tactics": true
@@ -552,7 +552,7 @@
   "name": "Grimmkin Nightmare",
   "kind": "Enemy",
   "health": "100 / 180 / 240 / 280 / 320 | (Nail 0/1/2/3/4)",
-  "location": "",
+  "location": "Fungal Wastes",
   "drops": "Flame (for Grimmchild)",
   "journal": "1",
   "tactics": true
@@ -561,7 +561,7 @@
   "name": "Grimmkin Novice",
   "kind": "Enemy",
   "health": "50 / 90 / 120 / 140 / 160 | (Nail 0/1/2/3/4)",
-  "location": "",
+  "location": "Greenpath",
   "drops": "Flame (for Grimmchild)",
   "journal": "1",
   "tactics": true
@@ -570,7 +570,7 @@
   "name": "Grub Mimic",
   "kind": "Enemy",
   "health": "45",
-  "location": "",
+  "location": "Crystal Peak",
   "drops": "None",
   "journal": "5",
   "tactics": true
@@ -588,7 +588,7 @@
   "name": "Gruzzer",
   "kind": "Enemy",
   "health": "8",
-  "location": "",
+  "location": "Forgotten Crossroads",
   "drops": "2-3 geo | None (Spawned by Gruz Mother)",
   "journal": "25",
   "tactics": true
@@ -597,7 +597,7 @@
   "name": "Gulka",
   "kind": "Enemy",
   "health": "10",
-  "location": "",
+  "location": "Greenpath",
   "drops": "6-8 geo",
   "journal": "15",
   "tactics": true
@@ -606,7 +606,7 @@
   "name": "Heavy Fool",
   "kind": "Enemy",
   "health": "90",
-  "location": "",
+  "location": "Colosseum of Fools",
   "drops": "None",
   "journal": "20",
   "tactics": true
@@ -615,7 +615,7 @@
   "name": "Heavy Sentry",
   "kind": "Enemy",
   "health": "35",
-  "location": "",
+  "location": "City of Tears",
   "drops": "10-16 geo",
   "journal": "20",
   "tactics": true
@@ -624,7 +624,7 @@
   "name": "Hive Guardian",
   "kind": "Enemy",
   "health": "100",
-  "location": "",
+  "location": "The Hive",
   "drops": "25-32 geo",
   "journal": "12",
   "tactics": true
@@ -642,7 +642,7 @@
   "name": "Hive Soldier",
   "kind": "Enemy",
   "health": "65",
-  "location": "",
+  "location": "The Hive",
   "drops": "15-22 geo",
   "journal": "15",
   "tactics": true
@@ -651,7 +651,7 @@
   "name": "Hiveling",
   "kind": "Enemy",
   "health": "[Lifeblood]18",
-  "location": "",
+  "location": "The Hive",
   "drops": "None",
   "journal": "30",
   "tactics": true
@@ -660,7 +660,7 @@
   "name": "Hopper",
   "kind": "Enemy",
   "health": "50",
-  "location": "",
+  "location": "Kingdom’s Edge",
   "drops": "16-23 geo None (Colosseum of Fools)",
   "journal": "25",
   "tactics": true
@@ -669,7 +669,7 @@
   "name": "Hopping Zoteling",
   "kind": "Enemy",
   "health": "20 (Grey Prince Zote fight) | [Godmaster] 60 (The Eternal Ordeal)",
-  "location": "",
+  "location": "Dirtmouth",
   "drops": "None",
   "journal": "1",
   "tactics": true
@@ -696,7 +696,7 @@
   "name": "Husk Bully",
   "kind": "Enemy",
   "health": "15",
-  "location": "",
+  "location": "Forgotten Crossroads",
   "drops": "3-4 geo",
   "journal": "35",
   "tactics": true
@@ -705,7 +705,7 @@
   "name": "Husk Dandy",
   "kind": "Enemy",
   "health": "20",
-  "location": "",
+  "location": "City of Tears",
   "drops": "9-15 geo",
   "journal": "25",
   "tactics": true
@@ -714,7 +714,7 @@
   "name": "Husk Guard",
   "kind": "Enemy",
   "health": "70",
-  "location": "",
+  "location": "Forgotten Crossroads",
   "drops": "45-54 geo",
   "journal": "6",
   "tactics": true
@@ -723,7 +723,7 @@
   "name": "Husk Hive",
   "kind": "Enemy",
   "health": "60",
-  "location": "",
+  "location": "The Hive",
   "drops": "16-23 geo",
   "journal": "10",
   "tactics": true
@@ -732,7 +732,7 @@
   "name": "Husk Hornhead",
   "kind": "Enemy",
   "health": "15",
-  "location": "",
+  "location": "Forgotten Crossroads",
   "drops": "4-5 geo",
   "journal": "35",
   "tactics": true
@@ -741,7 +741,7 @@
   "name": "Husk Miner",
   "kind": "Enemy",
   "health": "25",
-  "location": "",
+  "location": "Crystal Peak",
   "drops": "10-12 geo",
   "journal": "20",
   "tactics": true
@@ -750,7 +750,7 @@
   "name": "Husk Sentry",
   "kind": "Enemy",
   "health": "25/28/28/28/28 | (Nail upgrades 0/1/2/3/4)",
-  "location": "",
+  "location": "City of Tears",
   "drops": "10-16 geo",
   "journal": "25",
   "tactics": true
@@ -759,7 +759,7 @@
   "name": "Husk Warrior",
   "kind": "Enemy",
   "health": "15",
-  "location": "",
+  "location": "Forgotten Crossroads",
   "drops": "6-8 geo",
   "journal": "10",
   "tactics": true
@@ -768,7 +768,7 @@
   "name": "Hwurmp",
   "kind": "Enemy",
   "health": "25",
-  "location": "",
+  "location": "Royal Waterways",
   "drops": "5-6 geo",
   "journal": "20",
   "tactics": true
@@ -777,7 +777,7 @@
   "name": "Infected Balloon",
   "kind": "Enemy",
   "health": "15 | 1 (Broken Vessel, Lost Kin, [Godmaster] Winged Nosk)",
-  "location": "",
+  "location": "Ancient Basin",
   "drops": "5-6 geo None (Broken Vessel, Lost Kin, [Godmaster] Winged Nosk)",
   "journal": "10",
   "tactics": true
@@ -786,7 +786,7 @@
   "name": "Kingsmould",
   "kind": "Enemy",
   "health": "170",
-  "location": "",
+  "location": "White Palace",
   "drops": "None",
   "journal": "2",
   "tactics": true
@@ -795,7 +795,7 @@
   "name": "Lance Sentry",
   "kind": "Enemy",
   "health": "25",
-  "location": "",
+  "location": "City of Tears",
   "drops": "12-18 geo",
   "journal": "25",
   "tactics": true
@@ -804,7 +804,7 @@
   "name": "Leaping Husk",
   "kind": "Enemy",
   "health": "15",
-  "location": "",
+  "location": "Forgotten Crossroads",
   "drops": "3-4 geo",
   "journal": "35",
   "tactics": true
@@ -813,7 +813,7 @@
   "name": "Lesser Mawlek",
   "kind": "Enemy",
   "health": "60",
-  "location": "",
+  "location": "Ancient Basin",
   "drops": "18-25 geo None (Colosseum of Fools)",
   "journal": "10",
   "tactics": true
@@ -831,7 +831,7 @@
   "name": "Lightseed",
   "kind": "Enemy",
   "health": "1",
-  "location": "",
+  "location": "Ancient Basin",
   "drops": "None",
   "journal": "20",
   "tactics": true
@@ -840,7 +840,7 @@
   "name": "Little Weaver",
   "kind": "Enemy",
   "health": "30",
-  "location": "",
+  "location": "Deepnest",
   "drops": "17-24 geo",
   "journal": "20",
   "tactics": true
@@ -849,7 +849,7 @@
   "name": "Loodle",
   "kind": "Enemy",
   "health": "30",
-  "location": "",
+  "location": "Queen’s Gardens",
   "drops": "9-11 geo",
   "journal": "15",
   "tactics": true
@@ -867,7 +867,7 @@
   "name": "Maggot",
   "kind": "Enemy",
   "health": "1",
-  "location": "",
+  "location": "Forgotten Crossroads",
   "drops": "2-3 geo",
   "journal": "2",
   "tactics": true
@@ -885,7 +885,7 @@
   "name": "Mantis Petra",
   "kind": "Enemy",
   "health": "45",
-  "location": "",
+  "location": "Queen’s Gardens",
   "drops": "12-18 geo | None (Colosseum of Fools)",
   "journal": "16",
   "tactics": true
@@ -894,7 +894,7 @@
   "name": "Mantis Traitor",
   "kind": "Enemy",
   "health": "74",
-  "location": "",
+  "location": "Queen’s Gardens",
   "drops": "22-30 geo",
   "journal": "15",
   "tactics": true
@@ -903,7 +903,7 @@
   "name": "Mantis Warrior",
   "kind": "Enemy",
   "health": "20",
-  "location": "",
+  "location": "Fungal Wastes",
   "drops": "12-18 geo",
   "journal": "25",
   "tactics": true
@@ -912,7 +912,7 @@
   "name": "Mantis Youth",
   "kind": "Enemy",
   "health": "15",
-  "location": "",
+  "location": "Fungal Wastes",
   "drops": "5-6 geo",
   "journal": "25",
   "tactics": true
@@ -939,7 +939,7 @@
   "name": "Maskfly",
   "kind": "Enemy",
   "health": "1",
-  "location": "",
+  "location": "Greenpath",
   "drops": "None",
   "journal": "15",
   "tactics": true
@@ -957,7 +957,7 @@
   "name": "Mawlurk",
   "kind": "Enemy",
   "health": "135",
-  "location": "",
+  "location": "Ancient Basin",
   "drops": "25-32 geo",
   "journal": "10",
   "tactics": true
@@ -966,7 +966,7 @@
   "name": "Menderbug",
   "kind": "Enemy",
   "health": "1",
-  "location": "",
+  "location": "Forgotten Crossroads",
   "drops": "None",
   "journal": "1",
   "tactics": true
@@ -975,7 +975,7 @@
   "name": "Mistake",
   "kind": "Enemy",
   "health": "13",
-  "location": "",
+  "location": "Soul Sanctum",
   "drops": "3-4 geo None (Colosseum of Fools)",
   "journal": "25",
   "tactics": true
@@ -984,7 +984,7 @@
   "name": "Moss Charger",
   "kind": "Enemy",
   "health": "15",
-  "location": "",
+  "location": "Greenpath",
   "drops": "8-10 geo",
   "journal": "15",
   "tactics": true
@@ -993,7 +993,7 @@
   "name": "Moss Knight",
   "kind": "Enemy",
   "health": "50",
-  "location": "",
+  "location": "Greenpath",
   "drops": "40-51 geo",
   "journal": "8",
   "tactics": true
@@ -1002,7 +1002,7 @@
   "name": "Mosscreep",
   "kind": "Enemy",
   "health": "10",
-  "location": "",
+  "location": "Greenpath",
   "drops": "2-3 geo",
   "journal": "30",
   "tactics": true
@@ -1011,7 +1011,7 @@
   "name": "Mossfly",
   "kind": "Enemy",
   "health": "15 | 10 (Outside of Overgrown Mound)",
-  "location": "",
+  "location": "Queen’s Gardens",
   "drops": "2-3 geo",
   "journal": "25",
   "tactics": true
@@ -1020,7 +1020,7 @@
   "name": "Mosskin",
   "kind": "Enemy",
   "health": "15",
-  "location": "",
+  "location": "Greenpath",
   "drops": "3-4 geo",
   "journal": "25",
   "tactics": true
@@ -1029,7 +1029,7 @@
   "name": "Mossy Vagabond",
   "kind": "Enemy",
   "health": "25",
-  "location": "",
+  "location": "Queen’s Gardens",
   "drops": "8-10 geo",
   "journal": "10 or Entry",
   "tactics": true
@@ -1074,7 +1074,7 @@
   "name": "Obble",
   "kind": "Enemy",
   "health": "10",
-  "location": "",
+  "location": "Greenpath",
   "drops": "4-5 geo",
   "journal": "20",
   "tactics": true
@@ -1092,7 +1092,7 @@
   "name": "Ooma",
   "kind": "Enemy",
   "health": "1",
-  "location": "",
+  "location": "Fog Canyon",
   "drops": "5-6 geo",
   "journal": "12",
   "tactics": true
@@ -1110,7 +1110,7 @@
   "name": "Pale Lurker",
   "kind": "Enemy",
   "health": "200/240/290/340/400 | (Nail: 0/1/2/3/4)",
-  "location": "",
+  "location": "Colosseum of Fools",
   "drops": "Simple Key",
   "journal": "1",
   "tactics": true
@@ -1119,7 +1119,7 @@
   "name": "Pilflip",
   "kind": "Enemy",
   "health": "30",
-  "location": "",
+  "location": "Royal Waterways",
   "drops": "5-6 geo",
   "journal": "20",
   "tactics": true
@@ -1128,7 +1128,7 @@
   "name": "Primal Aspid",
   "kind": "Enemy",
   "health": "35 | [Godmaster] 26 (Spawned by Ascended/Radiant Collector)",
-  "location": "",
+  "location": "Kingdom’s Edge",
   "drops": "6-8 geo | None (Colosseum of Fools, [Godmaster] Spawned by Ascended/Radiant Collector)",
   "journal": "25",
   "tactics": true
@@ -1146,7 +1146,7 @@
   "name": "Royal Retainer",
   "kind": "Enemy",
   "health": "5",
-  "location": "",
+  "location": "White Palace",
   "drops": "None",
   "journal": "10",
   "tactics": true
@@ -1164,7 +1164,7 @@
   "name": "Shadow Creeper (Hollow Knight)",
   "kind": "Enemy",
   "health": "20",
-  "location": "",
+  "location": "Ancient Basin",
   "drops": "2-3 geo",
   "journal": "20",
   "tactics": true
@@ -1173,7 +1173,7 @@
   "name": "Shardmite",
   "kind": "Enemy",
   "health": "15",
-  "location": "",
+  "location": "Crystal Peak",
   "drops": "2-3 geo",
   "journal": "15",
   "tactics": true
@@ -1182,7 +1182,7 @@
   "name": "Sharp Baldur",
   "kind": "Enemy",
   "health": "65 | [Godmaster] 26 (Spawned by Ascended/Radiant Collector)",
-  "location": "",
+  "location": "Colosseum of Fools",
   "drops": "None",
   "journal": "20",
   "tactics": true
@@ -1191,7 +1191,7 @@
   "name": "Shielded Fool",
   "kind": "Enemy",
   "health": "65",
-  "location": "",
+  "location": "Colosseum of Fools",
   "drops": "None",
   "journal": "25",
   "tactics": true
@@ -1200,7 +1200,7 @@
   "name": "Shrumal Ogre",
   "kind": "Enemy",
   "health": "80",
-  "location": "",
+  "location": "Fungal Wastes",
   "drops": "45-56 geo",
   "journal": "8",
   "tactics": true
@@ -1209,7 +1209,7 @@
   "name": "Shrumal Warrior",
   "kind": "Enemy",
   "health": "20",
-  "location": "",
+  "location": "Fungal Wastes",
   "drops": "8-14 geo",
   "journal": "20",
   "tactics": true
@@ -1218,7 +1218,7 @@
   "name": "Shrumeling",
   "kind": "Enemy",
   "health": "5",
-  "location": "",
+  "location": "Fungal Wastes",
   "drops": "None",
   "journal": "20",
   "tactics": true
@@ -1227,7 +1227,7 @@
   "name": "Sibling",
   "kind": "Enemy",
   "health": "20",
-  "location": "",
+  "location": "The Abyss",
   "drops": "None",
   "journal": "25",
   "tactics": true
@@ -1245,7 +1245,7 @@
   "name": "Slobbering Husk",
   "kind": "Enemy",
   "health": "30",
-  "location": "",
+  "location": "Forgotten Crossroads",
   "drops": "17-25 geo",
   "journal": "15",
   "tactics": true
@@ -1263,7 +1263,7 @@
   "name": "Soul Twister",
   "kind": "Enemy",
   "health": "35",
-  "location": "",
+  "location": "Soul Sanctum",
   "drops": "25-32 geo None (Colosseum of Fools)",
   "journal": "20",
   "tactics": true
@@ -1290,7 +1290,7 @@
   "name": "Spiny Husk",
   "kind": "Enemy",
   "health": "44",
-  "location": "",
+  "location": "Queen’s Gardens",
   "drops": "12-18 geo",
   "journal": "20",
   "tactics": true
@@ -1299,7 +1299,7 @@
   "name": "Sporg",
   "kind": "Enemy",
   "health": "25",
-  "location": "",
+  "location": "Fungal Wastes",
   "drops": "3-4 geo",
   "journal": "20",
   "tactics": true
@@ -1308,7 +1308,7 @@
   "name": "Squit",
   "kind": "Enemy",
   "health": "10",
-  "location": "",
+  "location": "Greenpath",
   "drops": "5-6 geo",
   "journal": "25",
   "tactics": true
@@ -1317,7 +1317,7 @@
   "name": "Stalking Devout",
   "kind": "Enemy",
   "health": "100",
-  "location": "",
+  "location": "Deepnest",
   "drops": "43-75 geo",
   "journal": "15",
   "tactics": true
@@ -1326,7 +1326,7 @@
   "name": "Sturdy Fool",
   "kind": "Enemy",
   "health": "80",
-  "location": "",
+  "location": "Colosseum of Fools",
   "drops": "None",
   "journal": "25",
   "tactics": true
@@ -1371,7 +1371,7 @@
   "name": "Tiktik",
   "kind": "Enemy",
   "health": "8",
-  "location": "",
+  "location": "Forgotten Crossroads",
   "drops": "2-3 geo",
   "journal": "30",
   "tactics": true
@@ -1407,7 +1407,7 @@
   "name": "Uoma",
   "kind": "Enemy",
   "health": "1",
-  "location": "",
+  "location": "Fog Canyon",
   "drops": "None",
   "journal": "20",
   "tactics": true
@@ -1425,7 +1425,7 @@
   "name": "Vengefly",
   "kind": "Enemy",
   "health": "8",
-  "location": "",
+  "location": "Howling Cliffs",
   "drops": "3-4 geo | None (Spawned by Vengefly King in [Godmaster] Godhome; Spawned by the Collector)",
   "journal": "45",
   "tactics": true
@@ -1443,7 +1443,7 @@
   "name": "Violent Husk",
   "kind": "Enemy",
   "health": "40",
-  "location": "",
+  "location": "Forgotten Crossroads",
   "drops": "15-22 geo",
   "journal": "15",
   "tactics": true
@@ -1452,7 +1452,7 @@
   "name": "Void Tendrils (Hollow Knight)",
   "kind": "Enemy",
   "health": "-",
-  "location": "",
+  "location": "The Abyss",
   "drops": "None",
   "journal": "Entry",
   "tactics": true
@@ -1461,7 +1461,7 @@
   "name": "Volatile Gruzzer",
   "kind": "Enemy",
   "health": "40",
-  "location": "",
+  "location": "Forgotten Crossroads",
   "drops": "15-21 geo | None (Colosseum of Fools)",
   "journal": "15",
   "tactics": true
@@ -1470,7 +1470,7 @@
   "name": "Volatile Mosskin",
   "kind": "Enemy",
   "health": "15",
-  "location": "",
+  "location": "Greenpath",
   "drops": "5-6 geo",
   "journal": "25",
   "tactics": true
@@ -1479,7 +1479,7 @@
   "name": "Volatile Zoteling",
   "kind": "Enemy",
   "health": "30",
-  "location": "",
+  "location": "Dirtmouth",
   "drops": "None",
   "journal": "1",
   "tactics": true
@@ -1488,7 +1488,7 @@
   "name": "Volt Twister",
   "kind": "Enemy",
   "health": "80",
-  "location": "",
+  "location": "Colosseum of Fools",
   "drops": "None",
   "journal": "6",
   "tactics": true
@@ -1497,7 +1497,7 @@
   "name": "Wandering Husk",
   "kind": "Enemy",
   "health": "15",
-  "location": "",
+  "location": "Forgotten Crossroads",
   "drops": "3-4 geo",
   "journal": "35",
   "tactics": true
@@ -1524,7 +1524,7 @@
   "name": "Winged Fool",
   "kind": "Enemy",
   "health": "70",
-  "location": "",
+  "location": "Colosseum of Fools",
   "drops": "None",
   "journal": "25",
   "tactics": true
@@ -1542,7 +1542,7 @@
   "name": "Winged Sentry",
   "kind": "Enemy",
   "health": "25",
-  "location": "",
+  "location": "City of Tears",
   "drops": "12-18 geo",
   "journal": "30",
   "tactics": true
@@ -1551,7 +1551,7 @@
   "name": "Winged Zoteling",
   "kind": "Enemy",
   "health": "20 (Grey Prince Zote fight) | [Godmaster] 60 (The Eternal Ordeal)",
-  "location": "",
+  "location": "Dirtmouth",
   "drops": "None",
   "journal": "1",
   "tactics": true
@@ -1560,7 +1560,7 @@
   "name": "Wingmould (Hollow Knight)",
   "kind": "Enemy",
   "health": "999 (Resets after every hit)",
-  "location": "",
+  "location": "White Palace",
   "drops": "None",
   "journal": "10",
   "tactics": true

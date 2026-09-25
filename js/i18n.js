@@ -477,8 +477,6 @@
     helpFocusBaldur:{ es: 'Con la {charm}, ese golpe no te daña, pero la cura se pierde igual.', en: 'With {charm}, that hit does no damage, but the heal is lost all the same.' },
     helpDream:      { es: 'No hace daño: le saca {soul} de alma, y cargarlo lleva {s}\u00a0s. Es el alma que te queda donde el aguijón no da.',
                       en: 'It deals no damage: it draws {soul} soul from it, and charging it takes {s}\u00a0s. It is the soul left to you where the nail gives none.' },
-    helpFoeAttacks: { es: 'Sus ataques son botones: pulsa el que te alcance, y te quita las máscaras que dice.',
-                      en: 'Its attacks are buttons: press the one that hits you, and it takes the masks it shows.' },
     helpFoeRadiant: { es: '*☠*: en {diff} cualquier golpe te mata. Pulsa el ataque que te alcance.', en: '*☠*: on {diff} any hit kills you. Press the attack that hits you.' },
     helpStagger:    { es: '*Aturdimiento*: cuenta golpes, no daño, y cada impacto de un hechizo es uno. Con {hits} queda aturdido, o con {max} seguidos si entre uno y otro pasan menos de {w}\u00a0s. Aturdido no ataca, y tu próximo golpe lo levanta.',
                       en: '*Stagger*: it counts hits, not damage, and each spell impact is one. {hits} hits stagger it, or {max} in a row less than {w}\u00a0s apart. Staggered, it does not attack, and your next hit gets it back up.' },

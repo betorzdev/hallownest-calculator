@@ -10,7 +10,7 @@ screenshots with headless Chrome at 1280 and at 390 px.
 
 ## 0. Status (21 September 2026)
 
-The audit in §2 is **applied**, except the WebP images. The fonts are now self-hosted
+The audit in §2 is **applied**; the WebP images were measured again and dropped (§6). The fonts are now self-hosted
 (`assets/fonts/`, 23 September) and the charm icons, quantised to a palette (from 1.3 MB to 0.3 MB).
 What has changed on the page:
 
@@ -144,9 +144,35 @@ Cyclone Slash, Focus, the Dream Nail and a legend for the enemy's side); the min
 on Combat, with the build you're fighting with; with no charms, Equipped is just the slot; and
 the charm's detail no longer carries an equip button: it's read-only.
 
-What's left from §5: **self-hosting Cinzel and Spectral, subsetted** (today they still come from
-Google Fonts, and offline the identity falls back to Georgia without warning) and **the images to
-WebP** (1.85 MB in 73 PNGs → ~406 KB). And the whole product, §5.11–14.
+**25 September 2026: more atmosphere, more light, one focal point per screen.** A visual pass
+aimed at making the site feel like the game without breaking §6:
+- **The import notice lost its box**: one line under the screen bar with the bar's hairline,
+  since nothing's wrong. The pantheon's warning, which does cost something, keeps its box.
+- **Atmosphere on the whole page** (§7.5 of the game study, finally): a fixed vignette to the
+  menu's `#04060C` corners, 22 motes across the whole window instead of the header's 20, and an
+  inline SVG grain at 2.5%. All of it under the content.
+- **The section tints reach the lights.** A lamp derived from each `--tint` with more chroma
+  (`--lamp`, `--lamp-light`) paints the corner brackets, the title's rule, the spotlight behind
+  the Knight and the nail, and the plates' halos. Charms reads City of Tears, Combat Crystal
+  Peak, Godhome gold, the Journal Fungal cyan. Still never on data or on what's interactive.
+- **Charms**: the grid goes up to ~62 px, the equipped ones carry a halo (not the accent's
+  shadow). A ghost of
+  the Knight behind the detail's column was tried and removed: it sat behind text.
+- **Your game** has its focal point: the nail picker, at the head of the left column, with the one
+  you carry taller and lit. A separate large nail (it repeated the picker) and the picker across
+  the full width (too much empty space) were tried and removed.
+- **The arena**: the enemy's stage is its area's ambience, the measured value ramp of §2–3 of the
+  game study (`data-area`) faded to black at the edges, with a neutral pale light behind the enemy.
+  A first version tinted only the spotlight with the area's accent: too many areas came out the
+  same grey-blue, and the game doesn't light that way. The common enemies now carry their region
+  too (the first place their wiki page names), so they take their area as well. Your attacks are plates and the enemy's are rows (the last boxes are gone), and
+  the answer, hits to win, is the hero. A verdict sentence under it (§5.12) was tried and
+  removed: it repeated the scoreboard.
+- **The Hall of Gods opens on the statues**: the Idol in one row with its counts, and the
+  chosen statue's plaque stuck beside the grid. The tablet is the secondary view.
+
+What's left from §5: the whole product, §5.11–14. (The fonts were self-hosted on 23 September;
+the WebP images were dropped on 25 September, see §6.)
 
 ## 1. What's right and mustn't be touched
 
@@ -354,8 +380,8 @@ bounce**. The game doesn't have a single transition with overshoot.
    Half an hour, and it's the biggest visible jump towards "this looks professional".
 3. **Self-host Cinzel and Spectral, subsetted**, in `assets/fonts/`. It removes the network
    dependency and fixes the site opened with a double click, which is the use case the README promises.
-4. **The images to WebP with a PNG fallback**, and `width`/`height` on every `<img>`. **−78% of
-   the bytes** and zero CLS.
+4. ~~**The images to WebP with a PNG fallback**~~ **Dropped (25 September 2026)**, see §6.
+   `width`/`height` on every `<img>` still stands: zero CLS.
 5. **Fix the two mobile failures**: the top bar in three rows and "Got it" on top of its title.
 6. **`scroll-margin-block-start`** so the compact bar doesn't cover the focus.
 
@@ -401,6 +427,11 @@ bounce**. The game doesn't have a single transition with overshoot.
 
 ## 6. What we're not going to do
 
+- **The images to WebP.** The −78% of §2.4 was measured before the PNGs were quantised to a
+  palette. Measured again on 25 September 2026, lossless WebP takes the 514 PNGs from 3.27 MB to
+  2.36 MB (−28%), spread across screens, mostly `loading="lazy"` and cached after the first
+  visit. Lossy WebP, where the big saving is, blurs the game's artwork. It doesn't pay for a
+  `<picture>` on every image.
 - **Background illustration behind the tables.** The game's backgrounds read because there's
   nothing on top of them.
 - **Cinzel in the body or in the cells.** It's all caps and has no usable lowercase.

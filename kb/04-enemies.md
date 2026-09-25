@@ -5,6 +5,8 @@ Values in points. `—` = it can't be damaged. The enemies with 1 health don't l
 values separated by `/` = health by nail level 0/1/2/3/4.
 
 To know **how many hits each thing takes**, divide by your damage from `02-arsenal.md`.
+Each enemy's area is in `data/entities.json` (`location`): for the common ones, the first place
+their wiki page's «Location» section names, as its region of the game's map (September 2026).
 Useful thresholds:
 
 - **The Coiled Nail (17)** one-shots almost everything the Collector summons.

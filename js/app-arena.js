@@ -504,11 +504,12 @@
     return null;
   }
 
-  /* The legend on the enemy's side: only what's on their cards right now. */
+  /* The legend on the enemy's side: only what's on their cards right now. With nothing to
+     explain, no legend and no "?" (that its attacks are buttons goes without saying). */
   function foeHelp(f) {
     const n0 = (x) => App.NF[0].format(x), n1 = (x) => App.NF[1].format(x);
     const radiant = diffOf() === 'radiant';
-    const lines = [radiant ? th('helpFoeRadiant', {}, { diff: t('diffRa') }) : th('helpFoeAttacks')];
+    const lines = radiant ? [th('helpFoeRadiant', {}, { diff: t('diffRa') })] : [];
     // The stagger, with the figures from their card (Heavy Blow already subtracted, as there).
     const stg = staggerCfg();
     if (stg && !radiant) {
@@ -1051,7 +1052,6 @@
         <div class="vs-fall" title="${esc(hint)}"><dt>${esc(t(fall === 1 ? 'vsToFallOne' : 'vsToFall'))}<span class="sr-only"> (${esc(hint)})</span></dt><dd>${App.NF[0].format(fall)}</dd></div>
       </dl>`;
   }
-
   /* ── The band: the stage, small and stuck under the bar ──────────────────
      Your attacks and theirs are a long list: scrolling down it would leave the Knight and the enemy
      out of view. When the stage leaves the screen (bandCheck, on scroll), a band
@@ -1119,6 +1119,33 @@
   window.addEventListener('scroll', bandCheck, { passive: true });
   window.addEventListener('resize', () => { navBottom = -1; bandCheck(); });
 
+  /* The area whose light the enemy's stage takes (css/tokens.css, --area-*; design/02 §3, "By
+     area"). It's read from the entry's zone (js/enemies.js), in English, the key that doesn't
+     change with the language. Where the game's map paints two regions in one tint, the one
+     without a palette of its own takes the other's: the Royal Waterways, the Fungal Wastes'; Fog
+     Canyon, the Queen's Gardens'. The Soul Sanctum and the Tower of Love are inside the City of
+     Tears, and the Black Egg Temple in the Crossroads. A Hall of Gods or pantheon fight keeps its
+     boss's area, because Godhome recreates each boss's own arena. The Howling Cliffs have no
+     measured palette, and the two common enemies found all over the kingdom (Bluggsac, Lifeseed)
+     no zone ("Hallownest"): the cold spotlight. */
+  const ZONE_AREA = {
+    'Dirtmouth': 'dirtmouth', 'Forgotten Crossroads': 'crossroads', 'Temple of the Black Egg': 'crossroads',
+    'Greenpath': 'greenpath', 'Fungal Wastes': 'fungal', 'Royal Waterways': 'fungal',
+    'City of Tears': 'city', 'Soul Sanctum': 'city', 'Tower of Love': 'city',
+    'Crystal Peak': 'crystal', 'Deepnest': 'deepnest', 'Resting Grounds': 'resting',
+    'Ancient Basin': 'basin', 'Kingdom’s Edge': 'edge', 'Queen’s Gardens': 'gardens', 'Fog Canyon': 'gardens',
+    'The Hive': 'hive', 'Colosseum of Fools': 'colosseum', 'Godhome': 'godhome', 'Pantheon of Hallownest': 'godhome',
+    'Dream No More': 'radiance', 'White Palace': 'palace', 'The Abyss': 'abyss',
+  };
+  /* Light that isn't the place's: the Troupe brings its crimson to Dirtmouth (and the Grimmkin,
+     with no zone, are its own), and both Radiances are the Radiance's gold. */
+  const FOE_LIGHT = {
+    'grimm': 'grimm', 'nkg': 'grimm', 'grimmkin-novice': 'grimm', 'grimmkin-master': 'grimm', 'grimmkin-nightmare': 'grimm',
+    'the-radiance': 'radiance', 'absolute-radiance': 'radiance',
+  };
+  const areaOf = (f) => FOE_LIGHT[f.id] || (f.zone && ZONE_AREA[f.zone.en]) || '';
+  App.areaOf = areaOf;   // the Journal's page lights its portrait the same way (js/app-journal.js)
+
   function foeStageHtml(f, total) {
     if (!f) {
       foePrev = null; lastFoe = null;
@@ -1154,14 +1181,15 @@
       : phaseList.length > 1 ? t('fightPhase', { n: fight.phase + 1, total: phaseList.length }) : '';
     const nailDmg = fs().stats['nail.damage'].value;
     const meta = total === null ? esc(t('fightInvuln'))
-      : `${esc(t('fightTotal', { n: App.NF[0].format(total) }))} · ${esc(t('hitsToKill', { n: nailDmg ? Math.ceil(total / nailDmg) : 0 }))} · ${esc(pick(f.zone))}`;
+      : `${esc(t('fightTotal', { n: App.NF[0].format(total) }))} · ${esc(t('hitsToKill', { n: nailDmg ? Math.ceil(total / nailDmg) : 0 }))}`;
+    const foeLegend = total === null ? [] : foeHelp(f);
     const head = `<div class="foes-head">
         <h3 class="sr-only"${NT}>${esc(foeName(f))}</h3>
         ${countLbl ? `<span class="fighter-phase">${esc(countLbl)}</span>` : ''}
         <span class="foes-total">${meta}</span>
-        ${total === null ? '' : helpBtn('foe', t('helpFoe'))}
+        ${foeLegend.length ? helpBtn('foe', t('helpFoe')) : ''}
       </div>
-      ${total === null ? '' : helpBox('foe', foeHelp(f), 'is-foe')}
+      ${foeLegend.length ? helpBox('foe', foeLegend, 'is-foe') : ''}
       ${(f.notes || []).map((n) => `<p class="foecard-note is-warn">${esc(pick(n))}</p>`).join('')}
       ${phaseNote(f) ? `<p class="foecard-note">${esc(phaseNote(f))}</p>` : ''}`;
 
@@ -1174,7 +1202,8 @@
     lastFoe = { art, name: x ? pick(x.name) : foeName(f), hp, max, pct, hit, lost: hit ? prev.hp - hp : 0,
                 trail: hit ? Math.min(100, prev.hp / max * 100) : 0, cls, total };
     const dust = dying ? Array.from({ length: DUST }, (_, i) => `<span class="fdust" style="--i:${i}"></span>`).join('') : '';
-    return `<div class="fstage ${cls}">
+    const area = areaOf(f);
+    return `<div class="fstage ${cls}"${area ? ` data-area="${area}"` : ''}>
         ${titleCardHtml(f)}
         ${head}
         ${bar}

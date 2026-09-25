@@ -180,10 +180,18 @@
     /* The control goes at the top, before the portrait: at the foot it sat 600 px below the edge
        of the window, and whoever came in for the first time didn't know the page can be marked. */
     const control = hjControlHtml(r, s);
+    /* Where it's found, under its name: the region of the game's map (js/enemies.js, zone), even
+       before you've met it, since that's what helps you go looking. Not for what has no place
+       (the entries that aren't creatures, and the two found all over the kingdom). */
+    const foe = F.FOE_BY_ID[r.id];
+    const zone = foe && foe.zone && foe.zone.en !== 'Hallownest' ? foe.zone : null;
+    // Its portrait stands in its area's light, the same as on the arena's stage (css: .hj-art[data-area]).
+    const area = foe && App.areaOf ? App.areaOf(foe) : '';
     return `<button type="button" class="btn hj-back" data-act="hjBack">‹ ${esc(t('jrBack'))}</button>
       ${control ? `<div class="hj-mark">${control}</div>` : ''}
-      <div class="hj-art ${s.seen ? '' : 'is-shadow'} ${r.id === 'seal-of-binding' ? 'is-medal' : ''}"><img src="${hjArt(r, s)}" alt="" onerror="this.classList.add('is-missing')"><span class="hj-folio" aria-hidden="true">${esc(t('hjFolio', { n: App.NF[0].format(r.n) }))}</span></div>
+      <div class="hj-art ${s.seen ? '' : 'is-shadow'} ${r.id === 'seal-of-binding' ? 'is-medal' : ''}"${area ? ` data-area="${area}"` : ''}><img src="${hjArt(r, s)}" alt="" onerror="this.classList.add('is-missing')"><span class="hj-folio" aria-hidden="true">${esc(t('hjFolio', { n: App.NF[0].format(r.n) }))}</span></div>
       <h3 class="hj-page-name"${NT}>${esc(pick(hjNameOf(r)))}</h3>
+      ${zone ? `<p class="hj-zone"${NT}>${esc(pick(zone))}</p>` : ''}
       <img class="hj-fleur" src="${D.art('hunter', 'fleur')}" alt="" width="237" height="37">
       <div class="hj-text">${text}</div>`;
   }
