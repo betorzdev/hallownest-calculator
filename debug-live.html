@@ -1,0 +1,186 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="robots" content="noindex"><title>live probe</title>
+<style>
+  body { font: 14px/1.5 system-ui, sans-serif; margin: 16px; background: #111; color: #ddd; }
+  button { font: inherit; padding: 6px 12px; margin: 0 6px 8px 0; }
+  pre { white-space: pre-wrap; background: #000; padding: 12px; max-height: 70vh; overflow: auto; }
+  .ok { color: #8c8; } .bad { color: #e88; } .new { color: #fd6; }
+</style></head><body>
+<!-- Step 0 of the live save sync (plan: keep a slot in step with the real game). A throwaway probe,
+     to be run on Windows with the game, in Chrome or Edge, both opened with a double click
+     (file://) and from GitHub Pages. It answers three things before anything is built:
+       1. whether the file picker lets you choose user1.dat inside
+          %USERPROFILE%\AppData\LocalLow\Team Cherry\Hollow Knight (Chromium blocks Roaming and Local);
+       2. when the game writes it (resting on a bench, quitting, anything else) and whether a read
+          made while it's being written fails cleanly;
+       3. whether the file handle survives a reload, and what permission it has then.
+     The handle is kept in IndexedDB (a handle can't go in localStorage). Each change is read with
+     js/savefile.js, as the import does. Nothing is sent anywhere. -->
+<p>
+  <button id="pick">1 · Pick user1.dat</button>
+  <button id="resume" hidden>Resume (grant permission)</button>
+  <button id="forget">Forget the file</button>
+  <button id="copy">Copy log</button>
+</p>
+<pre id="out"></pre>
+<script src="js/data.js"></script>
+<script src="js/codec.js"></script>
+<script src="js/journal.js"></script>
+<script src="js/hall.js"></script>
+<script src="js/pantheons.js"></script>
+<script src="js/hunter.js"></script>
+<script src="js/savefile.js"></script>
+<script>
+'use strict';
+const F = HK.savefile;
+const out = document.getElementById('out');
+const resumeBtn = document.getElementById('resume');
+const stamp = () => new Date().toLocaleTimeString([], { hour12: false }) + '.' + String(Date.now() % 1000).padStart(3, '0');
+function log(msg, cls) {
+  const line = document.createElement('span');
+  if (cls) line.className = cls;
+  line.textContent = `[${stamp()}] ${msg}\n`;
+  out.appendChild(line);
+  out.scrollTop = out.scrollHeight;
+}
+const err = (e) => (e && (e.name + ': ' + e.message)) || String(e);
+
+/* ── Where we are ─────────────────────────────────────────────────────── */
+let topLevel = false;
+try { topLevel = window.top === window || !!window.top.location.href; } catch (e) { topLevel = false; }
+log(`origin ${location.protocol}//${location.host} · secure context ${window.isSecureContext}`);
+log(`showOpenFilePicker ${'showOpenFilePicker' in window} · getAsFileSystemHandle ${typeof DataTransferItem !== 'undefined' && 'getAsFileSystemHandle' in DataTransferItem.prototype} · indexedDB ${'indexedDB' in window} · top-level ${topLevel}`);
+log(navigator.userAgent);
+
+/* ── The handle, in IndexedDB ─────────────────────────────────────────── */
+const DB = 'hollow-live-probe', STORE = 'handles';
+function db() {
+  return new Promise((ok, ko) => {
+    let r;
+    try { r = indexedDB.open(DB, 1); } catch (e) { ko(e); return; }
+    r.onupgradeneeded = () => r.result.createObjectStore(STORE);
+    r.onsuccess = () => ok(r.result);
+    r.onerror = () => ko(r.error);
+  });
+}
+async function idb(mode, fn) {
+  const d = await db();
+  return new Promise((ok, ko) => {
+    const tx = d.transaction(STORE, mode);
+    const req = fn(tx.objectStore(STORE));
+    tx.oncomplete = () => ok(req && req.result);
+    tx.onerror = () => ko(tx.error);
+  });
+}
+const saveHandle = (h) => idb('readwrite', (s) => s.put(h, 'save'));
+const loadHandle = () => idb('readonly', (s) => s.get('save'));
+const dropHandle = () => idb('readwrite', (s) => s.delete('save'));
+
+/* ── Watching ─────────────────────────────────────────────────────────── */
+let handle = null, last = null, lastTick = 0, timer = 0;
+const MS = 2000;
+
+// What the site would take from the save: enough to see that a bench change arrived.
+function describe(pd) {
+  const snap = F.toSnapshot(pd), m = F.meta(pd);
+  const worn = Array.isArray(pd.equippedCharms) ? pd.equippedCharms.join(',') : '?';
+  return `playTime ${Math.round(m.time)} s · geo ${m.geo} · masks ${pd.maxHealthBase} · notches ${pd.charmSlots}`
+    + ` · worn [${worn}] · atBench ${pd.atBench} · respawn ${pd.respawnScene} · build ${snap['hollow.build'].slice(0, 60)}…`;
+}
+
+async function tick() {
+  if (!handle) return;
+  const now = Date.now();
+  // A gap much longer than the interval means the browser throttled the timer (hidden tab).
+  if (lastTick && now - lastTick > MS * 3) log(`timer gap ${((now - lastTick) / 1000).toFixed(1)} s (visibility ${document.visibilityState})`);
+  lastTick = now;
+  let file;
+  try { file = await handle.getFile(); }
+  catch (e) { log('getFile failed: ' + err(e), 'bad'); await checkPermission(); return; }
+  if (last && file.lastModified === last.lastModified && file.size === last.size) return;
+  const was = last;
+  last = { lastModified: file.lastModified, size: file.size };
+  log(`${was ? 'CHANGED' : 'first read'} · ${file.name} · ${file.size} bytes · lastModified ${new Date(file.lastModified).toLocaleTimeString([], { hour12: false })}`, was ? 'new' : '');
+  const t0 = performance.now();
+  let r;
+  try { r = F.read(new Uint8Array(await file.arrayBuffer())); }
+  catch (e) { log('read threw: ' + err(e), 'bad'); last = was; return; }
+  const ms = (performance.now() - t0).toFixed(0);
+  if (!r.ok) { log(`not readable (${r.error || 'unknown'}), ${ms} ms — will retry next tick`, 'bad'); last = was; return; }
+  log(`read ok in ${ms} ms · ${describe(r.pd)}`, 'ok');
+}
+
+function start() {
+  clearInterval(timer);
+  last = null; lastTick = 0;
+  timer = setInterval(tick, MS);
+  tick();
+}
+
+async function checkPermission() {
+  if (!handle) return false;
+  let p = 'unknown';
+  try { p = await handle.queryPermission({ mode: 'read' }); } catch (e) { log('queryPermission failed: ' + err(e), 'bad'); }
+  log(`permission for ${handle.name}: ${p}`);
+  resumeBtn.hidden = p === 'granted';
+  if (p !== 'granted') clearInterval(timer);
+  return p === 'granted';
+}
+
+document.getElementById('pick').addEventListener('click', async () => {
+  let picked;
+  try {
+    [picked] = await showOpenFilePicker({
+      id: 'hk-save', multiple: false,
+      types: [{ description: 'Hollow Knight save', accept: { 'application/octet-stream': ['.dat'], 'application/json': ['.json'] } }],
+    });
+  } catch (e) { log('picker: ' + err(e), 'bad'); return; }
+  handle = picked;
+  log(`picked ${handle.name}`, 'ok');
+  try { await saveHandle(handle); log('handle stored in IndexedDB'); } catch (e) { log('IndexedDB store failed: ' + err(e), 'bad'); }
+  if (await checkPermission()) start();
+});
+
+resumeBtn.addEventListener('click', async () => {
+  if (!handle) return;
+  try { log('requestPermission → ' + await handle.requestPermission({ mode: 'read' })); }
+  catch (e) { log('requestPermission failed: ' + err(e), 'bad'); }
+  if (await checkPermission()) start();
+});
+
+document.getElementById('forget').addEventListener('click', async () => {
+  clearInterval(timer); handle = null; last = null; resumeBtn.hidden = true;
+  try { await dropHandle(); log('forgotten'); } catch (e) { log('forget failed: ' + err(e), 'bad'); }
+});
+
+document.getElementById('copy').addEventListener('click', () => {
+  navigator.clipboard.writeText(out.textContent).then(() => log('log copied'), (e) => log('copy failed: ' + err(e), 'bad'));
+});
+
+// Drop: the same handle, from dragging the file in (the import view's other way in).
+addEventListener('dragover', (e) => e.preventDefault());
+addEventListener('drop', async (e) => {
+  e.preventDefault();
+  const item = e.dataTransfer.items && e.dataTransfer.items[0];
+  if (!item || !item.getAsFileSystemHandle) { log('drop: no getAsFileSystemHandle', 'bad'); return; }
+  try {
+    const h = await item.getAsFileSystemHandle();
+    if (!h || h.kind !== 'file') { log('drop: not a file', 'bad'); return; }
+    handle = h;
+    log(`dropped ${handle.name}`, 'ok');
+    await saveHandle(handle); log('handle stored in IndexedDB');
+    if (await checkPermission()) start();
+  } catch (x) { log('drop failed: ' + err(x), 'bad'); }
+});
+
+document.addEventListener('visibilitychange', () => { log('visibility ' + document.visibilityState); if (document.visibilityState === 'visible') tick(); });
+addEventListener('focus', () => tick());
+
+// Back from a reload: is the handle still there, and may it be read?
+(async () => {
+  try { handle = (await loadHandle()) || null; } catch (e) { log('IndexedDB read failed: ' + err(e), 'bad'); }
+  if (!handle) { log('no stored handle: pick the file'); return; }
+  log(`stored handle found: ${handle.name}`);
+  if (await checkPermission()) start();
+})();
+</script>
+</body></html>

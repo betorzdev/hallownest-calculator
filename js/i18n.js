@@ -104,6 +104,31 @@
     impSteel:       { es: 'Alma de Acero', en: 'Steel Soul' },          // MODE_STEEL
     impCompletion:  { es: 'Finalización', en: 'Completion' },          // COMPLETION
     impGeo:         { es: 'Geo', en: 'Geo' },                          // INV_NAME_GEO
+    impSync:        { es: 'Mantener sincronizada con el juego', en: 'Keep in sync with the game' },
+    impSyncOn:      { es: 'Activado', en: 'On' },                      // MOH_ON
+    impSyncOff:     { es: 'Desactivado', en: 'Off' },                  // MOH_OFF
+    impSyncNote:    { es: 'Se pone al día cada vez que descansas en un banco, mientras la web esté abierta en este navegador. Lo que cambies aquí vale hasta que el juego vuelva a guardar.',
+                      en: 'It catches up each time you rest on a bench, while the site is open in this browser. What you change here holds until the game saves again.' },
+    /* Following the game (js/live.js): the slot's line, the notice and the toast */
+    liveFollows:    { es: 'Sigue a {file}', en: 'Follows {file}' },
+    liveState_live: { es: 'en vivo', en: 'live' },
+    liveState_paused: { es: 'en pausa', en: 'paused' },
+    liveState_lost: { es: 'sin archivo', en: 'file missing' },
+    liveFollow:     { es: 'Seguir al juego', en: 'Follow the game' },
+    liveFollowShort: { es: 'Seguir', en: 'Follow' },                 // the same, on a phone
+    liveFollowHint: { es: 'Elige el archivo de esta partida: se pone al día con él ahora y cada vez que descanses en un banco',
+                      en: 'Pick this save\'s file: it catches up with it now and each time you rest on a bench' },
+    liveFollowing:  { es: 'La Partida {n} sigue ahora a {file}', en: 'Save {n} now follows {file}' },
+    liveFollowNo:   { es: 'Este navegador no deja guardar el vínculo con el archivo', en: 'This browser doesn\'t let the site keep the link to the file' },
+    liveUnlink:     { es: 'Dejar de seguir', en: 'Stop following' },
+    livePaused:     { es: 'Esta partida sigue a {file}, pero el navegador pide permiso otra vez para leerlo.',
+                      en: 'This save follows {file}, but the browser asks for permission again to read it.' },
+    liveResume:     { es: 'Reanudar', en: 'Resume' },
+    liveResumeNo:   { es: 'Sin permiso, la partida no sigue al juego', en: 'Without permission, the save doesn\'t follow the game' },
+    liveLost:       { es: 'No se encuentra {file}: la partida conserva lo que tenía, pero ya no sigue al juego.',
+                      en: '{file} can\'t be found: the save keeps what it had, but no longer follows the game.' },
+    liveRelink:     { es: 'Volver a elegirlo', en: 'Pick it again' },
+    liveUpdated:    { es: 'Tu partida se ha puesto al día con el juego', en: 'Your save caught up with the game' },
     savesNoStorage: { es: 'Este navegador no deja guardar datos: solo hay una partida', en: 'This browser doesn\'t let the site save data: there\'s only one save' },
 
     /* Sheet panel */

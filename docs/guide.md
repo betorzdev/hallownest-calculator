@@ -357,7 +357,7 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
 
 ## Files
 
-- `index.html` — the page; twenty-one classic scripts (it works over `file://`) and GoatCounter's,
+- `index.html` — the page; twenty-two classic scripts (it works over `file://`) and GoatCounter's,
   the visit counter: no cookies, one visit per page load and, as events, the screen switches
   (`screen-*`), the language (`lang-*`) and *Share*. The hash with the build is never sent, and it
   counts nothing over `file://`, on `localhost` or in an iframe. Without it the site works the
@@ -427,13 +427,19 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   each rule, charm by charm, is in `design/04-charms-in-combat.md`.
 - `js/codec.js` — the build's state: defaults, presets, equipping rules and the URL encoding.
 - `js/saves.js` — free mode and the four save slots over `localStorage`: what goes in a slot,
-  switching, a new game, clearing one and importing into one. Pure, with the storage passed in
+  switching, a new game, clearing one, importing into one and syncing one with the game (which
+  keeps the pantheon in progress and the pinned build). Pure, with the storage passed in
   (`test/saves.test.js`).
 - `js/savefile.js` — the game's save file (`userN.dat`) read and turned into a slot: the
   header, base64 and AES-256-ECB (written by hand: `crypto.subtle` has no ECB and isn't there
   over `file://`), then `playerData`'s fields mapped to the build, the charms found, the
   Journal, the Hall and the door. The field names are checked against the game's text and the
   site's lists in `test/savefile.test.js`, which also makes a `.dat` with Node's AES and reads it back.
+- `js/live.js` — a slot kept in step with the game's file: whether the browser can
+  (`canLive()`), the file handles per slot in IndexedDB (`hollow-live`) with the stamp last taken
+  in, and a watcher that asks the file every 2 s while the tab is visible. No DOM and no language;
+  the plan and what was checked on Windows are in `design/08-live-sync.md`, and `debug-live.html`
+  is the probe that checked it.
 - `js/app.js` — the core: state, `localStorage` and the link, the header, the screen bar and
   the mini-bar, the HUD (`hudHtml`), the general render and the events. Each screen has its own
   script, loaded after it, and they all share the `HK.app` object: what changes value lives
@@ -447,7 +453,8 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   - `js/app-pantheons.js` — the Pantheons tab: the lifeblood door and the run room by room.
   - `js/app-journal.js` — the Hunter's Journal screen: your game's book.
   - `js/app-saves.js` — the Saves screen: free mode, the four slots and their buttons, and the
-    import view (steps, drop zone, preview).
+    import view (steps, drop zone, preview), and the link with the game (the slot's line, the
+    notice when it's paused, the watcher of the slot you're in).
   - `js/app-boot.js` — startup: what's saved, the link and the first render. It goes last.
 - `assets/` — the game's artwork: `charms/`, `nails/`, `spells/`, `arts/`, `abilities/`
   and `hud/`. `tools/fetch-icons.js` downloads them from the wiki's CDN (`npm run icons`).
@@ -1166,6 +1173,32 @@ masks, the nails and the buttons line up from one slot to the next.
   - **the Journal**, entry by entry, with the defeats you have left, as the game counts them;
   - **the Hall of Gods' symbols** and **the lifeblood door's notches**.
   The pantheon in progress and the pinned build aren't in the game: the slot starts without them.
+- **Keep in sync with the game**: where the browser can hand the page the file itself (Chrome
+  and Edge on a computer, over `file://` or the web; not Firefox, Safari, a phone or inside an
+  embedded frame), *Choose file* and dropping keep a handle to it, and the preview carries an
+  option like a row of the game's options menu: *Keep in sync with the game* and its value on a
+  button, **On** (the rule's diamond lit) or **Off** (hollow), the game's own `MOH_ON`/`MOH_OFF`;
+  **on by default**. On, the slot follows that file. The game writes it on resting at
+  a bench and on quitting, so the slot catches up then (checked every 2 s while the tab is
+  visible, and at once on coming back to it): every screen repaints in place, what arrived lights
+  up and a notice says *Your save caught up with the game*. **The game wins**: what's changed on
+  the site holds until the game saves again, and then it's replaced; only the pantheon in
+  progress (which keeps its charms, as on opening a link) and the pinned build stay. A file
+  caught mid-write is ignored and read again on the next check. Only the save you're in
+  follows its file; another linked one catches up on entering it.
+  The slot's card says *Follows user1.dat* and, on the one you're in, **live**, **paused** or
+  **file missing**, with *Stop following*. The header's save selector says it on every screen:
+  under *Save n*, the rule's diamond and the state, lit in bone and breathing while live,
+  hollow in the notice's tint when paused or missing (on a phone, the diamond alone, over the
+  save's number); its tooltip names the file. The browser's permission doesn't outlive the page:
+  after a reload (or a new visit) the link is **paused**, and a notice above the screen says so
+  with *Resume*, which asks the browser again (it needs the click). If the file is gone, the
+  notice says the save keeps what it had and offers *Pick it again* (the import view for that
+  slot). Clearing the slot, or importing into it with the option off, ends the link.
+  A full slot that follows no file (imported with the option off, made on the site, or after
+  *Stop following*) carries **Follow the game** (*Follow* on a narrow screen) above *Import from
+  the game*, its icon two arrows chasing each other that turn on hover: it opens the picker,
+  the slot takes that file in at once (the game wins) and follows it from then on.
 - **The notice for whoever's new**: on a computer (not a phone, nor an iPad asking for the
   desktop site), while nobody has chosen a save (free mode, the four empty), a notice above
   every screen but Saves (*Your real game*) says the game's save can be imported. It isn't a
