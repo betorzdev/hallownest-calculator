@@ -62,6 +62,48 @@
     saveCurrent:    { es: 'Estás aquí', en: 'You\'re here' },
     saveContinue:   { es: 'Seguir con esta partida', en: 'Continue with this save' },
     saveLoad:       { es: 'Cargar esta partida', en: 'Load this save' },
+    saveImport:     { es: 'Importar del juego', en: 'Import from the game' },
+    saveImportShort: { es: 'Importar', en: 'Import' },                   // the same, on a phone beside New Game
+    /* The notice for a first visit on a computer */
+    importHintTag:  { es: 'Tu partida real', en: 'Your real game' },
+    importHint:     { es: 'Si juegas en este ordenador, puedes importar tu partida del juego: tu build, los amuletos que tienes, el Diario y el Salón de los Dioses, tal como los llevas.',
+                      en: 'If you play on this computer, you can import your save from the game: your build, the charms you have, the Journal and the Hall of Gods, just as they are.' },
+    importHintOff:  { es: 'Cerrar el aviso', en: 'Dismiss' },
+    saveImportBad:  { es: 'Ese archivo no es una partida del juego: busca user1.dat, user2.dat…', en: 'That file isn\'t a save from the game: look for user1.dat, user2.dat…' },
+    /* The import view: how to get the game's file, and the file itself */
+    impTitle:       { es: 'Importar a la Partida {n}', en: 'Import into Save {n}' },
+    impLead:        { es: 'Trae tu partida real: la web lee el archivo que guarda el juego y rellena esta partida con tu build, tus amuletos, el Diario, el Salón de los Dioses y la puerta de la saviavida.',
+                      en: 'Bring in your real game: the site reads the file the game saves and fills this save with your build, charms, Journal, Hall of Gods and Lifeblood door.' },
+    impMobile:      { es: 'Tus partidas están en el ordenador donde juegas: abre esta web allí, o pásate el archivo a este dispositivo.',
+                      en: 'Your saves are on the computer you play on: open this site there, or send the file to this device.' },
+    impOs:          { es: 'Tu sistema', en: 'Your system' },
+    impStep1:       { es: 'Copia la carpeta de las partidas', en: 'Copy the saves folder' },
+    impCopy:        { es: 'Copiar', en: 'Copy' },
+    impCopied:      { es: 'Copiada', en: 'Copied' },
+    impStep2:       { es: 'Abre el selector y pega la carpeta', en: 'Open the picker and paste the folder' },
+    impHowWin:      { es: 'Pulsa «Seleccionar archivo», pega la ruta en la casilla del nombre y pulsa {k1}.',
+                      en: 'Press "Choose file", paste the path into the file name box and press {k1}.' },
+    impHowMac:      { es: 'Pulsa «Seleccionar archivo», luego {k1}, pega la ruta y pulsa {k2}.',
+                      en: 'Press "Choose file", then {k1}, paste the path and press {k2}.' },
+    impHowLinux:    { es: 'Pulsa «Seleccionar archivo», luego {k1}, pega la ruta y pulsa {k2}.',
+                      en: 'Press "Choose file", then {k1}, paste the path and press {k2}.' },
+    impEnter:       { es: 'Intro', en: 'Enter' },
+    impStep3:       { es: 'Elige el archivo de tu partida', en: 'Pick your save\'s file' },
+    impFiles:       { es: 'Cada partida del juego es un archivo: la primera es user1.dat, la segunda user2.dat, y así. Los que acaban en .bak son copias de seguridad: no hacen falta.',
+                      en: 'Each of the game\'s saves is a file: the first is user1.dat, the second user2.dat, and so on. The ones ending in .bak are backups: you don\'t need them.' },
+    impDrop:        { es: 'Suelta aquí tu partida', en: 'Drop your save here' },
+    impDropping:    { es: 'Suéltala', en: 'Let go' },
+    impOr:          { es: 'o', en: 'or' },
+    impChoose:      { es: 'Seleccionar archivo', en: 'Choose file' },
+    impPrivate:     { es: 'Se lee aquí, en tu navegador: no se envía a ningún sitio y tu partida del juego no cambia.',
+                      en: 'It\'s read right here, in your browser: it isn\'t sent anywhere and your game doesn\'t change.' },
+    impReading:     { es: 'Leyendo la partida…', en: 'Reading the save…' },
+    impReplace:     { es: 'Sustituirá lo que tiene ahora la Partida {n}.', en: 'It will replace what Save {n} holds now.' },
+    impOther:       { es: 'Elegir otro archivo', en: 'Choose another file' },
+    impTime:        { es: '{h} h {m} min', en: '{h} h {m} min' },
+    impSteel:       { es: 'Alma de Acero', en: 'Steel Soul' },          // MODE_STEEL
+    impCompletion:  { es: 'Finalización', en: 'Completion' },          // COMPLETION
+    impGeo:         { es: 'Geo', en: 'Geo' },                          // INV_NAME_GEO
     savesNoStorage: { es: 'Este navegador no deja guardar datos: solo hay una partida', en: 'This browser doesn\'t let the site save data: there\'s only one save' },
 
     /* Sheet panel */

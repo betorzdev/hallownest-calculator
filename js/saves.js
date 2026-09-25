@@ -87,17 +87,36 @@
     return true;
   }
 
-  /* Clear Save. An inactive slot is left empty; the active one can't be empty, because it's
-     the one the site is showing: it starts over as a new game. Free mode isn't a game: it's
-     not cleared (Your game's two starting points already reset it). */
+  /* Clear Save, as in the game: the slot is left empty. The active one can't be empty, because
+     it's the one the site is showing, so clearing it leaves you in free mode (with what free mode
+     had). Free mode isn't a game: it's not cleared (Your game's two starting points already
+     reset it). */
   function clear(store, n) {
     const saves = read(store);
     if (!SLOT_IDS.includes(n)) return false;
-    if (n === saves.active) restore(store, fresh());
-    else { if (!saves.slots[n]) return false; delete saves.slots[n]; write(store, saves); }
+    if (n === saves.active) {
+      restore(store, saves.slots[FREE] || {});
+      delete saves.slots[FREE];
+      saves.active = FREE;
+    } else {
+      if (!saves.slots[n]) return false;
+      delete saves.slots[n];
+    }
+    write(store, saves);
     return true;
   }
 
-  HK.saves = { COUNT, FREE, SAVES_KEY, KEYS, SLOT_IDS, ALL_IDS, read, snapshot, fresh, list, select, clear };
+  /* A game imported from the real one (js/savefile.js) goes into a slot, replacing whatever it
+     held: into the live keys if it's the active one, into its copy if not. Not into free mode,
+     which is nobody's game. */
+  function importTo(store, n, snap) {
+    if (!SLOT_IDS.includes(n)) return false;
+    const saves = read(store);
+    if (n === saves.active) restore(store, cleanSnap(snap));
+    else { saves.slots[n] = cleanSnap(snap); write(store, saves); }
+    return true;
+  }
+
+  HK.saves = { COUNT, FREE, SAVES_KEY, KEYS, SLOT_IDS, ALL_IDS, read, snapshot, fresh, list, select, clear, importTo };
   if (typeof module !== 'undefined' && module.exports) module.exports = HK.saves;
 })();

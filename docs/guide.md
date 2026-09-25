@@ -289,7 +289,7 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
 
 ## Files
 
-- `index.html` — the page; twenty classic scripts (it works over `file://`) and GoatCounter's,
+- `index.html` — the page; twenty-one classic scripts (it works over `file://`) and GoatCounter's,
   the visit counter: no cookies, one visit per page load and, as events, the screen switches
   (`screen-*`), the language (`lang-*`) and *Share*. The hash with the build is never sent, and it
   counts nothing over `file://`, on `localhost` or in an iframe. Without it the site works the
@@ -359,7 +359,13 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   each rule, charm by charm, is in `design/04-charms-in-combat.md`.
 - `js/codec.js` — the build's state: defaults, presets, equipping rules and the URL encoding.
 - `js/saves.js` — free mode and the four save slots over `localStorage`: what goes in a slot,
-  switching, a new game and clearing one. Pure, with the storage passed in (`test/saves.test.js`).
+  switching, a new game, clearing one and importing into one. Pure, with the storage passed in
+  (`test/saves.test.js`).
+- `js/savefile.js` — the game's save file (`userN.dat`) read and turned into a slot: the
+  header, base64 and AES-256-ECB (written by hand: `crypto.subtle` has no ECB and isn't there
+  over `file://`), then `playerData`'s fields mapped to the build, the charms found, the
+  Journal, the Hall and the door. The field names are checked against the game's text and the
+  site's lists in `test/savefile.test.js`, which also makes a `.dat` with Node's AES and reads it back.
 - `js/app.js` — the core: state, `localStorage` and the link, the header, the screen bar and
   the mini-bar, the HUD (`hudHtml`), the general render and the events. Each screen has its own
   script, loaded after it, and they all share the `HK.app` object: what changes value lives
@@ -372,7 +378,8 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   - `js/app-hall.js` — the Hall of Gods tab: marks, statues, plaque and tablet.
   - `js/app-pantheons.js` — the Pantheons tab: the lifeblood door and the run room by room.
   - `js/app-journal.js` — the Hunter's Journal screen: your game's book.
-  - `js/app-saves.js` — the Saves screen: free mode, the four slots and their buttons.
+  - `js/app-saves.js` — the Saves screen: free mode, the four slots and their buttons, and the
+    import view (steps, drop zone, preview).
   - `js/app-boot.js` — startup: what's saved, the link and the first render. It goes last.
 - `assets/` — the game's artwork: `charms/`, `nails/`, `spells/`, `arts/`, `abilities/`
   and `hud/`. `tools/fetch-icons.js` downloads them from the wiki's CDN (`npm run icons`).
@@ -732,7 +739,9 @@ it's for rehearsing a boss.
   Vessel, Soul Master, Dung Defender, Grimm) carry two bosses, and here that pedestal splits into
   two halves with a shared frame; the dream version carries the Dream Nail.
   The double ones take two cells, and the grid fills the gap left by one that doesn't fit at the
-  end of a row with the next statue.
+  end of a row with the next statue. Grimm's is the exception: it's the last double one and only
+  Absolute Radiance comes after it, so it goes as two single pedestals and Troupe Master Grimm
+  fills that gap himself; Absolute Radiance stays last.
 - **The statues are the game's** (`assets/hall/`), almost black sculptures: on the page's
   blue-black they vanished, so each one carries **a light** behind it, not a box: a radial halo
   in Godhome's gold, that area's inverted palette (`--godhome-light*`, `css/tokens.css`), faded
@@ -946,13 +955,16 @@ inside. The game's notice when marking shows fixed just below the bar.
 **Free mode and four save slots, like the game's profile screen.** The header's selector opens
 it (`view=saves`); it isn't a tab in the screen bar. The selector shows the Knight and the save
 you're playing (*Save 2*), or *Select save* in free mode. Each row shows its masks and soul
-vessels with the HUD's sprites, its nail, and what that game carries: charms found (out of 40),
-the Journal's completed entries over its total and the Hall of Gods statues with a symbol (out
-of 44). The one you're in carries the accent's line and *You're here*.
+vessels with the HUD's sprites, its nail, and what that game carries: charms found (out of 40)
+and the Journal's completed entries over its total. The Hall of Gods is left out as secondary
+(the import's preview does show it). The one you're in is lit from its left edge, carries the accent's line and, at the head
+of its card, a lit diamond with *You're here*. The rows share their columns, so the numbers, the
+masks, the nails and the buttons line up from one slot to the next.
 
 - **Free mode** is what shows while you haven't chosen a save: everything unlocked (the build
   maxed and every charm found), to try builds. It isn't one of your games, so it's a row of
-  its own above the four, with the Knight instead of a number, and it can't be cleared (Your
+  its own above the four, the one framed sheet, with the Knight under a bench's lamp instead of
+  a number and its note in the buttons' column, and it can't be cleared (Your
   game's two starting points reset it). It's where a first visit lands, and where the data from
   before saves existed stayed: nobody had chosen a save.
 
@@ -966,11 +978,53 @@ of 44). The one you're in carries the accent's line and *You're here*.
 - **Tapping a slot** loads it: the page reloads —like the game's loading screen— on Charms, so
   nothing of the game you leave (an undo, the fight in progress) is left over. Tapping the one
   you're in takes you back to Charms.
+- **A slot's buttons are the game's menu items**, stacked in a column of their own behind a rule
+  and quieter than the slot (they're what you do to it): capitals in the menu's face, no box, and on
+  hover or focus the menu's two pointers on either side (*New Game* gets them too) (drawn in SVG; they're also the focus
+  mark). Their icons are the usual ones, drawn in the site's line: *Import from the game* a tray
+  with an arrow coming in, which dips when you're on it; *Clear Save* a bin, whose lid lifts. Below
+  900 px a full slot's buttons go under it in a row; on a phone an empty slot's import says only
+  *Import*, beside *New Game*, and the facts become a little table.
 - **New Game** (`PROFILE_NEW_GAME`), on an empty slot, starts as in the game: the base Knight,
   no charms found and everything else empty. You fill it in on Your game.
 - **Clear Save** (`PROFILE_CLEAR_BUTTON`) asks first, inside the slot, with the game's
-  question (`PROFILE_CLEAR_PROMPT`). An inactive slot is left empty; the one you're playing
-  starts over as a new game.
+  question (`PROFILE_CLEAR_PROMPT`). The slot is left empty and you stay on Saves. Clearing
+  the one you're playing drops you into free mode (the page fades to black and reloads, still on Saves, and fades back in with the row where it was, which then shrinks into *New Game*), since
+  the site always shows some game. It's seen being cleared: the masks break one by one from the right, as
+  health is lost on the HUD, the vessels drain, and the rest fades as dust rises out of it; then
+  the row shrinks to its empty height and *New Game* fades in (without motion, it's cleared at once).
+- **Import from the game**, on each of the four, opens **the import view** in the list's place
+  (*Saves* at its top, or Esc, goes back). It reads the game's own save file and puts that game in
+  the slot. Left, three steps on medallions joined by a thread: **copy the saves folder** (tabs
+  for Windows, macOS and Linux, the one you're on chosen by itself, and *Copy*), **open the picker
+  and paste it** (the keys each system's picker takes: the name box and Enter on Windows,
+  ⇧⌘G on macOS, Ctrl+L on Linux) and **pick the file** (the game keeps save *n* as
+  `user<n>.dat`; the `.bak` ones are backups). Right, **the drop zone**: the Knight floating
+  under a light that breathes, which brightens when a file is dragged over the view (it can be
+  dropped anywhere on it), and *Choose file*. Once read, the zone shows the save as the game's
+  profile screen would —masks appearing one by one, soul vessels, nail, time played, completion,
+  geo, Steel Soul if it is— with the charms, Journal and Hall counts and the pantheons
+  completed (five diamonds, lit in bone one after another, and *3/5*; each one's name on hover), and nothing is written until
+  *Import into Save n*; over a full slot it warns first that it will replace it. A file that
+  isn't a save brings up the Shade and *Choose another file*. On a phone a note says the saves
+  are on the computer you play on. Then the page enters the imported game, as tapping the slot
+  would. The file is read in the browser and never sent anywhere; the game's file isn't touched.
+  A save that's already JSON (the Switch's, or one decrypted with an editor) is read too. What
+  comes in, from the game's `playerData`:
+  - **the build**: nail, masks, vessels, notches, spells, nail arts, Dream Nail, cloak,
+    Grimmchild's phase and the charms worn **in the order you wore them** (`equippedCharms`),
+    with full health (the game saves on a bench);
+  - **the charms found**, each two-version one as the version you have (unbreakable, Kingsoul or
+    Void Heart —the White Fragment alone doesn't count—, Carefree Melody);
+  - **the Journal**, entry by entry, with the defeats you have left, as the game counts them;
+  - **the Hall of Gods' symbols** and **the lifeblood door's notches**.
+  The pantheon in progress and the pinned build aren't in the game: the slot starts without them.
+- **The notice for whoever's new**: on a computer (not a phone, nor an iPad asking for the
+  desktop site), while nobody has chosen a save (free mode, the four empty), a notice above
+  every screen but Saves (*Your real game*) says the game's save can be imported. Its button,
+  *Import from the game*, opens the import view for Save 1; its ✕ closes it. Either of the two,
+  or opening the import view from Saves, puts it away for good (`importHintOff` in
+  `hollow.prefs`), and choosing a save hides it as well.
 - A shared link still lands where you are (free mode or a save): its build replaces that one's.
 
 ## State and link

@@ -552,14 +552,15 @@
   }
 
   /* The notices above the screen. Overcharm, on Your game: on Charms it goes in the band, below
-     the notches (charmBand), and in combat the HUD's aura already says it. */
+     the notches (charmBand), and in combat the HUD's aura already says it. And, for whoever's
+     new on a computer, that the game's save can be imported (js/app-saves.js). */
   function renderBanner() {
     const over = prefs.view === 'game' && App.sheet.notches.overcharmed
       ? `<div class="banner"><span class="banner-tag">${esc(t('overcharmed'))}</span><span class="banner-text">${esc(t('overcharmBanner'))}</span></div>`
       : '';
     // On the Pantheons tab you're already there: the notice doesn't send you where you are.
     const lock = prefs.view === 'fight' && prefs.fightTab === 'pantheon' ? '' : runLockBanner();
-    el.banner.innerHTML = over + lock;
+    el.banner.innerHTML = over + lock + App.importHint();
   }
 
   /* The notice that you're in a pantheon, with the button that takes you to the room and the one
@@ -921,5 +922,5 @@
     masksText, notchText, spellArt, shortOf, badgeText, goodClass, deltaChip, changeChip, prefs, loadPrefs,
     savePrefs, splitHash, here, loadState, persist, compareLabel, compute, impact, recompute, commit, bindAllFx,
     brackets, chevron, cross, rule, screenHead, hudHtml, restoreFocus, focusDescriptor, render, go, screenOf,
-    underNav, toast, actions, isMaxOwned, loadOwned, saveOwned, isOwned, withFixed, isFixed, setOwned });
+    underNav, toast, track, actions, isMaxOwned, loadOwned, saveOwned, isOwned, withFixed, isFixed, setOwned });
 })();

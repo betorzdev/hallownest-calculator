@@ -119,8 +119,12 @@
         <span class="sr-only">${esc(got.length ? got.join(', ') : t('hallNoMarks'))}${s.via ? ' · ' + esc(t(s.via === 'dream' ? 'hallViaDream' : 'hallViaLever')) : ''}</span>
       </button>`;
     };
-    const grid = HG.PEDESTALS.map((ped) => (ped.length === 1
-      ? `<div class="ped">${tile(ped[0])}</div>`
+    /* The last double pedestal (Grimm) goes as two single ones: no single statue comes after
+       it to fill the gap it leaves when it doesn't fit at the end of a row ("dense", in the
+       CSS), and split, Troupe Master Grimm fills it himself. Nightmare King keeps his glyph. */
+    const lastPair = HG.PEDESTALS.findLast((ped) => ped.length === 2);
+    const grid = HG.PEDESTALS.map((ped) => (ped.length === 1 || ped === lastPair
+      ? ped.map((s) => `<div class="ped">${tile(s)}</div>`).join('')
       : `<div class="ped ped-pair" title="${esc(t(ped[1].via === 'dream' ? 'hallViaDream' : 'hallViaLever'))}">${ped.map(tile).join('')}</div>`)).join('');
 
     // The tablet, when open, takes the place of the grid and the plaque; the Idol stays on top.

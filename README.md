@@ -50,7 +50,7 @@ with the synergies between them marked.
 Your nail, masks, soul vessels, notches, spells and nail arts, plus the charms and abilities
 you've actually found. Start from the base Knight or from everything maxed. Four save slots,
 like the game's, so a Steel Soul run doesn't overwrite your main game, and a free mode with
-everything unlocked to try builds.
+everything unlocked to try builds. Or import your real game straight from its save file.
 
 </td>
 <td valign="top">

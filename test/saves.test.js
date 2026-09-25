@@ -68,7 +68,7 @@ test('going back restores each game as it was', () => {
   assert.equal(S.select(s, 5), false, 'there are four');
 });
 
-test('clearing an inactive slot empties it; clearing the active one starts it over', () => {
+test('clearing a slot empties it; clearing the active one also drops you into free mode', () => {
   const s = fakeStore();
   S.select(s, 1);
   s.setItem('hollow.run', '{}');
@@ -79,8 +79,9 @@ test('clearing an inactive slot empties it; clearing the active one starts it ov
   s.setItem('hollow.run', '{"pantheon":"master"}');
   assert.equal(S.clear(s, 2), true);
   assert.equal(s.getItem('hollow.run'), null);
-  assert.equal(s.getItem('hollow.build'), FRESH_BUILD);
-  assert.equal(S.read(s).active, 2);
+  assert.equal(s.getItem('hollow.build'), null, "free mode's own build: none saved, the defaults");
+  assert.deepEqual(S.read(s), { active: S.FREE, slots: {} });
+  assert.equal(S.list(s)[2].snap, null, 'the slot is empty');
 });
 
 test('corrupt or foreign data is ignored', () => {
@@ -93,4 +94,18 @@ test('a storage that throws leaves the site in free mode and no crash', () => {
   const bad = { getItem() { throw new Error('denied'); }, setItem() { throw new Error('denied'); }, removeItem() { throw new Error('denied'); } };
   assert.deepEqual(S.read(bad), { active: S.FREE, slots: {} });
   assert.doesNotThrow(() => S.select(bad, 2));
+});
+
+test('an imported game replaces a slot: the live keys if it is active, its copy if not, never free mode', () => {
+  const s = fakeStore();
+  S.select(s, 1);
+  s.setItem('hollow.run', '{}');
+  const game = { 'hollow.build': 'v=1&nail=4', 'hollow.owned': '[]', 'hollow.prefs': '{}' };
+  assert.equal(S.importTo(s, 1, game), true);
+  assert.equal(s.getItem('hollow.build'), 'v=1&nail=4');
+  assert.equal(s.getItem('hollow.run'), null, 'the old pantheon in progress goes with the old game');
+  assert.equal(s.getItem('hollow.prefs'), null, 'only the slot keys come in');
+  assert.equal(S.importTo(s, 3, game), true);
+  assert.deepEqual(S.read(s).slots[3], { 'hollow.build': 'v=1&nail=4', 'hollow.owned': '[]' });
+  assert.equal(S.importTo(s, S.FREE, game), false);
 });
