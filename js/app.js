@@ -21,8 +21,8 @@
   const pick = (v) => I.pick(v);
 
   const KEY = { build: 'hollow.build', baseline: 'hollow.baseline', prefs: 'hollow.prefs', run: 'hollow.run', hall: 'hollow.hall', owned: 'hollow.owned', door: 'hollow.bindings' };
-  // With no enemy, half of Combat comes out empty: whoever has none starts with the first boss.
-  const DEFAULT_FOE = 'false-knight';
+  // With no enemy, half of Combat comes out empty: whoever has none starts with the Journal's first entry.
+  const DEFAULT_FOE = 'crawlid';
   /* The page's own language: es/index.html is the Spanish copy, with its own address so that
      search engines index the Spanish too (the hash's lang= never reaches them). Read before
      setLang() rewrites <html lang>. */
@@ -31,12 +31,13 @@
   const el = {
     page: $('.page'), masthead: $('#masthead'), colophon: $('#colophon'), nav: $('#nav'), panel: $('#panel'),
     mini: $('#minihud'), banner: $('#banner'), gear: $('#gear'), hj: $('#hj'),
-    toast: $('#toast'), fx: $('#overcharm-fx'), fight: $('#fight'),
+    toast: $('#toast'), fx: $('#overcharm-fx'), fight: $('#fight'), saves: $('#saves'),
   };
   const hoverable = matchMedia('(hover: hover) and (pointer: fine)');
 
-  // The screens, like the pages of the game's pause menu: Charms, Your game, Combat and the Journal.
-  const VIEWS = ['charms', 'game', 'fight', 'journal'];
+  /* The screens, like the pages of the game's pause menu: Charms, Your game, Combat and the
+     Journal. And the save slots (js/app-saves.js), which aren't in the bar: the header opens them. */
+  const VIEWS = ['charms', 'game', 'fight', 'journal', 'saves'];
   const SPELL_KEYS = ['vs', 'dd', 'hw'];
   const ART_KEYS = ['cyclone', 'dash', 'great'];
   const ART_STAT = { cyclone: 'nail.cyclone', dash: 'nail.dashSlash', great: 'nail.greatSlash' };
@@ -126,6 +127,9 @@
     if (ch.kind === 'loss') return t('withoutShort', { what: ch.short });
     return fmtDelta(ch) + ' ' + ch.short;
   }
+  /* What just arrived with the last change (App.was): a charm equipped or found. */
+  const justWorn = (id) => !!(App.was && App.state.charms.includes(id) && !App.was.state.charms.includes(id));
+  const justFound = (id) => !!(App.was && App.owned.includes(id) && !App.was.owned.includes(id));
   const goodClass = (good) => (good === true ? 'good' : good === false ? 'bad' : '');
 
   // Delta chip for a stat against the same stat on the reference sheet.
@@ -169,6 +173,10 @@
   App.cmpSheet = null;              // sheet for the build being compared against
   let impacts = {};                 // charm id → impact on the current build, computed on demand (impact)
   App.flashIds = null;              // id → diff() change for what just changed: only commit()'s render paints it (flash and chip)
+  /* What there was before the change, only during the repaint that follows it: the build (commit())
+     and the charms found (setOwned()). What just arrived compares against it to light up once
+     —the charm equipped, the notches it fills, the mask you add—; the next repaint no longer has it. */
+  App.was = null;                   // { state, owned } or null
   App.detailSel = '';               // the charm in the band's detail: the last one touched, pressed or focused
   App.detailHover = '';             // the one under the mouse: it takes over from the chosen one while it lasts
   App.pickerOpen = false;           // the Hunter's Journal, open, to pick an enemy
@@ -241,15 +249,50 @@
   /* The same, as a path to this page. es/index.html carries <base href="../">, and against it a
      bare "#…" would point at the English page. */
   const here = (hash) => location.pathname + location.search + hash;
-  /* Every screen change leaves a history entry, so that Back returns to the previous one;
-     build changes rewrite the entry you're on. They all carry the mark {hk: 1}: going back
-     to one of them changes the screen and nothing else (onHistory). */
+  /* Where you are, which is more than the screen: Combat's tab, and what each screen's script
+     registers in App.navParts as { get, set } (the Hall's statue, fight and tablet, the page
+     read on mobile, the arena's Journal open). Back and Forward walk through these, like the
+     game's menus; the build, the marks and a half-done fight aren't places, and stay as they are. */
+  App.navParts = {};
+  function navNow() {
+    const nav = { view: prefs.view, tab: prefs.fightTab };
+    for (const k of Object.keys(App.navParts)) nav[k] = App.navParts[k].get();
+    return nav;
+  }
+  const navKey = (nav) => JSON.stringify(nav);
+  /* Puts back a place from the history. Says whether the screen changed (it fades in) and
+     whether anything did (it repaints). */
+  function applyNav(nav) {
+    const was = navKey(navNow());
+    const viewChanged = !!nav.view && nav.view !== prefs.view;
+    if (viewChanged) setView(nav.view);
+    if (nav.tab && nav.tab !== prefs.fightTab) App.setFightTab(nav.tab);
+    for (const k of Object.keys(App.navParts)) if (nav[k] !== undefined) App.navParts[k].set(nav[k]);
+    return { viewChanged, changed: was !== navKey(navNow()) };
+  }
+  /* Every change of place leaves a history entry, so that Back returns to the previous one;
+     build changes rewrite the entry you're on. They all carry the mark {hk: 1}, the place
+     (nav) and the place they were pushed from (from): going back to one of them changes the
+     place and nothing else (onHistory). */
   function writeUrl(push) {
     const url = hashFor();
+    const nav = navNow(), key = navKey(nav);
+    const cur = history.state && history.state.hk ? history.state : null;
     try {
-      if (push) history.pushState({ hk: 1 }, '', here(url));
-      else if (location.hash !== url || !(history.state && history.state.hk)) history.replaceState({ hk: 1 }, '', here(url));
+      if (push) history.pushState({ hk: 1, nav, key, from: cur ? cur.key : null }, '', here(url));
+      else if (location.hash !== url || !cur || cur.key !== key) history.replaceState({ hk: 1, nav, key, from: cur ? cur.from : null }, '', here(url));
     } catch (e) { if (location.hash !== url) location.hash = url; }
+  }
+  /* After a change of place: a new entry if the place is new. With back, the change undoes
+     the one that brought you here (a "‹" button, closing the tablet or the Journal): if the
+     entry was pushed from this very place, it's Back, so the history doesn't pile up list →
+     page → list and the browser's Back then leaves, as it should. The change is already
+     painted, so onHistory finds nothing left to do. */
+  function navTo(back) {
+    const key = navKey(navNow());
+    const cur = history.state && history.state.hk ? history.state : null;
+    if (back && cur && cur.from === key) { try { history.back(); return; } catch (e) { /* stays as a new entry */ } }
+    if (!cur || cur.key !== key) writeUrl(true);
   }
 
   /* A GoatCounter event (index.html loads it). Only the name travels, never the hash with the
@@ -336,14 +379,17 @@
     if (lock && App.touchesCharms(next)) { toast(lock); return false; }
     const prev = App.sheet;
     const wasOvercharmed = !!(prev && prev.notches.overcharmed);
+    const before = App.state;
     App.state = next;
     persist();
     recompute();
     const changes = prev ? E.diff(prev, App.sheet) : [];
     // What just changed flashes once, with its chip: on the next repaint, no longer.
     App.flashIds = new Map(changes.map((c) => [c.id, c]));
+    App.was = App.was || { state: before, owned: App.owned };
     render();
     App.flashIds = null;
+    App.was = null;
     // Only on the jump to overcharmed: when equipping too much or when notches are taken away.
     if (!wasOvercharmed && App.sheet.notches.overcharmed) overcharmFx();
     return true;
@@ -384,6 +430,10 @@
   const brackets = '<span class="bk tl"></span><span class="bk tr"></span><span class="bk bl"></span><span class="bk br"></span>';
   const chevron = (up) => `<svg class="chev ${up ? 'up' : ''}" width="12" height="8" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1.5 L6 6 L11 1.5"/></svg>`;
   const cross = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M2 2 L10 10 M10 2 L2 10"/></svg>';
+  /* The pointers of the game's menus, either side of the item you're on (drawn: the wiki doesn't
+     have the sprite). The slots' buttons on Saves and the header's save selector carry them. */
+  const FLEUR = '<svg viewBox="0 0 12 20" fill="currentColor" aria-hidden="true"><path d="M1 10 C4.5 9.4 7.2 7.2 8.6 2.4 C9 6.4 10 8.8 11.6 10 C10 11.2 9 13.6 8.6 17.6 C7.2 12.8 4.5 10.6 1 10 Z"/><circle cx="2.4" cy="10" r="1.3"/></svg>';
+  const FLEURS = `<span class="save-fleur is-l">${FLEUR}</span><span class="save-fleur is-r">${FLEUR}</span>`;
   const rule = `<svg class="rule" width="220" height="12" viewBox="0 0 220 12" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><path d="M0 6 H92"/><path d="M128 6 H220"/><path d="M110 1 L116 6 L110 11 L104 6 Z"/></svg>`;
   /* Each screen's header, the same on all three: the title in Cinzel, centred, with its rule
      and the diamond, inside the black. Whatever goes below it (the presets, the combat
@@ -413,11 +463,23 @@
   }).join('');
 
   /* The header, in one row: the title under the game's filigree —the one from the Hall of Gods
-     screen (assets/hall/tablet-hdr.png, white stroke), small— and on the right what applies to
-     the whole site: the language and Share. The filigree stays white, as in the game: over
+     screen (assets/hall/tablet-hdr.png, white stroke), small—, on its left what belongs to the
+     site (the language and Share) and on its right what's yours: the save selector (js/app-saves.js).
+     In the markup, in the order they're seen on a wide screen; on mobile the CSS reorders them. The filigree stays white, as in the game: over
      file:// it can't be tinted with mask-image. Title and filigree are a link to the start
      screen, Charms, like the logo on almost any website. */
-  const VIEW_KEY = { charms: 'navCharms', game: 'navGame', fight: 'navFight', journal: 'navJournal' };
+  /* The save selector: the Knight and the save you're playing, or «Select save» in free mode
+     (js/app-saves.js), which is nobody's game. It's one of the site's best features, so it isn't
+     a footnote link: the Knight at a bench, under a lamp's light that breathes (the import view's),
+     and the label in the game's menu capitals, with the menu's pointers when you're on it. On
+     mobile, the Knight with the save's number, or alone. */
+  function saveLink() {
+    const n = App.activeSlot();
+    const label = n ? t('saveSlot', { n }) : t('saveSelect');
+    return `<a class="mh-save" href="${here(hashFor('saves'))}" data-act="view" data-value="saves"${prefs.view === 'saves' ? ' aria-current="page"' : ''}
+          aria-label="${esc(label)}" title="${esc(t('saveBtnHint'))}"><span class="mh-save-fig"><span class="mh-save-light" aria-hidden="true"></span><img src="${D.art('hud', 'knight')}" alt=""></span><span class="mh-save-lbl">${FLEURS}${esc(label)}</span>${n ? `<span class="mh-save-n">${n}</span>` : ''}</a>`;
+  }
+  const VIEW_KEY = { charms: 'navCharms', game: 'navGame', fight: 'navFight', journal: 'navJournal', saves: 'savesTitle' };
   function renderMasthead() {
     document.title = prefs.view === 'charms' ? t('docTitle') : t(VIEW_KEY[prefs.view]) + ' · ' + t('title');
     const meta = document.querySelector('meta[name="description"]');
@@ -427,18 +489,20 @@
     el.gear.setAttribute('aria-label', t('navGame'));
     el.fight.setAttribute('aria-label', t('navFight'));
     el.hj.setAttribute('aria-label', t('jrTitle'));
+    el.saves.setAttribute('aria-label', t('savesTitle'));
     // In the corner, as text: the abbreviation in view and the full name for screen readers and the mouse.
     const langBtn = (code, label) => `<button type="button" lang="${code}" data-act="lang" data-value="${code}" aria-pressed="${prefs.lang === code}" aria-label="${label}" title="${label}">${code.toUpperCase()}</button>`;
     el.masthead.innerHTML = `
       <div class="motes" aria-hidden="true">${MOTES}</div>
+      <div class="mh-tools">
+        <div class="langsel" role="group" aria-label="${esc(t('langGroup'))}">${langBtn('en', 'English')}${langBtn('es', 'Español')}</div>
+        <button type="button" class="mh-link" data-act="share" title="${esc(t('shareHint'))}">${esc(t('share'))}</button>
+      </div>
       <a class="brand" href="${here(hashFor('charms'))}" data-act="view" data-value="charms" title="${esc(t('goHome'))}">
         <img class="mh-hdr" src="assets/hall/tablet-hdr.png" alt="" width="862" height="111">
         <h1 class="title">${esc(t('title'))}</h1>
       </a>
-      <div class="mh-tools">
-        <div class="langsel" role="group" aria-label="${esc(t('langGroup'))}">${langBtn('en', 'English')}${langBtn('es', 'Español')}</div>
-        <button type="button" class="mh-link" data-act="share" title="${esc(t('shareHint'))}">${esc(t('share'))}</button>
-      </div>`;
+      ${saveLink()}`;
   }
 
   // GitHub's mark (Octicons mark-github), in currentColor so it takes the links' accent.
@@ -484,6 +548,7 @@
     el.gear.hidden = prefs.view !== 'game';
     el.fight.hidden = prefs.view !== 'fight';
     el.hj.hidden = prefs.view !== 'journal';
+    el.saves.hidden = prefs.view !== 'saves';
   }
 
   /* The mini-bar, in the screen bar: what you look at while touching charms, with the game's
@@ -539,14 +604,15 @@
   }
 
   /* The notices above the screen. Overcharm, on Your game: on Charms it goes in the band, below
-     the notches (charmBand), and in combat the HUD's aura already says it. */
+     the notches (charmBand), and in combat the HUD's aura already says it. And, for whoever's
+     new on a computer, that the game's save can be imported (js/app-saves.js). */
   function renderBanner() {
     const over = prefs.view === 'game' && App.sheet.notches.overcharmed
       ? `<div class="banner"><span class="banner-tag">${esc(t('overcharmed'))}</span><span class="banner-text">${esc(t('overcharmBanner'))}</span></div>`
       : '';
     // On the Pantheons tab you're already there: the notice doesn't send you where you are.
     const lock = prefs.view === 'fight' && prefs.fightTab === 'pantheon' ? '' : runLockBanner();
-    el.banner.innerHTML = over + lock;
+    el.banner.innerHTML = over + lock + App.importHint();
   }
 
   /* The notice that you're in a pantheon, with the button that takes you to the room and the one
@@ -560,7 +626,7 @@
       <span class="banner-tag">${esc(t('runLockTag'))}</span>
       <span class="banner-text">${esc(where + ' ' + why)}</span>
       <button type="button" class="btn" data-act="runLockGo">${esc(t('runLockGo'))}</button>
-      <button type="button" class="btn" data-act="runQuit">${esc(t('runQuit'))}</button>
+      <button type="button" class="btn is-danger" data-act="runQuit">${esc(t('runQuit'))}</button>
     </div>`;
   }
   const hudRing = `<svg class="hud-ring" viewBox="-10 -10 120 120" aria-hidden="true"><path fill-rule="evenodd" d="M104 50A54 54 0 1 0-4 50A54 54 0 1 0 104 50ZM101.3 49.2A50.5 50.5 0 1 1 .3 49.2A50.5 50.5 0 1 1 101.3 49.2Z"/></svg>`;
@@ -601,10 +667,17 @@
       ? `<button type="button" class="${cls}" style="${style}"${attrs}>${inner}</button>`
       : `<span class="${cls}" style="${style}"${attrs}>${inner}</span>`);
     const lo = level(main, mainWas, o.mainMax, 6.2, 86);
-    const orb = piece(!!o.orbAttrs, o.orbAttrs || (o.orbTitle ? ` title="${esc(o.orbTitle)}"` : ''), `hud-orb${lo.moving}`, lo.style,
+    /* With castSoul (the sheet), the level a tap on the orb would leave, for the hover preview
+       (css: --cut-cast): the orb first, then the vessels in order, as soul always fills. */
+    const castMain = o.castSoul != null ? Math.min(o.castSoul, o.mainMax) : null;
+    if (castMain != null) lo.style += `;--cut-cast:${cut(castMain, o.mainMax, 6.2, 86)}`;
+    // Enough in the orb for a spell (o.ready, the sheet) or a Focus, which always costs 33: its rim glints (css: .is-ready).
+    const ready = (o.ready != null ? o.ready : main >= D.SOUL.vesselSize) ? ' is-ready' : '';
+    const orb = piece(!!o.orbAttrs, o.orbAttrs || (o.orbTitle ? ` title="${esc(o.orbTitle)}"` : ''), `hud-orb${lo.moving}${ready}`, lo.style,
       `<span class="orb-well"></span><img class="hud-soul" src="${D.art('hud', 'soul-meter')}" alt="">${hudRing}`);
     const vessels = Array.from({ length: o.vessels }, (_, i) => {
       const lv = level(o.soul - main - size * i, soulWas - mainWas - size * i, size, 8.9, 82.2);
+      if (castMain != null) lv.style += `;--cut-cast:${cut(o.castSoul - castMain - size * i, size, 8.9, 82.2)}`;
       const attrs = o.vesselAttrs ? o.vesselAttrs(i, o.soul - main - size * i >= size) : '';
       return piece(!!attrs, attrs, `hud-vessel${lv.moving}`, lv.style, `<img src="${D.art('hud', 'soul')}" alt="">`);
     }).join('');
@@ -687,8 +760,10 @@
     renderMiniHud();
     App.renderGear();
     App.renderFight();
+    App.renderSaves();
     if (prefs.view === 'journal') { if (App.hjSec.querySelector('.hj-list')) App.paintHunter(); else App.renderHunter(); }
     showScreen();
+    App.bandCheck();                       // the arena's band measures the stage once it's visible
     App.hjFit();
     // On entering the Journal, the entry you're reading shows in its list (already visible, so it can be measured).
     if (App.hjEnter && prefs.view === 'journal') { App.hjEnter = false; App.hjScroll(true); }
@@ -718,9 +793,9 @@
   function go(v, focusHead) {
     const changed = v !== prefs.view;
     setView(v);
-    writeUrl(changed);
+    navTo(false);
     render();
-    if (changed) track('screen-' + prefs.view);
+    if (changed) { track('screen-' + prefs.view); fadeIn(screenOf(prefs.view)); }
     if (changed) {
       const start = el.masthead.offsetTop + el.masthead.offsetHeight;   // where the bar stays stuck
       if (scrollY > start) scrollTo(0, start);
@@ -730,17 +805,34 @@
       if (h) h.focus({ preventScroll: true });
     }
   }
-  const screenOf = (v) => (v === 'game' ? el.gear : v === 'fight' ? el.fight : v === 'journal' ? el.hj : el.panel);
+  /* The screen you arrive at fades in, like the game's fades between areas (css: .is-entering). */
+  const fadeIn = (node) => { node.classList.remove('is-entering'); void node.offsetWidth; node.classList.add('is-entering'); };
+  const screenOf = (v) => (v === 'game' ? el.gear : v === 'fight' ? el.fight : v === 'journal' ? el.hj : v === 'saves' ? el.saves : el.panel);
   // Is the sticky bar covering it? Then you have to scroll up to it.
   const underNav = (node) => node.getBoundingClientRect().top < el.nav.getBoundingClientRect().bottom;
 
-  let toastTimer = 0;
-  function toast(msg) {
+  /* A notice, like the game's on-screen messages: the text between two short rules with their
+     diamond, over a soft dark veil, fading in and out (css: .toast), just under the screen bar.
+     Every notice on the site goes through here, the Journal's too (with its entry's medallion). The rules carry no text, so
+     what's announced and read is the message alone. */
+  const TOAST_RULE = '<svg class="toast-rule" width="44" height="10" viewBox="0 0 44 10" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><path d="M0 5 H17"/><path d="M27 5 H44"/><path d="M22 1.5 L25.5 5 L22 8.5 L18.5 5 Z"/></svg>';
+  let toastTimer = 0, toastGone = 0;
+  function toast(msg, art = '') {
     // Visible before writing: a hidden live region isn't announced when it changes.
+    clearTimeout(toastTimer); clearTimeout(toastGone);
     el.toast.hidden = false;
-    el.toast.textContent = msg;
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => { el.toast.hidden = true; }, 2400);
+    // The figures go outside Cinzel; a Journal entry's notice carries its medallion (art).
+    const text = esc(msg).replace(/\d+(?:[.,]\d+)?/g, '<b class="toast-num">$&</b>');
+    el.toast.innerHTML = `${TOAST_RULE}${art ? `<img class="toast-art" src="${art}" alt="">` : ''}<span class="toast-t">${text}</span>${TOAST_RULE}`;
+    // Just under the bar, where the Journal's notice goes; in the arena, under its band if it's out.
+    const band = document.querySelector('.fband-anchor.is-on .fband');
+    const edge = Math.max(0, el.nav.getBoundingClientRect().bottom, band ? band.getBoundingClientRect().bottom : 0);
+    el.toast.style.top = `calc(${Math.round(edge)}px + var(--sp-3))`;
+    el.toast.classList.remove('is-on'); void el.toast.offsetWidth; el.toast.classList.add('is-on');
+    toastTimer = setTimeout(() => {
+      el.toast.classList.remove('is-on');
+      toastGone = setTimeout(() => { el.toast.hidden = true; }, 400);   // after its fade (--dur-slow)
+    }, 2400);
   }
 
   /* ── Actions ─────────────────────────────────────────────────────────── */
@@ -811,7 +903,7 @@
         // First it clears what's typed; if nothing is typed, it closes.
         const inp = el.fight.querySelector('.jr-search');
         if (App.pickerQuery) { App.pickerQuery = ''; if (inp) inp.value = ''; App.jrKeepCursor(); App.paintJournal(); App.jrScroll(true); }
-        else { App.pickerOpen = false; render(); const b = el.fight.querySelector('.jr-toggle'); if (b) b.focus(); }
+        else { App.pickerOpen = false; navTo(true); render(); const b = el.fight.querySelector('.jr-toggle'); if (b) b.focus(); }
       }
       // With the tablet open, Esc goes back to the statues from anywhere in the Hall
       // (or with no focus, after tapping a row, which isn't a control).
@@ -842,18 +934,19 @@
     if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.matches('.stat[data-act="row"]')) { ev.preventDefault(); actions.row(ev.target); }
   });
   /* Back and Forward. The entries the site leaves (marked with {hk: 1}) only change the
-     screen: the build is the current one, and the entry is rewritten with it. Otherwise, going
-     back from Your game would return the nail you used to have. A link typed or pasted by hand
-     does bring its build, its language and its screen (without "view=", Charms). On going back,
-     popstate and hashchange fire at once: the second call finds nothing left to do. */
+     place (navNow): the build is the current one, and the entry is rewritten with it.
+     Otherwise, going back from Your game would return the nail you used to have. An entry from
+     before places were kept carries only its screen, in the hash. A link typed or pasted by
+     hand does bring its build, its language and its screen (without "view=", Charms). On going
+     back, popstate and hashchange fire at once: the second call finds nothing left to do. */
   function onHistory() {
     const h = splitHash(location.hash);
     if (history.state && history.state.hk) {
-      const v = h.view || 'charms';
-      if (v === prefs.view && location.hash === hashFor()) return;
-      if (v !== prefs.view) setView(v);
+      const { viewChanged, changed } = applyNav(history.state.nav || { view: h.view || 'charms' });
       writeUrl(false);
+      if (!changed) return;
       render();
+      if (viewChanged) fadeIn(screenOf(prefs.view));
       return;
     }
     if (h.lang && h.lang !== prefs.lang) { prefs.lang = I.setLang(h.lang); prefs.langChosen = true; savePrefs(); rebuildNF(); }
@@ -898,14 +991,16 @@
     const was = App.owned;
     App.owned = C.ownNormalize(list);
     const next = withFixed(C.normalize({ ...App.state, charms: App.state.charms.filter((id) => isOwned(id)) }));
-    if (C.equal(next, App.state)) { saveOwned(); render(); return; }
-    if (commit(next)) saveOwned(); else { App.owned = was; render(); }
+    App.was = { state: App.state, owned: was };
+    if (C.equal(next, App.state)) { saveOwned(); render(); App.was = null; return; }
+    if (commit(next)) saveOwned(); else { App.owned = was; App.was = null; render(); }
+    App.was = null;
   }
 
   Object.assign(App, { t, pick, KEY, PAGE_LANG, $, el, hoverable, SPELL_KEYS, ART_KEYS, ART_STAT, POSITIONAL,
     NEED_KEY, NT, namedSrc, esc, load, save, rebuildNF, pctSpace, fmtValue, fmtStat, fmtStatRich, sign,
     masksText, notchText, spellArt, shortOf, badgeText, goodClass, deltaChip, changeChip, prefs, loadPrefs,
-    savePrefs, splitHash, loadState, persist, compareLabel, compute, impact, recompute, commit, bindAllFx,
-    brackets, chevron, cross, rule, screenHead, hudHtml, restoreFocus, focusDescriptor, render, go, screenOf,
-    underNav, toast, actions, isMaxOwned, loadOwned, saveOwned, isOwned, withFixed, isFixed, setOwned });
+    savePrefs, justWorn, justFound, splitHash, here, loadState, persist, compareLabel, compute, impact, recompute, commit, bindAllFx,
+    brackets, chevron, cross, FLEURS, rule, screenHead, hudHtml, restoreFocus, focusDescriptor, render, go, navTo, screenOf,
+    underNav, toast, track, actions, isMaxOwned, loadOwned, saveOwned, isOwned, withFixed, isFixed, setOwned });
 })();

@@ -48,7 +48,9 @@ with the synergies between them marked.
 
 ### Your game
 Your nail, masks, soul vessels, notches, spells and nail arts, plus the charms and abilities
-you've actually found. Start from the base Knight or from everything maxed.
+you've actually found. Start from the base Knight or from everything maxed. Four save slots,
+like the game's, so a Steel Soul run doesn't overwrite your main game, and a free mode with
+everything unlocked to try builds. Or import your real game straight from its save file.
 
 </td>
 <td valign="top">
@@ -62,10 +64,10 @@ take?*
 </tr>
 <tr>
 <td valign="top">
-<img src="docs/screenshots/your-game.webp" alt="Your game screen: the five nails, masks, vessels, notches, nail arts and spell levels">
+<img src="docs/screenshots/your-game.webp" alt="Your game screen: the five nails, the masks, vessels and notches as the game draws them, nail arts and spell levels chosen by their artwork">
 </td>
 <td valign="top">
-<img src="docs/screenshots/arena.webp" alt="Combat arena mid-fight against False Knight: the Knight's HUD, the enemy's armour bar, its attacks and the fight log">
+<img src="docs/screenshots/arena.webp" alt="Combat arena mid-fight against False Knight: the Knight and the enemy face to face with its title card, the scoreboard between them, and both sides' attacks below">
 </td>
 </tr>
 <tr>

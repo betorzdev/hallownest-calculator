@@ -98,6 +98,18 @@ if (q.get('run')) {
     ...(q.get('cleared') !== null ? { cleared: q.get('cleared').split(',').filter(Boolean).map(Number) } : {}),
   }));
 }
+/* The save slots: &saves=1 fills slot 2 with a game halfway through (and leaves 1, 3 and 4
+   empty); &slot=<n> makes that one the active slot (without it, free mode). Without &saves,
+   only free mode. */
+localStorage.removeItem('hollow.saves');
+if (q.get('saves')) {
+  const mid = { 'hollow.build': 'v=1&nail=2&masks=7&vessels=1&notches=6&spells=110&arts=100&charms=wayward,quickslash&dream=0&cloak=1&grimm=1',
+    'hollow.owned': JSON.stringify(['wayward', 'quickslash', 'fury', 'steady', 'grubsong', 'thorns', 'baldur', 'catcher']),
+    'hollow.journal': JSON.stringify({ crawlid: 0, vengefly: 0, 'tiktik': 0, 'husk-hornhead': 3, 'gruz-mother': 0 }) };
+  const active = Number(q.get('slot') || 0);
+  localStorage.setItem('hollow.saves', JSON.stringify({ active, slots: active === 2 ? {} : { 2: mid } }));
+  if (active === 2) for (const [k, v] of Object.entries(mid)) localStorage.setItem(k, v);
+}
 const f = document.createElement('iframe');
 f.src = 'index.html' + (q.get('hash') ? q.get('hash') + (view !== 'charms' ? '&view=' + view : '') : '');
 f.style.width = w + 'px';
@@ -156,7 +168,8 @@ f.addEventListener('load', () => {
   /* Your side of the arena mid-fight: ?hits=<n> hits n times with the nail, ?take=<n> lets
      the enemy hit you n times with its first attack (or ?focus=<n> you focus), and
      ?freeze=<ms> freezes the scene's animations at that instant: with 5000 all the ones from
-     a single hit have finished and you can see how it ends up. */
+     a single hit have finished and you can see how it ends up. It also freezes the enemy's stage
+     (the hit's flash, the figure rising, the phase title, the dust). */
   const clickN = (sel, n) => {
     for (let i = 0; i < n; i++) { const b = f.contentDocument.querySelector(sel); if (b && !b.disabled) b.click(); }
   };
@@ -169,7 +182,7 @@ f.addEventListener('load', () => {
   for (const act of (q.get('click') || '').split(',').filter(Boolean)) clickN(`[data-act="${act}"]`, 1);
   if (q.get('freeze') !== null) {
     const st = f.contentDocument.createElement('style');
-    st.textContent = `.kscene, .kscene *, .kscene::before, .kscene::after, #panel .hud * { animation-delay: -${Number(q.get('freeze'))}ms !important; animation-play-state: paused !important; }`;
+    st.textContent = `.kscene, .kscene *, .kscene::before, .kscene::after, .fstage, .fstage *, #panel .hud * { animation-delay: -${Number(q.get('freeze'))}ms !important; animation-play-state: paused !important; }`;
     f.contentDocument.head.appendChild(st);
   }
   // ?fx=<ms> freezes the overcharm flash at that instant of the animation; with &fxgold=1,

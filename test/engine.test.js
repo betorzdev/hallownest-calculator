@@ -148,7 +148,8 @@ test("health: masks, Lifeblood Heart, Joni's Blessing, lifeblood, overcharmed", 
   assert.equal(val(S({ charms: ['joni', 'uheart'] }), 'health.lifeblood'), 16);
   assert.equal(val(S({ charms: ['joni', 'lbheart', 'lbcore'] }), 'health.lifeblood'), 19);
   assert.equal(val(S({ charms: ['lbheart', 'lbcore'] }), 'health.lifeblood'), 6);
-  const over = S({ notches: 3, charms: ['ustrength', 'quickslash'] });
+  // Overcharmed the way the game allows: one notch still free (Fury, 2 of 3) and then Quick Slash.
+  const over = S({ notches: 3, charms: ['fury', 'quickslash'] });
   const sh = sheet(over);
   assert.equal(sh.notches.overcharmed, true);
   assert.equal(sh.stats['health.damageMult'].value, 2);

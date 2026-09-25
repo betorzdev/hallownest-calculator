@@ -8,7 +8,7 @@
   const D = HK.data, E = HK.engine, F = HK.foes, PN = HK.pantheons, J = HK.journal, HG = HK.hall, FT = HK.fight;
   const App = HK.app;
   const { t, pick, el, hoverable, SPELL_KEYS, ART_KEYS, ART_STAT, POSITIONAL, NT, esc, pctSpace, spellArt,
-    prefs, savePrefs, brackets, chevron, rule, hudHtml, render, toast, actions } = App;
+    prefs, savePrefs, brackets, chevron, rule, hudHtml, render, toast, navTo, actions } = App;
 
   /* ── Combat simulator ──────────────────────────────────────────────────
      An exchange of blows by hand: you decide the order. Each button applies its number
@@ -239,11 +239,11 @@
     const ctx = fightCtx();
     const none = FT.soulless(ctx);
     const out = [{ id: 'nail', label: pick(D.NAILS[b.nail]), dmg: s['nail.damage'].value,
-                   gain: FT.soulGain(fight, s, none), note: none ? t('noSoulNote') : '', art: D.art('nails', b.nail) }];
+                   gain: FT.soulGain(fight, s, none), note: none ? t('noSoulNote') : '', art: D.art('nails', b.nail), group: 'nail' }];
     for (const k of ART_KEYS) {
       if (!b.arts[k] || !s[ART_STAT[k]].applies) continue;   // Dash Slash, without a cloak, doesn't show
       out.push({ id: 'art:' + k, label: pick(D.ARTS[k]), dmg: s[ART_STAT[k]].value,
-                 note: k === 'cyclone' ? t('perHitNote') : '', art: D.art('arts', k) });
+                 note: k === 'cyclone' ? t('perHitNote') : '', art: D.art('arts', k), group: 'nail' });
     }
     for (const k of SPELL_KEYS) {
       if (!b.spells[k]) continue;
@@ -251,35 +251,35 @@
       // is the sheet's: with Flukenest it carries the charm, which is what sets the damage.
       out.push({ id: 'spell:' + k, label: s['spell.' + k].label, spell: k,
                  dmg: FT.spellOutcome(s['spell.' + k], fight.spellSel[k], ctx).dmg, cost: s['soul.spellCost'].value,
-                 art: spellArt(k, b.spells[k], fightHas) });
+                 art: spellArt(k, b.spells[k], fightHas), group: 'spell' });
     }
     if (s['heal.canFocus'].value) {
       out.push({ id: 'focus', label: t('focusMove'), heal: s['heal.masksPerFocus'].value,
-                 cost: s['soul.focusCost'].value, art: D.art('abilities', 'focus') });
+                 cost: s['soul.focusCost'].value, art: D.art('abilities', 'focus'), group: 'soul' });
     }
     // What isn't hitting with the nail (design/04 §3.3, family C): the Shadow Dash
     // only if it deals damage (Sharp Shadow); the Dream Nail, always; the weaverlings, with their
     // charm; and "Wait", only when you wear a charm that works with the clock (§3.4):
     // it jumps straight to the first thing that will happen and says which charm it belongs to.
     if (s['nail.sharpShadow'].applies) {
-      out.push({ id: 'dash', label: t('moveDash'), dmg: s['nail.sharpShadow'].value, note: t('noSoulNote'), art: D.art('charms', 'sharpshadow'), charm: true });
+      out.push({ id: 'dash', label: t('moveDash'), dmg: s['nail.sharpShadow'].value, note: t('noSoulNote'), art: D.art('charms', 'sharpshadow'), charm: true, group: 'charm' });
     }
-    if (s['soul.dreamNail'].applies) out.push({ id: 'dream', label: t('moveDream'), gain: s['soul.dreamNail'].value, needsFoe: true, art: D.art('abilities', 'dream2') });
+    if (s['soul.dreamNail'].applies) out.push({ id: 'dream', label: t('moveDream'), gain: s['soul.dreamNail'].value, needsFoe: true, art: D.art('abilities', 'dream2'), group: 'soul' });
     if (s['pet.weaverling'].applies) {
       const per = s['pet.weaverling'].value, soul = s['pet.weaverlingSoul'].value * D.PETS.weaverlings;
       out.push({ id: 'weavers', label: t('moveWeavers'), dmg: per * D.PETS.weaverlings, note: D.PETS.weaverlings + ' × ' + per,
-                 gain: soul || undefined, art: D.art('charms', 'weaversong'), charm: true });
+                 gain: soul || undefined, art: D.art('charms', 'weaversong'), charm: true, group: 'charm' });
     }
     // Dreamshield is positional, so it's done by hand: base nail with no soul, and it breaks for 2 s
     // on contact (design/04 §3.5). Broken, the button dims and says so.
     if (s['nail.dreamshield'].applies) {
       const ok = FT.shieldReady(fight);
       out.push({ id: 'shield', label: t('moveShield'), dmg: s['nail.dreamshield'].value, broken: !ok,
-                 note: t(ok ? 'shieldNote' : 'shieldBroken'), art: D.art('charms', 'dreamshield'), charm: true });
+                 note: t(ok ? 'shieldNote' : 'shieldBroken'), art: D.art('charms', 'dreamshield'), charm: true, group: 'charm' });
     }
     const tick = FT.nextTick(fight, fightCtx());
     if (tick) out.push({ id: 'wait', label: t('moveWait', { s: App.NF[1].format(tick.s) }), wait: tick.s,
-                         note: tick.bats ? t('waitBats') : t('waitFor', { charm: pick(D.CHARM_BY_ID[tick.charm]) }) });
+                         note: tick.bats ? t('waitBats') : t('waitFor', { charm: pick(D.CHARM_BY_ID[tick.charm]) }), group: 'charm' });
     return out;
   }
 
@@ -321,7 +321,36 @@
     fight.target = i >= 0 ? 'p' + i : m >= 0 ? 'm' + m : 'p0';
   }
 
+  /* ── Undo ──────────────────────────────────────────────────────────────
+     A wrong tap shouldn't cost the whole fight. Before each action that changes a number
+     (yours, theirs, a summon, closing the heal) the fight is copied whole, and with it what
+     lives outside it: Carefree Melody's counter (prefs) and, in a pantheon, the run, which
+     carries your health from room to room. Choosing who you hit or which impacts land isn't
+     undone: it's not an action, and it's changed with a single tap. The stack empties on
+     reset, when the enemy or the room changes and when the build changes mid-fight, since
+     the copy would bring back numbers from another build. */
+  const undoStack = [];
+  const UNDO_MAX = 50;
+  function snapshot() {
+    undoStack.push({ fight: structuredClone(fight), melody: prefs.melody, run: App.run ? structuredClone(App.run) : null });
+    if (undoStack.length > UNDO_MAX) undoStack.shift();
+  }
+  function undo() {
+    const snap = undoStack.pop();
+    if (!snap) return false;
+    for (const k of Object.keys(fight)) delete fight[k];
+    Object.assign(fight, snap.fight);
+    if (prefs.melody !== snap.melody) { prefs.melody = snap.melody; savePrefs(); }
+    if (snap.run && App.run) { App.run = snap.run; App.saveRun(); }
+    hudEvent = '';            // going back isn't a hit: nothing flashes
+    hudPrev = null; foePrev = null;
+    App.endFresh = false;
+    syncFightSheet();
+    return true;
+  }
+
   function fightReset() {
+    undoStack.length = 0;
     const f = foe();
     // In a pantheon you don't start topped up: you arrive with what you brought from the previous room.
     FT.reset(fight, baseSheet(), runFight() ? App.run : null);
@@ -335,10 +364,15 @@
     if (!f) { fight.parts = []; fight.queue = 0; fight.phase = 0; return; }
     enterPhase(0);
     const total = totalHp(f);
-    if (total !== null) fight.log.push(t('logStart', { foe: foeName(f), hp: App.NF[0].format(total) }));
+    if (total !== null) fight.log.push({ text: t('logStart', { foe: foeName(f), hp: App.NF[0].format(total) }), side: 'sys' });
   }
 
-  const logLine = (msg) => { fight.log.unshift(msg); if (fight.log.length > 9) fight.log.pop(); };
+  /* The log speaks with two voices and a narrator: 'you' (what you did), 'foe' (what it did
+     to you) and 'sys' (phases, stagger, who comes in), which is the default. Each line is
+     { text, side }; the pantheons' rests still write plain strings, which logHtml reads as 'sys'. */
+  const logLine = (msg, side = 'sys') => { fight.log.unshift({ text: msg, side }); if (fight.log.length > 9) fight.log.pop(); };
+  const FOE_EVS = new Set(['take', 'down', 'radiant', 'negated', 'shell', 'focusLost', 'blocked']);
+  const SYS_EVS = new Set(['iframes', 'fragile', 'stagger', 'staggerEnd', 'bats', 'batsEnd', 'batsCap']);
 
   /* The reducer's events (js/fight.js), turned into log lines: this is where the language comes in. */
   const moveLabel = (id) => { const m = knightMoves().find((x) => x.id === id); return m ? m.label : id; };
@@ -503,45 +537,47 @@
     const f = foe();
     const n = (x) => App.NF[0].format(x);
     for (const e of evs) {
+      const side = FOE_EVS.has(e.kind) ? 'foe' : SYS_EVS.has(e.kind) ? 'sys' : 'you';
+      const line = (msg) => logLine(msg, side);
       switch (e.kind) {
         case 'hit':
           // A spell says how many of its impacts landed, if not all of them (or if more did).
-          if (e.twice) logLine(t('logSpellTwice', { move: moveLabel(e.move), n: n(e.n), left: n(e.left) }));
-          else if (e.of && e.landed < e.of) logLine(t('logSpellPartial', { move: moveLabel(e.move), k: e.landed, of: e.of, n: n(e.n), left: n(e.left) }));
-          else logLine(t('logHit', { move: moveLabel(e.move), n: n(e.n), left: n(e.left) }));
+          if (e.twice) line(t('logSpellTwice', { move: moveLabel(e.move), n: n(e.n), left: n(e.left) }));
+          else if (e.of && e.landed < e.of) line(t('logSpellPartial', { move: moveLabel(e.move), k: e.landed, of: e.of, n: n(e.n), left: n(e.left) }));
+          else line(t('logHit', { move: moveLabel(e.move), n: n(e.n), left: n(e.left) }));
           break;
-        case 'spellMiss': logLine(t('logSpellMiss', { move: moveLabel(e.move) })); break;
-        case 'minion': logLine(e.soul ? t('logMinion', { name: pick(e.name), soul: e.soul }) : t('logMinionNoSoul', { name: pick(e.name) })); break;
-        case 'focus': logLine(t('logFocus', { n: e.n, left: e.left })); break;
-        case 'take': logLine(t('logTake', { move: e.label, n: e.n, left: e.left })); break;
-        case 'down': logLine(t('logDown', dealtOf(f))); break;
-        case 'radiant': logLine(t('logRadiant', { move: e.label })); break;
-        case 'elegy': logLine(t('logElegy', { n: n(e.n), left: n(e.left) })); break;
-        case 'thorns': logLine(t('logThorns', { n: n(e.n), left: n(e.left) })); break;
-        case 'grubsong': logLine(t('logGrubsong', { soul: e.soul })); break;
-        case 'negated': logLine(t('logNegated', { move: e.label, n: e.n })); break;
-        case 'shell': logLine(t('logShell', { move: e.label, left: e.left })); break;
-        case 'focusLost': logLine(t('logFocusLost', { n: e.n, soul: e.soul })); break;
-        case 'iframes': logLine(t('logIframes', { s: App.NF[2].format(e.s), hits: e.hits })); break;
-        case 'fragile': logLine(t('logFragile', { charms: e.ids.map((id) => pick(D.CHARM_BY_ID[id])).join(', ') })); break;
-        case 'spore': logLine(t('logSpore', { n: n(e.n), left: n(e.left) })); break;
-        case 'dash': logLine(t('logDash', { n: n(e.n), left: n(e.left) })); break;
-        case 'dream': logLine(t('logDream', { soul: e.soul })); break;
-        case 'dreamNo': logLine(t('logDreamNo')); break;
-        case 'weavers': logLine(t('logWeavers', { n: n(e.n), left: n(e.left) })); break;
-        case 'weaversSoul': logLine(t('logWeaversSoul', { soul: e.soul })); break;
-        case 'wait': logLine(t('logWait', { s: e.s })); break;
-        case 'kingsoul': logLine(t('logKingsoul', { soul: e.soul })); break;
-        case 'grimmchild': logLine(t('logGrimm', { n: n(e.n), shots: e.ticks, left: n(e.left) })); break;
-        case 'womb': logLine(t('logWomb', { n: n(e.n), soul: e.soul, left: n(e.left) })); break;
-        case 'hiveblood': logLine(t('logHiveblood', { left: e.left })); break;
-        case 'blocked': logLine(t('logBlocked', { move: e.label, n: e.n })); break;
-        case 'shield': logLine(t('logShield', { n: n(e.n), left: n(e.left) })); break;
-        case 'stagger': logLine(t(e.combo ? 'logStaggerCombo' : 'logStagger', { name: pick(e.name), n: e.n })); break;
-        case 'staggerEnd': logLine(t(e.wait ? 'logStaggerWait' : 'logStaggerEnd')); break;
-        case 'bats': logLine(t('logBats', { name: pick(e.name), s: App.NF[1].format(e.s), cap: e.cap })); break;
-        case 'batsEnd': logLine(t('logBatsEnd')); break;
-        case 'batsCap': logLine(e.n ? t('logBatsCap', { move: evMove(e), n: n(e.n) }) : t('logBatsNone', { move: evMove(e) })); break;
+        case 'spellMiss': line(t('logSpellMiss', { move: moveLabel(e.move) })); break;
+        case 'minion': line(e.soul ? t('logMinion', { name: pick(e.name), soul: e.soul }) : t('logMinionNoSoul', { name: pick(e.name) })); break;
+        case 'focus': line(t('logFocus', { n: e.n, left: e.left })); break;
+        case 'take': line(t('logTake', { move: e.label, n: e.n, left: e.left })); break;
+        case 'down': line(t('logDown', dealtOf(f))); break;
+        case 'radiant': line(t('logRadiant', { move: e.label })); break;
+        case 'elegy': line(t('logElegy', { n: n(e.n), left: n(e.left) })); break;
+        case 'thorns': line(t('logThorns', { n: n(e.n), left: n(e.left) })); break;
+        case 'grubsong': line(t('logGrubsong', { soul: e.soul })); break;
+        case 'negated': line(t('logNegated', { move: e.label, n: e.n })); break;
+        case 'shell': line(t('logShell', { move: e.label, left: e.left })); break;
+        case 'focusLost': line(t('logFocusLost', { n: e.n, soul: e.soul })); break;
+        case 'iframes': line(t('logIframes', { s: App.NF[2].format(e.s), hits: e.hits })); break;
+        case 'fragile': line(t('logFragile', { charms: e.ids.map((id) => pick(D.CHARM_BY_ID[id])).join(', ') })); break;
+        case 'spore': line(t('logSpore', { n: n(e.n), left: n(e.left) })); break;
+        case 'dash': line(t('logDash', { n: n(e.n), left: n(e.left) })); break;
+        case 'dream': line(t('logDream', { soul: e.soul })); break;
+        case 'dreamNo': line(t('logDreamNo')); break;
+        case 'weavers': line(t('logWeavers', { n: n(e.n), left: n(e.left) })); break;
+        case 'weaversSoul': line(t('logWeaversSoul', { soul: e.soul })); break;
+        case 'wait': line(t('logWait', { s: e.s })); break;
+        case 'kingsoul': line(t('logKingsoul', { soul: e.soul })); break;
+        case 'grimmchild': line(t('logGrimm', { n: n(e.n), shots: e.ticks, left: n(e.left) })); break;
+        case 'womb': line(t('logWomb', { n: n(e.n), soul: e.soul, left: n(e.left) })); break;
+        case 'hiveblood': line(t('logHiveblood', { left: e.left })); break;
+        case 'blocked': line(t('logBlocked', { move: e.label, n: e.n })); break;
+        case 'shield': line(t('logShield', { n: n(e.n), left: n(e.left) })); break;
+        case 'stagger': line(t(e.combo ? 'logStaggerCombo' : 'logStagger', { name: pick(e.name), n: e.n })); break;
+        case 'staggerEnd': line(t(e.wait ? 'logStaggerWait' : 'logStaggerEnd')); break;
+        case 'bats': line(t('logBats', { name: pick(e.name), s: App.NF[1].format(e.s), cap: e.cap })); break;
+        case 'batsEnd': line(t('logBatsEnd')); break;
+        case 'batsCap': line(e.n ? t('logBatsCap', { move: evMove(e), n: n(e.n) }) : t('logBatsNone', { move: evMove(e) })); break;
         default: break;
       }
     }
@@ -576,6 +612,7 @@
     if (!m) return;
     const part = who[0] === 'p' ? fight.parts[Number(who.slice(1))] : null;
     if (part && part.stag && part.stag.down) { toast(t('fightStaggeredToast')); return; }
+    snapshot();
     const evs = FT.apply(fight, { type: 'foeHit', dmg: m.dmg, label: m.label, negated: negated && fightHas('melody'),
                                   blocked: !!blocked && fightHas('dreamshield') && m.proj === 'block' }, fightCtx());
     hudEvent = 'hit';
@@ -602,6 +639,7 @@
       App.saveRun();
     }
     if (!f || !fight.started) { fightReset(); return; }
+    undoStack.length = 0;
     for (const p of fight.parts) p.hp = Math.min(p.hp, p.max);
     for (const m of fight.minions) m.hp = Math.min(m.hp, m.max);
     FT.clamp(fight, baseSheet());
@@ -772,6 +810,26 @@
     jrKeepCursor();
   }
 
+  /* Combat's tabs, from their buttons and from Back: a new tab starts its fight from scratch,
+     and the arena with no enemy opens on the Journal. */
+  function setFightTab(v) {
+    prefs.fightTab = v;
+    App.pickerOpen = false;
+    App.hallTablet = false;
+    if (prefs.fightTab === 'combat' && !prefs.foeId) openJournal();
+    savePrefs();
+    fightReset();
+  }
+  /* The Journal open is a place: Back closes it. With no enemy it can't close, it's the only
+     place to pick one. */
+  App.navParts.picker = {
+    get: () => App.pickerOpen,
+    set(open) {
+      if (open && !App.pickerOpen) openJournal();
+      else if (!open && App.pickerOpen && prefs.foeId) { App.pickerOpen = false; App.pickerQuery = ''; }
+    },
+  };
+
   function jrMove(step, origin) {
     const matches = foeMatches(prefs.foeKind);
     if (!matches.length) return;
@@ -853,6 +911,7 @@
     const cls = [o.down && 'is-down', dying && 'is-dying', hit && !o.down && 'is-hit', healed && 'is-focus',
       low && 'is-low', o.over && 'is-over'].filter(Boolean).join(' ');
     const unit = o.maxMasks === 1 ? t('maskUnitOne') : t('maskUnit');
+    lastHud = { o, prev, cls, down: o.down };
     return `<div class="kside-head">
         <h3>${esc(t('knight'))}</h3>
         <span class="kside-read"><b class="kside-masks">${o.masks}</b>/${o.maxMasks} ${esc(unit)}${o.lb ? ` · <span class="kside-lb">+<b>${o.lb}</b> ${esc(t('lifebloodLower'))}</span>` : ''} · ${esc(t('soul'))} <b class="kside-soul">${o.soul}</b>/${o.maxSoul}${o.shell != null ? ` · <span class="kside-shell">${esc(t('fightShell', { n: o.shell, max: o.shellMax }))}</span>` : ''}${o.melody != null ? ` · <span class="kside-melody">${esc(t('fightMelody', { pct: App.NF[1].format(o.melody) + pctSpace() }))}</span>` : ''}${o.clock ? ` · <span class="kside-clock">${esc(t('fightClock', { s: App.NF[1].format(o.clock) }))}</span>` : ''}${o.shield ? ` · <span class="kside-shield">${esc(t(o.shield === 'on' ? 'fightShieldOn' : 'fightShieldOff'))}</span>` : ''}</span>
@@ -892,26 +951,257 @@
      spaced-out small caps, the flourish from the page title below and a line of text.
      No box and no traffic-light colour: the scene already tells it (the enemy dimmed, your Shade).
      Shared by combat, the Hall and the pantheons; in the Hall the symbol won takes the
-     centre of the flourish. It fades in only when the action causes it (endFresh):
-     repainting for anything else doesn't repeat it. */
+     centre of the flourish. Below the line, what the fight cost (sum: fightSumHtml). It fades
+     in only when the action causes it (endFresh): repainting for anything else doesn't repeat it. */
   const endDiamond = `<svg viewBox="0 0 14 12" width="14" height="12"><path d="M7 1L13 6L7 11L1 6Z"/></svg>`;
   const fightEndHtml = (o) => `<div class="fight-end ${o.won ? 'is-won' : 'is-dead'} ${App.endFresh ? 'is-fresh' : ''} ${o.cls || ''}" role="status">
       <p class="fight-end-title">${esc(o.title)}</p>
       <span class="fight-end-rule" aria-hidden="true"><i></i>${o.badge || endDiamond}<i></i></span>
       ${o.note ? `<p class="fight-end-note">${esc(o.note)}</p>` : ''}
+      ${o.sum || ''}
       ${o.acts ? `<div class="fight-end-acts">${o.acts}</div>` : ''}
     </div>`;
-  // What it says below the title: how much it cost, or how far you got.
-  const wonNote = (f) => t(fight.hits === 1 ? 'fightWonNoteOne' : 'fightWonNote', { foe: foeName(f), n: App.NF[0].format(fight.hits) })
-    + (fight.clock > 0 ? ' ' + t('fightWonTime', { s: App.NF[1].format(fight.clock), dps: App.NF[0].format(fight.dealt / fight.clock) }) : '');
+  /* The fight in figures, under its ending: the time your actions took and the damage per
+     second it gives (only if the clock ran), the hits, the health their attacks took, the soul
+     spent and how many times you focused. Figures in bone, labels small below, like the sheet's. */
+  function fightSumHtml() {
+    if (!fight.started) return '';
+    const n0 = (x) => App.NF[0].format(x);
+    const items = [
+      fight.clock > 0 && [t('sumTime'), App.NF[1].format(fight.clock) + ' s'],
+      fight.clock > 0 && [t('dpsShort'), App.NF[1].format(fight.dealt / fight.clock)],
+      [t('sumHits'), n0(fight.hits)],
+      [t('sumTaken'), n0(fight.taken || 0)],
+      [t('sumSoul'), n0(fight.soulSpent || 0)],
+      [t('sumFocus'), n0(fight.focuses || 0)],
+    ].filter(Boolean);
+    return `<dl class="fight-sum">${items.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>`;
+  }
+  // What it says below the title: how much it cost, or how far you got. The time goes in the figures.
+  const wonNote = (f) => t(fight.hits === 1 ? 'fightWonNoteOne' : 'fightWonNote', { foe: foeName(f), n: App.NF[0].format(fight.hits) });
   const dealtOf = (f) => ({ done: App.NF[0].format(fight.dealt), total: App.NF[0].format(totalHp(f) || 0) });
 
+  /* The log, the latest on top. Three voices (logLine): what you did, in bone with a small nail
+     stroke; what it did to you, with a mask; and the narrator (phases, stagger, who comes in),
+     centred between two rules, like a chapter. The pantheons' rests write plain strings. */
   const logHtml = (lines) => `<div class="fight-log"><div class="block-head">${esc(t('fightLog'))}</div>
-    <ol>${lines.map((l, i) => `<li ${i ? '' : 'class="is-last"'}>${esc(l)}</li>`).join('')}</ol></div>`;
+    <ol>${lines.map((l, i) => {
+      const x = typeof l === 'string' ? { text: l, side: 'sys' } : l;
+      return `<li class="is-${x.side}${i ? '' : ' is-last'}">${x.side === 'foe' ? `<img class="log-mask" src="${D.art('hud', 'mask')}" alt="">` : ''}<span>${esc(x.text)}</span></li>`;
+    }).join('')}</ol></div>`;
 
-  /* The arena: your sheet and your attacks facing one card per entity, and the log.
-     Shared by the three tabs; in a pantheon, the room sets the enemy. The Hall and
-     the pantheons title the ending in their own way (end); without it, standalone combat's. */
+  /* ── The enemy's side of the stage ───────────────────────────────────────
+     Opposite the Knight, whoever you're hitting on its own cold spotlight, with the title card
+     the game shows when the fight starts (F.TITLES: the small line, the big name and the one
+     below) and its bar on top, like a boss's. What changes is animated by comparing it with
+     the last thing painted (foePrev), as the Knight's HUD does: the hit flashes it white and
+     pushes it back a little, the figure it took rises and fades, the bar leaves a pale trail
+     of what was lost, a new phase is announced like an area and, when the fight ends, it
+     dissolves into dust. Nothing bounces (design/02 §5). Without motion, how it ends up. */
+  let foePrev = null;
+  let foeSeen = false;
+  let titleSeen = '';   // whose title card already came in: it fades in once per enemy, not on every repaint
+  const DUST = 10;
+
+  // Whoever the stage shows: the target, or the first one standing, or the first bar.
+  function stageTarget() {
+    const x = targetOf();
+    if (x) return { x, minion: fight.target[0] === 'm' };
+    const p = fight.parts.find((y) => y.hp > 0) || fight.parts[0];
+    return p ? { x: p, minion: false } : null;
+  }
+
+  /* The title card. Without one in the game (enemies, the Grimmkin…), the name as the big line. */
+  function titleCardHtml(f) {
+    const tc = F.TITLES[f.id];
+    const line = (v, cls) => (v && pick(v) ? `<span class="${cls}">${esc(pick(v))}</span>` : '');
+    return `<p class="ftitle" aria-hidden="true"${NT}>${tc ? line(tc.sup, 'ftitle-sup') + line(tc.main, 'ftitle-main') + line(tc.sub, 'ftitle-sub')
+      : `<span class="ftitle-main">${esc(foeName(f))}</span>`}</p>`;
+  }
+
+  /* Hits left on both sides, as a scoreboard between the two: your nail hits to finish the fight
+     (what's standing, what's waiting in the queue and the phases to come; with a decisive part
+     standing, only that one) and how many of their strongest attack you can still take. */
+  function remainingHp(f) {
+    const dec = fight.parts.find((p) => p.decisive && p.hp > 0);
+    if (dec) return dec.hp;
+    const pl = phasesOf(f);
+    let n = fight.parts.reduce((a, p) => a + Math.max(0, p.hp), 0);
+    if (f.pool) n += fight.queue * ((pl[0] && pl[0][0].hp) || 0);
+    else for (let i = fight.phase + 1; i < pl.length; i++) for (const x of pl[i]) n += x.hp || 0;
+    return n;
+  }
+  function forecast(f, total) {
+    if (!f || fight.over || !alive()) return null;
+    const nail = fs().stats['nail.damage'].value;
+    const win = total === null || !nail ? null : Math.ceil(remainingHp(f) / nail);
+    const worst = Math.max(...foeMoves(f).map((m) => m.dmg));
+    const radiant = diffOf() === 'radiant';
+    const fall = radiant ? 1 : Math.ceil(FT.total(fight) / Math.max(1, worst));
+    const hint = radiant ? t('vsFallRadiant', { diff: t('diffRa') }) : t(worst === 1 ? 'vsFallHintOne' : 'vsFallHint', { n: worst });
+    return { win, fall, hint };
+  }
+  function forecastHtml(f, total) {
+    const fc = forecast(f, total);
+    if (!fc) return '';
+    const { win, fall, hint } = fc;
+    return `<dl class="vs-score" aria-label="${esc(t('vsLabel'))}">
+        <div class="vs-win"><dt>${esc(t(win === 1 ? 'vsToWinOne' : 'vsToWin'))}</dt><dd>${win === null ? '<i class="na">—</i>' : App.NF[0].format(win)}</dd></div>
+        <span class="vs-mark" aria-hidden="true"><i></i>${endDiamond}<i></i></span>
+        <div class="vs-fall" title="${esc(hint)}"><dt>${esc(t(fall === 1 ? 'vsToFallOne' : 'vsToFall'))}<span class="sr-only"> (${esc(hint)})</span></dt><dd>${App.NF[0].format(fall)}</dd></div>
+      </dl>`;
+  }
+
+  /* ── The band: the stage, small and stuck under the bar ──────────────────
+     Your attacks and theirs are a long list: scrolling down it would leave the Knight and the enemy
+     out of view. When the stage leaves the screen (bandCheck, on scroll), a band
+     sticks under the bar with the same face-off in small: the Knight with his HUD, the scoreboard
+     and Undo, and whoever you're hitting with its bar. It's painted from what the stage has just
+     painted (lastHud, lastFoe), so the same hit flashes in both places. It repeats what the stage
+     says, so it's hidden from the screen reader, and its Undo is out of the tab order: the
+     stage's and Ctrl+Z are still there. The minihud's scoreboard hides while it's out (bandOn). */
+  let lastHud = null, lastFoe = null;
+  let bandOn = false;
+  function bandHtml(f, total) {
+    if (!f || !lastHud || !lastFoe) return '';
+    const h = lastHud, x = lastFoe, fc = forecast(f, total);
+    const n0 = (v) => App.NF[0].format(v);
+    return `<div class="fband-anchor${bandOn ? ' is-on' : ''}"><div class="fband" aria-hidden="true">
+        <div class="fband-me ${h.cls}">
+          <img class="fband-knight" src="assets/knight/${h.down ? 'shade' : 'knight'}.png" alt="">
+          ${hudHtml(h.o, h.prev)}
+        </div>
+        <div class="fband-vs">
+          ${fc ? `<span class="fband-score"><b>${fc.win === null ? '—' : n0(fc.win)}</b>${endDiamond}<b>${n0(fc.fall)}</b></span>` : ''}
+          <button type="button" class="text-btn fight-undo" data-act="undo" tabindex="-1" ${undoStack.length ? '' : 'disabled'} title="${esc(t('fightUndoHint'))}">${UNDO_ICON}<span>${esc(t('fightUndo'))}</span></button>
+        </div>
+        <div class="fband-foe ${x.cls}">
+          <span class="fband-art"><img src="${x.art}" alt="" onerror="this.classList.add('is-missing')">${x.hit ? `<span class="fscene-dmg">−${n0(x.lost)}</span>` : ''}</span>
+          <span class="fband-body">
+            <span class="fband-line"><span class="fband-name"${NT}>${esc(x.name)}</span>${x.total === null ? '' : `<b class="fband-num">${n0(x.hp)}<i class="u">/${n0(x.max)}</i></b>`}</span>
+            ${x.total === null ? '' : `<span class="fbar is-hero ${x.pct <= 25 ? 'is-low' : ''}">${x.hit ? `<span class="fbar-trail" style="width:${x.trail}%"></span>` : ''}<span class="fbar-fill" style="width:${x.pct}%"></span></span>`}
+          </span>
+        </div>
+      </div></div>`;
+  }
+
+  /* Whether the stage is (almost) out of view, above: then the band shows. Almost, because a strip
+     of scenery at the top edge doesn't show who's fighting: under BAND_MIN px left in view, it's
+     gone. It's measured on scroll (passive, one getBoundingClientRect) and after each repaint;
+     an IntersectionObserver answered a frame late and headless Chrome doesn't always paint one.
+     What's under the bar is out of view too. On mobile the band covers the minihud's row, which
+     it replaces (--band-top). */
+  const BAND_MIN = 160;
+  const narrow = matchMedia('(max-width: 899px)');
+  let navBottom = -1;
+  function bandSet(on) {
+    if (on === bandOn) return;
+    bandOn = on;
+    const a = el.fight.querySelector('.fband-anchor');
+    if (a) a.classList.toggle('is-on', on);
+    el.mini.classList.toggle('is-banded', on);
+  }
+  function bandMeasure() {
+    const nav = document.getElementById('nav');
+    navBottom = nav ? Math.round(nav.getBoundingClientRect().height) : 0;
+    const top = narrow.matches && el.mini.offsetHeight ? navBottom - el.mini.offsetHeight : navBottom;
+    document.documentElement.style.setProperty('--band-top', top + 'px');
+  }
+  function bandCheck() {
+    // Hidden, the stage measures zero and would read as scrolled away: render() checks again once it shows.
+    const stage = prefs.view === 'fight' && !el.fight.hidden ? el.fight.querySelector('.stage') : null;
+    if (!stage) { bandSet(false); return; }
+    if (navBottom < 0) bandMeasure();
+    const r = stage.getBoundingClientRect();
+    const inView = Math.min(r.bottom, window.innerHeight) - Math.max(r.top, navBottom);
+    bandSet(r.top < navBottom && inView < BAND_MIN);
+  }
+  window.addEventListener('scroll', bandCheck, { passive: true });
+  window.addEventListener('resize', () => { navBottom = -1; bandCheck(); });
+
+  function foeStageHtml(f, total) {
+    if (!f) {
+      foePrev = null; lastFoe = null;
+      return `<div class="fstage is-empty"><div class="fscene" aria-hidden="true"><span class="fscene-q">?</span>${sceneFloor}</div></div>`;
+    }
+    foeSeen = true;
+    const st = stageTarget();
+    const x = st && st.x;
+    const key = [prefs.fightTab, f.id, fight.target].join('|');
+    const prev = foePrev && foePrev.key === key ? foePrev : null;
+    const samePhase = !!foePrev && foePrev.foe === f.id && foePrev.tab === prefs.fightTab;
+    const hp = x ? Math.max(0, x.hp) : 0, max = x ? x.max : 0;
+    const pct = max ? Math.min(100, hp / max * 100) : 0;
+    const hit = !!prev && prev.hp > hp && prev.max === max;
+    const newPhase = samePhase && foePrev.phase !== fight.phase;
+    const dying = fight.over && !!foePrev && !foePrev.over;
+    foePrev = { key, foe: f.id, tab: prefs.fightTab, phase: fight.phase, hp, max, over: fight.over };
+
+    const art = !x ? D.art('enemies', f.id) : st.minion ? D.art('enemies', x.id) : D.art('enemies', x.art || f.id);
+    const several = fight.parts.length + fight.minions.length > 1 || !!f.pool;
+    const stg = !st || st.minion ? null : staggerCfg();
+    const down = !!(stg && x && x.stag && x.stag.down);
+    const fresh = titleSeen !== prefs.fightTab + '|' + f.id;
+    titleSeen = prefs.fightTab + '|' + f.id;
+    const cls = [fresh && 'is-fresh', hit && 'is-hit', newPhase && 'is-phase', fight.over && 'is-over', dying && 'is-dying', down && 'is-staggered',
+      st && st.minion && 'is-minion', (f.kind !== 'boss' || (st && st.minion)) && 'is-common'].filter(Boolean).join(' ');
+
+    // The header (the enemy's name for the screen reader, the phase, the total and the "?") and its notes.
+    const phaseList = phasesOf(f);
+    const standing = fight.parts.filter((y) => y.hp > 0).length;
+    const countLbl = f.pool
+      ? t('fightStanding', { n: standing, total: standing + fight.queue })
+      : phaseList.length > 1 ? t('fightPhase', { n: fight.phase + 1, total: phaseList.length }) : '';
+    const nailDmg = fs().stats['nail.damage'].value;
+    const meta = total === null ? esc(t('fightInvuln'))
+      : `${esc(t('fightTotal', { n: App.NF[0].format(total) }))} · ${esc(t('hitsToKill', { n: nailDmg ? Math.ceil(total / nailDmg) : 0 }))} · ${esc(pick(f.zone))}`;
+    const head = `<div class="foes-head">
+        <h3 class="sr-only"${NT}>${esc(foeName(f))}</h3>
+        ${countLbl ? `<span class="fighter-phase">${esc(countLbl)}</span>` : ''}
+        <span class="foes-total">${meta}</span>
+        ${total === null ? '' : helpBtn('foe', t('helpFoe'))}
+      </div>
+      ${total === null ? '' : helpBox('foe', foeHelp(f), 'is-foe')}
+      ${(f.notes || []).map((n) => `<p class="foecard-note is-warn">${esc(pick(n))}</p>`).join('')}
+      ${phaseNote(f) ? `<p class="foecard-note">${esc(phaseNote(f))}</p>` : ''}`;
+
+    // The bar, the boss's: the name of the part when there are several, and the figures.
+    const bar = x && total !== null ? `<div class="fhero-bar" aria-hidden="true">
+        <div class="fhero-line">${several ? `<span class="fhero-name"${NT}>${esc(pick(x.name))}</span>` : '<span></span>'}
+          <span class="fhero-num">${App.NF[0].format(hp)}<i class="u">/${App.NF[0].format(max)}</i></span></div>
+        <span class="fbar is-hero ${pct <= 25 ? 'is-low' : ''}">${hit ? `<span class="fbar-trail" style="width:${Math.min(100, prev.hp / max * 100)}%"></span>` : ''}<span class="fbar-fill" style="width:${pct}%"></span></span>
+      </div>` : '';
+    lastFoe = { art, name: x ? pick(x.name) : foeName(f), hp, max, pct, hit, lost: hit ? prev.hp - hp : 0,
+                trail: hit ? Math.min(100, prev.hp / max * 100) : 0, cls, total };
+    const dust = dying ? Array.from({ length: DUST }, (_, i) => `<span class="fdust" style="--i:${i}"></span>`).join('') : '';
+    return `<div class="fstage ${cls}">
+        ${titleCardHtml(f)}
+        ${head}
+        ${bar}
+        <div class="fscene" aria-hidden="true">
+          <img class="fscene-art" src="${art}" alt="" onerror="this.classList.add('is-missing')">
+          ${hit ? `<span class="fscene-dmg">−${App.NF[0].format(prev.hp - hp)}</span>` : ''}
+          ${newPhase && countLbl ? `<span class="fscene-phase">${esc(countLbl)}</span>` : ''}
+          ${dust}
+          ${sceneFloor}
+        </div>
+      </div>`;
+  }
+
+  /* Undo, under the scoreboard: with the circled arrow going back, like Reset's but mirrored. */
+  const UNDO_ICON = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h7a3.5 3.5 0 0 1 0 7H6"/><path d="M6 3L3 6l3 3"/></svg>';
+  const undoBtn = () => `<button type="button" class="text-btn fight-undo" data-act="undo" ${undoStack.length ? '' : 'disabled'}
+      title="${esc(t('fightUndoHint'))}" aria-keyshortcuts="Control+Z">${UNDO_ICON}${esc(t('fightUndo'))}</button>`;
+
+  /* Your attacks in four groups, as the game hands them out: the nail and its arts, the spells,
+     what's done with soul (Focus, the Dream Nail) and what a charm gives you (and "Wait", which
+     only exists for a charm). Only the groups you have show. */
+  const MOVE_GROUPS = [['nail', 'mvNail'], ['spell', 'spells'], ['soul', 'soul'], ['charm', 'charmsTitle']];
+
+  /* The arena: the stage (you and whoever is in front, face to face, and the scoreboard between),
+     below it the commands (your attacks and theirs, side by side) and the log. Shared by the
+     three tabs; in a pantheon, the room sets the enemy. The Hall and the pantheons title the
+     ending in their own way (end); without it, standalone combat's. */
   function arenaHtml(end) {
     const f = foe();
     const s = fs().stats;
@@ -919,8 +1209,11 @@
     const maxMasks = s['health.masks'].value;
     const dead = !alive();
     const won = !!f && fight.over;
-    const nailDmg = s['nail.damage'].value;
-    const toKill = total && nailDmg ? Math.ceil(total / nailDmg) : 0;
+    const radiant = diffOf() === 'radiant';
+    const soulIco = `<img class="mc-soul" src="${D.art('hud', 'soul')}" alt="">`;
+    const maskIco = `<img class="move-mask" src="${D.art('hud', 'mask')}" alt="">`;
+    // With a single entity in front, its card doesn't repeat the stage: only its attacks show.
+    const solo = !!f && total !== null && !f.pool && fight.parts.length === 1 && !fight.minions.length;
 
     /* Each entity is a card with its own buttons: the boss a normal one, each minion a
        small one. Doing it this way and not with a list of bars is what lets an Infected
@@ -937,7 +1230,7 @@
       const down = !!(st && st.down);
       const offFoe = dead || won || isDead || calm || down;
       let staggerLine = '';
-      if (stg && diffOf() !== 'radiant') {
+      if (stg && !radiant) {
         const hb = fightHas('heavy') ? 1 : 0;
         const staggerLive = st && st.lastAt !== null && fight.clock - st.lastAt <= stg.window + 1e-9;
         staggerLine = !down
@@ -946,7 +1239,7 @@
             ? `<span class="foecard-stagger is-down">${esc(t('fightBatsNow', { s: App.NF[1].format(Math.max(0, st.until - fight.clock)), cap: st.capLeft }))}</span>`
             : `<span class="foecard-stagger is-down">${esc(t('fightStaggered'))}</span>`;
       }
-      const melody = fightHas('melody') && diffOf() !== 'radiant';
+      const melody = fightHas('melody') && !radiant;
       // Dreamshield for the projectiles on its list (wiki, "Dreamshield"): the attack's
       // button says whether it blocks it or passes through, and the blockable ones carry a second "Blocked" button
       // while the shield is whole. Also on Radiant: the hit that doesn't land doesn't kill.
@@ -957,12 +1250,12 @@
       const moves = foeMoves(foeData).map((m, j) => {
         if (!ownMove(m)) return '';
         const proj = shield && m.proj ? `<span class="move-cost is-proj">${esc(t(m.proj === 'block' ? 'projBlock' : 'projPierce'))}</span>` : '';
-        // The unit isn't written under the figure (every button would repeat it): it goes in the
-        // title, for the mouse, and read after the figure, for the screen reader.
-        const unit = diffOf() === 'radiant' ? '' : m.dmg === 1 ? t('maskUnitOne') : t('maskUnit');
+        // The unit isn't written under the figure (every button would repeat it): the game's mask
+        // says it, the title carries it for the mouse and it's read after the figure for the screen reader.
+        const unit = radiant ? '' : m.dmg === 1 ? t('maskUnitOne') : t('maskUnit');
         const btn = `<button type="button" class="move move-foe" data-act="foehit" data-id="${id}:${j}" ${offFoe ? 'disabled' : ''}${unit ? ` title="${esc('−' + m.dmg + ' ' + unit)}"` : ''}>
           <span class="move-name"${NT}>${esc(m.label)}</span>
-          <span class="move-num">${diffOf() === 'radiant' ? '☠' : '−' + m.dmg}${unit ? `<span class="sr-only"> ${esc(unit)}</span>` : ''}</span>
+          <span class="move-num">${radiant ? '☠' : '−' + m.dmg}${unit ? `${maskIco}<span class="sr-only"> ${esc(unit)}</span>` : ''}</span>
           ${m.warn ? `<span class="move-cost is-warn">${esc(m.warn)}</span>` : ''}${proj}
         </button>`;
         const block = shield && m.proj === 'block'
@@ -984,7 +1277,9 @@
             const sub = F.FOE_BY_ID[x.id];
             if (!sub) return '';
             const hp = x.hp !== undefined ? x.hp : foeMaxHp(sub, 'base');
+            // With its portrait: you see what comes out before tapping.
             return `<button type="button" class="move move-summon" data-act="summon" data-id="${x.k}" ${dead || won || isDead ? 'disabled' : ''}>
+              <span class="summon-art"><img src="${D.art('enemies', sub.id)}" alt="" loading="lazy" onerror="this.parentNode.classList.add('is-missing')"></span>
               <span class="move-name">${esc(t('fightSummonOne', { name: pick(sub.name) }))}</span>
               <span class="move-num">${App.NF[0].format(hp)}</span>
               <span class="move-cost">${esc(pick(x.note))}</span>
@@ -994,8 +1289,8 @@
       // The whole card picks who you hit, not just the header: the space next to the attacks
       // belongs to it too. An attack carries its own data-act, which wins by being further in;
       // the keyboard gets there through the header button.
-      return `<div class="foecard ${isMinion ? 'is-minion' : ''} ${isTarget ? 'is-on' : ''} ${isDead ? 'is-down' : ''} ${down ? 'is-staggered' : ''}" ${isDead ? '' : `data-act="target" data-id="${id}"`}>
-        <button type="button" class="foecard-head" data-act="target" data-id="${id}" ${isDead ? 'disabled' : ''} aria-pressed="${isTarget}">
+      return `<div class="foecard ${isMinion ? 'is-minion' : ''} ${isTarget ? 'is-on' : ''} ${isDead ? 'is-down' : ''} ${down ? 'is-staggered' : ''} ${solo ? 'is-solo' : ''}" ${isDead || solo ? '' : `data-act="target" data-id="${id}"`}>
+        <button type="button" class="foecard-head" data-act="target" data-id="${id}" ${isDead ? 'disabled' : ''} aria-pressed="${isTarget}"${solo ? ' tabindex="-1"' : ''}>
           <img class="foecard-art" src="${D.art('enemies', part.art || foeData.id)}" alt="" loading="lazy" onerror="this.classList.add('is-missing')">
           <span class="foecard-body">
             <span class="foecard-name"${NT}>${esc(pick(part.name))}</span>
@@ -1019,85 +1314,84 @@
         <div class="foecard-moves"><p class="moveset-empty">${esc(t('fightNoFoe'))}</p></div>
       </div>`;
     } else if (total === null) {
-      foeSide = `<div class="foecard">
-        <div class="foecard-head">
-          <img class="foecard-art" src="${D.art('enemies', f.id)}" alt="" loading="lazy" onerror="this.classList.add('is-missing')">
-          <span class="foecard-body"><span class="foecard-name"${NT}>${esc(foeName(f))}</span>
-            <span class="foecard-note">${esc(t('fightInvuln'))}</span></span>
-        </div>
+      foeSide = `<div class="foecard is-solo">
         <div class="foecard-moves">${foeMoves(f).map((m, j) => `<button type="button" class="move move-foe" data-act="foehit" data-id="p0:${j}" ${dead ? 'disabled' : ''}>
-            <span class="move-name"${NT}>${esc(m.label)}</span><span class="move-num">−${m.dmg}</span>
+            <span class="move-name"${NT}>${esc(m.label)}</span><span class="move-num">−${m.dmg}${maskIco}</span>
           </button>`).join('')}</div>
       </div>`;
     } else {
-      const phaseList = phasesOf(f);
-      const standing = fight.parts.filter((x) => x.hp > 0).length;
-      const countLbl = f.pool
-        ? t('fightStanding', { n: standing, total: standing + fight.queue })
-        : phaseList.length > 1 ? t('fightPhase', { n: fight.phase + 1, total: phaseList.length }) : '';
-      foeSide = `<div class="foes-head">
-          <h3${NT}>${esc(foeName(f))}</h3>
-          ${countLbl ? `<span class="fighter-phase">${esc(countLbl)}</span>` : ''}
-          <span class="foes-total">${esc(t('fightTotal', { n: App.NF[0].format(total) }))} · ${esc(t('hitsToKill', { n: toKill }))} · ${esc(pick(f.zone))}</span>
-          ${helpBtn('foe', t('helpFoe'))}
-        </div>
-        ${helpBox('foe', foeHelp(f), 'is-foe')}
-        ${(f.notes || []).map((n) => `<p class="foecard-note is-warn">${esc(pick(n))}</p>`).join('')}
-        ${phaseNote(f) ? `<p class="foecard-note">${esc(phaseNote(f))}</p>` : ''}
-        ${fight.parts.map((x, i) => foeCardHtml('p', i, f, x, false)).join('')}
-        ${fight.minions.map((m, i) => foeCardHtml('m', i, F.FOE_BY_ID[m.id] || f, m, true)).join('')}`;
+      foeSide = fight.parts.map((x, i) => foeCardHtml('p', i, f, x, false)).join('')
+        + fight.minions.map((m, i) => foeCardHtml('m', i, F.FOE_BY_ID[m.id] || f, m, true)).join('');
     }
 
-    const yours = knightMoves().map((m) => {
+    // One of your attacks: its artwork on top, the figure opposite, the name and, below, what it
+    // costs or gives in soul (with the game's soul) or why it can't be done right now.
+    const cell = (m) => {
       const noSoul = m.cost && fight.soul < m.cost;
       const full = m.heal && fight.masks >= maxMasks;
       const needsFoe = m.dmg !== undefined || m.needsFoe;
       const off = !f || dead || won || noSoul || full || m.broken || (needsFoe && (total === null || !targetOf()));
       const why = !f ? t('fightNoTarget') : noSoul ? t('noSoulFor') : full ? t('fullHealth') : m.broken ? t('shieldBroken') : '';
-      const num = m.heal ? '+' + m.heal + ' ' + esc(t('maskUnitOne')) : m.wait ? App.NF[1].format(m.wait) + ' s' : m.dmg !== undefined ? App.NF[0].format(m.dmg) : '+' + m.gain;
-      const sub = m.cost ? `−${m.cost} ${esc(t('soulLower'))}` : m.gain && m.dmg !== undefined ? `+${m.gain} ${esc(t('soulLower'))}`
-        : m.gain ? esc(t('soulLower')) : m.note ? esc(m.note) : '';
+      const num = m.heal ? `+${m.heal}${maskIco}<span class="sr-only"> ${esc(t(m.heal === 1 ? 'maskUnitOne' : 'maskUnit'))}</span>` : m.wait ? App.NF[1].format(m.wait) + ' s' : m.dmg !== undefined ? App.NF[0].format(m.dmg) : '+' + m.gain;
+      const soulSr = `<span class="sr-only"> ${esc(t('soulLower'))}</span>`;
+      const sub = m.cost ? `${soulIco}−${m.cost}${soulSr}` : m.gain && m.dmg !== undefined ? `${soulIco}+${m.gain}${soulSr}`
+        : m.gain ? `${soulIco}${esc(t('soulLower'))}` : m.note ? esc(m.note) : '';
       const btn = `<button type="button" class="move ${m.art ? 'has-art' : ''}" data-act="hit" data-id="${m.id}" ${off ? 'disabled' : ''} ${why ? `title="${esc(why)}"` : ''}>
         ${m.art ? `<span class="move-art ${m.id === 'nail' ? 'is-nail' : ''}${m.charm ? ' is-charm' : ''}"><img src="${m.art}" alt=""></span>` : ''}
         <span class="move-name"${/^(nail|art:|spell:)/.test(m.id) ? NT : ''}>${esc(m.label)}</span>
         <span class="move-num">${num}</span>
         ${sub ? `<span class="move-cost">${sub}</span>` : ''}
+        ${(noSoul || full) && f && !dead && !won ? `<span class="move-why">${esc(why)}</span>` : ''}
       </button>`;
       // With notches or an explanation, the button and its parts go in one block (a button can't
-      // hold others inside): the "?" to the right of the figure, and below it the notches and what it opens.
+      // hold others inside): the "?" in the corner, and below it the notches and what it opens.
       // A spell without notches (plain Shade Soul) has nothing to explain.
       const dots = m.spell ? spellSelHtml(m.spell, m.label) : '';
       const help = !m.spell || dots ? moveHelp(m) : null;
-      if (!dots && !help) return btn;
+      if (!dots && !help) return `<div class="move-card">${btn}</div>`;
       return `<div class="move-card${dots ? ' spell-card' : ''}">${btn}${help ? helpBtn(m.id, t('helpOf', { name: m.label })) : ''}${dots}${help ? helpBox(m.id, help) : ''}</div>`;
+    };
+    const moves = knightMoves();
+    const yours = MOVE_GROUPS.map(([g, key]) => {
+      const ms = moves.filter((m) => m.group === g);
+      return ms.length ? `<section class="mgroup is-${g}"><h4 class="mgroup-head">${esc(t(key))}</h4><div class="mgrid">${ms.map(cell).join('')}</div></section>` : '';
     }).join('');
     // The positional ones, named with their blurb: you can see you wear them and that they aren't simulated here.
     const notes = POSITIONAL.filter(fightHas).map((id) => `<li><b${NT}>${esc(pick(D.CHARM_BY_ID[id]))}</b>: ${esc(pick(D.CHARM_BY_ID[id].blurb))}</li>`);
     const notesHtml = notes.length ? `<ul class="moveset-notes" aria-label="${esc(t('fightNotes'))}">${notes.join('')}</ul>` : '';
 
+    const again = `<button type="button" class="btn btn-primary" data-act="fightReset">${esc(t('runAgain'))}</button>`;
     const endHtml = end !== undefined ? end
-      : won ? fightEndHtml({ won: true, title: t('fightWon'), note: wonNote(f) })
-      : dead ? fightEndHtml({ won: false, title: t('fightDead'), note: total === null ? '' : t('fightDeadNote', dealtOf(f)) })
+      : won ? fightEndHtml({ won: true, title: t('fightWon'), note: wonNote(f), sum: fightSumHtml(), acts: again })
+      : dead ? fightEndHtml({ won: false, title: t('fightDead'), note: total === null ? '' : t('fightDeadNote', dealtOf(f)), sum: fightSumHtml(), acts: again })
       : '';
 
+    const knightHtml = knightSide(fs(), fight, dead, runFight() ? 'run' : 'fight');
+    const stageFoe = foeStageHtml(f, total);
     return `${endHtml}
       <div class="arena">
-        <div class="side-knight">
-          ${knightSide(fs(), fight, dead, runFight() ? 'run' : 'fight')}
+        ${bandHtml(f, total)}
+        <div class="stage">
+          <div class="side-knight">${knightHtml}</div>
+          <div class="vs">${forecastHtml(f, total)}${undoBtn()}</div>
+          ${stageFoe}
+        </div>
+        <div class="commands">
           <div class="moveset"><div class="block-head">${esc(t('yourMoves'))}</div>${yours}${notesHtml}</div>
+          <div class="side-foes"><div class="block-head">${esc(t('foeMoves'))}</div>${foeSide}</div>
         </div>
-        <div class="side-foes">${foeSide}
-          ${logHtml(fight.log)}${fight.clock > 0 ? `<p class="fight-clock-note">${esc(t('fightClockNote'))}</p>` : ''}
-        </div>
+        <div class="arena-foot">${logHtml(fight.log)}${fight.clock > 0 ? `<p class="fight-clock-note">${esc(t('fightClockNote'))}</p>` : ''}</div>
       </div>`;
   }
 
   /* If your side of the arena wasn't painted this time (on another tab or outside a
      room), the next thing painted continues nothing: with no previous state, it doesn't animate. */
   function renderFight() {
-    hudSeen = false;
+    hudSeen = false; foeSeen = false;
     paintFight();
+    bandCheck();
     if (!hudSeen) hudPrev = null;
+    if (!foeSeen) foePrev = null;
     hudEvent = '';
     App.endFresh = false;
   }
@@ -1160,6 +1454,7 @@
     },
     picker() {
       if (App.pickerOpen) { App.pickerOpen = false; App.pickerQuery = ''; } else openJournal();
+      navTo(true);
       render();
       // Not with a finger: opening the keyboard would cover half the list before it's read.
       if (App.pickerOpen && hoverable.matches) {
@@ -1177,6 +1472,7 @@
       App.pickerQuery = '';
       savePrefs();
       if (isNewFoe) fightReset();
+      navTo(true);
       render();
       const b = el.fight.querySelector('.jr-toggle');   // focus goes back to the button, it isn't lost
       if (b) b.focus();
@@ -1193,12 +1489,8 @@
     },
     fightReset() { fightReset(); render(); },
     fightTab(node) {
-      prefs.fightTab = node.dataset.value;
-      App.pickerOpen = false;
-      App.hallTablet = false;
-      if (prefs.fightTab === 'combat' && !prefs.foeId) openJournal();
-      savePrefs();
-      fightReset();
+      setFightTab(node.dataset.value);
+      navTo(false);
       render();
     },
     target(node) { fight.target = node.dataset.id; render(); },
@@ -1208,6 +1500,7 @@
       const sub = x && F.FOE_BY_ID[x.id];
       if (!sub) return;
       const hp = x.hp !== undefined ? x.hp : foeMaxHp(sub, 'base');
+      snapshot();
       fight.minions.push({ id: sub.id, name: sub.name, hp, max: hp, noSoul: !!sub.noSoul });
       logLine(t('logSummon', { name: pick(sub.name), n: App.NF[0].format(hp) }));
       fight.started = true;
@@ -1227,6 +1520,7 @@
       const [type, key] = m.id.split(':');
       const action = type === 'nail' ? { type: 'strike' } : type === 'wait' ? { type: 'wait', s: m.wait }
         : type === 'spell' ? { type, key, sel: fight.spellSel[key] } : { type, key };
+      snapshot();
       const evs = FT.apply(fight, action, fightCtx());
       if (m.heal) hudEvent = 'focus';
       afterAction(evs);
@@ -1258,12 +1552,24 @@
       if (helpOpen.has(id)) helpOpen.delete(id); else helpOpen.add(id);
       render();
     },
-    foeblock(node) { foeHitAct(node, false, true); },   // "Blocked": Dreamshield swallows it
+    foeblock(node) { foeHitAct(node, false, true); },
+    undo() { if (undo()) render(); },   // "Blocked": Dreamshield swallows it
     // "Done": the heal finished before the next hit (closes the window without acting).
     focusDone() {
       if (!fight.focusing) return;
+      snapshot();
       afterAction(FT.apply(fight, { type: 'focusDone' }, fightCtx()));
     },
+  });
+
+  /* Ctrl+Z (Cmd+Z on a Mac) undoes the last action while a fight is in view, except inside a text
+     field, where it belongs to the text. */
+  document.addEventListener('keydown', (ev) => {
+    if (!(ev.ctrlKey || ev.metaKey) || ev.shiftKey || ev.altKey || ev.key.toLowerCase() !== 'z') return;
+    if (prefs.view !== 'fight' || !undoStack.length) return;
+    if (ev.target.closest && ev.target.closest('input, textarea, select, [contenteditable]')) return;
+    ev.preventDefault();
+    if (undo()) render();
   });
 
   /* When typing, the cursor jumps to the first match, as in any search box. */
@@ -1277,8 +1583,8 @@
     if (l) l.scrollTop = 0;
   });
 
-  Object.assign(App, { fight, runRooms, runRoom, runFight, baseSheet, fs, fst, charmLock, touchesCharms,
+  Object.assign(App, { bandCheck, fight, runRooms, runRoom, runFight, baseSheet, fs, fst, charmLock, touchesCharms,
     alive, hallFight, foe, phasesOf, totalHp, targetOf, fightReset, fightSync, plain, jrNarrow, enduranceOf,
-    jrPage, paintJournal, paintPage, scrollToCur, stepCursor, jrScroll, jrKeepCursor, openJournal, jrMove,
-    sheetHas, knightSide, fightEndHtml, wonNote, dealtOf, logHtml, arenaHtml, renderFight });
+    jrPage, paintJournal, paintPage, scrollToCur, stepCursor, jrScroll, jrKeepCursor, openJournal, setFightTab, jrMove,
+    sheetHas, knightSide, fightEndHtml, fightSumHtml, wonNote, dealtOf, logHtml, arenaHtml, renderFight });
 })();

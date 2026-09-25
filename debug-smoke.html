@@ -61,6 +61,8 @@ f.addEventListener('load', async () => {
     ok('40 slots in the grid, like the game, and not one of the old cards', d.querySelectorAll('#panel .quick-grid .qc').length === 40
        && !q('.charm-grid') && !q('#inspector'), d.querySelectorAll('#panel .quick-grid .qc').length + ' slots');
     ok('with nothing chosen, the detail explains how to use it', !!q('#charm-detail .detail-hint'), txt('#charm-detail'));
+    // The page opens with Unbreakable Strength and Quick Slash: the detail adds them up (21 → 32 on the nail).
+    ok('and, with charms of your own, what they add up to', !!q('#charm-detail .detail-sum li') && txt('#charm-detail .detail-sum').indexOf('32') >= 0, txt('#charm-detail'));
     ok('2 charms equipped', onCount() === 2, onIds());
     // Only the panel's charm notch row: the arena's spells also use the notch dot.
     const notches = () => [...d.querySelectorAll('#panel .notches .notch')].map((n) =>
@@ -222,6 +224,11 @@ f.addEventListener('load', async () => {
     ok('the base Knight has no charms found', d.querySelectorAll('#gear .quick-owned .qc.is-missing').length === 40);
     await click('#panel .qc[data-id="fheart"]');
     ok("one not found can't be equipped", !isOn('fheart') && txt('#charm-detail .insp-state').indexOf('Sin conseguir') >= 0, txt('#charm-detail .insp-state'));
+    // It can be marked found right there, in the detail, and then the grid equips it.
+    ok('the detail offers to mark it found, with a real button', txt('#charm-detail [data-act="ownHere"]') === 'Marcar como conseguido' && q('#charm-detail [data-act="ownHere"]').classList.contains('btn'), txt('#charm-detail .insp-state'));
+    await click('#charm-detail [data-act="ownHere"]');
+    ok('and marks it found without leaving Charms', visible() === 'panel' && !q('#panel .qc[data-id="fheart"].is-missing')
+       && !q('#charm-detail [data-act="ownHere"]') && txt('#charm-detail .insp-name') === 'Corazón frágil', txt('#charm-detail .insp-name'));
     await click('#gear [data-act="ownAll"][data-value="1"]');
     // All is the end of the game: from each double slot, one version, and the slot shows it lit.
     ok('All marks them found', !q('#gear .quick-owned .qc.is-missing')
@@ -230,7 +237,7 @@ f.addEventListener('load', async () => {
     ok('with Void Heart, equipped by itself', isOn('voidheart'), onIds());
     await equip('voidheart');
     ok("and it can't be removed", isOn('voidheart') && txt('#charm-detail .insp-state').indexOf('No se puede quitar') >= 0, txt('#charm-detail .insp-state'));
-    await click('[data-act="clear"]');
+    await click('[data-act="clear"]'); await wait(1000);   // the charms leave one by one first
     ok('not even with Clear', isOn('voidheart'), onIds());
     // The double slots: one whole slot on Your game that switches none → first → second → none.
     ok('Your game: five whole double slots', d.querySelectorAll('#gear .quick-owned .qc-dual').length === 5 && !q('#gear .qslot-pair'));
@@ -291,7 +298,7 @@ f.addEventListener('load', async () => {
     ok('the link saves the build', w.location.hash.indexOf('joni') >= 0, w.location.hash);
     ok('and Share copies it', copied.indexOf('joni') >= 0 && copied.indexOf('#') > 0, copied);
 
-    await click('[data-act="clear"]');
+    await click('[data-act="clear"]'); await wait(1000);   // the charms leave one by one first
     ok('clearing removes all charms', onCount() === 0, onIds());
     ok('with no charms, Equipped is just the empty slot, with no text in view', !q('#panel .is-eq .eq') && !!q('#panel .is-eq .eq-slot')
        && !q('#panel .is-eq .muted-p') && !!q('#panel .is-eq .sr-only'));
@@ -303,12 +310,24 @@ f.addEventListener('load', async () => {
        'notice: ' + (q('.banner') ? 'yes' : 'no'));
 
     /* ── The screens: Charms, Your game and Combat ──────────────────────── */
-    ok('on Charms, overcharm is flagged in the band and not at the top', !!q('#panel .banner.is-band') && !q('#banner .banner'));
+    ok('on Charms, overcharm is flagged in the band and not at the top', !!q('#panel .banner.is-band') && !q('#banner .banner:not(.is-hint)'));
     await goto('game');
     ok('Your game is its own screen and goes in the URL', visible() === 'gear' && w.location.hash.indexOf('view=game') >= 0
        && q('#nav [aria-current="page"]').dataset.value === 'game', visible() + ' · ' + w.location.hash);
     ok('with its two starting points', !!q('#gear [data-act="preset"][data-value="base"]') && !!q('#gear [data-act="preset"][data-value="max"]'));
-    ok('and there overcharm is flagged at the top', !!q('#banner .banner:not(.is-run)'));
+    ok('and there overcharm is flagged at the top', !!q('#banner .banner:not(.is-run):not(.is-hint)'));
+    // Body with the game's pieces: tapping the dark 7th mask lights up to it (7); tapping the lit
+    // 6th takes it off with the ones after it (5). The base 5 can't be removed.
+    const maskN = () => d.querySelectorAll('#gear .pieces.is-masks .piece.is-on').length;
+    ok('the masks are the game\'s, one per step', d.querySelectorAll('#gear .pieces.is-masks .piece img').length === 9);
+    await click('#gear .pieces.is-masks .piece:nth-child(7)');
+    ok('tapping a dark mask lights up to it', maskN() === 7 && w.location.hash.indexOf('masks=7') >= 0, maskN() + ' · ' + w.location.hash);
+    await click('#gear .pieces.is-masks .piece:nth-child(9)');
+    await click('#gear .pieces.is-masks .piece:nth-child(6)');
+    ok('and tapping a lit one takes it off with the ones after it', maskN() === 5, maskN());
+    ok('the base masks are fixed', q('#gear .pieces.is-masks .piece:nth-child(5)').disabled);
+    ok('spell levels are chosen by their own artwork', d.querySelectorAll('#gear .lvlpick .lvl img').length >= 6);
+    await click('#gear .pieces.is-masks .piece:nth-child(9)');
     await click('#gear [data-act="seg"][data-key="nail"][data-value="2"]');
     ok("changing the nail doesn't change screen", visible() === 'gear' && w.location.hash.indexOf('nail=2') >= 0
        && w.location.hash.indexOf('view=game') >= 0, w.location.hash);
@@ -341,8 +360,8 @@ f.addEventListener('load', async () => {
     await wait(120);
     ok('combat is open on its screen', !!q('.fight-body') && visible() === 'fight');
     // Without ever having chosen anyone there's already an enemy: an empty fight shows nothing.
-    ok('with none chosen, it opens against False Knight', !q('.journal') && !q('.foecard.is-empty') &&
-       txt('.jr-val') === 'Falso Caballero', txt('.jr-val'));
+    ok('with none chosen, it opens against Crawlid', !q('.journal') && !q('.foecard.is-empty') &&
+       txt('.jr-val') === 'Reptacillo', txt('.jr-val'));
     // "No enemy" removes it, and that's how the empty fight is seen.
     await click('[data-act="picker"]');
     await click('.jr-none');
@@ -368,7 +387,7 @@ f.addEventListener('load', async () => {
     // In the tools/artpack.js copy, none goes by file: those folders aren't published.
     if (w.HK.artpack) ok("the packed copy doesn't request loose portraits", ![...d.querySelectorAll('img')]
       .some((n) => /assets\/(enemies|journal)\//.test(n.getAttribute('src'))));
-    ok('the page stays on the one that was removed', txt('.jr-title') === 'Falso Caballero', txt('.jr-title'));
+    ok('the page stays on the one that was removed', txt('.jr-title') === 'Reptacillo', txt('.jr-title'));
     await leer('crawlid');
     ok('the first entry is read on the page', txt('.jr-title') === 'Reptacillo', txt('.jr-title'));
     ok('with the Journal text in Spanish', txt('.jr-desc').startsWith('Tímido carroñero'), txt('.jr-desc'));
@@ -462,6 +481,40 @@ f.addEventListener('load', async () => {
     await click('[data-act="fightReset"]');
     ok('reset gives the health back', foeHp() === '65' && masks() === '5', foeHp() + ' / ' + masks());
 
+    /* ── The stage, the scoreboard, the groups, undo and the log's voices ── */
+    ok("the stage shows the game's title card", txt('.fstage .ftitle-main') === 'Falso Caballero', txt('.fstage .ftitle'));
+    ok('your attacks come in groups, the nail first', [...d.querySelectorAll('.mgroup-head')].map((n) => n.textContent.trim())[0] === 'Aguijón',
+       [...d.querySelectorAll('.mgroup-head')].map((n) => n.textContent.trim()).join(' · '));
+    const vs = () => [...d.querySelectorAll('.vs-score dd')].map((n) => n.textContent.trim()).join(' / ');
+    // 355 of health with a 21 nail: 17 hits; 5 masks against a slam of 2: 3 hits.
+    ok('the scoreboard: nail hits to win and hits to fall', vs() === '17 / 3', vs());
+    ok('undo starts disabled', !!q('[data-act="undo"]') && q('[data-act="undo"]').disabled);
+    await click('[data-act="hit"]');
+    await click('[data-act="foehit"]');
+    ok('the scoreboard follows the fight', vs() === '16 / 2', vs());
+    ok('the log speaks in two voices', !!q('.fight-log li.is-foe') && !!q('.fight-log li.is-you') && !!q('.fight-log li.is-sys'),
+       [...d.querySelectorAll('.fight-log li')].map((n) => n.className).join(' '));
+    await click('[data-act="undo"]');
+    ok('undo gives back the hit taken', masks() === '5' && foeHp() === '44', masks() + ' / ' + foeHp());
+    await click('[data-act="undo"]');
+    ok('and then your own hit', foeHp() === '65' && vs() === '17 / 3' && q('[data-act="undo"]').disabled, foeHp() + ' · ' + vs());
+    await click('[data-act="hit"]');
+    d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'z', ctrlKey: true, bubbles: true }));
+    await wait(40);
+    ok('Ctrl+Z undoes too', foeHp() === '65', foeHp());
+    // Scrolling down to the attacks, the face-off comes along in the band; back up, it goes.
+    // The scroll event comes with the next frame, which headless doesn't always paint: it's sent by hand.
+    const frames = () => { w.dispatchEvent(new w.Event('scroll')); return wait(40); };
+    const stageBox = q('.stage').getBoundingClientRect();
+    w.scrollTo(0, w.scrollY + stageBox.bottom);
+    await frames();
+    const bandWhy = () => `scrollY ${w.scrollY} · stage ${Math.round(q('.stage').getBoundingClientRect().bottom)} · ${q('.fband-anchor') ? q('.fband-anchor').className : '(no band)'}`;
+    ok('scrolling past the stage brings in the band', !!q('.fband-anchor.is-on') && !!q('.fband .hud') && !!q('.fband-art img')
+       && q('#minihud').classList.contains('is-banded'), bandWhy());
+    w.scrollTo(0, 0);
+    await frames();
+    ok('and back up it goes', !q('.fband-anchor.is-on') && !q('#minihud').classList.contains('is-banded'));
+
     /* ── Multi-part bosses ────────────────────────────────────────────── */
     for (let i = 0; i < 4; i++) await click('[data-act="hit"]');
     ok('when the armour falls the maggot comes in', txt('.fighter-phase') === 'Fase 2 de 7' && foeHp() === '40',
@@ -511,6 +564,8 @@ f.addEventListener('load', async () => {
     for (let i = 0; i < 22; i++) await click('[data-act="hit"]');
     ok('killing the Beast ends the fight', txt('.fight-end-title') === 'Victoria' && bars()[0].indexOf('600/600') > 0,
        bars().join(' | '));
+    const sum = () => [...d.querySelectorAll('.fight-sum dt')].map((n) => n.textContent.trim()).join(' · ');
+    ok('the ending gives the fight in figures', /Golpes dados/.test(sum()) && /Vida perdida/.test(sum()) && !!q('.fight-end [data-act="fightReset"]'), sum());
 
     /* ── Minions ──────────────────────────────────────────────────────── */
     await pick('broken-vessel');
@@ -808,8 +863,9 @@ f.addEventListener('load', async () => {
     await click('.ped-btn[data-id="pure-vessel"]');
     ok("the Hall opens the chosen statue's plaque", q('[data-act="fightTab"][data-value="hall"]').getAttribute('aria-selected') === 'true'
        && txt('.hall-plaque .jr-title') === nameOf('pure-vessel'), txt('.hall-plaque .jr-title'));
-    ok('35 pedestals, 9 of them double, and 44 statues', d.querySelectorAll('.ped').length === 35
-       && d.querySelectorAll('.ped-pair').length === 9 && d.querySelectorAll('.ped-btn').length === 44,
+    // 35 pedestals, 9 of them double; the last pair (Grimm) is drawn as two singles, so 36 and 8.
+    ok('35 pedestals, 9 of them double, and 44 statues', d.querySelectorAll('.ped').length === 36
+       && d.querySelectorAll('.ped-pair').length === 8 && d.querySelectorAll('.ped-btn').length === 44,
        d.querySelectorAll('.ped').length + ' · ' + d.querySelectorAll('.ped-pair').length + ' · ' + d.querySelectorAll('.ped-btn').length);
     const counters = () => [...d.querySelectorAll('.hall-count-num b')].map((n) => n.textContent.trim()).join(' ');
     ok('with nothing won, the counters at zero', counters() === '0 0 0', counters());
@@ -832,6 +888,9 @@ f.addEventListener('load', async () => {
     const summonHps = () => [...d.querySelectorAll('[data-act="summon"] .move-num')].map((n) => n.textContent.trim()).join(' ');
     ok('the Collector on Ascended brings out another three, all at 26', summons().length === 3 && summonHps() === '26 26 26' &&
        summons()[0] === 'Invocar Aspid primigenio', summons().join(' | ') + ' · ' + summonHps());
+    ok('each summon button shows who comes out', [...d.querySelectorAll('[data-act="summon"] .summon-art img')].length === 3
+       && (q('[data-act="summon"] .summon-art img') || {}).getAttribute('src') === w.HK.data.art('enemies', 'primal-aspid'),
+       (q('[data-act="summon"] .summon-art img') || {}).getAttribute('src'));
     await click('.hall-head [data-act="hallBack"]');
 
     await click('.ped-btn[data-id="vengefly-king"]');
@@ -981,23 +1040,23 @@ f.addEventListener('load', async () => {
     await click('.hj-row[data-id="vengefly"]');
     ok('not encountered: a silhouette, and neither description nor notes', !!q('.hj-art.is-shadow') && !q('.hj-desc') && !q('.hj-notes'));
     await click('.hj-state [data-value="seen"]');
-    ok("encountering it gives the game's notice, inside the Journal", !q('.hj-note').hidden && txt('.hj-note') === 'Nueva entrada en el diario'
-       && q('#toast').hidden, txt('.hj-note'));
+    ok("encountering it gives the game's notice, the site's one with the entry's medallion", !q('#toast').hidden && txt('#toast') === 'Nueva entrada en el diario'
+       && !!q('#toast .toast-art'), txt('#toast'));
     ok('encountered: the description and "Defeat 44 more…", which is the control', !!q('.hj-desc') && q('.hj-count') && q('.hj-count').value === '44'
        && txt('.hj-kills').replace(/\s+/g, ' ').startsWith('Derrota'), q('.hj-count') && q('.hj-count').value);
     ok('the same thing the game saves is saved: the defeats left', JSON.stringify(hjSaved()) === '{"vengefly":44}', JSON.stringify(hjSaved()));
     await click('.hj-step[data-value="-1"]');
     ok('"−" is one more defeat', q('.hj-count').value === '43', q('.hj-count').value);
     await hjType('.hj-count', '0');
-    ok('at zero: "Journal Updated", the Hunter\'s notes and the frame', txt('.hj-note') === 'Diario actualizado' && !!q('.hj-notes')
-       && !!q('.hj-row[data-id="vengefly"] .hj-frame') && !q('.hj-kills'), txt('.hj-note'));
+    ok('at zero: "Journal Updated", the Hunter\'s notes and the frame', txt('#toast') === 'Diario actualizado' && !!q('.hj-notes')
+       && !!q('.hj-row[data-id="vengefly"] .hj-frame') && !q('.hj-kills'), txt('#toast'));
     ok('and the button already counts 3', hjNum() === '3/146', hjNum());
     await click('.hj-row[data-id="goam"]');
     ok("Goam is got by inspecting: yes or no, with the game's line", !q('.hj-state [data-value="seen"]') && !!q('.hj-state [data-value="done"]')
        && txt('.hj-inspect').startsWith('Un goam fosilizado'), txt('.hj-inspect'));
     await click('.hj-row[data-id="false-knight"]');
     await click('.hj-state [data-value="done"]');
-    ok('a single-defeat one ends up complete when marked', hjSaved()['false-knight'] === 0 && txt('.hj-note') === 'Diario actualizado', JSON.stringify(hjSaved()));
+    ok('a single-defeat one ends up complete when marked', hjSaved()['false-knight'] === 0 && txt('#toast') === 'Diario actualizado', JSON.stringify(hjSaved()));
     await click('.hj-row[data-id="menderbug"]');
     await click('.hj-state [data-value="done"]');
     ok('an optional one encountered raises the total, as in the game', hjNum() === '5/147', hjNum());
@@ -1112,6 +1171,7 @@ f.addEventListener('load', async () => {
     await wait(1400);
     ok('the hit goes away by itself', !d.documentElement.classList.contains('is-binding-all') && q('#overcharm-fx').hidden);
     await click('[data-act="pantheonPick"][data-value="master"]');
+    ok('Enter comes with what you are entering', txt('.run-go .run-sum b') === 'Panteón del Maestro' && !!q('.run-go [data-act="runStart"]'), txt('.run-go .run-sum'));
     await click('[data-act="runStart"]');
     const tiles = () => [...d.querySelectorAll('.timeline .tl')];
     const states = () => tiles().map((x) => (x.classList.contains('is-done') ? '✔' : x.classList.contains('is-current') ? '▶'
@@ -1119,8 +1179,8 @@ f.addEventListener('load', async () => {
     ok('the timeline has the 12 rooms and marks the first', tiles().length === 12 && states() === '▶···········', states());
     // The names, against the data: they're being switched to the official Spanish ones.
     const nameEs = (id) => w.HK.foes.FOE_BY_ID[id].name.es;
-    ok('room 1 is the Vengefly King', txt('.foes-head h3') === nameEs('vengefly-king') && txt('.run-head .fighter-phase') === 'Sala 1 de 12',
-       txt('.foes-head h3') + ' · ' + txt('.run-head .fighter-phase'));
+    ok('room 1 is the Vengefly King', txt('.foes-head h3') === nameEs('vengefly-king') && txt('.run-head .run-stat') === 'Sala 1 de 12',
+       txt('.foes-head h3') + ' · ' + txt('.run-head .run-stat'));
     ok('the run gets saved', JSON.parse(w.localStorage.getItem('hollow.run') || '{}').room === 0);
 
     // Hit without waiting: each click repaints synchronously.
@@ -1141,8 +1201,8 @@ f.addEventListener('load', async () => {
     /* ── Halfway through the pantheon, charms can't be touched from anywhere ── */
     const equippedIds = () => onIds();
     const lockedIds = equippedIds();
-    const bannerText = () => txt('#banner .banner.is-run .banner-text');
-    ok("on the pantheon tab the notice that you're in it doesn't show", !q('#banner .banner.is-run'));
+    const bannerText = () => txt('#banner .banner.is-run:not(.is-hint) .banner-text');
+    ok("on the pantheon tab the notice that you're in it doesn't show", !q('#banner .banner.is-run:not(.is-hint)'));
     await goto('charms');
     ok("outside the bench the notice that you're in a pantheon shows", bannerText().indexOf('Panteón del Maestro · sala 3 de 12') === 0, bannerText());
     ok('and the grid looks locked', q('#panel .quick').classList.contains('is-locked'));
@@ -1155,7 +1215,7 @@ f.addEventListener('load', async () => {
     ok('the detail shows the charm, but without an equip button', !q('[data-act="equip"][data-id="longnail"]')
        && txt('#charm-detail .insp-state.cond').indexOf('bancos') >= 0, txt('#charm-detail .insp-state.cond'));
     ok('nor can they all be removed', q('[data-act="clear"]').disabled);
-    await click('[data-act="step"][data-key="notches"][data-delta="-1"]');
+    await click('[data-act="setv"][data-key="notches"][data-value="10"]');
     ok('nor can the notches be changed', w.location.hash.indexOf('notches=11') >= 0, w.location.hash);
     await click('[data-act="preset"][data-value="base"]');
     ok('nor a preset that removes them', equippedIds() === lockedIds, equippedIds());
@@ -1164,21 +1224,21 @@ f.addEventListener('load', async () => {
     ok("nor a link: the pantheon's stay", equippedIds() === lockedIds && w.location.hash.indexOf('longnail') < 0
        && txt('#toast').indexOf('enlace') >= 0, w.location.hash);
     await click('[data-act="fightTab"][data-value="hall"]');
-    ok('nor from the Hall of Gods', !!q('#banner .banner.is-run') && q('#panel .quick').classList.contains('is-locked'));
+    ok('nor from the Hall of Gods', !!q('#banner .banner.is-run:not(.is-hint)') && q('#panel .quick').classList.contains('is-locked'));
     await click('[data-act="fightTab"][data-value="combat"]');
-    ok('nor from the Combat tab', !!q('#banner .banner.is-run') && q('#panel .quick').classList.contains('is-locked'));
+    ok('nor from the Combat tab', !!q('#banner .banner.is-run:not(.is-hint)') && q('#panel .quick').classList.contains('is-locked'));
     await click('[data-act="runLockGo"]');
     ok('"Go to the pantheon" goes back to the room', visible() === 'fight' && w.location.hash.indexOf('view=fight') >= 0
        && d.activeElement.matches('#fight .screen-title')
        && q('[data-act="fightTab"][data-value="pantheon"]').getAttribute('aria-selected') === 'true'
-       && txt('.run-head .fighter-phase') === 'Sala 3 de 12', txt('.run-head .fighter-phase'));
+       && txt('.run-head .run-stat') === 'Sala 3 de 12', txt('.run-head .run-stat'));
     for (let i = 0; i < 3; i++) { winRoom(); await click('[data-act="runNext"]'); }
 
     /* ── The rest: you choose ───────────────────────────────────────────── */
     ok('room 6 is a rest', !!q('.rest-stations') && states().startsWith('✔✔✔✔✔▶'), states());
     ok('each station brings its corner of the room', [...d.querySelectorAll('.rest-station .rs-art img')]
        .map((i) => i.getAttribute('src').split('/').pop()).join(' ') === 'rest-spring.png rest-bench.png rest-cocoon.png');
-    ok('at the rest the notice goes and everything unlocks', !q('#banner .banner.is-run')
+    ok('at the rest the notice goes and everything unlocks', !q('#banner .banner.is-run:not(.is-hint)')
        && !q('#panel .quick').classList.contains('is-locked'));
     // The charm grid is at the rest, but locked until you sit down.
     const restGrid = () => [...d.querySelectorAll('.rest-charms .qc')];
@@ -1205,7 +1265,7 @@ f.addEventListener('load', async () => {
     await click('[data-act="runNext"]');
     ok('on leaving the rest they lock again', q('#panel .quick').classList.contains('is-locked'));
     await goto('game');
-    ok("and on Your game the notice that you're in a pantheon shows", !!q('#banner .banner.is-run'), bannerText());
+    ok("and on Your game the notice that you're in a pantheon shows", !!q('#banner .banner.is-run:not(.is-hint)'), bannerText());
     ok('with its button to abandon it without going there', txt('#banner [data-act="runQuit"]') === 'Abandonar');
     await goto('fight');
     for (let i = 0; i < 4; i++) { winRoom(); await click('[data-act="runNext"]'); }
@@ -1215,7 +1275,7 @@ f.addEventListener('load', async () => {
     let rounds = 0;
     while (!q('.run-end') && rounds++ < 30) { winRoom(); if (q('[data-act="runNext"]')) q('[data-act="runNext"]').click(); }
     ok('the Pantheon of the Master is completed', !!q('.run-end.is-won') && states() === '✔✔✔✔✔✔✔✔✔✔✔✔', txt('.run-end .fight-end-title') + ' · ' + states());
-    ok('and at the end they unlock', !q('#banner .banner.is-run') && !q('#panel .quick').classList.contains('is-locked'));
+    ok('and at the end they unlock', !q('#banner .banner.is-run:not(.is-hint)') && !q('#panel .quick').classList.contains('is-locked'));
 
     /* ── Falling ends the attempt ────────────────────────────────────────── */
     await click('[data-act="runAgain"]');
@@ -1258,7 +1318,7 @@ f.addEventListener('load', async () => {
     /* ── Abandoning from the notice, without going to the tab ──────────── */
     await goto('game');
     await click('#banner [data-act="runQuit"]');
-    ok('abandoning from the notice ends it and says so', !q('#banner .banner.is-run') && !w.localStorage.getItem('hollow.run')
+    ok('abandoning from the notice ends it and says so', !q('#banner .banner.is-run:not(.is-hint)') && !w.localStorage.getItem('hollow.run')
        && !q('#panel .quick').classList.contains('is-locked') && txt('#toast') === 'Has abandonado el Panteón del Maestro'
        && d.activeElement === q('#gear .screen-title'), txt('#toast') + ' · foco: ' + d.activeElement.className);
     await goto('fight');
@@ -1277,8 +1337,8 @@ f.addEventListener('load', async () => {
     await click('.move-foe');                                     // you arrive hurt wherever you skip to
     const hurtMasks = maskCount();
     await click('[data-act="runJump"][data-value="5"]');
-    ok('skipping goes straight to the rest', !!q('.rest-stations') && txt('.run-head .fighter-phase') === 'Sala 6 de 12',
-       txt('.run-head .fighter-phase'));
+    ok('skipping goes straight to the rest', !!q('.rest-stations') && txt('.run-head .run-stat') === 'Sala 6 de 12',
+       txt('.run-head .run-stat'));
     ok("what's skipped doesn't count as cleared", states2() === '✔––––▶······', states2());
     ok('and you take what you had', maskCount() === hurtMasks, hurtMasks + ' → ' + maskCount());
     ok('hurt, the hot springs show the masks and the soul they would give', !!q('[data-act="restBath"] .rs-ico.is-mask')

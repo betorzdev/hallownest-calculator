@@ -4,12 +4,12 @@
 (() => {
   'use strict';
   const HK = globalThis.HK;
-  const D = HK.data, C = HK.codec, I = HK.i18n;
+  const D = HK.data, C = HK.codec, I = HK.i18n, E = HK.engine;
   const App = HK.app;
   const { t, pick, KEY, el, hoverable, SPELL_KEYS, ART_KEYS, ART_STAT, NEED_KEY, NT, namedSrc, esc, save,
     pctSpace, fmtValue, fmtStat, fmtStatRich, sign, masksText, notchText, spellArt, shortOf, goodClass,
-    deltaChip, changeChip, prefs, savePrefs, compareLabel, compute, impact, recompute, commit, brackets,
-    chevron, cross, screenHead, hudHtml, render, underNav, toast, actions, isOwned, isFixed } = App;
+    deltaChip, changeChip, justWorn, justFound, prefs, savePrefs, compareLabel, compute, impact, recompute, commit, brackets,
+    chevron, cross, screenHead, hudHtml, render, underNav, toast, actions, isOwned, isFixed, setOwned } = App;
 
   /* ── Sheet panel: figures, meters, spells and arts ───────────────────── */
   // The flash class: only on the repaint that follows a change (flashIds, in commit()).
@@ -102,6 +102,8 @@
     const orbTitle = soulNow >= cost ? t('soulCastTitle', { n: cost }) : t('soulRefillTitle');
     const hud = hudHtml({
       masks: white, maxMasks: masks, lb: lbOn, lbSlots: lb, soul: soulNow, main: mainNow, mainMax: main, vessels,
+      // What a tap on the orb would leave: a spell's cost less, or everything refilled if there isn't enough.
+      castSoul: soulNow >= cost ? soulNow - cost : total, ready: mainNow >= cost,
       hive: App.sheetHas(App.sheet, 'hiveblood'), lbJoni: App.sheet.joniLifeblood || 0,
       over: !!App.sheet.notches.overcharmed,
       orbAttrs: ` data-act="soulOrb" title="${esc(orbTitle)}" aria-label="${esc(orbTitle)}"`,
@@ -135,14 +137,14 @@
       </div>
       <div class="inv-lead">
         <div class="inv-nail"><img class="hero-nail" src="${D.art('nails', App.state.nail)}" alt="" width="80" height="360"></div>
-        <div class="hero${flashCls('nail.damage')}">
-          <div class="lbl">${esc(t('heroLabel'))}</div>
-          <div class="hero-row">
+        <button type="button" class="hero${flashCls('nail.damage')}" data-act="kpi" data-id="nail.damage" title="${esc(t('goTo', { label: s['nail.damage'].label }))}">
+          <span class="lbl">${esc(t('heroLabel'))}</span>
+          <span class="hero-row">
             <span class="hero-num">${fmtStatRich(s['nail.damage'])}</span>
             ${changeChip('nail.damage')}<span class="pv" data-pv="nail.damage"></span>
-          </div>
-          <div class="hero-note">${esc(heroNote())}</div>
-        </div>
+          </span>
+          <span class="hero-note">${esc(heroNote())}</span>
+        </button>
       </div>
       <div class="inv-stats">
         ${metric('nail.dps', t('dps'), { note: esc(t('apsNote', { aps: fmtStat(s['nail.aps']) })) })}
@@ -154,6 +156,10 @@
       </div>
     </div>`;
   }
+
+  // "Clear": each charm fades as dust (css: .eq-row.is-clearing), one every CLEAR_STEP_MS.
+  const CLEAR_MS = 320, CLEAR_STEP_MS = 50;
+  let clearing = false;
 
   /* ── Equipped and notches: the pair of blocks from the game's screen ──
      In Hollow Knight, under "Equipped" go the charms you wear, and below them the row
@@ -173,7 +179,10 @@
     return {
       st: App.state, notches: App.sheet.notches, act: 'quick', locked,
       info: (id) => ({ equipped: App.state.charms.includes(id), action: C.charmAction(App.state, id) }),
-      hint: locked ? t('runLockShort') : hoverable.matches ? t('quickHintHover') : t('quickHintTouch'),
+      // While some are missing, the hint also says they can be unlocked there (the grid carries no mark at rest).
+      hint: locked ? t('runLockShort') : (hoverable.matches ? t('quickHintHover') : t('quickHintTouch'))
+        + (D.CHARMS.some((c) => !isOwned(c.id) && !C.OWN_SLOT_OF[c.id]) || C.OWN_SLOTS.some((sl) => !C.ownState(App.owned, sl.id))
+          ? '; ' + t('quickHintUnlock') : ''),
     };
   };
 
@@ -195,10 +204,15 @@
     const n = ctx.notches;
     const { white, over } = overcharmSplit(ctx);
     const slots = Math.max(n.max, n.used);
+    /* Right after a change (App.was), the notches the charm takes fill one by one from the left,
+       and the ones it gives back empty from the right. */
+    const had = App.was ? C.notchesUsed(App.was.state.charms) : n.used;
     let dots = '';
     for (let i = 0; i < slots; i++) {
       const cls = i < white ? 'is-used' : i < white + over ? 'is-over' : 'is-free';
-      dots += `<i class="notch ${cls}"></i>`;
+      const fx = i < n.used && i >= had ? ` is-filling" style="--i:${i - had}`
+        : i >= n.used && i < had ? ` is-draining" style="--i:${had - 1 - i}` : '';
+      dots += `<i class="notch ${cls}${fx}"></i>`;
     }
     return dots;
   }
@@ -210,7 +224,7 @@
     const n = ctx.notches;
     const dots = notchDots(ctx);
     const worn = ctx.st.charms.map((id) => D.CHARM_BY_ID[id]).filter(Boolean);
-    const tiles = worn.map((c) => `<button type="button" class="eq" data-act="${ctx.act}" data-id="${c.id}" ${ctx.locked ? 'aria-disabled="true"' : ''} title="${esc(ctx.locked || (isFixed(c.id) ? pick(c) + ' · ' + t('inspFixed') : t('unequipTitle', { charm: pick(c) })))}">
+    const tiles = worn.map((c) => `<button type="button" class="eq${justWorn(c.id) ? ' is-new' : ''}" data-act="${ctx.act}" data-id="${c.id}" ${ctx.locked ? 'aria-disabled="true"' : ''} title="${esc(ctx.locked || (isFixed(c.id) ? pick(c) + ' · ' + t('inspFixed') : t('unequipTitle', { charm: pick(c) })))}">
       <img src="assets/charms/${c.id}.png" alt="${esc(pick(c))}">
     </button>`).join('');
     // The game leaves a dark dot marking the next slot while something still fits.
@@ -259,6 +273,8 @@
     const cls = ['qc'];
     if (half) cls.push('qc-half');
     if (imp.equipped) cls.push('is-on');
+    // What was just equipped or found lights up once.
+    if (justWorn(c.id) || justFound(c.id)) cls.push('is-new');
     if (a.action === 'blocked') cls.push('is-locked');
     if (!imp.equipped && a.overcharm && isOwned(c.id)) cls.push('is-over');
     if (ctx.sel === c.id) cls.push('is-sel');
@@ -311,14 +327,48 @@
   const DETAIL_ROWS = 6;
   const detailId = () => App.detailHover || App.detailSel;
 
+  /* With no charm in the detail, what the equipped ones add up to: your sheet against the same
+     build with only the fixed charms (Void Heart), in the same rows as a charm's changes, and the
+     hint at the foot. Without charms of your own, the hint alone. Memoised by the build, since
+     the detail repaints at every slot the mouse crosses. */
+  let sumMemo = { key: '', changes: [] };
+  function wornSum() {
+    const key = prefs.lang + JSON.stringify(App.state);
+    if (sumMemo.key !== key) {
+      const bare = compute({ ...App.state, charms: App.state.charms.filter(isFixed) });
+      sumMemo = { key, changes: E.diff(bare, App.sheet) };
+    }
+    return sumMemo.changes;
+  }
+  function sumDetail() {
+    const hint = `<p class="detail-hint">${esc(hoverable.matches ? t('detailHintHover') : t('detailHintTouch'))}</p>`;
+    if (!App.state.charms.some((id) => !isFixed(id))) return hint;
+    const changes = wornSum();
+    if (!changes.length) return hint;
+    const many = changes.length > DETAIL_ROWS;
+    const shown = many ? changes.slice(0, DETAIL_ROWS - 1) : changes;
+    const row = (ch) => {
+      const from = ch.kind === 'gain' ? '' : ch.before.applies ? fmtStat(ch.before) : '—';
+      const to = ch.kind === 'loss' ? '—' : fmtStat(ch.after);
+      return `<li title="${esc(ch.label)}"><span class="lbl">${esc(ch.label)}</span><span class="vals">${from ? `<span class="from">${esc(from)}</span><span class="arrow">→</span>` : ''}<span class="to ${goodClass(ch.good)}">${esc(to)}</span></span></li>`;
+    };
+    const more = many && !prefs.detailOpen
+      ? `<li class="insp-more"><button type="button" data-act="detail">${esc(t('detailMore', { n: changes.length - shown.length }))}</button></li>` : '';
+    return `<div class="detail-sum">
+        <h3>${esc(t('detailSumTitle'))}</h3>
+        <ul class="insp-list">${shown.map(row).join('')}${more}</ul>
+      </div>${hint}`;
+  }
+
   function charmDetail() {
     const id = detailId();
     const c = D.CHARM_BY_ID[id];
-    if (!c) return `<p class="detail-hint">${esc(hoverable.matches ? t('detailHintHover') : t('detailHintTouch'))}</p>`;
+    if (!c) return sumDetail();
     const imp = impact(id), a = imp.action;
     // A single status line, the weightiest one. "Equipped" is already said by the list's title.
+    // A charm not found has its own (ownRow, below).
     const states = [];
-    if (!imp.equipped && !isOwned(id)) states.push(['bad', t('inspMissing')]);
+    if (!imp.equipped && !isOwned(id)) { /* ownRow */ }
     else if (isFixed(id)) states.push(['', t('inspFixed')]);
     else if (a.action === 'blocked' && !imp.equipped) states.push(['bad', t('inspBlocked', { reason: pick(a.reason) })]);
     else if (a.action === 'swap') states.push(['', t('inspSwap', { charm: pick(D.CHARM_BY_ID[a.partner]) }) + (a.overcharm ? t('inspSwapOver') : '')]);
@@ -326,6 +376,17 @@
     if (imp.unmet) states.push(['bad', t('inspNeeds', { what: t(NEED_KEY[c.needs]) })]);
     if (imp.cond) states.push(['cond', t('inspCond', { cond: imp.cond })]);
     const state = states.length ? `<p class="insp-state ${states[0][0]}" title="${esc(states.map((x) => x[1]).join(' · '))}">${esc(states.map((x) => x[1]).join(' · '))}</p>` : '';
+    /* A charm you don't have is marked found right here, where you've just read what it does,
+       without going to Your game. Under the mouse it only says how ("click to unlock it"); chosen
+       (clicked or tapped, which pins it: see hoverHold below) it carries a real button. The grid only
+       shows one version of each two-version slot (the one you have, or the first), so it's never
+       switching one for the other: that stays on Your game. Equipping is still tapping the grid. */
+    const missing = !imp.equipped && !isOwned(id);
+    const pinned = missing && App.detailHover !== id;
+    const ownRow = !missing ? ''
+      : pinned ? `<p class="insp-state bad">${esc(t('notFound'))}</p>
+          <div class="insp-own"><button type="button" class="btn btn-primary" data-act="ownHere" data-id="${id}" title="${esc(t('ownHereHint'))}">${esc(t('ownHere'))}</button></div>`
+      : `<p class="insp-state bad">${esc(t('inspMissing'))}</p>`;
     const row = (ch) => {
       const after = imp.withSheet.stats[ch.id];
       const others = after.contribs.filter((k) => k.active && ((k.source.startsWith('charm:') && k.source !== 'charm:' + id) || k.source.startsWith('synergy:'))).map((k) => k.label);
@@ -337,8 +398,10 @@
       const with_ = notes.length ? ' · ' + notes.join(' · ') : '';
       return `<li title="${esc(ch.label + with_)}"><span class="lbl">${esc(ch.label)}${with_ ? `<i class="with">${esc(with_)}</i>` : ''}</span><span class="vals">${from ? `<span class="from">${esc(from)}</span><span class="arrow">→</span>` : ''}<span class="to ${goodClass(ch.good)}">${esc(to)}</span></span></li>`;
     };
-    const many = imp.changes.length > DETAIL_ROWS;
-    const shown = many ? imp.changes.slice(0, DETAIL_ROWS - 1) : imp.changes;
+    // The button takes two rows' room, so the fixed-height detail doesn't grow.
+    const rows = pinned ? DETAIL_ROWS - 2 : DETAIL_ROWS;
+    const many = imp.changes.length > rows;
+    const shown = many ? imp.changes.slice(0, rows - 1) : imp.changes;
     const more = many ? `<li class="insp-more"><button type="button" data-act="detailMore" data-id="${id}">${esc(t('detailMore', { n: imp.changes.length - shown.length }))}</button></li>` : '';
     const lock = App.charmLock();
     const over = imp.equipped ? App.sheet.notches.overcharmed : a.overcharm;
@@ -353,13 +416,14 @@
         </div>
       </div>
       <p class="insp-blurb" title="${esc(pick(c.blurb))}">${esc(pick(c.blurb))}</p>
-      ${lock ? `<p class="insp-state cond" title="${esc(lock)}">${esc(lock)}</p>` : state}
+      ${lock ? `<p class="insp-state cond" title="${esc(lock)}">${esc(lock)}</p>` : ownRow || state}
       <h3>${esc(imp.equipped ? t('inspEffectIn') : t('inspEffectIf'))}${imp.cond ? ' (' + esc(imp.cond.toLowerCase()) + ')' : ''}</h3>
       ${imp.changes.length ? `<ul class="insp-list">${shown.map(row).join('')}${more}</ul>` : `<p class="insp-empty">${esc(t('inspEmpty'))}</p>`}`;
   }
 
   /* Repaints only the detail and the preview, not the sheet: repainting it rebuilds the grid under
      the pointer. With the mouse over it, the full sheet's rows it would change light up. */
+  let detailShown = '';             // the charm the detail painted last, to fade only when it changes
   function paintDetail(live = true) {
     const box = el.panel.querySelector('#charm-detail');
     if (!box) return;
@@ -368,6 +432,9 @@
     box.setAttribute('aria-live', live ? 'polite' : 'off');
     box.innerHTML = charmDetail();
     const id = detailId();
+    // Another charm: the detail fades into it, so the change of charm reads as such.
+    if (id !== detailShown) { box.classList.remove('is-swap'); void box.offsetWidth; box.classList.add('is-swap'); }
+    detailShown = id;
     for (const n of el.panel.querySelectorAll('.quick-grid .qc')) n.classList.toggle('is-sel', n.dataset.id === id);
     if (App.detailHover) highlightRows(App.detailHover); else clearHits();
     paintPreview();
@@ -479,6 +546,7 @@
      the notice come out), their column grows, but the grid stays attached to Equipped. */
   function charmBand() {
     const ctx = { ...pageCharms(), sel: detailId(), clear: true, over: true };
+    detailShown = detailId();
     const b = loadoutBlocks(ctx);
     return `<div class="inv-band">
       <div class="band-col">${b.equipped}${renderQuickCharms(ctx)}</div>
@@ -741,7 +809,11 @@
        if it couldn't, why. */
     quick(node) {
       const id = node.dataset.id;
-      if (node.closest('#panel')) App.detailSel = id;
+      if (node.closest('#panel')) {
+        App.detailSel = id;
+        // Pinned: the detail stays on it while the pointer crosses the grid (hoverHold).
+        if (hoverable.matches) { hoverHold = true; clearTimeout(holdTimer); App.detailHover = ''; }
+      }
       App.previewId = '';                  // once clicked, the figure flashes: the preview isn't needed
       if (!doCharm(id)) paintDetail();
     },
@@ -754,7 +826,28 @@
       const row = first && el.panel.querySelector(`.stat[data-id="${first.id}"]`);
       if (row) row.scrollIntoView({ behavior: calm.matches ? 'auto' : 'smooth', block: 'center' });
     },
-    clear() { if (App.state.charms.length) commit(C.normalize({ ...App.state, charms: [] })); },
+    // "I have it" in the detail: marked found (in a two-version slot, as that slot's version) and still read there.
+    ownHere(node) {
+      const id = node.dataset.id;
+      const slot = C.OWN_SLOT_OF[id];
+      App.detailSel = id;
+      setOwned(slot ? C.ownSet(App.owned, slot, id) : [...App.owned, id]);
+    },
+    /* The equipped ones leave one after another, from the last, as dust; then the notches empty.
+       The fixed one (Void Heart) stays. Without motion, at once. */
+    clear() {
+      if (!App.state.charms.length || clearing) return;
+      const lock = App.charmLock();
+      if (lock) { toast(lock); return; }
+      // From the state when it's applied, not when pressed: whatever changed meanwhile stays.
+      const empty = () => commit(C.normalize({ ...App.state, charms: [] }));
+      const tiles = [...el.panel.querySelectorAll('.inv-band .eq-row .eq')].filter((n) => !isFixed(n.dataset.id));
+      if (calm.matches || !tiles.length) { empty(); return; }
+      tiles.reverse().forEach((n, i) => n.style.setProperty('--i', i));
+      el.panel.querySelector('.inv-band .eq-row').classList.add('is-clearing');
+      clearing = true;
+      setTimeout(() => { clearing = false; empty(); }, CLEAR_STEP_MS * (tiles.length - 1) + CLEAR_MS);
+    },
     detail(node) {
       prefs.detailOpen = !prefs.detailOpen;
       savePrefs();
@@ -817,6 +910,15 @@
      flicker. With the keyboard, the focused charm is the chosen one. And hovering a chip in the
      full sheet lights up on the grid the charm that moves it. */
   const charmTile = (n) => (n && n.closest ? n.closest('.quick-grid .qc, .eq-row .eq') : null);
+  /* A click pins the charm (hoverHold): on the way from it to the detail —to press "Mark as found",
+     say— the pointer crosses other charms, and passing over them must not take its place. While
+     pinned, a charm only takes over if the pointer rests on it (HOLD_MS); leaving the grid ends the pin. */
+  const HOLD_MS = 400;
+  let hoverHold = false, holdTimer = 0;
+  function hoverTo(id) {
+    App.detailHover = App.previewId = id;
+    paintDetail(false);
+  }
   el.panel.addEventListener('mouseover', (ev) => {
     const chip = ev.target.closest('[data-charm]');
     if (chip) for (const id of chip.dataset.charm.split(' ')) {
@@ -826,14 +928,22 @@
     if (!hoverable.matches) return;
     const tile = charmTile(ev.target);
     if (!tile || tile.dataset.id === App.detailHover) return;
-    App.detailHover = App.previewId = tile.dataset.id;
-    paintDetail(false);
+    clearTimeout(holdTimer);
+    if (hoverHold) {
+      if (tile.dataset.id === App.detailSel) return;
+      holdTimer = setTimeout(() => { hoverHold = false; hoverTo(tile.dataset.id); }, HOLD_MS);
+      return;
+    }
+    hoverTo(tile.dataset.id);
   });
   el.panel.addEventListener('mouseout', (ev) => {
     if (ev.target.closest('[data-charm]')) for (const tile of el.panel.querySelectorAll('.qc.is-hot')) tile.classList.remove('is-hot');
-    if (!App.detailHover || !charmTile(ev.target)) return;
+    if (!charmTile(ev.target)) return;
+    clearTimeout(holdTimer);
     const to = ev.relatedTarget;
     if (to && to.closest && to.closest('.quick-grid, .eq-row')) return;
+    hoverHold = false;
+    if (!App.detailHover) return;
     App.detailHover = App.previewId = '';
     paintDetail(false);
   });

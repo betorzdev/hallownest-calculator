@@ -690,3 +690,20 @@ test('spells, impact by impact: how many land decides the damage and the stagger
   assert.deepEqual(a.kinds(evs), ['spellMiss']);
   assert.deepEqual([a.target.hp, a.st().n, a.f.soul], [5000 - 40, 2, 33]);
 });
+
+test("the summary's counters: health taken, soul spent and Focus used", () => {
+  const { f, run } = arena(['lbheart']);
+  assert.deepEqual([f.taken, f.soulSpent, f.focuses], [0, 0, 0]);
+  run({ type: 'spell', key: 'vs' });
+  run(hit(2));                      // the 2 lifeblood go first: they count as taken too
+  run(hit(1));
+  run({ type: 'focus' });
+  assert.deepEqual([f.taken, f.soulSpent, f.focuses], [3, 66, 1]);
+  run({ type: 'strike' });          // your own actions don't count as taken
+  run(hit(1, true));                // nor does what Carefree Melody would have negated without the charm: it's a real hit
+  assert.equal(f.taken, 4);
+  const left = FT.total(f);
+  run(hit(1), { radiant: true });   // on Radiant, everything you had left
+  assert.equal(FT.alive(f), false);
+  assert.equal(f.taken, 4 + left);
+});

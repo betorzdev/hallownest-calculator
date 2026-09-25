@@ -19,14 +19,20 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
 
 - **Header**, in one row: the title under the game's filigree —the one from the Hall of Gods
   screen, `assets/hall/tablet-hdr.png`, white as there and small—, which is the header's only
-  ornament and, like the logo on almost any website, a link to the start screen (Charms), and
-  on the right what applies to the whole site: the language (English / Español; until you
-  choose, the site follows the browser's language, English if it's neither) and *Share*. Behind
+  ornament and, like the logo on almost any website, a link to the start screen (Charms). On
+  its left, what belongs to the site: the language (English / Español; until you choose, the
+  site follows the browser's language, English if it's neither) and *Share*. On its right,
+  what's yours: the save selector (the Knight and the save you're playing, or *Select save* in
+  free mode; it opens [its screen](#saves)). It isn't a footnote link: the Knight stands under a
+  lamp's light that breathes, the label goes in the game's menu capitals, and on hover or focus
+  the Knight lights up and the menu's pointers appear either side. Behind
   it, **20 dust motes** rising slowly, as in the main menu; with `prefers-reduced-motion` they
-  don't appear. On mobile it centres and the language and *Share* drop to their own row.
+  don't appear. On mobile it stays in one row, so content starts sooner: the title on the left,
+  smaller and without its filigree, and the Knight (with the save's number, if you're in one),
+  the language and *Share* on the right.
 - **The screen bar**, which stays stuck at the top: **Charms · Your game · Combat · Journal**,
-  in the serif and in lowercase, with an accent diamond in front of the one you're viewing
-  (that's how the game marks the page of its menu); the Journal carries your completed entries
+  in the serif and in lowercase, with an accent rule under the one you're viewing, lying on the
+  bar's bottom edge like a page tab (the same mark as Combat's tabs); the Journal carries your completed entries
   over the total alongside ("2/146"). On the
   right, the **mini-bar**: nail damage, DPS, the mask, soul and a notch, with the game's sprites
   and the same flash as the sheet, to see them while you scroll down (on mobile, when you reach
@@ -35,6 +41,12 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   its bindings, which may not be the sheet's. The screen goes in the URL (`view=`, in "State and
   link"): **Back and Forward** move from one to another without touching the build —going back
   from *Your game* doesn't return the nail you had—, and on reload you stay where you were.
+  They also walk through the places inside a screen, which the history entry carries (not the
+  URL): Combat's tabs (Arena, Hall of Gods, Pantheons), the arena's Journal open, a Hall
+  statue's fight, the tablet and, on mobile, the plaque and the Journal's page read in place of
+  their list. A "‹" button, closing the tablet or the Journal undoes the entry that opened them
+  (it's Back), so the history doesn't pile up. The marks, a half-done fight and the build
+  aren't places: Back doesn't touch them (`navNow`, `navTo` and `App.navParts` in `js/app.js`).
   Switching screens scrolls up to its start, just below the bar. Only the chosen one shows,
   but the others keep being painted, hidden (`showScreen` in `js/app.js`): that way one's HUD
   doesn't animate on return what happened while you were looking at another.
@@ -142,8 +154,10 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
       chosen charm: on one row its name (and below it, in the other language), what it costs in
       the game's notch points —in magenta if it would overcharm you—; below, its line, a status line (overcharm, replaces, doesn't
       fit, needs…) and **what changes in your build, before → after**, with the synergies with
-      what you already wear at the end of each line. **It's always the same size**, also with no
-      charm chosen, so the band doesn't grow or shrink when going from one to another: the line
+      what you already wear at the end of each line. With no charm chosen it shows **what the
+      charms you wear add up to**: your sheet against the same build with only Void Heart, in
+      the same before → after rows, and how to use it at the foot (with no charms of your own,
+      only that). **It's always the same size**, also with no charm chosen, so the band doesn't grow or shrink when going from one to another: the line
       takes two lines at most (whole in its `title`), each change one and the list six; if there
       are more —Joni's Blessing and Shaman Stone—, the last one says how many remain and opens
       them on the full sheet, highlighted. It's what a floating inspector used to do, and the 45
@@ -187,6 +201,49 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   **it goes away by itself** after 4 s (`--dur-delta`, `changeChip`): it's a notice. The
   distance to the reference (base, no charms or pinned) is read on the full sheet, which is
   where it's chosen. The deltas are coloured text, unboxed.
+- **What arrives moves once, too** (`App.was` in `js/app.js`: the build and the charms found
+  before the change, only for the repaint that follows it). The charm you equip comes into
+  *Equipped* as a light that settles and lights up once on the grid, and its notches fill one
+  by one from the left; removing it, they drain from the right. *Clear* sends the equipped
+  ones away one after another, from the last, fading as dust, and only then empties. The detail
+  fades into another charm when it changes. On Your game, the masks, vessels and notches you add
+  light up from the dark in order (the ones you remove let their light go), the nail you pick
+  takes the spotlight, and a spell, art or ability you learn (or a new level of it) lights its
+  plate; a charm you mark as found lights up on its grid. Screens fade in when you switch
+  between them. It's all fades and light, no slides or bounces (`design/00-system.md`, Motion),
+  and with `prefers-reduced-motion` only the result is seen.
+- **With a mouse, what can be pressed says what it will do.** The nail damage and the six figures
+  open the full sheet at their row: on hover the label takes the accent and the figure a soft
+  white glow. The HUD previews the click, like Your game's pieces: the masks it
+  would fill come up to half light and the ones it would empty go dim; a vessel shows whether it
+  would fill or empty; and the orb shows the level a spell would leave, orb first and then the
+  vessels. The spell, art and effect plates light their artwork and their halo swells a little.
+  What can't be pressed (health, soul, the nail) doesn't react.
+  Across the site the same rule holds: the screen bar shows the current tab's rule, faint, under
+  the one you point at; on Your game the nail you point at takes a faint spotlight and the plates
+  light up; in Combat an attack's artwork takes the light and the Journal picker's row its
+  portrait; in the Hall a difficulty you haven't marked shows its symbol at half and the statue
+  brightens; on the Pantheons a binding not marked on the door previews its light; and the Journal's
+  rows light their medallion.
+- **What's only to look at moves by itself**, slowly, as the game's lights and objects do (and not
+  at all with `prefers-reduced-motion`): the Hunter's light and the Void Idol's breathe, and so
+  does the chosen pantheon's boss; the enemy on the arena's stage floats; the diamond of each
+  screen's rule glints now and then. On the HUD the soul's surface rises and falls a hair, a
+  lifeblood mask breathes its blue, and the orb's rim glints while there's enough for a spell or a
+  Focus.
+- **The buttons are the game's menu items** (`.btn`), like the save slots': the menu's capitals, no
+  box, and on hover or focus the menu's two pointers either side, which are also the focus mark.
+  So that they read as buttons at rest too (on a phone there's no hover), each one sits between
+  two hairlines in the accent that fade out at both ends; faint, they light up under the pointer.
+  The one the screen leads to (*Enter the pantheon*, *Again*, *Import from the game*…) goes in bone
+  with its hairlines whole and a soft light behind it; *Give up* turns red under the pointer, like *Clear Save*. The
+  segmented choices (the import's systems, the Journal picker's kinds, what to compare the sheet
+  with) are words in a row with the chosen one over the accent's rule.
+- **The notices** (*Link copied*, a charm you can't touch in a pantheon, no soul for a spell…) are
+  the game's on-screen messages, not a web card: the text in the game's face just under the
+  screen bar —where the Journal's notice goes, and under the arena's band when it's out—, between two short rules with their diamond, over a soft dark veil so it reads on
+  anything. It fades in, holds 2.4 s and fades out (`toast` in `js/app.js`). Every notice goes
+  through it, the Journal's included, and its figures go in the numbers' face, not in Cinzel.
 - **One tint per section**, the system of the game's map screen (`design/00-system.md` §3):
   Charms, the guide and Your game, in City of Tears' (`--tint-sheet`); combat, in Crystal
   Peak's (`--tint-combat`); the Hall and the Pantheons, in Godhome's. It tints the section
@@ -208,13 +265,25 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   boxes inside: what you've achieved in the game. Under the title, two starting points, as text:
   *Base Knight* (a new game's: Old Nail, 5 masks, 3 notches, no Dream Nail, no cloak and no
   charms: it removes those too) and *Everything maxed* (every upgrade, keeping
-  your charms). Below, in two rows: the five nails standing in a row,
+  your charms). Below, **two columns that don't share rows**, so a tall block leaves no hole
+  beside it: on the left what you learn (the nail, its arts, the spells and the abilities), on
+  the right what you collect (the body and the charms found); on mobile, one column in the
+  order nail, body, arts, spells, abilities, charms. The five nails standing in a row,
   with their damage below and the cold spotlight behind the one you carry, and the body —masks,
-  soul vessels and notches— with the game item that raises it next to its −/+; and the arts and
-  the spells as small plates you tap (as a silhouette what you haven't learnt, with its figure
-  what you have, and the spells with their two levels). Below, the **abilities** that change
-  some number, with the same plates: the Dream Nail (yes or no), the cloak (no cloak, Mothwing
-  Cloak or Shade Cloak) and Grimmchild's phase (I–IV), which only shows if you have it among
+  soul vessels and notches— **with the game's own pieces**: a row of masks, the vessels and the
+  notches, lit up to what you have and shadowed after, like the HUD's lost mask. Tapping a
+  dark one lights up to it; tapping a lit one takes it off with every one after it, so one tap
+  reaches any value (with 3 vessels, the first leaves none), and with the mouse the ones that
+  would go dim before you click. The ones every Knight starts with (5 masks, 3 notches) can't
+  be removed. **Lowering the notches keeps a state the game allows**: a charm only goes on with at
+  least one notch free (the last one may overcharm you), so the last ones you equipped come off
+  until the order you wore them in could have happened, and a notice says which (`normalize`
+  in `js/codec.js`, which applies it to links too). Next, the arts and the spells as small plates you tap (as a silhouette what you
+  haven't learnt, with its figure what you have), and under each spell **its two levels as
+  their own artwork** (Vengeful Spirit and Shade Soul…) after a dimmed "—" for not learnt; the
+  chosen one carries the accent's veil. Below, the **abilities** that change some number, with
+  the same plates: the Dream Nail (yes or no), the cloak (no cloak, Mothwing Cloak or Shade
+  Cloak, chosen by their artwork) and Grimmchild's phase (I–IV, four of the game's notches), which only shows if you have it among
   your charms found —it belongs to the charm, and whoever banishes the troupe has Carefree
   Melody in its place— and whose IV needs the Dream Nail, because it's won by defeating
   Nightmare King Grimm (wiki, "Grimmchild"). Next to them, the **charms found**, on the game's grid, shadowed the
@@ -228,7 +297,15 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   (`normalize` in `js/codec.js`). Changing the collection removes whatever you wear and no longer have.
   Everything maxed is the end of the game: the unbreakable ones, Void Heart and Grimmchild. On
   Charms, the ones you don't have also show shadowed: they're looked at like the rest (the
-  detail tells what they would do and says "Not found"), but they aren't equipped. They're
+  detail tells what they would do and says "Not found"), but they aren't equipped. **They're
+  unlocked right there**: while some are missing, the grid's hint says so ("the dimmed ones can be
+  unlocked"); the tile itself carries no mark (a "+" on it looked like a button of its own, and
+  it wasn't); under the mouse the detail says
+  "Not found: click to unlock it", and clicked (or tapped) the detail shows a real button, **Mark
+  as found**, without going to Your game (in a two-version slot, as that version); then the grid
+  equips it as usual. **A click pins the charm in the detail**: on the way from the grid to the
+  button the pointer crosses other charms, and passing over them doesn't take its place; only
+  resting on one (0.4 s) does, and leaving the grid ends the pin. They're
   saved apart from the build (`hollow.owned`), because they're your game and not what you're
   wearing, and the two starting points set them: the Base Knight, none; Everything maxed, all. On mobile, in one column.
   Masks and vessels are added whole, one at a time: the site doesn't keep count of your
@@ -264,7 +341,7 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
 
 ## Files
 
-- `index.html` — the page; eighteen classic scripts (it works over `file://`) and GoatCounter's,
+- `index.html` — the page; twenty-one classic scripts (it works over `file://`) and GoatCounter's,
   the visit counter: no cookies, one visit per page load and, as events, the screen switches
   (`screen-*`), the language (`lang-*`) and *Share*. The hash with the build is never sent, and it
   counts nothing over `file://`, on `localhost` or in an iframe. Without it the site works the
@@ -333,6 +410,14 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   Pure, no DOM and no language: `js/app-arena.js` turns its events into log lines. The reason for
   each rule, charm by charm, is in `design/04-charms-in-combat.md`.
 - `js/codec.js` — the build's state: defaults, presets, equipping rules and the URL encoding.
+- `js/saves.js` — free mode and the four save slots over `localStorage`: what goes in a slot,
+  switching, a new game, clearing one and importing into one. Pure, with the storage passed in
+  (`test/saves.test.js`).
+- `js/savefile.js` — the game's save file (`userN.dat`) read and turned into a slot: the
+  header, base64 and AES-256-ECB (written by hand: `crypto.subtle` has no ECB and isn't there
+  over `file://`), then `playerData`'s fields mapped to the build, the charms found, the
+  Journal, the Hall and the door. The field names are checked against the game's text and the
+  site's lists in `test/savefile.test.js`, which also makes a `.dat` with Node's AES and reads it back.
 - `js/app.js` — the core: state, `localStorage` and the link, the header, the screen bar and
   the mini-bar, the HUD (`hudHtml`), the general render and the events. Each screen has its own
   script, loaded after it, and they all share the `HK.app` object: what changes value lives
@@ -345,6 +430,8 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   - `js/app-hall.js` — the Hall of Gods tab: marks, statues, plaque and tablet.
   - `js/app-pantheons.js` — the Pantheons tab: the lifeblood door and the run room by room.
   - `js/app-journal.js` — the Hunter's Journal screen: your game's book.
+  - `js/app-saves.js` — the Saves screen: free mode, the four slots and their buttons, and the
+    import view (steps, drop zone, preview).
   - `js/app-boot.js` — startup: what's saved, the link and the first render. It goes last.
 - `assets/` — the game's artwork: `charms/`, `nails/`, `spells/`, `arts/`, `abilities/`
   and `hud/`. `tools/fetch-icons.js` downloads them from the wiki's CDN (`npm run icons`).
@@ -385,6 +472,8 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
     It goes inside an iframe because headless Chrome crops below 500 px wide.
     `view=charms|game|fight` picks the screen (it also goes in the iframe's hash, because a
     link with a build and no `view=` opens Charms; `fight=1` and `tab=` already mean Combat).
+    `view=saves&saves=1` opens Saves in free mode with slot 2 halfway through a game
+    (`&slot=2` makes it the active one).
     `open=<id>` focuses that charm on the grid, with its detail alongside; `hover=<id>` hovers
     it, with the preview on the figures (the capture needs `debug-hover.html`'s
     `--blink-settings`), and `fx=<ms>` freezes
@@ -433,12 +522,14 @@ are still here with their Attuned health, which is the only one they have outsid
 Its three tabs —Arena, Hall of Gods and Pantheons— are the screen's title, centred over its
 rule, and it's **another Inventory screen**: the same black, with the corner brackets in the section's tint (Crystal
 Peak's on the Arena, Godhome's in the Hall and the Pantheons), and no slate boxes inside. What
-can be touched goes without a background: your attacks, which carry their artwork from the
-game, without a rule; the enemy's, which are just text, with a thin one. On hover it's veiled
+can be touched goes without a background, and your attacks and the enemy's are the same cell
+with a thin rule (yours carry their artwork from the game). On hover it's veiled
 (`--veil`), and the chosen one carries the accent's veil and rule (`--picked`, the same as on
 Your game). The enemy has behind it the same cold spotlight as the Knight opposite, and who
-you're hitting is marked by an accent rule on its left. The pantheons are chosen like statues:
-their final boss standing on Godhome's light, with the pedestal's stone rule.
+you're hitting is marked by an accent rule on its left. The pantheons aren't statues but doors:
+each final boss stands in an arch of Godhome's light with a thin gold frame, rising from the
+threshold, lit on the chosen one and under the pointer (`--pantheon-door*`), so they don't
+repeat the Hall's niches.
 
 - **The picker is the Hunter's Journal**, traced from the game's screen. On the left, the list
   **in Journal order** (roughly the order in which you run into them, not alphabetical), each
@@ -458,9 +549,9 @@ their final boss standing on Godhome's light, with the pedestal's stone rule.
     bosses leaves *Bosses 0 · Enemies 1* and tells you where to look. The arrows move the entry
     being read (from the search box or from the list), `Esc` clears what's typed and, if it
     was already empty, closes the Journal.
-  - Whoever hasn't picked anyone **starts against False Knight**, the game's first boss, so
+  - Whoever hasn't picked anyone **starts against Crawlid**, the Journal's first entry, so
     that combat never comes out empty. *No enemy* is at the foot of the list and then
-    **combat opens on the Journal**; on reload False Knight comes back.
+    **combat opens on the Journal**; on reload Crawlid comes back.
     It isn't a dropdown: it pushes the arena down and doesn't close on a tap outside.
   - The 23 entries without their own Journal entry go **after their original**: the dreams
     (Failed Champion after False Knight), the Godhome versions and the Zotelings of the Eternal
@@ -469,9 +560,15 @@ their final boss standing on Godhome's light, with the pedestal's stone rule.
     its text.
   - On mobile the list and the page take turns: tapping a row moves to the page, and
     *‹ Journal* goes back.
+The arena comes in three bands, so a whole exchange fits on one screen without scrolling:
+**the stage** (you and whoever is in front, face to face), **the commands** (your attacks and
+theirs, side by side) and **the log**. On mobile they go one under the other: your scene, the
+scoreboard in a row, the enemy, their attacks before yours, and the log.
+
 **An enemy isn't a health bar**, and that's why the arena is one card per entity:
 
-- On the left, **you**, as a scene from the game. At the top, the **HUD** as the game paints
+- On the left of the stage, **you**, as a scene from the game, under your name in the same
+  capitals as the enemy's title. At the top, the **HUD** as the game paints
   it: the soul orb **filled up to the soul you carry** (the sprite is clipped between the edges
   of its disc, so empty not even the halo shows), the frame's tail with the masks on it —the
   lost ones, shadowed; lifeblood, blue and leaving no gap— and the reserve vessels, each with
@@ -484,10 +581,45 @@ their final boss standing on Godhome's light, with the pedestal's stone rule.
   mask** he gives off black smoke (`Knight_One_Mask.gif`), on falling **his Shade** remains, and
   when overcharmed the HUD carries **its purple aura** behind the masks (`Overcharm.png`).
   Without motion (`prefers-reduced-motion`) you see how it ends up, not how it changes.
-- Below, **your attacks**, each with its artwork from the game. They come from your sheet, so
-  they change with you: the nail (and the soul it gives), the arts and spells you've learnt
-  —with what they cost— and *Focus*.
-- Opposite, **one card for each thing in front of you**, and each with **its own attack
+- On the right, **whoever you're hitting**, on its own cold spotlight and a mirrored foreground,
+  under **the title card the game shows when the fight starts**: the small line, the big name
+  and, in some, the line below («Madre» big and «Gruz» under it, as the Spanish game has it).
+  They come from the game's text (`<KEY>_SUPER`, `_MAIN`, `_SUB`), 46 bosses in `TITLES` in
+  `js/enemies.js`; whoever has none shows its name. Under the title, the phase, the total and
+  the "?"; then its bar, like a boss's, with its figures. What happens to it is animated from the
+  last thing painted, like your HUD: the hit **flashes it white** and pushes it back a little,
+  **the figure it took rises and fades**, the bar leaves **a pale trail** of what was lost, a
+  **new phase** is announced like an area on entry, staggered it bows and dims, and when the fight
+  ends **it dissolves into the main menu's dust**. With several bars, the stage shows the one
+  you're hitting.
+- Between the two, **the scoreboard**: your **nail hits to win** (what's standing, what's
+  waiting in the queue and the phases to come; with a decisive part standing, only that one)
+  and how many of **its strongest attack you can still take** (its title says which and how many
+  masks; on Radiant, one). It moves with each action. Under it, **Undo**.
+- **The band.** Your attacks and theirs are a long list, and scrolling down it would leave
+  the Knight and the enemy out of view. When the stage leaves the screen (less than 160 px of it
+  still in view), **a band sticks under the bar with the same face-off in small**: the Knight with
+  his HUD, the scoreboard and Undo, and whoever you're hitting with its portrait and bar. It's
+  painted from what the stage has just painted, so the same hit flashes and its figure rises
+  there too. It takes the place of the bar's scoreboard (on mobile it covers that row, in two rows
+  of its own: your HUD and the scoreboard, and the enemy below) and goes when you scroll back
+  up. It repeats what the stage says, so the screen reader skips it.
+- **Undo** (and **Ctrl+Z**, Cmd+Z on a Mac) takes back the last action: yours, theirs, a summon
+  or closing the heal. The whole fight is copied before each one —with Carefree Melody's
+  counter and, in a pantheon, the run's health—, up to 50. Choosing who you hit or which
+  impacts land isn't undone: they're changed with a tap. The stack empties on reset, when the
+  enemy or the room changes and when the build changes mid-fight. The finishing blow can be
+  undone too.
+- In the commands, **your attacks**, in four groups: **Nail** (the nail and its arts),
+  **Spells**, **Soul** (Focus and the Dream Nail) and **Charms** (Sharp Shadow, the Weaverlings,
+  Dreamshield and *Wait*); only the ones you have show. Each is a cell with its artwork from the
+  game on a small spotlight, the figure opposite, the name and, below, the soul it costs or gives
+  with the game's soul. When it can't be done right now, it says why ("Not enough soul",
+  "Already at full health"). They come from your sheet, so they change with you.
+- Next to them, **their attacks**: the same cell without artwork, with the figure in bone and
+  the game's mask, which already says what it takes. With a single entity in front, its card
+  doesn't repeat the stage: only its attacks show. With several, **one card for each thing in
+  front of you**, and each with **its own attack
   buttons**. The Mantis Lords open with one of 210 and in phase 2 they're two of 160; the
   Watcher Knights are six of 220 but **never more than two standing**; the Sisters of Battle,
   one of 500 and then three of 750. What you see is the game's bar, not the sum. **Each card
@@ -497,8 +629,9 @@ their final boss standing on Godhome's light, with the pedestal's stone rule.
   attacks** (the attack's `by` field, from each boss's wiki page): the Tamer only has the Jump
   and the Beast, Roll and Spew; Oro carries Dash-Slash and Mato Cyclone Slash; and the maggot
   doesn't attack, because it's False Knight's stagger: its card says *Does not attack*.
-- **The minions come out for real**: the *Summon* button gives them their own card, smaller and
-  indented, with their attack and their health. Broken Vessel's Infected Balloon is worth
+- **The minions come out for real**: the *Summon* button, with the minion's portrait on it so
+  you see what comes out, gives them their own card, smaller and indented, with their attack
+  and their health. Broken Vessel's Infected Balloon is worth
   **1**, not the 15 it's worth on its own. Killing them gives soul, which is what they're for.
   - **It isn't only bosses that summon**: so do Aspid Mother (Aspid Hatchling), Carver Hatcher
     (Dirtcarver), Elder Baldur (Baldur) and Husk Hive (Hiveling), and some husks in Deepnest
@@ -515,7 +648,12 @@ their final boss standing on Godhome's light, with the pedestal's stone rule.
 - **Their attacks** are the ones the wiki documents, each with the masks it takes from you.
   Almost everything deals 1; the late bosses deal 2, and that's marked attack by attack (False
   Knight's Slam deals 2, his shockwave 1).
-- The **log** notes each hit with its sum, which is the point: the arithmetic is visible.
+- The **log** notes each hit with its sum, which is the point: the arithmetic is visible. It
+  speaks in two voices and a narrator: yours with a small nail stroke, theirs with the mask they
+  took, and the phases, the stagger and whoever comes in, centred between two rules.
+- **The ending** carries the fight in figures under its title: the time your actions took and
+  the damage per second (if the clock ran), the hits dealt, the health lost, the soul spent and
+  the heals, and *Again*. The Hall and the pantheon rooms show the same figures.
 
 Rules of their own that the simulator honours because the wiki documents them: **False
 Knight** alternates armour (65) and maggot (40) over seven phases —three of armour and four of
@@ -621,7 +759,7 @@ and Flukenest doesn't damage the other two on the ground.
 
 **What doesn't read on its own, explained where it is.** In front of each row of notches, the
 word **land** acts as a legend, and "left · right" says in its title that it's the side where
-you have the enemy. For the rest, a **"?"** at the end of the row opens below it, pushing and
+you have the enemy. For the rest, a **"?"** at the right of the attack's name opens below it, pushing and
 covering nothing, one to three lines with your sheet's figures and the sum in view. Only four
 of your attacks carry it: the **spells with notches** (which impact each one is —the fall, only
 if you land on them; the 1st burst, 35 on your left and 30 on your right—, why the bursts or the
@@ -655,7 +793,9 @@ it's for rehearsing a boss.
   Vessel, Soul Master, Dung Defender, Grimm) carry two bosses, and here that pedestal splits into
   two halves with a shared frame; the dream version carries the Dream Nail.
   The double ones take two cells, and the grid fills the gap left by one that doesn't fit at the
-  end of a row with the next statue.
+  end of a row with the next statue. Grimm's is the exception: it's the last double one and only
+  Absolute Radiance comes after it, so it goes as two single pedestals and Troupe Master Grimm
+  fills that gap himself; Absolute Radiance stays last.
 - **The statues are the game's** (`assets/hall/`), almost black sculptures: on the page's
   blue-black they vanished, so each one carries **a light** behind it, not a box: a radial halo
   in Godhome's gold, that area's inverted palette (`--godhome-light*`, `css/tokens.css`), faded
@@ -668,7 +808,10 @@ it's for rehearsing a boss.
   hits of its own you survive at full health (on Radiant, one). Below, *Fight on* Attuned,
   Ascended or Radiant, and what changes about its arena in the Hall.
 - **The symbols are your real game's** —bronze, silver or radiant, the game's badges— and they're
-  marked by hand: each difficulty in the plaque's table is a button. Each one goes on its own, as
+  marked by hand: each difficulty in the plaque's table (the *In your game* column) is a button
+  with the game's empty ring where its symbol goes, tinged with the accent so it reads as
+  something to press; beaten, the badge sits in it. Under the mouse it previews the click, like
+  the notches: the badge you'd put breathes in, the one you'd remove fades. Each one goes on its own, as
   in the game (beating Ascended doesn't give you the Attuned one), with the game's rule that
   Radiant only exists after beating Ascended: marking Radiant switches on Ascended and removing
   Ascended switches off Radiant. They show as three small badges under each statue
@@ -679,9 +822,15 @@ it's for rehearsing a boss.
   simulator only shows how your build performs against that statue. That's why the three
   difficulties are always open, just as you can skip to any room in a pantheon.
 - **Each count is a filter**: tapping *33/44 Attuned* dims on the grid the statues already
-  beaten at that difficulty and leaves lit the ones still to go; a line says how many.
+  beaten at that difficulty and leaves lit the ones still to go; a line says how many. Switching
+  filters, the lights fade out and back on instead of snapping.
+- **Marking on the plaque is seen**: the symbol inks in from a blur with a burst of light, on the
+  plaque and on the statue's tile, its count flashes and the statue's light swells once; removed,
+  its light goes out. If the Idol changes level, it lights up too.
 - **Mark in bulk**, collapsed under the Idol's rules, marks or removes a symbol on all 44 at
-  once, difficulty by difficulty, with the same Radiant-and-Ascended rule as the plaque.
+  once, difficulty by difficulty, with the same Radiant-and-Ascended rule as the plaque. Open,
+  it stays in the Idol's column: *Mark all* and *Remove all*, each with the three badges in the
+  counts' order (the name and the rule go in each button's title).
   What wouldn't change anything is dimmed. Removing wipes your real game, so the last bulk
   action leaves a line with *Undo*, which lasts until the next change of marks and doesn't
   expire on a timer.
@@ -692,8 +841,10 @@ it's for rehearsing a boss.
   and down go to the closest one in the neighbouring row, which with the double pedestals isn't
   always the same column.
 - **The entrance tablet.** In the game, at the Hall's entrance there's a tablet you read that
-  shows all 44 at a glance; here it's the *Read the tablet* button, next to the Idol, and it
-  shows the same screen, traced from its screenshot on the wiki ("Screenshot HK Hall of Gods 03"):
+  shows all 44 at a glance. Here it's always in view in miniature on the Idol's row, in the full
+  one's shape: its two ornaments and the 44 in four columns of eleven, each with its highest
+  symbol and its name, small (in the dense cells' sans; a name too long for its column takes two lines). On a phone the names don't fit and it shows the symbols alone.
+  Tapping it reads the full tablet, which shows the same screen, traced from its screenshot on the wiki ("Screenshot HK Hall of Gods 03"):
   the two Godmaster ornaments (`GMHr` and `GMFtr`, which are exactly the screenshot's), the title
   *Hall of Gods* —the only place in the game where that name appears, `GG_SUMMARY_TITLE`— and
   **four columns of eleven**, each name with **the highest symbol you have** in front of it; the
@@ -701,6 +852,7 @@ it's for rehearsing a boss.
   measured on the screenshot of a half-finished game. **It doesn't cover the site**: it's read
   inside the Hall, in place of the grid and the plaque (the Idol and its counts stay on top), on
   the frame's black, with no veil or box; until 22 September it was a full-screen `<dialog>`.
+  Opening, it fades in and the names appear down the columns; closing, the statues fade back in.
   You go back to the statues with *‹ Statues*, at the top left, in the tablet's typeface and ink
   (the game's *Exit* sits by the bottom ornament because that's a controller spot), with Esc or
   with *Read the tablet*, which stays pressed while it's being read. It isn't saved: on leaving
@@ -733,13 +885,21 @@ The third tab of the same section. It's a real run: health, lifeblood and soul c
 room to the next, and **the rests are the only thing that heals**.
 
 - **Before going in** you choose the pantheon (all five, with their motto and their final boss)
-  and the **bindings** you want —each with its icon and what it does—. With all four at once
-  they light up in gold, as in the game.
+  and the **bindings** you want —each with its icon and what it does; the ones on, lit and with
+  the chosen veil—. With all four at once they light up in gold, as in the game. Right under
+  them, **what you're about to enter** —the pantheon, its rooms and the bindings on— with
+  *Enter the pantheon* beside it; the door and its cocoon come after.
+- **Rooms and bosses.** Each pantheon's card and the summary say how many rooms it has and how
+  many of them are bosses (the fight rooms: two Vengefly Kings in one room are one boss). Inside
+  the run, the header says which room you're in and how many bosses are left: the fights still
+  ahead, the current one until you win it; the ones you skipped behind you don't count.
 - **The lifeblood door, from your game.** Under each pantheon you mark by hand the bindings you've
   finished it with (and "×4" if it was with all four at once). They're the notches of Godhome's
   door, next to the Hall of Gods: each binding of each pantheon counts once (20 in total) and
   with 8 it opens: every pantheon bench carries a cocoon of 3, 4 or 5 germs (with 8, 12 or 16). The site deduces it and
-  the rest room uses it; the simulator marks nothing (it's saved in `hollow.bindings`).
+  the rest room uses it; the simulator marks nothing (it's saved in `hollow.bindings`). A binding
+  you mark lights up; completing the four, they light up one after another in Godhome's gold and
+  the final boss's light swells.
 - **The bindings really change your numbers**, because the engine applies them: the Nail
   Binding leaves the hit at 4/7/10/13/13 (6/10/15/20/20 with Strength) and the arts go on that
   value; the Shell Binding, 4 masks without touching Lifeblood Heart's +2; the Charms Binding,
@@ -762,14 +922,22 @@ room to the next, and **the rests are the only thing that heals**.
   the run, everything responds again.
 - **The rest of the build freezes on entry** —nail, masks, vessels, spells and arts—, as in the
   game: changing them on *Your game* halfway doesn't touch the pantheon.
-- **The timeline** has one tile per room: cleared ones dimmed and with their mark, the current
-  one with the accent, the one you fell in in red. The rests can be spotted at a glance by the
-  bench's banner.
-- **You can go straight to any room** by tapping its tile, to rehearse a fight or try a rest
+- **The timeline is a path through Godhome** (`pathHtml`): the rooms as round medallions on a
+  thin gold thread, which lights up as far as you've walked. The benches and the Godseeker's rooms
+  are larger marks on it, cutting it into the stretches the pantheon is played in, and the final
+  boss goes last and largest, in its doorway of light. The rooms still to go show their boss, a
+  little quieter, so you see everyone you have left; the cleared ones, a gold ring and a small tick; the current one, larger, with the accent's ring glowing and the Knight floating over it, like
+  his pin on the game's map, so you find it at a glance; the one
+  you fell in, in red. The number goes under each one. The pantheons of 12 rooms fill a row with
+  larger medallions; Hallownest's 53 wrap onto several.
+- **The way through, before going in**: on the picker, under *Enter the pantheon*, the chosen
+  pantheon's path with every room lit, to see who you'll face and where the benches are. Tapping
+  a room enters the pantheon straight into it (what's before counts as skipped).
+- **You can go straight to any room** by tapping it, to rehearse a fight or try a rest
   without going through everything before it. You arrive with whatever you had —also if you
-  skip halfway through a fight—, and **what's skipped doesn't count as cleared**: those tiles
-  carry a dash and, if you finish that way, the ending says "finished, with N rooms skipped",
-  not "completed".
+  skip halfway through a fight—, and **what's skipped doesn't count as cleared**: those rooms
+  are struck through and, if you finish that way, the ending says "finished, with N rooms
+  skipped", not "completed".
 - **The fights** use the usual arena, with Attuned health, and on winning they offer the next room.
 - **At the rests you choose what to do and in what order**: bathing in the hot springs (soul and
   masks to the maximum), sitting on the bench (all health and the charms' lifeblood; not soul;
@@ -827,13 +995,17 @@ inside. The game's notice when marking shows fixed just below the bar.
   - **the Hunter's Mark** waits for the 146 completed (it says how many are left) and then
     offers the Hunter's button, "Ready to receive reward?". For Flukemunga one is enough,
     according to the wiki. Removing one of the 146 removes the Mark, just as removing Ascended
-    removes Radiant.
+    removes Radiant. Receiving it is its own moment: the Hunter's light swells in the Journal's
+    tint and dust rises from him.
 - **Tabs by state**, under the search box, each with its count and with the words of each
   entry's control: *All · Not encountered · Encountered · Completed*. From *All*, a tab keeps
   only those; with one chosen, another adds or removes itself, so the combinations fit (not
   encountered and encountered is what you're missing; encountered and completed, the game's
   list), and with none *All* comes back. The counts follow the search, and the entry you're
-  reading never disappears because of a filter.
+  reading never disappears because of a filter. Changing tabs, the list fades in.
+- **Marking is seen**: an entry just encountered lights its medallion up from the shadow, one just
+  completed lights its frame, the number of defeats and the counts that moved flash, and a feat
+  reached (*Keen Hunter*, *True Hunter*) lights up.
 - **The Hunter** says at the top what he'd tell you if you went to see him, with the
   thresholds from his wiki page: fewer than 50 entries, 50 to 99, 100 or more, the 146
   encountered, the 146 completed and, with the Mark, the one after. Next to it, the game's two
@@ -843,9 +1015,8 @@ inside. The game's notice when marking shows fixed just below the bar.
   the two achievements,
   *Keen Hunter* (encountering the 146) and *True Hunter* (the Mark).
 - On marking, **the game's notice** shows, "New Journal Entry" or "Journal Updated", with the
-  medallion, at the top, level with the header: at the bottom it covered the buttons you'd just
-  touched. It goes inside the Journal, because the page's notice sits below the dialog, and it
-  doesn't catch clicks.
+  entry's medallion: it's the site's notice (the same look and place as every other one, just
+  under the bar), and it doesn't catch clicks.
 - **Mark in bulk**, at the foot of the list, collapsed. Open, **each row carries its checkbox**
   to pick several: with Shift the range from the last one touched is picked, and from the
   keyboard, Space picks the row being read (the checkboxes aren't tab stops: there would be
@@ -862,6 +1033,86 @@ inside. The game's notice when marking shows fixed just below the bar.
 - **All the Journal's text is the game's** (the dump of its texts, with the key alongside in
   `js/i18n.js`), with its Spanish typos; what the site writes comes in both languages.
 
+### Saves
+
+**Free mode and four save slots, like the game's profile screen.** The header's selector opens
+it (`view=saves`); it isn't a tab in the screen bar. The selector shows the Knight and the save
+you're playing (*Save 2*), or *Select save* in free mode. Each row shows its masks and soul
+vessels with the HUD's sprites, its nail, and what that game carries: charms found (out of 40)
+and the Journal's completed entries over its total. The Hall of Gods is left out as secondary
+(the import's preview does show it). The one you're in is lit from its left edge, carries the accent's line and, at the head
+of its card, a lit diamond with *You're here*. The rows share their columns, so the numbers, the
+masks, the nails and the buttons line up from one slot to the next.
+
+- **Free mode** is what shows while you haven't chosen a save: everything unlocked (the build
+  maxed and every charm found), to try builds. It isn't one of your games, so it's a row of
+  its own above the four, the one framed sheet, with the Knight under a bench's lamp instead of
+  a number and its note in the buttons' column, and it can't be cleared (Your
+  game's two starting points reset it). It's where a first visit lands, and where the data from
+  before saves existed stayed: nobody had chosen a save.
+
+- **What goes in a slot** is everything that describes one game: the build (`hollow.build`),
+  the charms found (`hollow.owned`), the Journal (`hollow.journal`), the Hall's symbols
+  (`hollow.hall`), the lifeblood door (`hollow.bindings`), the half-done pantheon (`hollow.run`)
+  and the pinned build (`hollow.baseline`). **What doesn't** is yours, not the game's:
+  `hollow.prefs` (the language, the screen, the enemy chosen).
+- Those keys always hold **the active slot** (free mode included, slot 0), so no screen has to
+  know slots exist; the others wait in `hollow.saves` as copies.
+- **Tapping a slot** loads it: the page reloads —like the game's loading screen— on Charms, so
+  nothing of the game you leave (an undo, the fight in progress) is left over. Tapping the one
+  you're in takes you back to Charms. It's seen: the slot's nail catches the light and its masks
+  glow, the page fades to black and the new one fades in (`leave`, and `hollow.entered` in
+  `sessionStorage` veils it in `index.html`); *New Game* shows the base Knight's five masks
+  appearing one by one first, as a new game's HUD does.
+- **A slot's buttons are the game's menu items**, stacked in a column of their own behind a rule
+  and quieter than the slot (they're what you do to it): capitals in the menu's face, no box, and on
+  hover or focus the menu's two pointers on either side (*New Game* gets them too) (drawn in SVG; they're also the focus
+  mark). Their icons are the usual ones, drawn in the site's line: *Import from the game* a tray
+  with an arrow coming in, which dips when you're on it; *Clear Save* a bin, whose lid lifts. Below
+  900 px a full slot's buttons go under it in a row; on a phone an empty slot's import says only
+  *Import*, beside *New Game*, and the facts become a little table.
+- **New Game** (`PROFILE_NEW_GAME`), on an empty slot, starts as in the game: the base Knight,
+  no charms found and everything else empty. You fill it in on Your game.
+- **Clear Save** (`PROFILE_CLEAR_BUTTON`) asks first, inside the slot, with the game's
+  question (`PROFILE_CLEAR_PROMPT`). The slot is left empty and you stay on Saves. Clearing
+  the one you're playing drops you into free mode (the page fades to black and reloads, still on Saves, and fades back in with the row where it was, which then shrinks into *New Game*), since
+  the site always shows some game. It's seen being cleared: the masks break one by one from the right, as
+  health is lost on the HUD, the vessels drain, and the rest fades as dust rises out of it; then
+  the row shrinks to its empty height and *New Game* fades in (without motion, it's cleared at once).
+- **Import from the game**, on each of the four, opens **the import view** in the list's place
+  (*Saves* at its top, or Esc, goes back). It reads the game's own save file and puts that game in
+  the slot. Left, three steps on medallions joined by a thread: **copy the saves folder** (tabs
+  for Windows, macOS and Linux, the one you're on chosen by itself, and *Copy*), **open the picker
+  and paste it** (the keys each system's picker takes: the name box and Enter on Windows,
+  ⇧⌘G on macOS, Ctrl+L on Linux) and **pick the file** (the game keeps save *n* as
+  `user<n>.dat`; the `.bak` ones are backups). Right, **the drop zone**: the Knight floating
+  under a light that breathes, which brightens when a file is dragged over the view (it can be
+  dropped anywhere on it), and *Choose file*. Once read, the zone shows the save as the game's
+  profile screen would —masks appearing one by one, soul vessels, nail, time played, completion,
+  geo, Steel Soul if it is— with the charms, Journal and Hall counts and the pantheons
+  completed (five diamonds, lit in bone one after another, and *3/5*; each one's name on hover), and nothing is written until
+  *Import into Save n*; over a full slot it warns first that it will replace it. A file that
+  isn't a save brings up the Shade and *Choose another file*. On a phone a note says the saves
+  are on the computer you play on. Then the page enters the imported game, as tapping the slot
+  would. The file is read in the browser and never sent anywhere; the game's file isn't touched.
+  A save that's already JSON (the Switch's, or one decrypted with an editor) is read too. What
+  comes in, from the game's `playerData`:
+  - **the build**: nail, masks, vessels, notches, spells, nail arts, Dream Nail, cloak,
+    Grimmchild's phase and the charms worn **in the order you wore them** (`equippedCharms`),
+    with full health (the game saves on a bench);
+  - **the charms found**, each two-version one as the version you have (unbreakable, Kingsoul or
+    Void Heart —the White Fragment alone doesn't count—, Carefree Melody);
+  - **the Journal**, entry by entry, with the defeats you have left, as the game counts them;
+  - **the Hall of Gods' symbols** and **the lifeblood door's notches**.
+  The pantheon in progress and the pinned build aren't in the game: the slot starts without them.
+- **The notice for whoever's new**: on a computer (not a phone, nor an iPad asking for the
+  desktop site), while nobody has chosen a save (free mode, the four empty), a notice above
+  every screen but Saves (*Your real game*) says the game's save can be imported. Its button,
+  *Import from the game*, opens the import view for Save 1; its ✕ closes it. Either of the two,
+  or opening the import view from Saves, puts it away for good (`importHintOff` in
+  `hollow.prefs`), and choosing a save hides it as well.
+- A shared link still lands where you are (free mode or a save): its build replaces that one's.
+
 ## State and link
 
 The build lives in the URL, readable and with only what differs from the base Knight:
@@ -876,7 +1127,7 @@ Cyclone Slash, Dash Slash and Great Slash. `hp` is the masks you have left, and 
 appear when you're at full health. `lang` isn't part of the build: it's only the language
 preference, and it only appears when it isn't the page's: Spanish on the English page, English
 on the Spanish one (`es/`). `view` isn't part of the build either: it's the screen
-(`game`, `fight` or `journal`), and it doesn't appear on Charms, which is the start screen. A
+(`game`, `fight`, `journal` or `saves`), and it doesn't appear on Charms, which is the start screen. A
 link with a build and no `view` opens Charms; without a build, the site opens where you left
 it. Each screen change leaves a history entry marked by the site (`{hk: 1}`), and going back
 to one of them changes the screen without touching the build; a link typed or pasted by hand
@@ -885,7 +1136,8 @@ screen: the fight doesn't travel in it. It's also saved in
 `localStorage` (`hollow.build`, `hollow.baseline`, `hollow.prefs`, and separately the half-done
 pantheon run in `hollow.run`, the Hall of Gods symbols in `hollow.hall` and your game's
 Hunter's Journal in `hollow.journal`); on
-load the URL rules if it carries anything.
+load the URL rules if it carries anything. Those keys are where you are, free mode or a save:
+the rest wait in `hollow.saves` ([Saves](#saves)).
 
 ## Where the numbers come from
 

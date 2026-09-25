@@ -220,6 +220,10 @@
   --godhome-light: radial-gradient(70% 78% at 50% 76%, var(--godhome) 0%, var(--godhome-2) 34%, var(--godhome-line) 60%, transparent 92%);
   --godhome-light-rest: radial-gradient(70% 78% at 50% 76%, var(--godhome-2) 0%, var(--godhome-line) 42%, transparent 88%);
   --godhome-light-off: radial-gradient(64% 64% at 50% 78%, var(--godhome-line) 0%, transparent 68%);
+  /* The Pantheons aren't statues: each one is a door. Its light fills the arch, rising from the
+     threshold (lit: the chosen one and the one under your finger; rest: the others). */
+  --pantheon-door: radial-gradient(130% 95% at 50% 100%, var(--godhome) 0%, var(--godhome-2) 32%, var(--godhome-line) 62%, transparent 100%);
+  --pantheon-door-rest: radial-gradient(130% 95% at 50% 100%, var(--godhome-line) 0%, color-mix(in oklab, var(--godhome-line) 45%, transparent) 45%, transparent 88%);
 
   /* One tint per section: the system of the game's map screen (design/00-system.md §3),
      black with each region in a pale, desaturated tint, all above 12:1.

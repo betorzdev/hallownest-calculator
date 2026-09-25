@@ -983,6 +983,62 @@
 
   const FOE_BY_ID = Object.fromEntries(FOES.map((f) => [f.id, f]));
 
-  HK.foes = { FOES, FOE_BY_ID };
+  /* The title card the game shows when a boss fight starts: a small line on top (sup), the
+     big name (main) and, in some, a small line below (sub). From the game's text
+     (kb/data/all_text.json, <KEY>_SUPER, _MAIN and _SUB), copied as is: in Spanish the words
+     fall in another order («Madre» big and «Gruz» below) and some lines are missing. The key
+     goes in each row's comment; Godhome's own fights use the _NC variant, without the
+     artist's credit. Bosses without a title card in the game (the Grimmkin, the Pale Lurker,
+     Winged Nosk…) aren't here: the arena shows their name. */
+  const TITLES = {
+    'gruz-mother': { main: { es: 'Madre', en: 'Gruz' }, sub: { es: 'Gruz', en: 'Mother' } },   // BIGFLY
+    'vengefly-king': { sup: { es: 'Vengamosca', en: 'Vengefly' }, main: { es: 'Rey', en: 'King' } },   // VENGEFLY
+    'brooding-mawlek': { sup: { es: 'Mawlek', en: 'Brooding' }, main: { es: 'Incubador', en: 'Mawlek' } },   // MAWLEK
+    'false-knight': { main: { es: 'Falso Caballero', en: 'False Knight' } },   // FALSE_KNIGHT
+    'hornet-protector': { main: { es: 'Hornet', en: 'Hornet' } },   // HORNET
+    'mantis-lords': { sup: { es: 'Señores', en: 'Mantis' }, main: { es: 'de las Mantis', en: 'Lords' } },   // MANTIS_LORDS
+    'soul-warrior': { sup: { es: '', en: 'Soul' }, main: { es: 'Guerrero del Alma', en: 'Warrior' } },   // MAGE_KNIGHT
+    'soul-master': { sup: { es: 'Maestro', en: 'Soul' }, main: { es: 'de Almas', en: 'Master' } },   // MAGE_LORD
+    'dung-defender': { main: { es: 'Defensor', en: 'Dung' }, sub: { es: 'del Estiércol', en: 'Defender' } },   // DUNG_DEFENDER
+    'crystal-guardian': { main: { es: 'Guardián', en: 'Crystal' }, sub: { es: 'de Cristal', en: 'Guardian' } },   // CRYSTAL_GUARDIAN
+    'enraged-guardian': { sup: { es: 'Furioso', en: 'Enraged' }, main: { es: 'Guardián', en: 'Guardian' } },   // ENRAGED_GUARDIAN
+    'watcher-knights': { sup: { es: 'Caballero', en: 'Watcher' }, main: { es: 'Vigía', en: 'Knight' } },   // BLACK_KNIGHT
+    'uumuu': { main: { es: 'Uumuu', en: 'Uumuu' } },   // MEGA_JELLY
+    'nosk': { main: { es: 'Nosk', en: 'Nosk' } },   // MIMIC_SPIDER
+    'broken-vessel': { sup: { es: 'Receptáculo', en: 'Broken' }, main: { es: 'Roto', en: 'Vessel' } },   // INFECTED_KNIGHT
+    'the-collector': { sup: { es: '', en: 'The' }, main: { es: 'Coleccionista', en: 'Collector' } },   // COLLECTOR
+    'hornet-sentinel': { main: { es: 'Hornet', en: 'Hornet' } },   // HORNET
+    'traitor-lord': { main: { es: 'Señor', en: 'Traitor' }, sub: { es: 'Desleal', en: 'Lord' } },   // TRAITOR_LORD
+    'hollow-knight': { main: { es: 'Hollow Knight', en: 'Hollow Knight' } },   // HOLLOW_KNIGHT
+    'the-radiance': { sup: { es: 'El', en: 'The' }, main: { es: 'Destello', en: 'Radiance' } },   // FINAL_BOSS
+    'massive-moss-charger': { sup: { es: 'Masiva', en: 'Massive' }, main: { es: 'Cargador del Musgo', en: 'Moss Charger' } },   // MEGA_MOSS
+    'flukemarm': { main: { es: 'Tremarmita', en: 'Flukemarm' } },   // FLUKEMARM
+    'oblobbles': { main: { es: 'Oblobbles', en: 'Oblobbles' } },   // OBLOBBLES
+    'hive-knight': { main: { es: 'Caballero', en: 'Hive' }, sub: { es: 'Colmena', en: 'Knight' } },   // HIVE_KNIGHT
+    'god-tamer': { sup: { es: 'Domador', en: 'God' }, main: { es: 'de Dioses', en: 'Tamer' } },   // LOBSTER_LANCER_C
+    'zote-the-mighty': { main: { es: 'Zote', en: 'Zote' }, sub: { es: 'el Todopoderoso', en: 'The Mighty' } },   // ZOTE
+    'grimm': { sup: { es: 'Maestro de la Compañía', en: 'Troupe Master' }, main: { es: 'Grimm', en: 'Grimm' } },   // GRIMM
+    'nkg': { sup: { es: 'Rey Pesadilla', en: 'Nightmare King' }, main: { es: 'Grimm', en: 'Grimm' } },   // NIGHTMARE_GRIMM
+    'xero': { main: { es: 'Xero', en: 'Xero' } },   // GH_XERO_NC
+    'gorb': { main: { es: 'Gorb', en: 'Gorb' } },   // GH_ALADAR_NC
+    'elder-hu': { main: { es: 'Anciano Hu', en: 'Elder Hu' } },   // GH_HU_NC
+    'marmu': { main: { es: 'Marmu', en: 'Marmu' } },   // GH_MUMCAT_NC
+    'no-eyes': { main: { es: 'Sin Ojos', en: 'No Eyes' } },   // GH_NOEYES_NC
+    'galien': { main: { es: 'Galien', en: 'Galien' } },   // GH_GALIEN_NC
+    'markoth': { main: { es: 'Markoth', en: 'Markoth' } },   // GH_MARKOTH_NC
+    'failed-champion': { main: { es: 'Campeón', en: 'Failed' }, sub: { es: 'Fallido', en: 'Champion' } },   // FALSE_KNIGHT_DREAM
+    'soul-tyrant': { sup: { es: 'Tirano', en: 'Soul' }, main: { es: 'de las Almas', en: 'Tyrant' } },   // MAGE_LORD_DREAM
+    'lost-kin': { sup: { es: 'Familiar', en: 'Lost' }, main: { es: 'Perdido', en: 'Kin' } },   // INFECTED_KNIGHT_DREAM
+    'white-defender': { main: { es: 'Defensor', en: 'White' }, sub: { es: 'Blanco', en: 'Defender' } },   // WHITE_DEFENDER
+    'grey-prince-zote': { sup: { es: 'Príncipe Gris', en: 'Grey Prince' }, main: { es: 'Zote', en: 'Zote' } },   // GREY_PRINCE (ZOTE_MAIN)
+    'oro-mato': { sup: { es: 'Hermanos', en: 'Brothers' }, main: { es: 'Oro y Mato', en: 'Oro & Mato' } },   // TEMP_NM
+    'sheo': { sup: { es: 'Maestro de Pintura', en: 'Paintmaster' }, main: { es: 'Sheo', en: 'Sheo' } },   // PAINTMASTER
+    'sly': { sup: { es: 'Gran Sabio del Aguijón', en: 'Great Nailsage' }, main: { es: 'Sly', en: 'Sly' } },   // SLY_BOSS
+    'pure-vessel': { main: { es: 'Vasija Pura', en: 'Pure Vessel' } },   // HK_PRIME
+    'sisters-of-battle': { main: { es: 'Hermanas', en: 'Sisters' }, sub: { es: 'de Batalla', en: 'Of Battle' } },   // SISTERS
+    'absolute-radiance': { sup: { es: 'ABSOLUTO', en: 'ABSOLUTE' }, main: { es: 'DESTELLO', en: 'RADIANCE' } },   // ABSOLUTE_RADIANCE
+  };
+
+  HK.foes = { FOES, FOE_BY_ID, TITLES };
   if (typeof module !== 'undefined' && module.exports) module.exports = HK.foes;
 })();
