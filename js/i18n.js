@@ -267,6 +267,17 @@
     pgCat_godmaster:{ es: 'Buscador de Dioses', en: 'Godmaster' },   // UI_MENU_STYLE_GG
     pgSeerNote:     { es: '2400 de esencia', en: '2400 essence' },
     pgCollectibles: { es: 'Coleccionables', en: 'Collectibles' },
+    pgTabList:      { es: 'Lista', en: 'List' },
+    pgTabMap:       { es: 'Mapa', en: 'Map' },   // INV_NAME_MAP
+    pgMapKinds:     { es: 'Qué se ve en el mapa', en: 'What the map shows' },
+    pgMapReference: { es: 'Sin partida del juego, el mapa se ve entero. Toca un punto para ver qué es y marcarlo.',
+                      en: 'With no save from the game, the whole map shows. Tap a point to see what it is and mark it.' },
+    pgMapFromSave:  { es: 'Como en tu partida: entero lo que has recorrido, en boceto lo que solo conoces por el mapa de Cornifer, y apenas insinuado lo demás.',
+                      en: 'As in your game: whole where you\'ve been, sketched what you only know from Cornifer\'s map, and barely there the rest.' },
+    pgMapShowFound: { es: 'Ver también lo conseguido', en: 'Also show what you have' },
+    pgZoomIn:       { es: 'Acercar', en: 'Zoom in' },
+    pgZoomOut:      { es: 'Alejar', en: 'Zoom out' },
+    pgZoomFit:      { es: 'Ver el mapa entero', en: 'Show the whole map' },
     pgCollLead:     { es: 'Todo lo que hay por el reino, con dónde está. No cuenta para el 112 % salvo lo que se convierte en máscaras, vasijas, muescas o mejoras del aguijón.',
                       en: 'Everything there is around the kingdom, with where it is. It doesn\'t count towards 112% except what becomes masks, vessels, notches or nail upgrades.' },
     pgRewards:      { es: 'Recompensas', en: 'Rewards' },

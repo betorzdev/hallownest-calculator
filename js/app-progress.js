@@ -216,8 +216,18 @@
   function renderProgress() {
     if (prefs.view !== 'progress') return;
     const r = count();
+    // List · Map: the same things, on the tablet or on the game's map (js/app-map.js).
+    const tab = prefs.pgTab === 'map' ? 'map' : 'list';
+    const tabs = `<nav class="pg-tabs" aria-label="${esc(t('navProgress'))}">${['list', 'map'].map((v) => `<button type="button" class="pg-tab${tab === v ? ' is-on' : ''}"
+        data-act="pgTab" data-value="${v}" aria-pressed="${tab === v}">${esc(t(v === 'map' ? 'pgTabMap' : 'pgTabList'))}</button>`).join('')}</nav>`;
+    if (tab === 'map') {
+      el.pg.innerHTML = `<div class="gear-body pg-body">${brackets}
+        ${screenHead(esc(t('navProgress')))}${tabs}${App.renderPgMap()}</div>`;
+      App.pgMapAfterPaint();
+      return;
+    }
     el.pg.innerHTML = `<div class="gear-body pg-body">${brackets}
-      ${screenHead(esc(t('navProgress')))}
+      ${screenHead(esc(t('navProgress')))}${tabs}
       <div class="pg-total">
         <span class="pg-total-k">${esc(t('pgCompletion'))}</span>
         <span class="pg-total-v">${num(r.total)}<span class="u">${esc(pctSpace())} / ${num(r.max)}</span></span>
@@ -252,6 +262,11 @@
       const id = node.dataset.id;
       if (node.dataset.key === 'c') markCharm(id);
       else setProgress(P.toggle(App.progress, id));
+    },
+    pgTab(node) {
+      prefs.pgTab = node.dataset.value === 'map' ? 'map' : 'list';
+      savePrefs();
+      render();
     },
     pgArea(node) {
       prefs.pgArea = node.dataset.value;

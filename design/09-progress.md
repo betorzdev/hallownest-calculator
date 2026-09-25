@@ -56,4 +56,7 @@ one that grows best when the collectibles come (a row more per kind, not a page 
   titles) or who sells or gives it; a filter by area with the areas' light; and the Grubfather's
   and the Seer's ladders as two rows. The written hints were left out: the map (phase 6) gives
   the exact spot.
-- Phase 6, the map, goes in the second tab whichever is chosen.
+- Phase 6 built the Map (26 September 2026), in the second tab: the game's own map read from its
+  files (`tools/extract-map.py`), rooms whole where you've been, rough where you only bought the
+  area's map, barely there the rest; the missing collectibles on it, a card per pin to mark it,
+  your shade and your Dreamgate. Drag, wheel, pinch, and three zoom buttons.

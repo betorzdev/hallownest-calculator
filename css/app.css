@@ -3834,6 +3834,45 @@ kbd {
 .pg-plates .gplate.is-part .gplate-art::before { background: var(--halo-plate-off); }
 /* The build's things are marked on Your game: they say so, and take you there. */
 .pg-plates .gplate.is-far .gplate-val { font-family: var(--font-body); }
+/* List · Map, under the title: text tabs, the chosen one with the accent's rule, like Combat's. */
+.pg-tabs { display: flex; justify-content: center; gap: var(--sp-6); margin: 0 0 var(--sp-6); }
+.pg-tab { padding: var(--sp-1) 0; font-family: var(--font-body); font-size: var(--fs-md); color: var(--muted); border-bottom: 2px solid transparent; transition: color var(--dur) var(--ease); }
+.pg-tab:hover { color: var(--accent); }
+.pg-tab.is-on { color: var(--ink-strong); border-bottom-color: var(--accent); }
+
+/* ── The Map (js/app-map.js): the game's own map, black like its map screen, each area in its
+   own tint (baked into the drawings). Whole what the Quill drew, rough what you only bought,
+   barely there what you don't know. The pins keep their size on screen (--k). ── */
+.pgm { display: flex; flex-direction: column; gap: var(--sp-3); }
+.pgm-kinds .pg-area img { width: 18px; height: 18px; object-fit: contain; }
+.pgm-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-6); }
+.pgm-note { flex: 1 1 32ch; margin: 0; font-size: var(--fs-sm); color: var(--muted); }
+.pgm-found { display: inline-flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-sm); color: var(--ink-2); cursor: pointer; }
+.pgm-found input { accent-color: var(--accent); }
+.pgm-zoom { display: inline-flex; border: 1px solid var(--line-ctl); background: var(--card); }
+.pgm-box { position: relative; height: min(72vh, 720px, 62vw + 120px); background: var(--bg); border: 1px solid var(--inv-line); overflow: hidden; }
+.pgm-svg { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; user-select: none; }
+.pgm-svg:active { cursor: grabbing; }
+.pgm-room.is-rough { opacity: 0.8; }
+.pgm-room.is-ghost { opacity: 0.16; }
+.pgm-pin { transform: translate(var(--px), var(--py)) scale(var(--k, 0.5)); cursor: pointer; }
+.pgm-pin circle { fill: var(--bg); stroke: var(--line-ctl); stroke-width: 0.06; }
+.pgm-pin:hover circle, .pgm-pin:focus-visible circle, .pgm-pin.is-sel circle { stroke: var(--accent); stroke-width: 0.1; }
+.pgm-pin:focus { outline: none; }
+.pgm-pin.is-on { opacity: 0.4; }
+.pgm-mark { cursor: default; }
+/* The card of the pin chosen, over it (below it near the top edge). */
+.pgm-card-wrap { position: absolute; z-index: 2; transform: translate(-50%, calc(-100% - var(--sp-4))); pointer-events: none; }
+.pgm-card-wrap.is-below { transform: translate(-50%, var(--sp-6)); }
+.pgm-card {
+  pointer-events: auto; display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-2) var(--sp-3);
+  background: var(--card); border: 1px solid var(--line-panel); box-shadow: var(--shadow-md); white-space: nowrap;
+}
+.pgm-card img { width: 32px; height: 32px; object-fit: contain; }
+.pgm-card-t { display: flex; flex-direction: column; font-size: var(--fs-sm); color: var(--ink-2); }
+.pgm-card-t b { color: var(--ink-strong); font-weight: 600; }
+.pgm-card-x { width: auto; height: auto; padding: 0 var(--sp-1); font-size: var(--fs-md); }
+
 /* The collectibles, under the 112%: their own title, the filter by area (each area's light as
    a dot, the chosen one with the accent's line) and the same tablet; then the reward ladders. */
 .pg-coll { margin-top: var(--sp-16); }

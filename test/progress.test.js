@@ -15,9 +15,9 @@ const BASE = { charmSlots: 3, maxHealthBase: 5, MPReserveMax: 0, nailSmithUpgrad
 test('it keeps only what it knows: ids once and in order, counts clamped, rooms by name', () => {
   assert.deepEqual(P.normalize({ ids: ['lurien', 'nope', 'monomon', 'lurien'],
     counts: { shards: 7, geo: -3, 'pale-ore': 2.4, nope: 5 }, bench: 'Town', shade: { scene: 'Fungus3_02', geo: 120 } }),
-  { ids: ['monomon', 'lurien'], counts: { shards: 3, 'pale-ore': 2 }, found: [], bench: 'Town', shade: { scene: 'Fungus3_02', geo: 120 } });
-  assert.deepEqual(P.normalize(null), { ids: [], counts: {}, found: [], bench: '', shade: null });
-  assert.deepEqual(P.normalize({ bench: '<b>', shade: { scene: 'None', geo: 5 } }), { ids: [], counts: {}, found: [], bench: '', shade: null });
+  { ids: ['monomon', 'lurien'], counts: { shards: 3, 'pale-ore': 2 }, found: [], bench: 'Town', shade: { scene: 'Fungus3_02', geo: 120 }, gate: null, mapped: [] });
+  assert.deepEqual(P.normalize(null), { ids: [], counts: {}, found: [], bench: '', shade: null, gate: null, mapped: [] });
+  assert.deepEqual(P.normalize({ bench: '<b>', shade: { scene: 'None', geo: 5 } }), { ids: [], counts: {}, found: [], bench: '', shade: null, gate: null, mapped: [] });
   assert.deepEqual(P.normalize({ found: ['grub-crossroads-acid', 'nope', 'grub-crossroads-acid'] }).found, ['grub-crossroads-acid']);
 });
 
@@ -38,6 +38,12 @@ test('what you carry, your bench and your shade', () => {
     'wanderers-journal': 4, 'arcane-egg': 1, bank: 500 });
   assert.equal(p.bench, 'GG_Atrium');
   assert.deepEqual(p.shade, { scene: 'Fungus3_02', geo: 750 });
+  // On the game's map (js/map.js): the shade's and the Dreamgate's points, and the rooms drawn.
+  const q = P.fromSave({ ...pd, shadeMapPos: { x: -4.757, y: 2.672, z: 0 }, hasDreamGate: true, dreamGateScene: 'Mines_05',
+    dreamgateMapPos: { x: 5.86, y: 7.281, z: 0 }, scenesVisited: ['Town', 'Crossroads_02'], scenesMapped: ['Town', 'Crossroads_01', '<x>'] }, null);
+  assert.deepEqual(q.shade, { scene: 'Fungus3_02', geo: 750, x: -4.757, y: 2.672 });
+  assert.deepEqual(q.gate, { scene: 'Mines_05', x: 5.86, y: 7.281 });
+  assert.deepEqual(q.mapped, ['Town', 'Crossroads_02', 'Crossroads_01']);
   assert.equal(R.areaOf(p.bench), 'godhome');
   assert.equal(R.areaOf(p.shade.scene), 'fog');
   // No shade: the game leaves "None" in its room.

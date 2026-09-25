@@ -23,13 +23,15 @@ Before touching anything, check whether it's already solved:
   (for what the wikis don't carry cleanly), and it isn't edited by hand. Its marking rules are
   in `js/hunter.js`. The same goes for `js/rooms.js` (`npm run rooms`) and `js/collectibles.js`
   (`npm run collectibles`): generated from the community's randomizer data and the game's
-  texts, never edited by hand.
+  texts, never edited by hand. And `js/map.js` with `assets/map/`: the game's own map, drawn
+  from its files by `tools/extract-map.py` (Python + UnityPy, with the game installed; once per
+  game patch).
 
 Neither folder is part of the page: `index.html` doesn't load them.
 
 ## Hard constraints
 
-- **No framework and no build.** `index.html` loads **twenty-seven classic scripts**, not modules.
+- **No framework and no build.** `index.html` loads **twenty-nine classic scripts**, not modules.
   The page is `js/app.js` (the core) and one script per screen (`js/app-*.js`), sharing the
   `HK.app` object, and `js/app-boot.js` starts it; the rules for sharing are in `js/app.js`'s header.
   Plus GoatCounter's (`async`, external), the visit counter: the site has to work the same

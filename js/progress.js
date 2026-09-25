@@ -7,7 +7,11 @@
              pale ore, rancid eggs, simple keys, the four relics and the geo in Millibelle's bank
      found   the collectibles you have (js/collectibles.js): each grub, shard, relic, root…
      bench   the room of the bench you'd wake up at (its area: js/rooms.js)
-     shade   where your shade waits and the geo it carries, or null
+     shade   where your shade waits (its room, and x, y on the game's map) and the geo it carries, or null
+     gate    where your Dreamgate is (its room, and x, y on the map), or null
+     mapped  the rooms you know: the ones you've been to (scenesVisited) and the ones the Quill
+             has drawn (scenesMapped). The map draws them whole; the game only would with the
+             area's map bought, but the site's map is for seeing where you've been
    Everything is marked by hand as well, like the Journal; a save linked to the game overwrites
    it on every bench. bench and shade only come from a save. The 112% is counted in
    js/completion.js. */
@@ -71,7 +75,10 @@
   const SCENE = /^[A-Za-z0-9_]{1,64}$/;
   const scene = (s) => (typeof s === 'string' && SCENE.test(s) && s !== 'None' ? s : '');
 
-  const EMPTY = Object.freeze({ ids: [], counts: {}, found: [], bench: '', shade: null });
+  const EMPTY = Object.freeze({ ids: [], counts: {}, found: [], bench: '', shade: null, gate: null, mapped: [] });
+  // A point on the game's map, in its units (js/map.js), or null.
+  const num = (v) => (typeof v === 'number' && Number.isFinite(v) && Math.abs(v) < 1000 ? Math.round(v * 1000) / 1000 : null);
+  const point = (o) => { const x = num(o && o.x), y = num(o && o.y); return x === null || y === null ? null : { x, y }; };
 
   /* Anything → a valid progress: the known ids once each in IDS's order, the known counts
      clamped (a 0 isn't kept), the known collectibles in the catalogue's order, a room name for
@@ -84,8 +91,12 @@
     const c = o.counts && typeof o.counts === 'object' ? o.counts : {};
     for (const id of COUNT_LIST) { const v = clamp(id, c[id]); if (v) counts[id] = v; }
     const s = o.shade && typeof o.shade === 'object' ? o.shade : null;
-    const shade = s && scene(s.scene) ? { scene: scene(s.scene), geo: Math.max(0, int(s.geo)) } : null;
-    return { ids, counts, found, bench: scene(o.bench), shade };
+    const shade = s && scene(s.scene) ? { scene: scene(s.scene), geo: Math.max(0, int(s.geo)), ...point(s) } : null;
+    const g = o.gate && typeof o.gate === 'object' ? o.gate : null;
+    const gp = g && point(g);
+    const gate = g && scene(g.scene) && gp ? { scene: scene(g.scene), ...gp } : null;
+    const mapped = Array.isArray(o.mapped) ? [...new Set(o.mapped.map(scene).filter(Boolean))].slice(0, 800) : [];
+    return { ids, counts, found, bench: scene(o.bench), shade, gate, mapped };
   }
 
   /* Which collectibles a save says you have (js/collectibles.js, `how`). sd is the save's
@@ -113,14 +124,20 @@
 
   // playerData (and its sceneData) → progress.
   function fromSave(pd, sd) {
+    const list = (k) => (Array.isArray(pd[k]) ? pd[k] : []);
     const ids = ID_LIST.filter((id) => (typeof IDS[id] === 'function' ? IDS[id](pd) : !!pd[IDS[id]]));
     const counts = {};
     for (const id of COUNT_LIST) counts[id] = pd[COUNTS[id][0]];
-    const shade = scene(pd.shadeScene) ? { scene: pd.shadeScene, geo: pd.geoPool } : null;
-    return normalize({ ids, counts, found: detect(pd, sd), bench: pd.respawnScene, shade });
+    const shade = scene(pd.shadeScene) ? { scene: pd.shadeScene, geo: pd.geoPool, ...point(pd.shadeMapPos) } : null;
+    const gate = pd.hasDreamGate && scene(pd.dreamGateScene) ? { scene: pd.dreamGateScene, ...point(pd.dreamgateMapPos) } : null;
+    const mapped = [...list('scenesVisited'), ...list('scenesMapped')];
+    return normalize({ ids, counts, found: detect(pd, sd), bench: pd.respawnScene, shade, gate, mapped });
   }
 
-  const isEmpty = (p) => { const n = normalize(p); return !n.ids.length && !Object.keys(n.counts).length && !n.found.length && !n.bench && !n.shade; };
+  const isEmpty = (p) => {
+    const n = normalize(p);
+    return !n.ids.length && !Object.keys(n.counts).length && !n.found.length && !n.bench && !n.shade && !n.gate && !n.mapped.length;
+  };
 
   /* Marking by hand, like the Journal's: they return a new progress without touching the one
      they receive. */
