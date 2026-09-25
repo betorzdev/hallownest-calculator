@@ -29,8 +29,8 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   smaller and without its filigree, and the Knight (with the save's number, if you're in one),
   the language and *Share* on the right.
 - **The screen bar**, which stays stuck at the top: **Charms · Your game · Combat · Journal**,
-  in the serif and in lowercase, with an accent diamond in front of the one you're viewing
-  (that's how the game marks the page of its menu); the Journal carries your completed entries
+  in the serif and in lowercase, with an accent rule under the one you're viewing, lying on the
+  bar's bottom edge like a page tab (the same mark as Combat's tabs); the Journal carries your completed entries
   over the total alongside ("2/146"). On the
   right, the **mini-bar**: nail damage, DPS, the mask, soul and a notch, with the game's sprites
   and the same flash as the sheet, to see them while you scroll down (on mobile, when you reach

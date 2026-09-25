@@ -210,19 +210,16 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
   content: ''; position: absolute; z-index: -1; top: 0; bottom: 0; left: calc(50% - 50vw); right: calc(50% - 50vw);
   background: var(--bg); border-bottom: 1px solid color-mix(in oklab, var(--tint-sheet) 16%, transparent);
 }
-.nav-tabs { display: flex; align-items: center; gap: var(--sp-1) var(--sp-6); min-width: 0; }
+/* The tabs take the bar's full height, so the current one's rule lies on the bar's bottom edge,
+   like a page tab (the same mark as on mobile, and as Combat's tabs). */
+.nav-tabs { display: flex; align-self: stretch; align-items: stretch; gap: var(--sp-1) var(--sp-6); min-width: 0; }
 .nav-tab {
   display: inline-flex; align-items: center; gap: var(--sp-2); min-height: 44px; padding: 0;
   font-family: var(--font-body); font-size: var(--fs-lg); line-height: 1.2; color: var(--muted); text-decoration: none;
-  transition: color var(--dur) var(--ease);
-}
-.nav-tab::before {
-  content: ''; flex: none; width: 7px; height: 7px; transform: rotate(45deg);
-  border: 1px solid transparent; transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+  transition: color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
 }
 .nav-tab:hover { color: var(--accent); }
-.nav-tab[aria-current="page"] { color: var(--ink-strong); }
-.nav-tab[aria-current="page"]::before { border-color: var(--accent); background: var(--accent); }
+.nav-tab[aria-current="page"] { color: var(--ink-strong); box-shadow: inset 0 -2px 0 var(--accent); }
 /* The Journal carries its completed entries over the total alongside. */
 .nav-num { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-xs); font-weight: 600; color: var(--ink-2); }
 .nav-hj:hover .nav-num { color: var(--accent); }
@@ -1068,8 +1065,6 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
   :root { --sticky-h: 100px; }
   .nav-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; }
   .nav-tab { flex-direction: column; justify-content: center; gap: 0; min-height: 48px; font-size: var(--fs-md); text-align: center; }
-  .nav-tab::before { display: none; }
-  .nav-tab[aria-current="page"] { box-shadow: inset 0 -2px 0 var(--accent); }
 }
 /* The sheet arranges itself by its own width (container inv), not the window's. */
 /* No room for the row: the HUD and the damage on top, and the six below, after a rule. */
