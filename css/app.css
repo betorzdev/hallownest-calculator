@@ -924,8 +924,17 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
 .piece img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; transition: filter var(--dur) var(--ease), opacity var(--dur) var(--ease); }
 .piece:not(.is-on) img { filter: brightness(0.2) saturate(0); opacity: 0.85; }
 .piece .notch { width: 20px; height: 20px; }
-.piece:hover:not(:disabled), .piece:focus-visible { border-bottom-color: var(--accent-line); }
-.piece:hover:not(:disabled):not(.is-on) img { filter: brightness(0.55) saturate(0); }
+/* The keyboard's focus keeps its rule; the mouse gets no line: it gets a preview up to the piece
+   under the pointer, like the notches on Charms. What a click would add comes up to half light
+   (the free notch, as a pending ring); what it would take away —the lit ones after it, or the last
+   lit one itself, which a click lowers by one— goes dim. */
+.piece:focus-visible { border-bottom-color: var(--accent-line); }
+.piece .notch { transition: opacity var(--dur) var(--ease); }
+@media (hover: hover) {
+  .piece:not(.is-on):is(:hover, :has(~ .piece:hover)):not(:disabled) img { filter: brightness(0.7) saturate(0.4); opacity: 1; }
+  .piece:not(.is-on):is(:hover, :has(~ .piece:hover)):not(:disabled) .notch.is-free::before { border-color: var(--notch-used); background: var(--notch-pending-fill); }
+  .piece:hover:not(:disabled) ~ .piece.is-on > *, .piece.is-on:hover:not(:disabled):not(:has(+ .piece.is-on)) > * { opacity: 0.35; }
+}
 .piece.is-base { cursor: default; }
 .piece.is-base:disabled { opacity: 1; }
 .pieces.is-vessels { grid-template-columns: repeat(var(--n), minmax(0, 46px)); }
