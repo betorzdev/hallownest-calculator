@@ -224,6 +224,11 @@ f.addEventListener('load', async () => {
     ok('the base Knight has no charms found', d.querySelectorAll('#gear .quick-owned .qc.is-missing').length === 40);
     await click('#panel .qc[data-id="fheart"]');
     ok("one not found can't be equipped", !isOn('fheart') && txt('#charm-detail .insp-state').indexOf('Sin conseguir') >= 0, txt('#charm-detail .insp-state'));
+    // It can be marked found right there, in the detail, and then the grid equips it.
+    ok('the detail offers to mark it found, with a real button', txt('#charm-detail [data-act="ownHere"]') === 'Marcar como conseguido' && q('#charm-detail [data-act="ownHere"]').classList.contains('btn'), txt('#charm-detail .insp-state'));
+    await click('#charm-detail [data-act="ownHere"]');
+    ok('and marks it found without leaving Charms', visible() === 'panel' && !q('#panel .qc[data-id="fheart"].is-missing')
+       && !q('#charm-detail [data-act="ownHere"]') && txt('#charm-detail .insp-name') === 'Corazón frágil', txt('#charm-detail .insp-name'));
     await click('#gear [data-act="ownAll"][data-value="1"]');
     // All is the end of the game: from each double slot, one version, and the slot shows it lit.
     ok('All marks them found', !q('#gear .quick-owned .qc.is-missing')

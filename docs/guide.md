@@ -242,7 +242,15 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   (`normalize` in `js/codec.js`). Changing the collection removes whatever you wear and no longer have.
   Everything maxed is the end of the game: the unbreakable ones, Void Heart and Grimmchild. On
   Charms, the ones you don't have also show shadowed: they're looked at like the rest (the
-  detail tells what they would do and says "Not found"), but they aren't equipped. They're
+  detail tells what they would do and says "Not found"), but they aren't equipped. **They're
+  unlocked right there**: while some are missing, the grid's hint says so ("the dimmed ones can be
+  unlocked"); the tile itself carries no mark (a "+" on it looked like a button of its own, and
+  it wasn't); under the mouse the detail says
+  "Not found: click to unlock it", and clicked (or tapped) the detail shows a real button, **Mark
+  as found**, without going to Your game (in a two-version slot, as that version); then the grid
+  equips it as usual. **A click pins the charm in the detail**: on the way from the grid to the
+  button the pointer crosses other charms, and passing over them doesn't take its place; only
+  resting on one (0.4 s) does, and leaving the grid ends the pin. They're
   saved apart from the build (`hollow.owned`), because they're your game and not what you're
   wearing, and the two starting points set them: the Base Knight, none; Everything maxed, all. On mobile, in one column.
   Masks and vessels are added whole, one at a time: the site doesn't keep count of your

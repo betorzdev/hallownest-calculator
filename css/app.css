@@ -516,7 +516,6 @@ button.hud-vessel:focus-visible { outline-offset: 3px; }
    those rules gave it its colour back and it looked found. That's why it comes after all of
    them. It only lightens a little, and the one that would overcharm you keeps its magenta halo.
    Equipped (is-on) looks like any equipped one: you're wearing it. */
-.quick:not(.quick-owned) .qc.is-missing:not(.is-on) { cursor: not-allowed; }
 .qc.is-missing:not(.is-on) img { filter: var(--charm-missing-art); }
 .qc.is-missing:not(.is-on):not(.is-locked) img { opacity: 1; }
 .qc.is-missing:not(.is-on):is(:hover, :focus-visible, .is-sel, .is-hot) img { filter: var(--charm-missing-art) brightness(1.6); }
@@ -929,6 +928,8 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
 }
 .insp-state { font-size: var(--fs-xs); line-height: 1.4; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .insp-state.bad { color: var(--bad); }
+/* Not found and chosen: the button that marks it found, under the state line. */
+.insp-own { margin-top: var(--sp-2); }
 .insp-state.over { color: var(--over-ink); }
 .insp-state.cond { color: var(--cond); }
 .charm-detail h3 { margin: var(--sp-3) 0 var(--sp-1); }

@@ -159,7 +159,9 @@
     grimmPhase:     { es: 'Fase {n}', en: 'Phase {n}' },
     grimmNoAttack:  { es: 'No ataca', en: 'Does not attack' },
     grimmNeedsDream:{ es: 'Fase 4: se consigue venciendo al Rey Pesadilla Grimm, con el Aguijón Onírico', en: 'Phase 4: earned by defeating Nightmare King Grimm, with the Dream Nail' },
-    inspMissing:    { es: 'Sin conseguir: márcalo en Tu partida para poder equiparlo', en: 'Not found: mark it in Your game to equip it' },
+    inspMissing:    { es: 'Sin conseguir: haz clic para desbloquearlo', en: 'Not found: click to unlock it' },
+    ownHere:        { es: 'Marcar como conseguido', en: 'Mark as found' },
+    ownHereHint:    { es: 'Márcalo como conseguido en tu partida', en: 'Mark it as found in your game' },
     inspFixed:      { es: 'No se puede quitar', en: 'It cannot be removed' },
     ownedTitle:     { es: 'Amuletos conseguidos', en: 'Charms found' },
     ownAll:         { es: 'Todos', en: 'All' },
@@ -171,6 +173,7 @@
     /* Charm grid */
     quickHintHover: { es: 'un clic equipa o quita', en: 'one click equips or removes' },
     quickHintTouch: { es: 'un toque equipa o quita', en: 'one tap equips or removes' },
+    quickHintUnlock:{ es: 'los apagados se desbloquean', en: 'the dimmed ones can be unlocked' },
     detailMore:     { es: 'y {n} más en la ficha completa', en: 'and {n} more in the full sheet' },
     detailSumTitle: { es: 'Lo que suman tus amuletos', en: 'What your charms add up to' },
     detailHintHover:{ es: 'Pasa el ratón por un amuleto para ver qué cambiaría en tu build; un clic lo equipa o lo quita.',

@@ -73,10 +73,19 @@ f.addEventListener('load', async () => {
        && !q('#charm-detail button:not([data-act="detailMore"])'), txt('#charm-detail h3'));
     over(tile('shaman'));
     ok("moving over the same slot doesn't light it up again", !previews().length);
+    // The click pins it: crossing other charms on the way to the detail doesn't take its place…
+    out(tile('shaman'), tile('longnail'));
     over(tile('longnail'), tile('shaman'));
-    ok('moving to another does', pv('nail.range') !== '' && txt('#charm-detail .insp-name') === 'Largoaguijón', pv('nail.range'));
+    ok('after a click, passing over another keeps the one clicked', txt('#charm-detail .insp-name') === 'Piedra de chamán', txt('#charm-detail .insp-name'));
+    // …unless the pointer rests on it.
+    await wait(450);
+    ok('resting on another does move it', pv('nail.range') !== '' && txt('#charm-detail .insp-name') === 'Largoaguijón', pv('nail.range'));
     out(tile('longnail'), d.body);
     ok('on leaving, the detail goes back to the last one pressed', txt('#charm-detail .insp-name') === 'Piedra de chamán');
+    // Leaving the grid ends the pin: back in, passing over one moves it at once.
+    over(tile('longnail'), d.body);
+    ok('back in the grid, the detail follows the mouse again', txt('#charm-detail .insp-name') === 'Largoaguijón', txt('#charm-detail .insp-name'));
+    out(tile('longnail'), d.body);
 
     // Fury depends on health: at full health, a click wouldn't change those figures.
     over(tile('fury'));
