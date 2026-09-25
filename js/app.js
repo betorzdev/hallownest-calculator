@@ -31,12 +31,13 @@
   const el = {
     page: $('.page'), masthead: $('#masthead'), colophon: $('#colophon'), nav: $('#nav'), panel: $('#panel'),
     mini: $('#minihud'), banner: $('#banner'), gear: $('#gear'), hj: $('#hj'),
-    toast: $('#toast'), fx: $('#overcharm-fx'), fight: $('#fight'),
+    toast: $('#toast'), fx: $('#overcharm-fx'), fight: $('#fight'), saves: $('#saves'),
   };
   const hoverable = matchMedia('(hover: hover) and (pointer: fine)');
 
-  // The screens, like the pages of the game's pause menu: Charms, Your game, Combat and the Journal.
-  const VIEWS = ['charms', 'game', 'fight', 'journal'];
+  /* The screens, like the pages of the game's pause menu: Charms, Your game, Combat and the
+     Journal. And the save slots (js/app-saves.js), which aren't in the bar: the header opens them. */
+  const VIEWS = ['charms', 'game', 'fight', 'journal', 'saves'];
   const SPELL_KEYS = ['vs', 'dd', 'hw'];
   const ART_KEYS = ['cyclone', 'dash', 'great'];
   const ART_STAT = { cyclone: 'nail.cyclone', dash: 'nail.dashSlash', great: 'nail.greatSlash' };
@@ -413,11 +414,20 @@
   }).join('');
 
   /* The header, in one row: the title under the game's filigree —the one from the Hall of Gods
-     screen (assets/hall/tablet-hdr.png, white stroke), small— and on the right what applies to
-     the whole site: the language and Share. The filigree stays white, as in the game: over
+     screen (assets/hall/tablet-hdr.png, white stroke), small—, on its left what belongs to the
+     site (the language and Share) and on its right what's yours: the save selector (js/app-saves.js).
+     In the markup, in the order they're seen on a wide screen; on mobile the CSS reorders them. The filigree stays white, as in the game: over
      file:// it can't be tinted with mask-image. Title and filigree are a link to the start
      screen, Charms, like the logo on almost any website. */
-  const VIEW_KEY = { charms: 'navCharms', game: 'navGame', fight: 'navFight', journal: 'navJournal' };
+  /* The save selector: the Knight and the save you're playing, or «Select save» in free mode
+     (js/app-saves.js), which is nobody's game. On mobile, the Knight with the save's number, or alone. */
+  function saveLink() {
+    const n = App.activeSlot();
+    const label = n ? t('saveSlot', { n }) : t('saveSelect');
+    return `<a class="mh-link mh-save" href="${here(hashFor('saves'))}" data-act="view" data-value="saves"${prefs.view === 'saves' ? ' aria-current="page"' : ''}
+          aria-label="${esc(label)}" title="${esc(t('saveBtnHint'))}"><img src="${D.art('hud', 'knight')}" alt=""><span class="mh-save-lbl">${esc(label)}</span>${n ? `<span class="mh-save-n">${n}</span>` : ''}</a>`;
+  }
+  const VIEW_KEY = { charms: 'navCharms', game: 'navGame', fight: 'navFight', journal: 'navJournal', saves: 'savesTitle' };
   function renderMasthead() {
     document.title = prefs.view === 'charms' ? t('docTitle') : t(VIEW_KEY[prefs.view]) + ' · ' + t('title');
     const meta = document.querySelector('meta[name="description"]');
@@ -427,18 +437,20 @@
     el.gear.setAttribute('aria-label', t('navGame'));
     el.fight.setAttribute('aria-label', t('navFight'));
     el.hj.setAttribute('aria-label', t('jrTitle'));
+    el.saves.setAttribute('aria-label', t('savesTitle'));
     // In the corner, as text: the abbreviation in view and the full name for screen readers and the mouse.
     const langBtn = (code, label) => `<button type="button" lang="${code}" data-act="lang" data-value="${code}" aria-pressed="${prefs.lang === code}" aria-label="${label}" title="${label}">${code.toUpperCase()}</button>`;
     el.masthead.innerHTML = `
       <div class="motes" aria-hidden="true">${MOTES}</div>
+      <div class="mh-tools">
+        <div class="langsel" role="group" aria-label="${esc(t('langGroup'))}">${langBtn('en', 'English')}${langBtn('es', 'Español')}</div>
+        <button type="button" class="mh-link" data-act="share" title="${esc(t('shareHint'))}">${esc(t('share'))}</button>
+      </div>
       <a class="brand" href="${here(hashFor('charms'))}" data-act="view" data-value="charms" title="${esc(t('goHome'))}">
         <img class="mh-hdr" src="assets/hall/tablet-hdr.png" alt="" width="862" height="111">
         <h1 class="title">${esc(t('title'))}</h1>
       </a>
-      <div class="mh-tools">
-        <div class="langsel" role="group" aria-label="${esc(t('langGroup'))}">${langBtn('en', 'English')}${langBtn('es', 'Español')}</div>
-        <button type="button" class="mh-link" data-act="share" title="${esc(t('shareHint'))}">${esc(t('share'))}</button>
-      </div>`;
+      ${saveLink()}`;
   }
 
   // GitHub's mark (Octicons mark-github), in currentColor so it takes the links' accent.
@@ -484,6 +496,7 @@
     el.gear.hidden = prefs.view !== 'game';
     el.fight.hidden = prefs.view !== 'fight';
     el.hj.hidden = prefs.view !== 'journal';
+    el.saves.hidden = prefs.view !== 'saves';
   }
 
   /* The mini-bar, in the screen bar: what you look at while touching charms, with the game's
@@ -687,6 +700,7 @@
     renderMiniHud();
     App.renderGear();
     App.renderFight();
+    App.renderSaves();
     if (prefs.view === 'journal') { if (App.hjSec.querySelector('.hj-list')) App.paintHunter(); else App.renderHunter(); }
     showScreen();
     App.hjFit();
@@ -730,7 +744,7 @@
       if (h) h.focus({ preventScroll: true });
     }
   }
-  const screenOf = (v) => (v === 'game' ? el.gear : v === 'fight' ? el.fight : v === 'journal' ? el.hj : el.panel);
+  const screenOf = (v) => (v === 'game' ? el.gear : v === 'fight' ? el.fight : v === 'journal' ? el.hj : v === 'saves' ? el.saves : el.panel);
   // Is the sticky bar covering it? Then you have to scroll up to it.
   const underNav = (node) => node.getBoundingClientRect().top < el.nav.getBoundingClientRect().bottom;
 
@@ -905,7 +919,7 @@
   Object.assign(App, { t, pick, KEY, PAGE_LANG, $, el, hoverable, SPELL_KEYS, ART_KEYS, ART_STAT, POSITIONAL,
     NEED_KEY, NT, namedSrc, esc, load, save, rebuildNF, pctSpace, fmtValue, fmtStat, fmtStatRich, sign,
     masksText, notchText, spellArt, shortOf, badgeText, goodClass, deltaChip, changeChip, prefs, loadPrefs,
-    savePrefs, splitHash, loadState, persist, compareLabel, compute, impact, recompute, commit, bindAllFx,
+    savePrefs, splitHash, here, loadState, persist, compareLabel, compute, impact, recompute, commit, bindAllFx,
     brackets, chevron, cross, rule, screenHead, hudHtml, restoreFocus, focusDescriptor, render, go, screenOf,
     underNav, toast, actions, isMaxOwned, loadOwned, saveOwned, isOwned, withFixed, isFixed, setOwned });
 })();

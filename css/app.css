@@ -135,17 +135,18 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 
 /* ── Header ──────────────────────────────────────────────────────────────
    One row: the title, centred, under the filigree from the Hall's screen (tablet-hdr, the game's
-   white stroke), small, and on the right the language and Share, which apply to the whole site.
-   Behind it, the dust motes from the main menu. */
-/* Three columns: the title in the centre of the page, and to its right the language and Share. The
-   two side columns grow equally, so the title lands dead centre; if the buttons don't fit in
-   their half, their column widens and the title gives way a little rather than overlap. */
+   white stroke), small; on its left the language and Share, which belong to the site, and on
+   its right the save selector, which is yours. Behind it, the dust motes from the main menu. */
+/* Three columns: the title in the centre of the page and one side on each flank. The two side
+   columns grow equally, so the title lands dead centre; if a side doesn't fit in its half, its
+   column widens and the title gives way a little rather than overlap. */
 .masthead {
-  padding: var(--sp-6) 0 0; display: grid; grid-template-columns: minmax(0, 1fr) auto 1fr;
+  padding: var(--sp-6) 0 0; display: grid; grid-template-columns: 1fr auto 1fr;
   align-items: center; gap: var(--sp-4) var(--sp-6);
 }
 .masthead .brand { grid-column: 2; }
-.masthead .mh-tools { grid-column: 3; justify-self: end; align-self: start; flex-wrap: nowrap; }
+.masthead .mh-tools { grid-column: 1; grid-row: 1; justify-self: start; align-self: start; flex-wrap: nowrap; }
+.masthead .mh-save { grid-column: 3; grid-row: 1; justify-self: end; align-self: start; }
 .brand { display: flex; flex-direction: column; align-items: center; gap: var(--sp-1); min-width: 0; color: inherit; text-decoration: none; }
 /* The title leads to the start screen: on hover, the filigree lights up fully. */
 .brand .mh-hdr { transition: opacity var(--dur) var(--ease); }
@@ -984,9 +985,11 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
   .panel, .gear-body { --inv-pad: var(--sp-4); }
   .fx { grid-template-columns: minmax(0, 1fr); }
   /* The header in a single row, so what matters starts sooner on every screen: the title on the
-     left, smaller and without its filigree, and the language and Share on the right. */
+     left, smaller and without its filigree, and on the right the Knight, the language and Share
+     (the title goes first and the site's two after the selector: order). */
   .masthead { display: flex; flex-wrap: nowrap; justify-content: space-between; align-items: center; gap: var(--sp-3); padding-top: var(--sp-3); }
-  .brand { flex: 1 1 auto; align-items: flex-start; }
+  .brand { flex: 1 1 auto; align-items: flex-start; order: -1; }
+  .masthead .mh-tools { order: 1; }
   .brand .mh-hdr { display: none; }
   .title { font-size: var(--fs-lg); text-align: left; letter-spacing: 0.04em; }
   .masthead .mh-tools { flex: none; flex-wrap: nowrap; gap: var(--sp-4); }
@@ -2770,4 +2773,78 @@ button.tl-go:hover .tl-art { opacity: 0.9; filter: none; }
   /* Between the title and "Close" it doesn't fit: the notice becomes a full-width strip, on one line. */
   .hj-note { left: var(--sp-4); right: var(--sp-4); translate: none; max-width: none; justify-content: center; padding: var(--sp-1) var(--sp-3); font-size: var(--fs-sm); }
   .hj-note img { width: 35px; height: 40px; }
+}
+
+/* ── Saves: the game's profile screen ────────────────────────────────────
+   The four slots stacked like the game's bars: the number, the masks and soul vessels with the
+   HUD's sprites, the nail and what the game carries (charms found, Journal, Hall). No boxes:
+   rules in the tint between slots, and the whole bar responds to the finger. The slot you're
+   playing carries the accent's line on its edge, as the equipped charm does. */
+.saves { --tint: var(--tint-sheet); --bracket: color-mix(in oklab, var(--tint) 50%, transparent); }
+.saves-body {
+  --inv-pad: var(--sp-8);
+  --inv-line: color-mix(in oklab, var(--tint) 13%, transparent);
+  position: relative; background: var(--inv-bg); padding: var(--inv-pad);
+}
+.saves-note { max-width: var(--measure); margin: 0; font-size: var(--fs-sm); color: var(--muted); text-wrap: pretty; }
+.saves-list { list-style: none; margin: 0; padding: 0; border-bottom: 1px solid var(--inv-line); }
+.save { border-top: 1px solid var(--inv-line); }
+.save-main {
+  width: 100%; display: grid; grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "n hud nail" "n facts nail"; align-items: center; gap: var(--sp-2) var(--sp-6);
+  padding: var(--sp-4); text-align: left; font-size: var(--fs-md); color: var(--ink);
+  transition: background var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.save-main:hover { background: var(--accent-soft); }
+.save.is-active .save-main { box-shadow: inset var(--sp-half) 0 0 var(--accent-line); }
+.save-n {
+  grid-area: n; min-width: 2ch; text-align: center;
+  font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-2xl); color: var(--ink-strong);
+}
+.save-hud { grid-area: hud; display: flex; align-items: center; flex-wrap: wrap; gap: var(--sp-2) var(--sp-4); }
+.save-masks, .save-vessels { display: flex; flex-wrap: wrap; gap: var(--sp-half); }
+.save-masks img { height: var(--sp-6); width: auto; }
+.save-vessels img { height: var(--sp-4); width: auto; }
+.save-tag { font-size: var(--fs-2xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-ink); }
+.save-nail { grid-area: nail; display: flex; flex-direction: column; align-items: center; gap: var(--sp-1); font-size: var(--fs-xs); color: var(--ink-2); text-align: center; }
+.save-nail img { height: var(--sp-16); width: auto; }
+.save-facts { grid-area: facts; display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-6); }
+.save-fact { display: inline-flex; align-items: baseline; gap: var(--sp-2); }
+.save-k { font-size: var(--fs-2xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--label); }
+.save-fact b { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-md); color: var(--ink-strong); }
+.save-fact .u { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-xs); }
+.save-foot { display: flex; justify-content: flex-end; padding: 0 var(--sp-4) var(--sp-3); }
+.save-ask { display: inline-flex; align-items: baseline; flex-wrap: wrap; gap: var(--sp-2) var(--sp-4); }
+.save-ask-q { color: var(--ink); }
+.save-foot .text-btn { font-size: var(--fs-sm); }
+/* Free mode, above the four: the Knight instead of a number and its name on its own row. */
+.saves-list.is-free { margin-bottom: var(--sp-6); }
+.save.is-free .save-main { grid-template-areas: "n name nail" "n hud nail" "n facts nail"; }
+.save.is-free .save-n img { height: var(--sp-12); width: auto; }
+.save-name { grid-area: name; display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--sp-1) var(--sp-3); }
+.save-name b { font-family: var(--font-display); font-weight: 600; text-transform: uppercase; letter-spacing: 0.14em; font-size: var(--fs-md); color: var(--ink-strong); }
+.save-name-note { font-size: var(--fs-sm); color: var(--muted); }
+.save.is-empty .save-main { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "n new"; min-height: calc(var(--sp-16) + var(--sp-8)); }
+.save.is-empty .save-n { color: var(--muted); }
+.save-new { grid-area: new; font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.14em; font-size: var(--fs-md); color: var(--ink-2); }
+.save.is-empty .save-main:hover .save-new { color: var(--accent); }
+/* In the header, the Knight and the slot you're playing; on mobile, only the number beside him. */
+.mh-save { gap: var(--sp-2); white-space: nowrap; }
+.mh-save img { height: var(--sp-6); width: auto; opacity: 0.8; transition: opacity var(--dur) var(--ease); }
+.mh-save:hover img, .mh-save[aria-current="page"] img { opacity: 1; }
+.mh-save-n { display: none; font-family: var(--font-num); font-variant-numeric: tabular-nums; }
+.mh-link[aria-current="page"] { color: var(--ink-strong); }
+@media (max-width: 599px) {
+  .saves-body { --inv-pad: var(--sp-4); }
+  .save-main { gap: var(--sp-2) var(--sp-3); padding: var(--sp-3) var(--sp-2); }
+  .save-masks img { height: var(--sp-4); }
+  .save-vessels img { height: var(--sp-3); }
+  .save-nail img { height: var(--sp-12); }
+  .save-facts { gap: var(--sp-1) var(--sp-4); }
+  .save-k { white-space: nowrap; }
+  .save-nail span { display: none; }
+  .mh-save-lbl { display: none; }
+  .mh-save-n { display: inline; }
+  .mh-save { gap: var(--sp-1); min-width: var(--sp-6); justify-content: center; }  /* 24 px: the minimum target (WCAG 2.5.8) */
+  .mh-save img { height: var(--sp-4); }
 }

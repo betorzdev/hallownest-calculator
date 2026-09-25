@@ -48,7 +48,9 @@ with the synergies between them marked.
 
 ### Your game
 Your nail, masks, soul vessels, notches, spells and nail arts, plus the charms and abilities
-you've actually found. Start from the base Knight or from everything maxed.
+you've actually found. Start from the base Knight or from everything maxed. Four save slots,
+like the game's, so a Steel Soul run doesn't overwrite your main game, and a free mode with
+everything unlocked to try builds.
 
 </td>
 <td valign="top">

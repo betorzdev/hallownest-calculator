@@ -47,6 +47,23 @@
     navJournal:     { es: 'Diario', en: 'Journal' },           // PANE_JOURNAL
     presetsLbl:     { es: 'Empezar desde', en: 'Start from' },
 
+    /* The save slots: the header's button and their screen, like the game's profile screen */
+    saveSlot:       { es: 'Partida {n}', en: 'Save {n}' },
+    saveSelect:     { es: 'Selecciona partida', en: 'Select save' },
+    saveBtnHint:    { es: 'Elegir partida: cuatro, como en el juego, o el Modo libre', en: 'Choose a save: four, as in the game, or Free mode' },
+    savesTitle:     { es: 'Partidas', en: 'Saves' },
+    savesNote:      { es: 'Cada partida guarda su build, los amuletos encontrados, el Diario, el Salón de los Dioses, la puerta de la saviavida y el panteón a medias. Mientras no eliges una, estás en el Modo libre.',
+                      en: 'Each save keeps its own build, charms found, Journal, Hall of Gods, Lifeblood door and pantheon in progress. Until you choose one, you\'re in Free mode.' },
+    freeMode:       { es: 'Modo libre', en: 'Free mode' },
+    freeModeNote:   { es: 'Todo desbloqueado, para probar builds: no es ninguna de tus partidas', en: 'Everything unlocked, to try builds: it isn\'t one of your saves' },
+    saveNew:        { es: 'Partida nueva', en: 'New Game' },             // PROFILE_NEW_GAME
+    saveClear:      { es: 'Borrar partida', en: 'Clear Save' },          // PROFILE_CLEAR_BUTTON
+    saveClearAsk:   { es: '¿Borrar la partida?', en: 'Clear Save?' },    // PROFILE_CLEAR_PROMPT
+    saveCurrent:    { es: 'Estás aquí', en: 'You\'re here' },
+    saveContinue:   { es: 'Seguir con esta partida', en: 'Continue with this save' },
+    saveLoad:       { es: 'Cargar esta partida', en: 'Load this save' },
+    savesNoStorage: { es: 'Este navegador no deja guardar datos: solo hay una partida', en: 'This browser doesn\'t let the site save data: there\'s only one save' },
+
     /* Sheet panel */
     heroLabel:      { es: 'Daño del aguijón', en: 'Nail damage' },
     dps:            { es: 'Daño por segundo', en: 'Damage per second' },

@@ -19,12 +19,15 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
 
 - **Header**, in one row: the title under the game's filigree —the one from the Hall of Gods
   screen, `assets/hall/tablet-hdr.png`, white as there and small—, which is the header's only
-  ornament and, like the logo on almost any website, a link to the start screen (Charms), and
-  on the right what applies to the whole site: the language (English / Español; until you
-  choose, the site follows the browser's language, English if it's neither) and *Share*. Behind
+  ornament and, like the logo on almost any website, a link to the start screen (Charms). On
+  its left, what belongs to the site: the language (English / Español; until you choose, the
+  site follows the browser's language, English if it's neither) and *Share*. On its right,
+  what's yours: the save selector (the Knight and the save you're playing, or *Select save* in
+  free mode; it opens [its screen](#saves)). Behind
   it, **20 dust motes** rising slowly, as in the main menu; with `prefers-reduced-motion` they
   don't appear. On mobile it stays in one row, so content starts sooner: the title on the left,
-  smaller and without its filigree, and the language and *Share* on the right.
+  smaller and without its filigree, and the Knight (with the save's number, if you're in one),
+  the language and *Share* on the right.
 - **The screen bar**, which stays stuck at the top: **Charms · Your game · Combat · Journal**,
   in the serif and in lowercase, with an accent diamond in front of the one you're viewing
   (that's how the game marks the page of its menu); the Journal carries your completed entries
@@ -286,7 +289,7 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
 
 ## Files
 
-- `index.html` — the page; eighteen classic scripts (it works over `file://`) and GoatCounter's,
+- `index.html` — the page; twenty classic scripts (it works over `file://`) and GoatCounter's,
   the visit counter: no cookies, one visit per page load and, as events, the screen switches
   (`screen-*`), the language (`lang-*`) and *Share*. The hash with the build is never sent, and it
   counts nothing over `file://`, on `localhost` or in an iframe. Without it the site works the
@@ -355,6 +358,8 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   Pure, no DOM and no language: `js/app-arena.js` turns its events into log lines. The reason for
   each rule, charm by charm, is in `design/04-charms-in-combat.md`.
 - `js/codec.js` — the build's state: defaults, presets, equipping rules and the URL encoding.
+- `js/saves.js` — free mode and the four save slots over `localStorage`: what goes in a slot,
+  switching, a new game and clearing one. Pure, with the storage passed in (`test/saves.test.js`).
 - `js/app.js` — the core: state, `localStorage` and the link, the header, the screen bar and
   the mini-bar, the HUD (`hudHtml`), the general render and the events. Each screen has its own
   script, loaded after it, and they all share the `HK.app` object: what changes value lives
@@ -367,6 +372,7 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   - `js/app-hall.js` — the Hall of Gods tab: marks, statues, plaque and tablet.
   - `js/app-pantheons.js` — the Pantheons tab: the lifeblood door and the run room by room.
   - `js/app-journal.js` — the Hunter's Journal screen: your game's book.
+  - `js/app-saves.js` — the Saves screen: free mode, the four slots and their buttons.
   - `js/app-boot.js` — startup: what's saved, the link and the first render. It goes last.
 - `assets/` — the game's artwork: `charms/`, `nails/`, `spells/`, `arts/`, `abilities/`
   and `hud/`. `tools/fetch-icons.js` downloads them from the wiki's CDN (`npm run icons`).
@@ -407,6 +413,8 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
     It goes inside an iframe because headless Chrome crops below 500 px wide.
     `view=charms|game|fight` picks the screen (it also goes in the iframe's hash, because a
     link with a build and no `view=` opens Charms; `fight=1` and `tab=` already mean Combat).
+    `view=saves&saves=1` opens Saves in free mode with slot 2 halfway through a game
+    (`&slot=2` makes it the active one).
     `open=<id>` focuses that charm on the grid, with its detail alongside; `hover=<id>` hovers
     it, with the preview on the figures (the capture needs `debug-hover.html`'s
     `--blink-settings`), and `fx=<ms>` freezes
@@ -933,6 +941,38 @@ inside. The game's notice when marking shows fixed just below the bar.
 - **All the Journal's text is the game's** (the dump of its texts, with the key alongside in
   `js/i18n.js`), with its Spanish typos; what the site writes comes in both languages.
 
+### Saves
+
+**Free mode and four save slots, like the game's profile screen.** The header's selector opens
+it (`view=saves`); it isn't a tab in the screen bar. The selector shows the Knight and the save
+you're playing (*Save 2*), or *Select save* in free mode. Each row shows its masks and soul
+vessels with the HUD's sprites, its nail, and what that game carries: charms found (out of 40),
+the Journal's completed entries over its total and the Hall of Gods statues with a symbol (out
+of 44). The one you're in carries the accent's line and *You're here*.
+
+- **Free mode** is what shows while you haven't chosen a save: everything unlocked (the build
+  maxed and every charm found), to try builds. It isn't one of your games, so it's a row of
+  its own above the four, with the Knight instead of a number, and it can't be cleared (Your
+  game's two starting points reset it). It's where a first visit lands, and where the data from
+  before saves existed stayed: nobody had chosen a save.
+
+- **What goes in a slot** is everything that describes one game: the build (`hollow.build`),
+  the charms found (`hollow.owned`), the Journal (`hollow.journal`), the Hall's symbols
+  (`hollow.hall`), the lifeblood door (`hollow.bindings`), the half-done pantheon (`hollow.run`)
+  and the pinned build (`hollow.baseline`). **What doesn't** is yours, not the game's:
+  `hollow.prefs` (the language, the screen, the enemy chosen).
+- Those keys always hold **the active slot** (free mode included, slot 0), so no screen has to
+  know slots exist; the others wait in `hollow.saves` as copies.
+- **Tapping a slot** loads it: the page reloads —like the game's loading screen— on Charms, so
+  nothing of the game you leave (an undo, the fight in progress) is left over. Tapping the one
+  you're in takes you back to Charms.
+- **New Game** (`PROFILE_NEW_GAME`), on an empty slot, starts as in the game: the base Knight,
+  no charms found and everything else empty. You fill it in on Your game.
+- **Clear Save** (`PROFILE_CLEAR_BUTTON`) asks first, inside the slot, with the game's
+  question (`PROFILE_CLEAR_PROMPT`). An inactive slot is left empty; the one you're playing
+  starts over as a new game.
+- A shared link still lands where you are (free mode or a save): its build replaces that one's.
+
 ## State and link
 
 The build lives in the URL, readable and with only what differs from the base Knight:
@@ -947,7 +987,7 @@ Cyclone Slash, Dash Slash and Great Slash. `hp` is the masks you have left, and 
 appear when you're at full health. `lang` isn't part of the build: it's only the language
 preference, and it only appears when it isn't the page's: Spanish on the English page, English
 on the Spanish one (`es/`). `view` isn't part of the build either: it's the screen
-(`game`, `fight` or `journal`), and it doesn't appear on Charms, which is the start screen. A
+(`game`, `fight`, `journal` or `saves`), and it doesn't appear on Charms, which is the start screen. A
 link with a build and no `view` opens Charms; without a build, the site opens where you left
 it. Each screen change leaves a history entry marked by the site (`{hk: 1}`), and going back
 to one of them changes the screen without touching the build; a link typed or pasted by hand
@@ -956,7 +996,8 @@ screen: the fight doesn't travel in it. It's also saved in
 `localStorage` (`hollow.build`, `hollow.baseline`, `hollow.prefs`, and separately the half-done
 pantheon run in `hollow.run`, the Hall of Gods symbols in `hollow.hall` and your game's
 Hunter's Journal in `hollow.journal`); on
-load the URL rules if it carries anything.
+load the URL rules if it carries anything. Those keys are where you are, free mode or a save:
+the rest wait in `hollow.saves` ([Saves](#saves)).
 
 ## Where the numbers come from
 
