@@ -350,23 +350,51 @@
      in progress, the Journal's page) is left over in the one you enter. It lands on Charms
      (or on Saves, after clearing the game you were in), with no build in the link so the
      slot's one is read. */
-  function enter(view = 'charms') {
+  function enter(view = 'charms', swap = null) {
     prefs.view = view;
     savePrefs();
     const hash = [prefs.lang !== PAGE_LANG ? 'lang=' + prefs.lang : '', view !== 'charms' ? 'view=' + view : '']
       .filter(Boolean).map((x, i) => (i ? '&' : '#') + x).join('');
     try { history.replaceState(null, '', here(hash)); } catch (e) { location.hash = hash; }
-    location.reload();
+    if (!swap) { location.reload(); return; }
+    // In place: the game swapped under the veil, and the veil lifts once it's painted.
+    swap();
+    requestAnimationFrame(() => requestAnimationFrame(() => document.documentElement.classList.remove('is-leaving')));
+  }
+
+  /* Into the game without reloading the page, after an import that follows the file: the read
+     permission the picker has just given lasts as long as this page, and after a reload the
+     browser would ask for it again (the paused notice). So what the boot reads per game
+     (js/app-boot.js) is read again here. */
+  function enterHere() {
+    imp.n = 0;
+    stopLive();
+    App.run = App.loadRun();
+    App.runSheet = null;
+    const pinned = App.load(App.KEY.baseline);
+    App.baseline = pinned ? C.decode(pinned) : null;
+    if (prefs.compare === 'pinned' && !App.baseline) { prefs.compare = 'base'; savePrefs(); }
+    App.loadMarks();
+    App.loadDoor();
+    App.loadJournal();
+    App.loadOwned();
+    App.state = App.withFixed(App.loadState());
+    App.persist();
+    App.recompute();
+    App.fightReset();
+    scrollTo(0, 0);
+    App.go('charms', true);
+    liveStart();
   }
 
   /* Going into a game, seen: a full slot's nail catches the light and its masks glow; an empty
      one (New Game) shows the base Knight's masks appearing one by one, as a new game's HUD does.
      Then the page fades to black and reloads (enter), and the next one fades in. Without motion, at once. */
-  function leave(n) {
+  function leave(n, swap = null) {
     let still = false;
     try { still = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { still = false; }
-    if (still) { enter(); return; }
-    try { sessionStorage.setItem(ENTERED_KEY, '1'); } catch (e) { /* it comes in without fading */ }
+    if (still) { enter('charms', swap); return; }
+    if (!swap) try { sessionStorage.setItem(ENTERED_KEY, '1'); } catch (e) { /* it comes in without fading */ }
     const li = n ? el.saves.querySelector(`.save[data-slot="${n}"]`) : null;
     let wait = 0;
     if (li && li.classList.contains('is-empty')) {
@@ -382,7 +410,7 @@
     if (li) li.setAttribute('aria-busy', 'true');
     setTimeout(() => {
       document.documentElement.classList.add('is-leaving');
-      setTimeout(() => enter(), 250);
+      setTimeout(() => enter('charms', swap), 250);
     }, wait);
   }
 
@@ -452,13 +480,15 @@
       if (!f || !store) return;
       S.importTo(store, n, f.snap);
       track('save-import');
-      // Linked or not, before the page reloads: the new page reads the link from IndexedDB.
+      // Linked, it's entered in place (enterHere); if not, the page reloads, and the link goes first.
+      let linked = false;
       if (f.handle && imp.sync) {
-        if (await L.links.put(n, { handle: f.handle, name: f.name, stamp: f.stamp })) track('save-link');
-      } else if (live.links[n] != null) await L.links.drop(n);
+        linked = await L.links.put(n, { handle: f.handle, name: f.name, stamp: f.stamp });
+        if (linked) { live.links[n] = f.name; track('save-link'); }
+      } else if (live.links[n] != null) { await L.links.drop(n); delete live.links[n]; }
       // It goes straight into the imported game, as picking the slot would.
       if (S.read(store).active !== n) S.select(store, n);
-      leave(0);
+      leave(0, linked ? enterHere : null);
     },
     /* Following a slot that follows nothing: the file is picked, the slot takes it in at once (the
        game wins, as on every save after) and from then on it follows it. */
@@ -697,11 +727,12 @@
       onState(s) { live.state = s; render(); },
     });
   }
-  // The notice above the screen when the link needs you: paused (a click to go on) or the file gone.
+  /* The notice above the screen when the link needs you: paused (a click to go on) or the file gone.
+     Nothing's wrong with the game, so it's drawn as the import notice's line, not as a warning box. */
   App.liveBanner = () => {
     if (live.state !== 'paused' && live.state !== 'lost') return '';
     const paused = live.state === 'paused';
-    return `<div class="banner is-run" role="status">
+    return `<div class="banner is-run is-hint" role="status">
       <span class="banner-tag">${esc(t('importHintTag'))}</span>
       <span class="banner-text">${esc(t(paused ? 'livePaused' : 'liveLost', { file: live.name }))}</span>
       <button type="button" class="btn btn-primary" data-act="${paused ? 'liveResume' : 'liveRelink'}">${esc(t(paused ? 'liveResume' : 'liveRelink'))}</button>

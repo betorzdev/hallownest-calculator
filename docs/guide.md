@@ -357,7 +357,7 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
 
 ## Files
 
-- `index.html` — the page; twenty-two classic scripts (it works over `file://`) and GoatCounter's,
+- `index.html` — the page; twenty-three classic scripts (it works over `file://`) and GoatCounter's,
   the visit counter: no cookies, one visit per page load and, as events, the screen switches
   (`screen-*`), the language (`lang-*`) and *Share*. The hash with the build is never sent, and it
   counts nothing over `file://`, on `localhost` or in an iframe. Without it the site works the
@@ -404,6 +404,13 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
 - `js/hunter.js` — the rules of your game's Journal: what's saved (the defeats you have left,
   like the game), how it's marked, the counts, the Hunter's Mark and what the Hunter says.
   Pure, no DOM, with its test (`test/hunter.test.js`).
+- `js/completion.js` — your game's completion, the 112%: the wiki's fifteen categories and
+  what each item is read from. Most of it is already in the slot (the build, the charms found,
+  the Journal: the game marks the bosses with the same `killed<X>` the Journal reads); the rest
+  (equipment, Dreamers, Colosseum, Hornet Sentinel, pantheons cleared, a fragile charm with the
+  Divine…) goes in the slot's `hollow.progress`, `{ ids }`. `count()` gives the total and each
+  category's part. Checked against the game's own figure in 51 real saves (`tools/check-pack.js`);
+  pure, with its test (`test/completion.test.js`). No screen shows it yet.
 - `js/pantheons.js` — the five Pantheons room by room: fight (with its entry), rest or
   Godseeker, and the variation of the rooms that have one (two Vengefly Kings in Hallownest's
   first, the Brooding Mawlek at 750). It comes from `kb/`, checked against the wiki.
@@ -433,7 +440,7 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
 - `js/savefile.js` — the game's save file (`userN.dat`) read and turned into a slot: the
   header, base64 and AES-256-ECB (written by hand: `crypto.subtle` has no ECB and isn't there
   over `file://`), then `playerData`'s fields mapped to the build, the charms found, the
-  Journal, the Hall and the door. The field names are checked against the game's text and the
+  Journal, the Hall, the door and the rest of the 112% (`hollow.progress`). The field names are checked against the game's text and the
   site's lists in `test/savefile.test.js`, which also makes a `.dat` with Node's AES and reads it back.
 - `js/live.js` — a slot kept in step with the game's file: whether the browser can
   (`canLive()`), the file handles per slot in IndexedDB (`hollow-live`) with the stamp last taken
@@ -484,6 +491,11 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
 - `kb/` — the combat knowledge base: bosses, enemy health, Godhome, Colosseum and builds. It
   isn't part of the page either; `kb/data/hp.json` is the source for the day the site has targets.
 - `test/` — tests with `node --test` (no dependencies): `npm test`.
+- `tools/check-pack.js` — the site against the game on a folder of real saves (`npm run
+  check-pack -- <folder>`): each `userN.dat` is imported as the site imports it and its
+  completion must equal the game's `completionPercentage` (exit code 1 if not); the Journal's
+  counts are set against the game's own three counters, only reported, because the game updates
+  those now and then. The saves aren't in the repo.
 - `tools/artpack.js` — the copy that's published as an Artifact (`npm run artpack -- <folder>`).
   An Artifact allows no more than 255 files and the site has over 480, so the portraits
   (`enemies/`) and the medallions (`journal/`) travel packed as data: URIs in `js/artpack.js`,
@@ -1162,7 +1174,9 @@ masks, the nails and the buttons line up from one slot to the next.
   *Import into Save n*; over a full slot it warns first that it will replace it. A file that
   isn't a save brings up the Shade and *Choose another file*. On a phone a note says the saves
   are on the computer you play on. Then the page enters the imported game, as tapping the slot
-  would. The file is read in the browser and never sent anywhere; the game's file isn't touched.
+  would; when the slot is to follow the file, without reloading, so that the permission the
+  picker has just given still holds and it starts live, with no paused notice. The file is read
+  in the browser and never sent anywhere; the game's file isn't touched.
   A save that's already JSON (the Switch's, or one decrypted with an editor) is read too. What
   comes in, from the game's `playerData`:
   - **the build**: nail, masks, vessels, notches, spells, nail arts, Dream Nail, cloak,
@@ -1172,6 +1186,9 @@ masks, the nails and the buttons line up from one slot to the next.
     Void Heart —the White Fragment alone doesn't count—, Carefree Melody);
   - **the Journal**, entry by entry, with the defeats you have left, as the game counts them;
   - **the Hall of Gods' symbols** and **the lifeblood door's notches**.
+  - **the rest of the 112%**: equipment, the Dreamers, the Colosseum's trials, Hornet Sentinel,
+    the Dream Nail awakened and the Seer ascended, Grimm's banishment, the Godtuner, the
+    pantheons cleared and a fragile charm left with the Divine (`js/completion.js`).
   The pantheon in progress and the pinned build aren't in the game: the slot starts without them.
 - **Keep in sync with the game**: where the browser can hand the page the file itself (Chrome
   and Edge on a computer, over `file://` or the web; not Firefox, Safari, a phone or inside an
@@ -1192,7 +1209,8 @@ masks, the nails and the buttons line up from one slot to the next.
   hollow in the notice's tint when paused or missing (on a phone, the diamond alone, over the
   save's number); its tooltip names the file. The browser's permission doesn't outlive the page:
   after a reload (or a new visit) the link is **paused**, and a notice above the screen says so
-  with *Resume*, which asks the browser again (it needs the click). If the file is gone, the
+  —drawn like the import notice, one line over the bar's hairline, since nothing's wrong— with
+  *Resume*, which asks the browser again (it needs the click). If the file is gone, the
   notice says the save keeps what it had and offers *Pick it again* (the import view for that
   slot). Clearing the slot, or importing into it with the option off, ends the link.
   A full slot that follows no file (imported with the option off, made on the site, or after

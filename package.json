@@ -14,6 +14,7 @@
     "knight": "node tools/fetch-knight.js",
     "artpack": "node tools/artpack.js",
     "text": "node tools/game-text.js",
-    "es": "node tools/es-page.js"
+    "es": "node tools/es-page.js",
+    "check-pack": "node tools/check-pack.js"
   }
 }

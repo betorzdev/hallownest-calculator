@@ -83,6 +83,9 @@ Not checked: GitHub Pages and Edge (same Chromium code), and whether Chrome's pr
 - *En vivo*: a small tag on the slot card, like «Estás aquí».
 - *En pausa* (permission needs a click after a reload, or the tab lost it): banner «Tu partida está en
   pausa · Reanudar»; the button calls `requestPermission` (needs a user gesture).
+  An import that links the file enters its game in place (`enterHere()` in `js/app-saves.js`), not
+  with the usual reload: the picker's grant only lasts as long as the page, so a reload would open
+  the new game already paused.
 - *Sin archivo* (moved/deleted/unreadable): the slot keeps its data; the card says it's no longer
   synced, with «Volver a vincular» (opens the import view for that slot).
 - Unlink: a text button on the card. Clearing the slot or importing another file also unlinks.

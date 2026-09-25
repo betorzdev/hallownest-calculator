@@ -103,7 +103,9 @@ test('the Journal, the Hall and the lifeblood door', () => {
   assert.deepEqual(F.hall(pd), { 'gruz-mother': ['at', 'asra'] });
   assert.deepEqual(F.door(pd), { done: { master: ['nail', 'soul'], knight: ['nail', 'shell', 'charms', 'soul'] }, all: ['knight'] });
   const snap = F.toSnapshot(pd);
-  assert.deepEqual(Object.keys(snap).sort(), ['hollow.bindings', 'hollow.build', 'hollow.hall', 'hollow.journal', 'hollow.owned']);
+  assert.deepEqual(Object.keys(snap).sort(), ['hollow.bindings', 'hollow.build', 'hollow.hall', 'hollow.journal', 'hollow.owned', 'hollow.progress']);
+  // The pantheons cleared are part of the 112%, not of the door (js/completion.js).
+  assert.deepEqual(JSON.parse(snap['hollow.progress']).ids, ['pantheon-master', 'pantheon-knight']);
 });
 
 test("the preview's extras: time, completion, geo, Steel Soul and the pantheons completed", () => {

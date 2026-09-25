@@ -27,7 +27,7 @@ Neither folder is part of the page: `index.html` doesn't load them.
 
 ## Hard constraints
 
-- **No framework and no build.** `index.html` loads **twenty-two classic scripts**, not modules.
+- **No framework and no build.** `index.html` loads **twenty-three classic scripts**, not modules.
   The page is `js/app.js` (the core) and one script per screen (`js/app-*.js`), sharing the
   `HK.app` object, and `js/app-boot.js` starts it; the rules for sharing are in `js/app.js`'s header.
   Plus GoatCounter's (`async`, external), the visit counter: the site has to work the same
@@ -87,6 +87,8 @@ what the game says.
 - `npm test` — `node --test`, no dependencies. `test/i18n.test.js` fails if a Spanish accent
   slips into the English or a string is left untranslated. If you've touched game names,
   `npm run text -- --audit`.
+- If you've touched `js/savefile.js` or `js/completion.js` and have a folder of real saves,
+  `npm run check-pack -- <folder>`: the site's 112% must equal the game's in every one.
 - If you've touched `index.html`, `npm run es`: `es/index.html` (the Spanish page, at its own
   address for search engines) is generated from it, and `test/es-page.test.js` fails if it's behind.
 - To look at the page: `debug-smoke.html` drives the site and writes the result; `debug.html`

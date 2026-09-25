@@ -44,8 +44,10 @@
   let hjPickAnchor = '';            // the last checkbox touched: with Shift the range up to it is picked
   let hjShift = false;              // whether the last click inside the Journal had Shift held
 
+  // Read again (the game saved, or another game came in): the bulk undo and the picks go with the old book.
   const loadJournal = () => {
     try { book = HJ.normalize(JSON.parse(load(KEY_JOURNAL) || '{}')); } catch (e) { book = {}; }
+    hjUndo = null; hjPicked = new Set(); hjPickAnchor = '';
   };
   const saveJournal = () => save(KEY_JOURNAL, Object.keys(book).length ? JSON.stringify(book) : null);
 

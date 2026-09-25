@@ -23,6 +23,8 @@
      journal   killed<X> (encountered) and kills<X> (defeats left), as js/hunter.js keeps them.
      hall      statueState<X>.completedTier1 … 3 → Attuned, Ascended, Radiant.
      bindings  bossDoorStateTier1 … 5: boundNail … boundSoul and allBindings.
+     progress  the rest of the 112% (equipment, Dreamers, Colosseum, pantheons cleared…): the
+               playerData each one comes from is in js/completion.js (PROGRESS).
    The pantheon in progress and the pinned build aren't in a real save: they're left empty. */
 (() => {
   'use strict';
@@ -31,6 +33,7 @@
   const HJ = HK.hunter || require('./hunter.js');
   const HG = HK.hall || require('./hall.js');
   const PN = HK.pantheons || require('./pantheons.js');
+  const CP = HK.completion || require('./completion.js');
 
   const KEY = 'UKu52ePUBwetZ9wNX88o54dnfKRu0T1l';
   const HEADER = [0, 1, 0, 0, 0, 255, 255, 255, 255, 1, 0, 0, 0, 0, 0, 0, 0, 6, 1, 0, 0, 0];
@@ -320,6 +323,8 @@
     if (Object.keys(book).length) snap['hollow.journal'] = JSON.stringify(book);
     if (Object.keys(marks).length) snap['hollow.hall'] = JSON.stringify(marks);
     if (PN.doorNotches(d)) snap['hollow.bindings'] = JSON.stringify(d);
+    const prog = CP.fromSave(pd);
+    if (prog.ids.length) snap['hollow.progress'] = JSON.stringify(prog);
     return snap;
   }
 

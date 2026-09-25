@@ -14,8 +14,10 @@
      marked by hand on the plaque (HG.toggleMark), and saved apart from the build. The
      simulator doesn't touch them: it only shows how your build performs. */
   App.marks = {};
+  // Read again (the game saved, or another game came in): a bulk action's undo no longer applies.
   const loadMarks = () => {
     try { App.marks = HG.normalizeMarks(JSON.parse(load(KEY.hall) || '{}')); } catch (e) { App.marks = {}; }
+    hallUndo = null;
   };
   const saveMarks = () => save(KEY.hall, Object.keys(App.marks).length ? JSON.stringify(App.marks) : null);
 

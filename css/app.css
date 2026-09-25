@@ -834,6 +834,11 @@ button.plate.is-on:is(:hover, :focus-visible) .plate-art > img { filter: brightn
 .banner.is-hint .banner-tag::before {
   content: ''; width: 5px; height: 5px; border: 1px solid currentColor; transform: rotate(45deg); opacity: 0.75;
 }
+/* On a phone (where only the linked save's notice shows) the text takes its own row under the tag. */
+@media (max-width: 599px) {
+  .banner.is-hint { row-gap: var(--sp-2); }
+  .banner.is-hint .banner-text { flex-basis: 100%; }
+}
 .banner-close {
   flex-shrink: 0; display: inline-grid; place-items: center; width: var(--sp-8); height: var(--sp-8);
   color: var(--muted); transition: color var(--dur) var(--ease);
