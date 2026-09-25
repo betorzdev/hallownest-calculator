@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Progress screen: variants</title>
+<!-- Design material, not part of the site (design/09-progress.md). The Progress screen drawn
+     three ways with the site's real CSS, data and 112% rules (js/completion.js), over your own
+     game (what index.html has saved: this page shares its localStorage) or over a sample game
+     half done. ?v=a|b|c picks the variant, &game=mine|sample the game, &lang=es|en, &w=390 the
+     phone width. Tapping an item marks it here only: nothing is saved.
+     C · The tablet was chosen on 26 September 2026; this page stays as a record.
+     The <base> points at the root so that the site's "assets/…" paths work as they are. -->
+<base href="../">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+/* ════ The mockup's bar: none of this goes into the site ═════════════════════════════════ */
+.mk-bar {
+  position: fixed; z-index: 90; left: 50%; bottom: var(--sp-2); transform: translateX(-50%);
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--sp-1) var(--sp-3);
+  max-width: calc(100vw - var(--sp-4)); padding: var(--sp-2) var(--sp-3);
+  background: color-mix(in oklab, var(--scene-bg) 92%, transparent); border: 1px solid var(--line-panel);
+  font-family: var(--font-num); font-size: var(--fs-xs); color: var(--muted); box-shadow: var(--shadow-md);
+}
+.mk-bar b { color: var(--label); font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; font-size: var(--fs-2xs); }
+.mk-bar button { padding: var(--sp-1) var(--sp-2); border: 1px solid var(--line-ctl); color: var(--ink-2); background: none; font: inherit; cursor: pointer; }
+.mk-bar button[aria-pressed="true"] { color: var(--ink-strong); border-color: var(--accent-line); background: var(--picked); }
+.mk-bar button:hover { color: var(--accent); }
+.mk-sep { width: 1px; align-self: stretch; background: var(--line); }
+.mk-wrap { width: 100%; margin: 0 auto; padding: var(--sp-6) 0 calc(var(--sp-16) * 2); }
+.mk-wrap.is-phone { max-width: 390px; padding-inline: 0; }
+
+/* ════ → css/app.css: common to the three ═══════════════════════════════════════════════
+   The screen is another page of the Inventory, like Your game: black, corner brackets, the
+   title with its rule. Under the title, the tabs List · Map (the map is phase 6). */
+.pg-body { display: block; }
+.pg-tabs { display: flex; justify-content: center; gap: var(--sp-6); margin: var(--sp-2) 0 var(--sp-8); }
+.pg-tab { padding: var(--sp-1) 0; font-family: var(--font-body); font-size: var(--fs-md); color: var(--ink-2); border-bottom: 1px solid transparent; }
+.pg-tab.is-on { color: var(--ink-strong); border-bottom-color: var(--accent-line); }
+.pg-tab:disabled { color: var(--muted); cursor: default; }
+.pg-tab small { font-size: var(--fs-2xs); color: var(--muted); margin-left: var(--sp-1); }
+/* The focal point: the game's figure, "Completion", large and in bone, over 112. */
+.pg-total { display: flex; flex-direction: column; align-items: center; gap: var(--sp-1); }
+.pg-total-k { font-size: var(--fs-2xs); letter-spacing: 0.12em; text-transform: uppercase; color: var(--label); }
+.pg-total-v { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; line-height: 1; color: var(--ink-strong); font-size: calc(var(--fs-xl) * 2.2); }
+.pg-total-v .u { font-size: 0.38em; font-weight: 400; color: var(--muted); }
+.pg-total-game { font-size: var(--fs-xs); color: var(--muted); }
+/* A category's head: its name, its points and how many of its things. */
+.pg-cat-head { display: flex; align-items: baseline; gap: var(--sp-3); flex-wrap: wrap; }
+.pg-pts { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-sm); color: var(--ink-2); }
+.pg-pts b { color: var(--ink-strong); font-weight: 700; }
+.pg-pts.is-full b { color: var(--good); }
+/* An item as the plates of Your game, smaller; a silhouette until you have it. The ones worth
+   several steps (a spell's two levels, the nail's four) carry "1/2" under the name. */
+.pg-plates { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: var(--sp-2) var(--sp-3); }
+.pg-plates .gplate-art { height: 52px; }
+.pg-plates .gplate-art img { max-height: 44px; }
+.pg-plates .gplate-val { font-size: var(--fs-xs); font-family: var(--font-num); }
+.pg-plates .gplate.is-part .gplate-art img { filter: brightness(0.55) saturate(0.6); }
+.pg-glyph { width: 30px; height: 30px; border: 1px solid currentColor; transform: rotate(45deg); color: var(--ink-2); opacity: 0.8; }
+.gplate:not(.is-on) .pg-glyph { color: var(--muted); opacity: 0.35; }
+/* A thin bar of the category's points, in bone: data, never the accent. */
+.pg-bar { height: 3px; background: var(--line); position: relative; }
+.pg-bar i { position: absolute; inset: 0 auto 0 0; width: var(--p); background: var(--ink-2); }
+.pg-bar.is-full i { background: var(--good); }
+
+/* ── A · The Journal: the fifteen categories as its list, the chosen one as its page ── */
+.pgA { display: grid; grid-template-columns: minmax(0, 320px) minmax(0, 1fr); gap: var(--sp-8); align-items: start; }
+.pgA-list { display: flex; flex-direction: column; border-top: 1px solid var(--inv-line); }
+.pgA-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--sp-1) var(--sp-3); align-items: baseline; padding: var(--sp-2) var(--sp-2); border-bottom: 1px solid var(--inv-line); text-align: left; }
+.pgA-row:hover { background: var(--veil); }
+.pgA-row.is-on { background: var(--picked); box-shadow: inset 2px 0 0 var(--accent-line); }
+.pgA-name { font-size: var(--fs-sm); color: var(--ink); }
+.pgA-row .pg-bar { grid-column: 1 / -1; }
+.pgA-page { display: flex; flex-direction: column; gap: var(--sp-4); }
+.pgA-page h3 { margin: 0; }
+.pgA-note { font-size: var(--fs-sm); color: var(--muted); margin: 0; }
+.pgA .pg-total { margin-bottom: var(--sp-6); }
+
+/* ── B · The Inventory: everything in view, category by category, in two columns ── */
+.pgB-cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-8) var(--sp-12); margin-top: var(--sp-8); }
+.pgB-col { display: flex; flex-direction: column; gap: var(--sp-8); min-width: 0; }
+.pgB-cat { display: flex; flex-direction: column; gap: var(--sp-3); border-top: 1px solid var(--inv-line); padding-top: var(--sp-4); }
+.pgB-strip { display: flex; gap: 2px; height: 6px; margin-top: var(--sp-4); max-width: 560px; margin-inline: auto; }
+.pgB-strip span { flex: var(--w) 1 0; background: var(--line); position: relative; }
+.pgB-strip span i { position: absolute; inset: 0 auto 0 0; width: var(--p); background: var(--ink-2); }
+
+/* ── C · The tablet: one row per category, its things as pips; a row opens its names ── */
+.pgC { max-width: 860px; margin: var(--sp-8) auto 0; border-top: 1px solid var(--inv-line); }
+.pgC-row { border-bottom: 1px solid var(--inv-line); }
+.pgC-head { width: 100%; display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr) auto; gap: var(--sp-2) var(--sp-4); align-items: center; padding: var(--sp-3) var(--sp-2); text-align: left; }
+.pgC-head:hover { background: var(--veil); }
+.pgC-name { font-size: var(--fs-sm); color: var(--ink); }
+.pgC-pips { display: flex; flex-wrap: wrap; gap: var(--sp-1); }
+.pgC-pip { width: 18px; height: 18px; display: grid; grid-template-rows: minmax(0, 1fr); place-items: center; }
+.pgC-pip img { max-width: 100%; max-height: 100%; object-fit: contain; filter: brightness(0.3) saturate(0); opacity: 0.6; }
+.pgC-pip.is-on img { filter: none; opacity: 1; }
+.pgC-pip.is-part img { filter: brightness(0.6) saturate(0.6); opacity: 1; }
+.pgC-pip .pg-glyph { width: 10px; height: 10px; }
+.pgC-open { padding: 0 var(--sp-2) var(--sp-4); }
+@media (max-width: 700px), (width: 390px) {
+  .pgA { grid-template-columns: minmax(0, 1fr); }
+  .pgB-cols { grid-template-columns: minmax(0, 1fr); }
+  .pgC-head { grid-template-columns: minmax(0, 1fr) auto; }
+  .pgC-pips { grid-column: 1 / -1; grid-row: 2; }
+}
+.mk-wrap.is-phone .pgA { grid-template-columns: minmax(0, 1fr); }
+.mk-wrap.is-phone .pgB-cols { grid-template-columns: minmax(0, 1fr); }
+.mk-wrap.is-phone .pgC-head { grid-template-columns: minmax(0, 1fr) auto; }
+.mk-wrap.is-phone .pgC-pips { grid-column: 1 / -1; grid-row: 2; }
+.mk-wrap.is-phone .gear-body { --inv-pad: var(--sp-4); }
+</style>
+</head>
+<body>
+<div class="page"><div class="shell">
+  <div class="mk-wrap" id="wrap">
+    <section class="gear" id="screen" aria-label="Progress"></section>
+  </div>
+</div></div>
+<div class="mk-bar" id="mk-bar"></div>
+<script src="js/i18n.js"></script>
+<script src="js/data.js"></script>
+<script src="js/enemies.js"></script>
+<script src="js/journal.js"></script>
+<script src="js/pantheons.js"></script>
+<script src="js/hall.js"></script>
+<script src="js/hunter.js"></script>
+<script src="js/codec.js"></script>
+<script src="js/rooms.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/completion.js"></script>
+<script>
+'use strict';
+(() => {
+  const HK = globalThis.HK;
+  const D = HK.data, C = HK.codec, HJ = HK.hunter, J = HK.journal, F = HK.foes, PN = HK.pantheons, P = HK.progress, CP = HK.completion;
+  const q = new URLSearchParams(location.search);
+  const opt = { v: q.get('v') || 'a', game: q.get('game') || 'mine', lang: q.get('lang') || 'es', phone: q.get('w') === '390', cat: 'bosses', open: 'bosses' };
+  const pick = (o) => (o ? o[opt.lang] || o.en || '' : '');
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const L = (es, en) => (opt.lang === 'es' ? es : en);
+
+  /* ── The game: yours (what index.html saved) or a sample one, half done ── */
+  const load = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  const json = (k, d) => { try { return JSON.parse(load(k) || 'null') || d; } catch (e) { return d; } };
+  function mine() {
+    const b = load('hollow.build');
+    return { build: b ? C.decode(b) : C.normalize(C.PRESETS.max), owned: json('hollow.owned', C.OWN_MAX), book: json('hollow.journal', {}),
+      progress: P.normalize(json('hollow.progress', {})), gameFigure: null };
+  }
+  function sample() {
+    const book = {};
+    for (const id of ['false-knight', 'gruz-mother', 'hornet-protector', 'brooding-mawlek', 'mantis-lords', 'soul-master', 'dung-defender',
+      'broken-vessel', 'gorb', 'xero', 'elder-hu', 'grimm']) book[id] = 0;
+    return {
+      build: C.normalize({ nail: 2, masks: 7, vessels: 1, notches: 6, spells: { vs: 2, dd: 1, hw: 0 }, arts: { cyclone: true, dash: false, great: true },
+        charms: [], dream: true, cloak: 1, grimm: 2 }),
+      owned: ['compass', 'swarm', 'stalwart', 'catcher', 'shaman', 'eater', 'dashmaster', 'fury', 'fheart', 'steady', 'quickslash', 'longnail',
+        'pride', 'baldur', 'womb', 'quickfocus', 'grubsong', 'sprintmaster', 'grimmchild', 'spore'],
+      book: HJ.normalize(book),
+      progress: P.normalize({ ids: ['mantis-claw', 'crystal-heart', 'monomon', 'trial-warrior', 'dream-awakened'] }),
+      gameFigure: null,
+    };
+  }
+  let game = opt.game === 'sample' ? sample() : mine();
+
+  /* ── What each item is: its name and its picture ── */
+  const HALL = new Set(['broken-vessel', 'brooding-mawlek', 'the-collector', 'dung-defender', 'false-knight', 'gruz-mother', 'hornet-protector',
+    'hornet-sentinel', 'mantis-lords', 'nosk', 'soul-master', 'traitor-lord', 'uumuu', 'watcher-knights', 'elder-hu', 'galien', 'gorb',
+    'markoth', 'marmu', 'no-eyes', 'xero', 'grimm', 'hive-knight']);
+  const bookName = (id) => { const r = J.BOOK.find((x) => x.id === id); return r && (r.name || (F.FOE_BY_ID[id] && F.FOE_BY_ID[id].name)); };
+  const charmVersion = (base) => {
+    const vs = { heart: ['uheart', 'fheart'], greed: ['ugreed', 'fgreed'], strength: ['ustrength', 'fstrength'], king: ['voidheart', 'kingsoul'], grimm: ['melody', 'grimmchild'] }[base];
+    return vs ? vs.find((v) => game.owned.includes(v)) || vs[vs.length - 1] : base;
+  };
+  const NAMES = {
+    'hornet-sentinel': { es: 'Hornet Centinela', en: 'Hornet Sentinel' },   // the Hall's second Hornet
+    'mothwing-cloak': D.ABILITIES.cloaks[1], 'shade-cloak': D.ABILITIES.cloaks[2],
+    'dream-nail': D.ABILITIES.dream, 'dream-awakened': D.ABILITIES.awoken,
+    'seer-ascended': { es: 'La Vidente, 2400 de esencia', en: 'The Seer, 2400 essence' },
+    monomon: { es: 'Monomon, la Maestra', en: 'Monomon the Teacher' },   // DREAMERS_INSPECT_RG2
+    lurien: { es: 'Lurien, el Vigilante', en: 'Lurien the Watcher' },    // DREAMERS_INSPECT_RG3
+    herrah: { es: 'Herrah, la Bestia', en: 'Herrah the Beast' },         // DREAMERS_INSPECT_RG4
+    'trial-warrior': { es: 'Prueba del Guerrero', en: 'Trial of the Warrior' },          // COLOSSEUM_1_TEXT
+    'trial-conqueror': { es: 'Prueba del Conquistador', en: 'Trial of the Conqueror' },  // COLOSSEUM_2_TEXT
+    'trial-fool': { es: 'Prueba de los Insensatos', en: 'Trial of the Fool' },           // COLOSSEUM_3_TEXT
+    'troupe-master-grimm': null, nkg: null,
+    masks: { es: 'Máscaras', en: 'Masks' }, vessels: { es: 'Vasijas de alma', en: 'Soul vessels' },
+  };
+  const CAT = {
+    bosses: { es: 'Jefes', en: 'Bosses' }, dreams: { es: 'Guerreros de los sueños', en: 'Warrior Dreams' },
+    colosseum: { es: 'Coliseo de los Insensatos', en: 'Colosseum of Fools' }, charms: { es: 'Amuletos', en: 'Charms' },
+    equipment: { es: 'Equipo', en: 'Equipment' }, spells: { es: 'Hechizos', en: 'Spells' }, arts: { es: 'Artes del aguijón', en: 'Nail Arts' },
+    masks: { es: 'Fragmentos de máscara', en: 'Mask Shards' }, vessels: { es: 'Fragmentos de vasija', en: 'Vessel Fragments' },
+    nail: { es: 'Mejoras del aguijón', en: 'Nail Upgrades' }, dreamNail: { es: 'Aguijón Onírico y esencia', en: 'Dream Nail and Essence' },
+    dreamers: { es: 'Soñadores', en: 'Dreamers' }, grimm: { es: 'La Compañía de Grimm', en: 'The Grimm Troupe' },
+    hive: { es: 'Saviavida', en: 'Lifeblood' }, godmaster: { es: 'Godmaster', en: 'Godmaster' },
+  };
+  function meta(cat, it) {
+    const id = it.id;
+    const img = (src) => ({ art: src });
+    // The Hunter's Journal's portraits (Hornet Sentinel has none of her own: the Journal's Hornet).
+    if (HALL.has(id) && cat !== 'charms') return { name: NAMES[id] || bookName(id), ...img(D.art('journal', id === 'hornet-sentinel' ? 'hornet-protector' : id)) };
+    if (id === 'troupe-master-grimm') return { name: bookName('grimm'), ...img(D.art('journal', 'grimm')) };
+    if (id === 'nkg') return { name: bookName('nkg'), ...img(D.art('journal', 'nkg')) };
+    if (cat === 'charms' || ['dreamshield', 'sprintmaster', 'weaversong', 'grimmchild'].includes(id)) {
+      const v = charmVersion(id === 'grimmchild' ? 'grimm' : id);
+      return { name: D.CHARM_BY_ID[v], art: `assets/charms/${v}.png` };
+    }
+    const eq = [...D.EQUIPMENT, ...D.KEY_ITEMS].find((x) => x.id === id);
+    if (eq) return { name: eq, art: D.art('items', id) };
+    if (id === 'mothwing-cloak') return { name: NAMES[id], art: D.art('abilities', 'cloak1') };
+    if (id === 'shade-cloak') return { name: NAMES[id], art: D.art('abilities', 'cloak2') };
+    if (cat === 'spells') return { name: D.SPELLS[id].levels[Math.max(1, game.build.spells[id])], art: D.art('spells', game.build.spells[id] === 2 ? id + '2' : id) };
+    if (cat === 'arts') return { name: D.ARTS[id], art: D.art('arts', id) };
+    if (id === 'masks') return { name: NAMES.masks, art: D.art('hud', 'mask-shard') };
+    if (id === 'vessels') return { name: NAMES.vessels, art: D.art('hud', 'vessel-frag') };
+    if (id === 'nail') return { name: D.NAILS[game.build.nail], art: D.art('nails', game.build.nail) };
+    if (id === 'dream-nail') return { name: NAMES[id], art: D.art('abilities', 'dream1') };
+    if (id === 'dream-awakened') return { name: NAMES[id], art: D.art('abilities', 'awoken') };
+    if (id === 'seer-ascended') return { name: NAMES[id], art: D.art('items', 'essence') };
+    if (id === 'godtuner') return { name: D.KEY_ITEMS.find((x) => x.id === 'godtuner'), art: D.art('items', 'godtuner') };
+    if (id.startsWith('pantheon-')) return { name: PN.PANTHEON_BY_ID[id.slice(9)].name, art: '' };
+    return { name: NAMES[id] || { es: id, en: id }, art: '' };
+  }
+
+  /* ── Marking, here only: a tap flips an item that the site would mark by hand ── */
+  function flip(cat, id) {
+    const it = CP.CATEGORIES.find((c) => c.id === cat).items.find((x) => x[0] === id);
+    if (!it) return;
+    const from = it[1];
+    if (from === 'progress') game.progress = P.toggle(game.progress, id);
+    else if (from === 'journal') { const b = { ...game.book }; if (id in b) delete b[id]; else b[id] = 0; game.book = HJ.normalize(b); }
+    else if (from === 'charm') { const v = charmVersion(id); game.owned = game.owned.includes(v) ? game.owned.filter((x) => x !== v) : [...game.owned, v]; }
+    paint();
+  }
+
+  /* ── Pieces shared by the three ── */
+  const count = () => CP.count(game);
+  const pts = (c) => `<span class="pg-pts${c.got === c.max ? ' is-full' : ''}"><b>${c.got}</b> / ${c.max}</span>`;
+  const bar = (c) => `<span class="pg-bar${c.got === c.max ? ' is-full' : ''}" style="--p:${(c.got / c.max) * 100}%"><i></i></span>`;
+  const artHtml = (m, cls = '') => (m.art ? `<img src="${m.art}" alt=""${cls}>` : '<i class="pg-glyph"></i>');
+  function plate(cat, it) {
+    const m = meta(cat, it);
+    const on = it.got >= it.max, part = it.got > 0 && !on;
+    // Steps only where there are several things (a spell's two levels, four nail upgrades…);
+    // a piece of equipment is worth 2 but it's one thing.
+    const steps = ['spells', 'masks', 'vessels', 'nail'].includes(cat);
+    const val = steps ? `${it.got}/${it.max}` : on ? '' : L('Sin conseguir', 'Not found');
+    return `<button type="button" class="gplate${on || part ? ' is-on' : ''}${part ? ' is-part' : ''}" data-flip="${cat}|${it.id}" title="${esc(pick(m.name))}">
+      <span class="gplate-art">${artHtml(m)}</span>
+      <span class="gplate-name">${esc(pick(m.name))}</span>
+      <span class="gplate-val${on ? '' : ' is-none'}">${esc(val)}</span></button>`;
+  }
+  const total = (r) => `<div class="pg-total"><span class="pg-total-k">${L('Finalización', 'Completion')}</span>
+      <span class="pg-total-v">${r.total}<span class="u">${L(' %', '%')} / ${r.max}</span></span>
+      <span class="pg-total-game">${L('Lo que dice el mapa del juego con el Sentido del Mundo', 'What the game\'s map says with World Sense')}</span></div>`;
+  const tabs = `<nav class="pg-tabs"><button type="button" class="pg-tab is-on">${L('Lista', 'List')}</button>
+      <button type="button" class="pg-tab" disabled>${L('Mapa', 'Map')}<small>${L('fase 6', 'phase 6')}</small></button></nav>`;
+  const rule = '<svg class="rule" width="220" height="12" viewBox="0 0 220 12" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><path d="M0 6 H92"/><path d="M128 6 H220"/><path d="M110 1 L116 6 L110 11 L104 6 Z"/></svg>';
+  const brackets = '<span class="bk tl"></span><span class="bk tr"></span><span class="bk bl"></span><span class="bk br"></span>';
+  const head = `<header class="inv-head"><h2 class="sec-title screen-title">${L('Progreso', 'Progress')}</h2>${rule}</header>`;
+
+  /* A · The Journal: list on the left, the chosen category's page on the right. */
+  function variantA(r) {
+    const rows = r.categories.map((c) => `<button type="button" class="pgA-row${c.id === opt.cat ? ' is-on' : ''}" data-cat="${c.id}">
+        <span class="pgA-name">${esc(pick(CAT[c.id]))}</span>${pts(c)}${bar(c)}</button>`).join('');
+    const c = r.categories.find((x) => x.id === opt.cat);
+    return `${total(r)}<div class="pgA"><div class="pgA-list">${rows}</div>
+      <div class="pgA-page"><div class="pg-cat-head"><h3 class="block-head">${esc(pick(CAT[c.id]))}</h3>${pts(c)}</div>
+        <p class="pgA-note">${L('Toca lo que ya tengas. En la fase 5, cada cosa dirá dónde se encuentra.', 'Tap what you already have. In phase 5, each thing will say where it\'s found.')}</p>
+        <div class="pg-plates">${c.items.map((it) => plate(c.id, it)).join('')}</div></div></div>`;
+  }
+  /* B · The Inventory: every category open, in two columns, the heavy ones on the left. */
+  function variantB(r) {
+    const strip = `<div class="pgB-strip" aria-hidden="true">${r.categories.map((c) => `<span style="--w:${c.max};--p:${(c.got / c.max) * 100}%"><i></i></span>`).join('')}</div>`;
+    const block = (c) => `<section class="pgB-cat"><div class="pg-cat-head"><h3 class="block-head">${esc(pick(CAT[c.id]))}</h3>${pts(c)}</div>
+        <div class="pg-plates">${c.items.map((it) => plate(c.id, it)).join('')}</div></section>`;
+    const left = ['bosses', 'dreams', 'charms', 'grimm'], cats = r.categories;
+    return `${total(r)}${strip}<div class="pgB-cols"><div class="pgB-col">${cats.filter((c) => left.includes(c.id)).map(block).join('')}</div>
+      <div class="pgB-col">${cats.filter((c) => !left.includes(c.id)).map(block).join('')}</div></div>`;
+  }
+  /* C · The tablet: a row per category with its things as pips; the open row lists them. */
+  function variantC(r) {
+    const pip = (cat, it) => {
+      const m = meta(cat, it), on = it.got >= it.max, part = it.got > 0 && !on;
+      return `<span class="pgC-pip${on ? ' is-on' : ''}${part ? ' is-part' : ''}" title="${esc(pick(m.name))}">${artHtml(m)}</span>`;
+    };
+    return `${total(r)}<div class="pgC">${r.categories.map((c) => `<div class="pgC-row">
+        <button type="button" class="pgC-head" data-open="${c.id}" aria-expanded="${opt.open === c.id}">
+          <span class="pgC-name">${esc(pick(CAT[c.id]))}</span><span class="pgC-pips">${c.items.map((it) => pip(c.id, it)).join('')}</span>${pts(c)}</button>
+        ${opt.open === c.id ? `<div class="pgC-open"><div class="pg-plates">${c.items.map((it) => plate(c.id, it)).join('')}</div></div>` : ''}
+      </div>`).join('')}</div>`;
+  }
+
+  const screen = document.getElementById('screen');
+  function paint() {
+    document.documentElement.lang = opt.lang;
+    document.getElementById('wrap').classList.toggle('is-phone', opt.phone);
+    const r = count();
+    const body = opt.v === 'b' ? variantB(r) : opt.v === 'c' ? variantC(r) : variantA(r);
+    screen.innerHTML = `<div class="gear-body pg-body">${brackets}${head}${tabs}${body}</div>`;
+    paintBar();
+  }
+  screen.addEventListener('click', (e) => {
+    const f = e.target.closest('[data-flip]'), c = e.target.closest('[data-cat]'), o = e.target.closest('[data-open]');
+    if (f) { const [cat, id] = f.dataset.flip.split('|'); flip(cat, id); }
+    else if (c) { opt.cat = c.dataset.cat; paint(); }
+    else if (o) { opt.open = opt.open === o.dataset.open ? '' : o.dataset.open; paint(); }
+  });
+
+  const bar2 = document.getElementById('mk-bar');
+  function paintBar() {
+    const b = (k, v, label) => `<button type="button" data-k="${k}" data-v="${v}" aria-pressed="${String(opt[k]) === String(v)}">${label}</button>`;
+    bar2.innerHTML = `<b>Variante</b>${b('v', 'a', 'A · Diario')}${b('v', 'b', 'B · Inventario')}${b('v', 'c', 'C · Tablilla')}<span class="mk-sep"></span>
+      <b>Partida</b>${b('game', 'mine', 'La tuya')}${b('game', 'sample', 'Ejemplo a medias')}<span class="mk-sep"></span>
+      ${b('lang', 'es', 'ES')}${b('lang', 'en', 'EN')}<span class="mk-sep"></span>${b('phone', 'false', '1280')}${b('phone', 'true', '390')}`;
+  }
+  bar2.addEventListener('click', (e) => {
+    const x = e.target.closest('[data-k]');
+    if (!x) return;
+    const k = x.dataset.k, v = x.dataset.v;
+    opt[k] = k === 'phone' ? v === 'true' : v;
+    if (k === 'game') game = v === 'sample' ? sample() : mine();
+    paint();
+  });
+  paint();
+})();
+</script>
+</body>
+</html>
