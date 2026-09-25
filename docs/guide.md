@@ -224,7 +224,8 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   (wiki, "Fragile Heart", "Kingsoul", "Void Heart": Divine makes the fragile one unbreakable
   for good, Void Heart replaces Kingsoul and Grimmchild and Carefree Melody exclude each
   other). Void Heart, as in the game, is always equipped and can't be removed (except by the
-  Charms binding). Changing the collection removes whatever you wear and no longer have.
+  Charms binding), and it's always the first one equipped, even if a link lists it later
+  (`normalize` in `js/codec.js`). Changing the collection removes whatever you wear and no longer have.
   Everything maxed is the end of the game: the unbreakable ones, Void Heart and Grimmchild. On
   Charms, the ones you don't have also show shadowed: they're looked at like the rest (the
   detail tells what they would do and says "Not found"), but they aren't equipped. They're

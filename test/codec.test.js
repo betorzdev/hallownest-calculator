@@ -24,7 +24,7 @@ test('encode/decode: round trip of several builds', () => {
     assert.deepEqual(codec.decode(codec.encode(n)), n);
   }
   const s = codec.encode(codec.normalize(builds[2]));
-  assert.equal(s, 'v=1&nail=2&masks=7&vessels=1&notches=8&spells=102&arts=101&charms=fury,ustrength,voidheart&hp=1');
+  assert.equal(s, 'v=1&nail=2&masks=7&vessels=1&notches=8&spells=102&arts=101&charms=voidheart,fury,ustrength&hp=1');
 });
 
 test('decode: tolerates junk and clamps ranges', () => {
@@ -45,6 +45,14 @@ test('normalize: mutually exclusive charms, the last one wins', () => {
   assert.deepEqual(codec.normalize({ charms: ['ustrength', 'fstrength'] }).charms, ['fstrength']);
   assert.deepEqual(codec.normalize({ charms: ['grimmchild', 'fury', 'melody'] }).charms, ['fury', 'melody']);
   assert.deepEqual(codec.normalize({ charms: ['kingsoul', 'voidheart'] }).charms, ['voidheart']);
+});
+
+test('normalize: Void Heart is always the first one equipped', () => {
+  assert.deepEqual(codec.normalize({ charms: ['fury', 'ustrength', 'voidheart'] }).charms, ['voidheart', 'fury', 'ustrength']);
+  assert.deepEqual(codec.decode('#charms=quickslash,voidheart,pride').charms, ['voidheart', 'quickslash', 'pride']);
+  const worn = codec.toggleCharm(codec.normalize({ ...codec.PRESETS.max, charms: ['voidheart'] }), 'fury');
+  assert.deepEqual(worn.charms, ['voidheart', 'fury'], 'what you equip goes after it');
+  assert.deepEqual(codec.normalize({ charms: ['voidheart', 'kingsoul'] }).charms, ['kingsoul'], 'swapped for Kingsoul, it goes');
 });
 
 test("charmAction/toggleCharm: the game's notch rules", () => {
