@@ -1,8 +1,9 @@
 # Live save sync
 
-**Status (25 September 2026):** planned and approved. Step 0, the probe `debug-live.html`, is
-written and waits for a run on Windows with the game. Nothing of the site has changed yet. Work
-goes on the branch `feat/live-save-sync`.
+**Status (25 September 2026):** step 0 passed on Windows and the Code section is built on the
+branch `feat/live-save-sync` (`js/live.js`, `HK.saves.sync`, the import view's checkbox, the
+slot's line, the paused/lost notice, `App.reloadGame()`). What's left is the check on Windows with
+the game (Verification, last point).
 
 ## Research: the three ways
 
@@ -40,6 +41,19 @@ Checked on the user's Windows PC with the game:
 3. The handle survives a reload over `file://` and over GitHub Pages; what `queryPermission` says after
    a reload (prompt vs granted with "Allow on every visit").
 If (1) fails, stop and rethink.
+
+**Result (Windows, Chrome 154, over `file://`, 25 Sep 2026):**
+1. The picker took `user4.dat` from the saves folder: `file://` is a secure context there too,
+   and `showOpenFilePicker`, `getAsFileSystemHandle` and IndexedDB are all present.
+2. The file changed twice while playing (18:50 → 20:03:22 → 20:03:49), each a new `lastModified`
+   and read cleanly in ~30 ms (182 KB); the second carried new charms worn and `atBench false`
+   (the game had also saved outside a rest: quitting, most likely). No read failed, so a read
+   mid-write wasn't caught; the parser's refusal is what covers it (retried on the next tick).
+3. After a reload the handle was still in IndexedDB, with permission **`prompt`**; a click on
+   *Resume* → `requestPermission` → the browser's own permission prompt → `granted`, and the
+   watch went on. So the paused state (a click per visit) is the normal one, as designed.
+Not checked: GitHub Pages and Edge (same Chromium code), and whether Chrome's prompt offers
+"Allow on every visit" (persistent permission), which would skip the paused state.
 
 ## Design
 

@@ -4,11 +4,13 @@
    real one: its Import button opens the import view in place of the list, which explains how to
    find the game's file (by system, with the folder to copy), takes it by drag and drop or with the
    picker, and shows what it read before anything is written (js/savefile.js reads it). The rules
-   (what goes in a slot, switching, clearing) are in js/saves.js. Shares HK.app with js/app.js (see there). */
+   (what goes in a slot, switching, clearing) are in js/saves.js. Where the browser can (js/live.js),
+   the picker keeps a handle to the file and the slot can stay linked to it: it catches up each time
+   the game saves. Shares HK.app with js/app.js (see there). */
 (() => {
   'use strict';
   const HK = globalThis.HK;
-  const D = HK.data, C = HK.codec, S = HK.saves, HJ = HK.hunter, HG = HK.hall, F = HK.savefile, PN = HK.pantheons;
+  const D = HK.data, C = HK.codec, S = HK.saves, HJ = HK.hunter, HG = HK.hall, F = HK.savefile, PN = HK.pantheons, L = HK.live;
   const App = HK.app;
   const { t, pick, el, NT, esc, FLEURS, prefs, savePrefs, brackets, screenHead, render, actions, here, PAGE_LANG, toast, track, pctSpace } = App;
 
@@ -46,7 +48,13 @@
   /* The import view: the slot it's for (0: the list shows), the system whose steps it shows,
      and the file: 'idle' (none yet), 'reading', 'ready' (read: { name, snap, meta }) or 'error'.
      fresh: the view has just opened, and its steps come in one after another. */
-  const imp = { n: 0, os: 'win', state: 'idle', file: null, fresh: false, copied: 0 };
+  const imp = { n: 0, os: 'win', state: 'idle', file: null, fresh: false, copied: 0, sync: true };
+  /* The link with the game (js/live.js): the linked slots ({ n: file name }, read once at boot),
+     and the active slot's watcher and what it says: '' (not linked), 'live', 'paused' or 'lost'. */
+  const live = { links: {}, ready: false, n: 0, name: '', state: '', watcher: null };
+  // The picker for the game's save, the import's and Follow's: it remembers the folder (id).
+  const pickSave = () => showOpenFilePicker({ id: 'hk-save', multiple: false,
+    types: [{ description: 'Hollow Knight', accept: { 'application/octet-stream': ['.dat'], 'application/json': ['.json'] } }] });
 
   const parse = (s, def) => { try { const v = JSON.parse(s); return v == null ? def : v; } catch (e) { return def; } };
   /* What a slot's card shows, read from its copy with the same defaults as the loaders: with no
@@ -85,8 +93,13 @@
       [t('navCharms'), s.charms, C.OWN_MAX.length],
       [t('navJournal'), s.journal.completed, s.journal.total],
     ].map(([k, v, max]) => `<span class="save-fact"><span class="save-k">${esc(k)}</span><b>${num(v)}</b><i class="u">/${num(max)}</i></span>`).join('');
+    // Linked to the game's file: which one and, on the one you're in, how the link is.
+    const linked = !free && live.links[n] != null ? `<span class="save-link${slot.active && live.state ? ' is-' + live.state : ''}">
+        <span class="save-link-t">${esc(t('liveFollows', { file: live.links[n] }))}${slot.active && live.state ? ` · <b>${esc(t('liveState_' + live.state))}</b>` : ''}</span>
+        <button type="button" class="text-btn" data-act="liveUnlink" data-value="${n}">${esc(t('liveUnlink'))}</button>
+      </span>` : '';
     const confirm = clearing === n ? ask('saveClearAsk', 'saveClear', n)
-      : `${importBtn(n)}<button type="button" class="save-act is-clear" data-act="saveClear" data-value="${n}">
+      : `${linked ? '' : followBtn(n)}${importBtn(n)}<button type="button" class="save-act is-clear" data-act="saveClear" data-value="${n}">
           ${FLEURS}${ICON_CLEAR}
           <span class="save-act-t">${esc(t('saveClear'))}</span></button>`;
     // You're here: at the head of the card, over the masks (beside the name, in free mode).
@@ -103,7 +116,7 @@
         <span class="save-nail"><img src="${D.art('nails', s.st.nail)}" alt="" width="80" height="360"><span${NT}>${esc(pick(D.NAILS[s.st.nail]))}</span></span>
         <span class="save-facts">${facts}</span>
       </button>
-      ${free ? `<span class="save-foot save-note">${esc(t('freeModeNote'))}</span>` : `<span class="save-foot">${confirm}</span>`}
+      ${free ? `<span class="save-foot save-note">${esc(t('freeModeNote'))}</span>` : `<span class="save-foot">${linked}${confirm}</span>`}
     </li>`;
   }
 
@@ -114,6 +127,12 @@
      you're on it) and a bin (whose lid lifts). */
   const ICON_IMPORT = '<svg class="save-ico" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12.5 V16.5 H17 V12.5"/><g class="save-ico-arrow"><path d="M10 2.5 V11.5"/><path d="M6.2 8 L10 11.8 L13.8 8"/></g></svg>';
   const ICON_CLEAR = '<svg class="save-ico" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g class="save-ico-lid"><path d="M3 5.5 H17"/><path d="M7.8 5.5 V3.5 H12.2 V5.5"/></g><path d="M4.8 5.5 L5.8 17.5 H14.2 L15.2 5.5"/><path d="M8.3 8.8 V14.2"/><path d="M11.7 8.8 V14.2"/></svg>';
+  /* A full slot that follows no file can start following one (where the browser can): the same
+     menu item, with two arrows chasing each other round, which turn on hover. Hidden until the
+     links are read, so that a linked slot doesn't flash it. */
+  const ICON_FOLLOW = '<svg class="save-ico" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g class="save-ico-turn"><path d="M16 8.5 A6.2 6.2 0 0 0 4.6 6.4"/><path d="M4.2 3.2 V6.8 H7.8"/><path d="M4 11.5 A6.2 6.2 0 0 0 15.4 13.6"/><path d="M15.8 16.8 V13.2 H12.2"/></g></svg>';
+  const followBtn = (n) => (live.ready && L.canLive() ? `<button type="button" class="save-act is-follow" data-act="liveFollow" data-value="${n}"
+    aria-label="${esc(t('saveSlot', { n }) + ': ' + t('liveFollow'))}" title="${esc(t('liveFollowHint'))}">${FLEURS}${ICON_FOLLOW}<span class="save-act-t"><span class="save-act-long">${esc(t('liveFollow'))}</span><span class="save-act-short">${esc(t('liveFollowShort'))}</span></span></button>` : '');
   const importBtn = (n) => `<button type="button" class="save-act is-import" data-act="saveImport" data-value="${n}"
     aria-label="${esc(t('saveSlot', { n }) + ': ' + t('saveImport'))}">${FLEURS}${ICON_IMPORT}<span class="save-act-t"><span class="save-act-long">${esc(t('saveImport'))}</span><span class="save-act-short">${esc(t('saveImportShort'))}</span></span></button>`;
   // The question a slot's foot asks before clearing it: yes, no.
@@ -237,6 +256,7 @@
           <p class="save-facts imp-facts">${facts}</p>
           ${pantheons}
           ${full ? `<p class="imp-warn">${esc(t('impReplace', { n: imp.n }))}</p>` : ''}
+          ${f.handle ? syncOpt() : ''}
           <div class="imp-actions">
             <button type="button" class="btn btn-primary" data-act="importDo">${esc(t('impTitle', { n: imp.n }))}</button>
             <button type="button" class="text-btn" data-act="importPick">${esc(t('impOther'))}</button>
@@ -257,6 +277,15 @@
         ${imp.state === 'reading' ? '' : `<p class="imp-or">${esc(t('impOr'))}</p>${choose('impChoose', true)}`}
       </div>`;
   }
+  /* Following the game, as a row of the game's options menu: what it is, and its value
+     (Activado / Desactivado) on one of the site's buttons, so that it reads as something to
+     press, with the rule's diamond lit or hollow for the state. A press switches it. */
+  const syncOpt = () => `<div class="imp-sync">
+      <span class="imp-sync-k" id="imp-sync-k">${esc(t('impSync'))}</span>
+      <button type="button" class="btn imp-sync-v" role="switch" aria-checked="${imp.sync}" aria-labelledby="imp-sync-k"
+        data-act="importSync"><span class="imp-sync-dot" aria-hidden="true"></span><span class="imp-sync-t">${esc(t(imp.sync ? 'impSyncOn' : 'impSyncOff'))}</span></button>
+      <p class="imp-sync-note">${esc(t('impSyncNote'))}</p>
+    </div>`;
   const drop = () => `<div class="imp-drop" data-state="${imp.state}">
       <div class="imp-light" aria-hidden="true"></div>
       <div class="imp-drop-in">${dropInner()}</div>
@@ -401,15 +430,70 @@
       focusIn(`[data-act="importOs"][data-value="${imp.os}"]`);
     },
     importCopy() { copyPath(); },
-    importPick() { picker.value = ''; picker.click(); },
-    importDo() {
+    /* With a handle where the browser gives one (the slot can then follow the file), with the
+       hidden input where it doesn't. Cancelling the picker leaves things as they were. */
+    async importPick() {
+      if (!L.canLive()) { picker.value = ''; picker.click(); return; }
+      let h;
+      try { [h] = await pickSave(); } catch (e) {
+        if (!e || e.name !== 'AbortError') { picker.value = ''; picker.click(); }
+        return;
+      }
+      readHandle(h);
+    },
+    // Only the option changes: the rest of the preview (and its entrance) stays put.
+    importSync(node) {
+      imp.sync = !imp.sync;
+      node.setAttribute('aria-checked', String(imp.sync));
+      node.querySelector('.imp-sync-t').textContent = t(imp.sync ? 'impSyncOn' : 'impSyncOff');
+    },
+    async importDo() {
       const n = imp.n, f = imp.file;
       if (!f || !store) return;
       S.importTo(store, n, f.snap);
       track('save-import');
+      // Linked or not, before the page reloads: the new page reads the link from IndexedDB.
+      if (f.handle && imp.sync) {
+        if (await L.links.put(n, { handle: f.handle, name: f.name, stamp: f.stamp })) track('save-link');
+      } else if (live.links[n] != null) await L.links.drop(n);
       // It goes straight into the imported game, as picking the slot would.
       if (S.read(store).active !== n) S.select(store, n);
       leave(0);
+    },
+    /* Following a slot that follows nothing: the file is picked, the slot takes it in at once (the
+       game wins, as on every save after) and from then on it follows it. */
+    async liveFollow(node) {
+      const n = Number(node.dataset.value);
+      if (!store) return;
+      let h, file, r;
+      try { [h] = await pickSave(); } catch (e) { return; }
+      try { file = await h.getFile(); r = F.read(new Uint8Array(await file.arrayBuffer())); } catch (e) { r = null; }
+      if (!r || !r.ok) { toast(t('saveImportBad')); return; }
+      S.sync(store, n, F.toSnapshot(r.pd));
+      if (!(await L.links.put(n, { handle: h, name: file.name, stamp: L.stampOf(file) }))) { toast(t('liveFollowNo')); return; }
+      live.links[n] = file.name;
+      track('save-link');
+      if (n === activeSlot()) { stopLive(); App.reloadGame(); await liveStart(); } else render();
+      toast(t('liveFollowing', { n, file: file.name }));
+      focusIn(`.save[data-slot="${n}"] [data-act="liveUnlink"]`);
+    },
+    async liveUnlink(node) {
+      const n = Number(node.dataset.value);
+      await L.links.drop(n);
+      delete live.links[n];
+      if (n === live.n) stopLive();
+      render();
+      focusIn(`.save[data-slot="${n}"] .save-main`);
+    },
+    // The banner's button: a click, which is what the browser needs to ask for permission again.
+    async liveResume() {
+      if (!live.watcher) return;
+      if (!(await live.watcher.resume())) toast(t('liveResumeNo'));
+    },
+    // The file is gone: the import view for the slot, to pick it again.
+    liveRelink() {
+      App.go('saves');
+      actions.saveImport({ dataset: { value: String(live.n) } });
     },
     saveClear(node) { clearing = Number(node.dataset.value); render(); focusIn('[data-act="saveClearNo"]'); },
     saveClearNo(node) { const n = clearing; clearing = 0; render(); focusIn(`[data-act="saveClear"][data-value="${n || node.dataset.value}"]`); },
@@ -420,6 +504,8 @@
       shatter(n, () => {
         const wasActive = S.read(store).active === n;
         if (!S.clear(store, n)) { render(); return; }
+        // A cleared slot follows no file.
+        if (live.links[n] != null) { L.links.drop(n); delete live.links[n]; if (n === live.n) stopLive(); }
         justCleared = n;
         const was = el.saves.querySelector(`.save[data-slot="${n}"]`);
         const from = was ? was.offsetHeight : 0;
@@ -495,15 +581,23 @@
   document.body.appendChild(picker);
   picker.addEventListener('change', () => { if (picker.files && picker.files[0]) readFile(picker.files[0]); });
 
-  function readFile(file) {
+  /* A file from a handle (the picker or a drop, where the browser gives one): read the same, and
+     the handle goes with it so that the slot can stay linked. */
+  async function readHandle(h) {
+    if (!imp.n || !h || h.kind !== 'file') return;
+    let file;
+    try { file = await h.getFile(); } catch (e) { imp.state = 'error'; imp.file = null; paintDrop(); return; }
+    readFile(file, h);
+  }
+  function readFile(file, handle = null) {
     if (!imp.n) return;
-    imp.state = 'reading'; imp.file = null;
+    imp.state = 'reading'; imp.file = null; imp.sync = true;
     paintDrop();
     const reader = new FileReader();
     reader.onload = () => {
       const r = F.read(new Uint8Array(reader.result));
       if (!r.ok) { imp.state = 'error'; paintDrop(); return; }
-      imp.file = { name: file.name, snap: F.toSnapshot(r.pd), meta: F.meta(r.pd) };
+      imp.file = { name: file.name, snap: F.toSnapshot(r.pd), meta: F.meta(r.pd), handle, stamp: L.stampOf(file) };
       imp.state = 'ready';
       paintDrop();
       focusIn('[data-act="importDo"]');
@@ -525,7 +619,13 @@
     if (!imp.n || !hasFiles(e)) return;
     e.preventDefault();
     dragDepth = 0; setDrag(false);
+    // The handle has to be asked for now, during the event: afterwards the items are gone.
+    const item = e.dataTransfer.items && e.dataTransfer.items[0];
     const file = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (L.canLive() && item && item.getAsFileSystemHandle) {
+      item.getAsFileSystemHandle().then(readHandle, () => { if (file) readFile(file); });
+      return;
+    }
     if (file) readFile(file);
   });
   document.addEventListener('keydown', (e) => {
@@ -561,5 +661,53 @@
 
   // The slot you're playing, or 0 (S.FREE) in free mode.
   const activeSlot = () => (store ? S.read(store).active : S.FREE);
-  Object.assign(App, { renderSaves, activeSlot });
+
+  /* ── Following the game ───────────────────────────────────────────────
+     Only the slot you're in watches its file; another linked one catches up on entering it
+     (entering reloads the page, and this runs again). When the game saves, the slot takes the
+     file in (the game wins over what was changed here since) and every screen repaints. The
+     stamp is kept with the link, so that a reload doesn't take in again a file already taken
+     in, over what you've changed since. */
+  const parseSave = (bytes) => { const r = F.read(bytes); return r.ok ? r.pd : null; };
+  function stopLive() {
+    if (live.watcher) live.watcher.stop();
+    Object.assign(live, { n: 0, name: '', state: '', watcher: null });
+  }
+  async function liveStart() {
+    if (!store || !L.canLive()) return;
+    live.links = await L.links.all();
+    live.ready = true;
+    const n = activeSlot();
+    const rec = n !== S.FREE ? await L.links.get(n) : null;
+    if (!rec || !rec.handle) { if (prefs.view === 'saves') render(); return; }
+    let stamp = rec.stamp || null;
+    Object.assign(live, { n, name: rec.name || rec.handle.name, state: '' });
+    live.watcher = L.watch({
+      source: L.fileSource(rec.handle, parseSave),
+      since: stamp,
+      async onData(pd, next) {
+        stamp = next;
+        const changed = S.sync(store, n, F.toSnapshot(pd));
+        await L.links.put(n, { ...rec, stamp });
+        if (!changed || activeSlot() !== n) return;
+        App.reloadGame();
+        toast(t('liveUpdated'));
+        track('save-sync');
+      },
+      onState(s) { live.state = s; render(); },
+    });
+  }
+  // The notice above the screen when the link needs you: paused (a click to go on) or the file gone.
+  App.liveBanner = () => {
+    if (live.state !== 'paused' && live.state !== 'lost') return '';
+    const paused = live.state === 'paused';
+    return `<div class="banner is-run" role="status">
+      <span class="banner-tag">${esc(t('importHintTag'))}</span>
+      <span class="banner-text">${esc(t(paused ? 'livePaused' : 'liveLost', { file: live.name }))}</span>
+      <button type="button" class="btn btn-primary" data-act="${paused ? 'liveResume' : 'liveRelink'}">${esc(t(paused ? 'liveResume' : 'liveRelink'))}</button>
+    </div>`;
+  };
+  // The link of the save you're in, for the header: { state, name }, or null if it follows no file.
+  App.liveInfo = () => (live.watcher && live.state ? { state: live.state, name: live.name } : null);
+  Object.assign(App, { renderSaves, activeSlot, liveStart });
 })();

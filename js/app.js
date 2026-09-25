@@ -475,12 +475,19 @@
      (js/app-saves.js), which is nobody's game. It's one of the site's best features, so it isn't
      a footnote link: the Knight at a bench, under a lamp's light that breathes (the import view's),
      and the label in the game's menu capitals, with the menu's pointers when you're on it. On
-     mobile, the Knight with the save's number, or alone. */
+     mobile, the Knight with the save's number, or alone.
+     When the save follows the game's file (js/live.js), a line under the label says how: live,
+     with the rule's diamond lit and breathing, or paused / file missing, hollow. On mobile, the
+     diamond alone, over the save's number. */
   function saveLink() {
     const n = App.activeSlot();
     const label = n ? t('saveSlot', { n }) : t('saveSelect');
-    return `<a class="mh-save" href="${here(hashFor('saves'))}" data-act="view" data-value="saves"${prefs.view === 'saves' ? ' aria-current="page"' : ''}
-          aria-label="${esc(label)}" title="${esc(t('saveBtnHint'))}"><span class="mh-save-fig"><span class="mh-save-light" aria-hidden="true"></span><img src="${D.art('hud', 'knight')}" alt=""></span><span class="mh-save-lbl">${FLEURS}${esc(label)}</span>${n ? `<span class="mh-save-n">${n}</span>` : ''}</a>`;
+    const lv = App.liveInfo();
+    const st = lv ? t('liveState_' + lv.state) : '';
+    const live = lv ? `<span class="mh-live" aria-hidden="true"><i class="mh-live-dot"></i><span class="mh-live-t">${esc(st)}</span></span>` : '';
+    const title = lv ? t('liveFollows', { file: lv.name }) + ' · ' + st : t('saveBtnHint');
+    return `<a class="mh-save${lv ? ' is-' + lv.state : ''}" href="${here(hashFor('saves'))}" data-act="view" data-value="saves"${prefs.view === 'saves' ? ' aria-current="page"' : ''}
+          aria-label="${esc(label + (lv ? ', ' + st : ''))}" title="${esc(title)}"><span class="mh-save-fig"><span class="mh-save-light" aria-hidden="true"></span><img src="${D.art('hud', 'knight')}" alt=""></span><span class="mh-save-lbl">${FLEURS}${esc(label)}${live}</span>${n ? `<span class="mh-save-n">${n}</span>` : ''}</a>`;
   }
   const VIEW_KEY = { charms: 'navCharms', game: 'navGame', fight: 'navFight', journal: 'navJournal', saves: 'savesTitle' };
   function renderMasthead() {
@@ -607,14 +614,15 @@
 
   /* The notices above the screen. Overcharm, on Your game: on Charms it goes in the band, below
      the notches (charmBand), and in combat the HUD's aura already says it. And, for whoever's
-     new on a computer, that the game's save can be imported (js/app-saves.js). */
+     new on a computer, that the game's save can be imported, and when the save linked to the game
+     needs a click to go on following it (js/app-saves.js). */
   function renderBanner() {
     const over = prefs.view === 'game' && App.sheet.notches.overcharmed
       ? `<div class="banner"><span class="banner-tag">${esc(t('overcharmed'))}</span><span class="banner-text">${esc(t('overcharmBanner'))}</span></div>`
       : '';
     // On the Pantheons tab you're already there: the notice doesn't send you where you are.
     const lock = prefs.view === 'fight' && prefs.fightTab === 'pantheon' ? '' : runLockBanner();
-    el.banner.innerHTML = over + lock + App.importHint();
+    el.banner.innerHTML = over + lock + App.liveBanner() + App.importHint();
   }
 
   /* The notice that you're in a pantheon, with the button that takes you to the room and the one
@@ -999,10 +1007,34 @@
     App.was = null;
   }
 
+  /* The game's keys changed underneath (js/live.js: the real game saved): every screen reads them
+     again, as the boot does (js/app-boot.js), and repaints, without reloading the page. A
+     half-done pantheon keeps its charms, as on opening a link. The pinned build and the run are
+     the site's own and a real save doesn't touch them (HK.saves.sync). */
+  function reloadGame() {
+    App.loadMarks();
+    App.loadDoor();
+    App.loadJournal();
+    const ownedWas = App.owned;
+    loadOwned();
+    const kept = App.state;
+    // The stored build, not the link's: the link still carries the one that was on screen.
+    const stored = load(KEY.build);
+    let next = withFixed(stored ? C.decode(stored) : C.normalize(C.PRESETS.max));
+    if (App.charmLock() && App.touchesCharms(next)) next = C.normalize({ ...next, charms: kept.charms, notches: kept.notches });
+    App.state = next;
+    persist();
+    recompute();
+    // What arrived lights up, as after any change (App.was): a charm found, one now worn.
+    App.was = { state: kept, owned: ownedWas };
+    render();
+    App.was = null;
+  }
+
   Object.assign(App, { t, pick, KEY, PAGE_LANG, $, el, hoverable, SPELL_KEYS, ART_KEYS, ART_STAT, POSITIONAL,
     NEED_KEY, NT, namedSrc, esc, load, save, rebuildNF, pctSpace, fmtValue, fmtStat, fmtStatRich, sign,
     masksText, notchText, spellArt, shortOf, badgeText, goodClass, deltaChip, changeChip, prefs, loadPrefs,
     savePrefs, justWorn, justFound, splitHash, here, loadState, persist, compareLabel, compute, impact, recompute, commit, bindAllFx,
     brackets, chevron, cross, FLEURS, rule, screenHead, hudHtml, restoreFocus, focusDescriptor, render, go, navTo, screenOf,
-    underNav, toast, track, actions, isMaxOwned, loadOwned, saveOwned, isOwned, withFixed, isFixed, setOwned });
+    underNav, toast, track, actions, isMaxOwned, loadOwned, saveOwned, isOwned, withFixed, isFixed, setOwned, reloadGame });
 })();
