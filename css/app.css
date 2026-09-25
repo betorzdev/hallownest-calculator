@@ -144,13 +144,15 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 /* Three columns: the title in the centre of the page and one side on each flank. The two side
    columns grow equally, so the title lands dead centre; if a side doesn't fit in its half, its
    column widens and the title gives way a little rather than overlap. */
+/* Two rows: the filigree above, and the title below with the two sides beside it, centred on its
+   line (the brand spans both rows and shares them, subgrid). */
 .masthead {
-  padding: var(--sp-6) 0 0; display: grid; grid-template-columns: 1fr auto 1fr;
+  padding: var(--sp-6) 0 0; display: grid; grid-template-columns: 1fr auto 1fr; grid-template-rows: auto auto;
   align-items: center; gap: var(--sp-4) var(--sp-6);
 }
-.masthead .brand { grid-column: 2; }
-.masthead .mh-tools { grid-column: 1; grid-row: 1; justify-self: start; align-self: start; flex-wrap: nowrap; }
-.masthead .mh-save { grid-column: 3; grid-row: 1; justify-self: end; align-self: start; }
+.masthead .brand { grid-column: 2; grid-row: 1 / 3; display: grid; grid-template-rows: subgrid; row-gap: var(--sp-1); justify-items: center; }
+.masthead .mh-tools { grid-column: 1; grid-row: 2; justify-self: start; flex-wrap: nowrap; }
+.masthead .mh-save { grid-column: 3; grid-row: 2; justify-self: end; }
 .brand { display: flex; flex-direction: column; align-items: center; gap: var(--sp-1); min-width: 0; color: inherit; text-decoration: none; }
 /* The title leads to the start screen: on hover, the filigree lights up fully. */
 .brand .mh-hdr { transition: opacity var(--dur) var(--ease); }
@@ -1052,7 +1054,7 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
      left, smaller and without its filigree, and on the right the Knight, the language and Share
      (the title goes first and the site's two after the selector: order). */
   .masthead { display: flex; flex-wrap: nowrap; justify-content: space-between; align-items: center; gap: var(--sp-3); padding-top: var(--sp-3); }
-  .brand { flex: 1 1 auto; align-items: flex-start; order: -1; }
+  .brand, .masthead .brand { display: flex; flex: 1 1 auto; align-items: flex-start; order: -1; }
   .masthead .mh-tools { order: 1; }
   .brand .mh-hdr { display: none; }
   .title { font-size: var(--fs-lg); text-align: left; letter-spacing: 0.04em; }
