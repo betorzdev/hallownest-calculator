@@ -31,13 +31,13 @@
   const el = {
     page: $('.page'), masthead: $('#masthead'), colophon: $('#colophon'), nav: $('#nav'), panel: $('#panel'),
     mini: $('#minihud'), banner: $('#banner'), gear: $('#gear'), hj: $('#hj'),
-    toast: $('#toast'), fx: $('#overcharm-fx'), fight: $('#fight'), saves: $('#saves'),
+    toast: $('#toast'), fx: $('#overcharm-fx'), fight: $('#fight'), saves: $('#saves'), pg: $('#pg'),
   };
   const hoverable = matchMedia('(hover: hover) and (pointer: fine)');
 
   /* The screens, like the pages of the game's pause menu: Charms, Your game, Combat and the
      Journal. And the save slots (js/app-saves.js), which aren't in the bar: the header opens them. */
-  const VIEWS = ['charms', 'game', 'fight', 'journal', 'saves'];
+  const VIEWS = ['charms', 'game', 'fight', 'journal', 'progress', 'saves'];
   const SPELL_KEYS = ['vs', 'dd', 'hw'];
   const ART_KEYS = ['cyclone', 'dash', 'great'];
   const ART_STAT = { cyclone: 'nail.cyclone', dash: 'nail.dashSlash', great: 'nail.greatSlash' };
@@ -489,7 +489,7 @@
     return `<a class="mh-save${lv ? ' is-' + lv.state : ''}" href="${here(hashFor('saves'))}" data-act="view" data-value="saves"${prefs.view === 'saves' ? ' aria-current="page"' : ''}
           aria-label="${esc(label + (lv ? ', ' + st : ''))}" title="${esc(title)}"><span class="mh-save-fig"><span class="mh-save-light" aria-hidden="true"></span><img src="${D.art('hud', 'knight')}" alt=""></span><span class="mh-save-lbl">${FLEURS}${esc(label)}${live}</span>${n ? `<span class="mh-save-n">${n}</span>` : ''}</a>`;
   }
-  const VIEW_KEY = { charms: 'navCharms', game: 'navGame', fight: 'navFight', journal: 'navJournal', saves: 'savesTitle' };
+  const VIEW_KEY = { charms: 'navCharms', game: 'navGame', fight: 'navFight', journal: 'navJournal', progress: 'navProgress', saves: 'savesTitle' };
   function renderMasthead() {
     document.title = prefs.view === 'charms' ? t('docTitle') : t(VIEW_KEY[prefs.view]) + ' · ' + t('title');
     const meta = document.querySelector('meta[name="description"]');
@@ -534,18 +534,20 @@
         <a class="gh" href="https://github.com/betorzdev/hallownest-calculator" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">${GITHUB}</a></p>`;
   }
 
-  /* The screen bar: Charms, Your game, Combat and the Journal, with your completed ones. It lives
-     in index.html and here only its texts and which one is active change: repainted whole, the
-     focus would be lost when switching screens. The Journal's text is set by paintHjNav. */
+  /* The screen bar: Charms, Your game, Combat, the Journal with your completed ones and Progress
+     with your completion. It lives in index.html and here only its texts and which one is active
+     change: repainted whole, the focus would be lost when switching screens. The Journal's text
+     is set by paintHjNav and Progress's by paintPgNav. */
   function renderNav() {
     el.nav.setAttribute('aria-label', t('navLabel'));
     for (const a of el.nav.querySelectorAll('[data-act="view"]')) {
       const v = a.dataset.value;
-      if (v !== 'journal') a.textContent = t(VIEW_KEY[v]);
+      if (v !== 'journal' && v !== 'progress') a.textContent = t(VIEW_KEY[v]);
       a.setAttribute('href', here(hashFor(v)));
       if (v === prefs.view) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
     }
     App.paintHjNav();
+    App.paintPgNav();
   }
 
   /* Only the chosen screen shows. The others keep being painted, hidden: that way their animations
@@ -557,6 +559,7 @@
     el.gear.hidden = prefs.view !== 'game';
     el.fight.hidden = prefs.view !== 'fight';
     el.hj.hidden = prefs.view !== 'journal';
+    el.pg.hidden = prefs.view !== 'progress';
     el.saves.hidden = prefs.view !== 'saves';
   }
 
@@ -771,6 +774,7 @@
     App.renderGear();
     App.renderFight();
     App.renderSaves();
+    App.renderProgress();
     if (prefs.view === 'journal') { if (App.hjSec.querySelector('.hj-list')) App.paintHunter(); else App.renderHunter(); }
     showScreen();
     App.bandCheck();                       // the arena's band measures the stage once it's visible
@@ -817,7 +821,7 @@
   }
   /* The screen you arrive at fades in, like the game's fades between areas (css: .is-entering). */
   const fadeIn = (node) => { node.classList.remove('is-entering'); void node.offsetWidth; node.classList.add('is-entering'); };
-  const screenOf = (v) => (v === 'game' ? el.gear : v === 'fight' ? el.fight : v === 'journal' ? el.hj : v === 'saves' ? el.saves : el.panel);
+  const screenOf = (v) => (v === 'game' ? el.gear : v === 'fight' ? el.fight : v === 'journal' ? el.hj : v === 'progress' ? el.pg : v === 'saves' ? el.saves : el.panel);
   // Is the sticky bar covering it? Then you have to scroll up to it.
   const underNav = (node) => node.getBoundingClientRect().top < el.nav.getBoundingClientRect().bottom;
 

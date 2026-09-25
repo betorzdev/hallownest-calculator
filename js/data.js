@@ -82,6 +82,18 @@
     { id: 'kings-idol', es: 'Ídolo del rey', en: "King's Idol", sell: 800 },                     // INV_NAME_TRINKET3
     { id: 'arcane-egg', es: 'Huevo arcano', en: 'Arcane Egg', sell: 1200 },                      // INV_NAME_TRINKET4
   ];
+  /* The 112%'s things that have no name elsewhere on the site (js/completion.js, the Progress
+     screen): the Dreamers as the Resting Grounds' inscription names them, the Colosseum's trials
+     as its achievements do, and the Seer. */
+  const COMPLETION_NAMES = {
+    monomon: { es: 'Monomon, la Maestra', en: 'Monomon the Teacher' },          // DREAMERS_INSPECT_RG2
+    lurien: { es: 'Lurien, el Vigilante', en: 'Lurien the Watcher' },           // DREAMERS_INSPECT_RG3
+    herrah: { es: 'Herrah, la Bestia', en: 'Herrah the Beast' },                // DREAMERS_INSPECT_RG4
+    'trial-warrior': { es: 'Prueba del Guerrero', en: 'Trial of the Warrior' },        // COLOSSEUM_1_TEXT
+    'trial-conqueror': { es: 'Prueba del Conquistador', en: 'Trial of the Conqueror' }, // COLOSSEUM_2_TEXT
+    'trial-fool': { es: 'Prueba de los Insensatos', en: 'Trial of the Fool' },         // COLOSSEUM_3_TEXT
+    'seer-ascended': { es: 'Vidente', en: 'Seer' },                             // DREAM_MOTH_MAIN
+  };
   const SHARDS = { es: 'Fragmentos de máscara', en: 'Mask Shards' };             // INV_NAME_HEARTPIECE_0
   const FRAGMENTS = { es: 'Fragmentos de vasija', en: 'Vessel Fragments' };     // INV_NAME_SOULORBS_0
 
@@ -782,7 +794,7 @@
   const STAT_BY_ID = Object.fromEntries(STAT_DEFS.map((d) => [d.id, d]));
 
   HK.data = {
-    NAILS, NAIL, ARTS, ABILITIES, EQUIPMENT, KEY_ITEMS, CARRIED, SHARDS, FRAGMENTS, SPELLS, SPELL_COST, SPELL_COST_TWISTER,
+    NAILS, NAIL, ARTS, ABILITIES, EQUIPMENT, KEY_ITEMS, CARRIED, SHARDS, FRAGMENTS, COMPLETION_NAMES, SPELLS, SPELL_COST, SPELL_COST_TWISTER,
     SOUL, HEALTH, FOCUS, MOVE, PETS, CHARM_NOTCHES,
     CHARMS, CHARM_BY_ID, EFFECT_WHEN, CHARM_EFFECTS, GROUPS, STAT_DEFS, STAT_BY_ID, ART, art,
   };

@@ -50,7 +50,7 @@ one that grows best when the collectibles come (a row more per kind, not a page 
 
 ## What comes after the choice
 
-- Phase 4 builds the tablet in `js/app-progress.js` with `js/completion.js` behind it.
+- Phase 4 built the tablet in `js/app-progress.js` with `js/completion.js` behind it (26 September 2026). What changes your figures is marked on Your game, not here; the Map tab comes with phase 6.
 - Phase 5 adds the collectibles with their location (grubs, shards, relics…): in A a
   category's page, in B more blocks, in C more rows; and a filter by area with the areas' light.
 - Phase 6, the map, goes in the second tab whichever is chosen.

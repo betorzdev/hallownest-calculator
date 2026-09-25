@@ -389,6 +389,20 @@
     else if (kind) hjNotify(id === HJ.MARK ? t('hjMarkKept') : t(kind === 'full' ? 'hjUpdated' : 'hjNewEntry'), id);
   }
 
+  /* From another screen (Progress, js/app-progress.js): the book as it is, and an entry marked as
+     defeated once (the state of its first defeat, HJ.encounter) or cleared, saved and announced
+     as on the Journal. The caller repaints. */
+  App.hjBook = () => book;
+  App.hjMark = (id, on) => {
+    const prev = book;
+    book = on ? HJ.encounter(book, id) : HJ.clear(book, id);
+    hjUndo = null;
+    saveJournal();
+    paintHjNav();
+    const kind = HJ.change(prev, book, id);
+    if (kind) hjNotify(t(kind === 'full' ? 'hjUpdated' : 'hjNewEntry'), id);
+  };
+
   /* Moves the entry being read through the list, like the combat Journal. */
   function hjMove(step, origin) {
     const matches = hjVisible();

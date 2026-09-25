@@ -34,10 +34,11 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   between blocks, and never covers a word. On mobile it stays in one row, so content starts sooner: the title on the left,
   smaller and without its filigree, and the Knight (with the save's number, if you're in one),
   the language and *Share* on the right.
-- **The screen bar**, which stays stuck at the top: **Charms · Your game · Combat · Journal**,
+- **The screen bar**, which stays stuck at the top: **Charms · Your game · Combat · Journal · Progress**,
   in the serif and in lowercase, with an accent rule under the one you're viewing, lying on the
   bar's bottom edge like a page tab (the same mark as Combat's tabs); the Journal carries your completed entries
-  over the total alongside ("2/146"). On the
+  over the total alongside ("2/146"), and Progress your completion ("58 %"). On a phone the five
+  share the bar's width. On the
   right, the **mini-bar**: nail damage, DPS, the mask, soul and a notch, with the game's sprites
   and the same flash as the sheet, to see them while you scroll down (on mobile, when you reach
   the grid, the status block stays up top and this is what stays in view). On Combat it shows
@@ -369,7 +370,7 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
 
 ## Files
 
-- `index.html` — the page; twenty-five classic scripts (it works over `file://`) and GoatCounter's,
+- `index.html` — the page; twenty-six classic scripts (it works over `file://`) and GoatCounter's,
   the visit counter: no cookies, one visit per page load and, as events, the screen switches
   (`screen-*`), the language (`lang-*`) and *Share*. The hash with the build is never sent, and it
   counts nothing over `file://`, on `localhost` or in an iframe. Without it the site works the
@@ -432,7 +433,7 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   (equipment, Dreamers, Colosseum, Hornet Sentinel, pantheons cleared, a fragile charm with the
   Divine…) is in the slot's `hollow.progress` (`js/progress.js`). `count()` gives the total and each
   category's part. Checked against the game's own figure in 51 real saves (`tools/check-pack.js`);
-  pure, with its test (`test/completion.test.js`). No screen shows it yet.
+  pure, with its test (`test/completion.test.js`). The Progress screen shows it.
 - `js/pantheons.js` — the five Pantheons room by room: fight (with its entry), rest or
   Godseeker, and the variation of the rooms that have one (two Vengefly Kings in Hallownest's
   first, the Brooding Mawlek at 750). It comes from `kb/`, checked against the wiki.
@@ -482,6 +483,7 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   - `js/app-hall.js` — the Hall of Gods tab: marks, statues, plaque and tablet.
   - `js/app-pantheons.js` — the Pantheons tab: the lifeblood door and the run room by room.
   - `js/app-journal.js` — the Hunter's Journal screen: your game's book.
+  - `js/app-progress.js` — the Progress screen: the 112% as a tablet, category by category.
   - `js/app-saves.js` — the Saves screen: free mode, the four slots and their buttons, and the
     import view (steps, drop zone, preview), and the link with the game (the slot's line, the
     notice when it's paused, the watcher of the slot you're in).
@@ -1135,6 +1137,37 @@ inside. The game's notice when marking shows fixed just below the bar.
   encountered). With no area, the arena's cold spotlight.
 - **All the Journal's text is the game's** (the dump of its texts, with the key alongside in
   `js/i18n.js`), with its Spanish typos; what the site writes comes in both languages.
+
+### Progress
+
+**Your game's completion, the 112% the game counts**, on its own screen (`view=progress`), the
+screen bar's fifth, in the map's green (`--tint-progress`, Fog Canyon's and the Queen's Gardens'
+on Cornifer's map). It's the tablet chosen among three variants in
+`design/09-progress-variants.html` (`design/09-progress.md`).
+
+- **The figure**, under the title: *Completion* («Finalización», the game's word), large and
+  in bone over 112. It's the figure the game's map shows with World Sense, counted by
+  `js/completion.js` from what the site keeps, and it was checked against the game's own in 51
+  real saves: all match. The screen bar's tab carries it too.
+- **One row per category**, the wiki's fifteen in its order (bosses 14, warrior dreams 7,
+  Colosseum 3, charms 36, equipment 14, spells 6, nail arts 3, mask shards 4, vessel fragments 3,
+  nail upgrades 4, Dream Nail and essence 3, Dreamers 3, the Grimm Troupe 6, Lifeblood 1,
+  Godmaster 5): its name, **its things as small pips** —their picture, lit if you have it,
+  dimmed if half done (a spell with one level of two), in shadow if not— and its points, which
+  turn green when the category is complete. Where there's no picture (the Dreamers, the trials,
+  the pantheons), the rule's diamond.
+- **A row opens** (one at a time, remembered in `pgOpen`) to show its things as Your game's
+  plates. **A tap marks one where the site already keeps it**, so no two screens disagree: a
+  boss or a warrior dream is its Hunter's Journal entry (as its first defeat; unmarking clears
+  it), a charm is your collection (a two-version one, as its first version), and the rest
+  —equipment, Dreamers, trials, Hornet Sentinel, the Awoken Dream Nail, the Seer, the
+  Godtuner, the pantheons cleared— is `hollow.progress`. Nightmare King Grimm is its Journal
+  entry *or* the banishment; unmarking takes both away. What changes your figures —the masks,
+  the vessels, the nail, spells, arts, the cloaks, the Dream Nail— isn't marked here: its plate
+  says *On Your game* and takes you there.
+- Hornet's two fights are one Journal entry, so they're told apart by where they happen:
+  *Hornet · Greenpath* (the Journal's entry) and *Hornet · Kingdom's Edge* (the Sentinel).
+- With a save linked to the game, the screen follows it: each bench repaints it.
 
 ### Saves
 

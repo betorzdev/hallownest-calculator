@@ -271,6 +271,7 @@
   --tint-combat: #f8cffc;     /* Crystal Peak: combat */
   --tint-godhome: var(--godhome);   /* the Hall of Gods and the Pantheons */
   --tint-journal: #bce6f4;    /* Fungal Wastes: the Hunter's Journal (in the study, "Enemies") */
+  --tint-progress: #d8ffcc;   /* Fog Canyon and Queen's Gardens: Progress, the whole kingdom's count */
 
   /* The sheet is the game's Inventory screen: almost pure black, like the arena's scene, and
      its spells and arts as plates with their light behind. The light is white, because soul
