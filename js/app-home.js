@@ -6,7 +6,7 @@
    was before the last sync, hollow.prev), your shade and what's missing in the area of your
    bench. The Inventory (js/app-game.js) is its own screen, next in the bar.
    In free mode (nobody's game) the screen is an invitation instead: an example game, connect
-   yours (a button, or dropping the file on the screen), keep one by hand, or just try builds.
+   yours (a button, or dropping the file on the screen), or just try builds.
    Shares HK.app with js/app.js (see there). */
 (() => {
   'use strict';
@@ -79,14 +79,15 @@
   }
 
   /* ── Pieces ── */
-  /* His bench, under the area's name, where the Knight sits (js/app-knight.js): the game's bench as a
-     silhouette drawn by the site (the wiki's picture comes on Godhome's gold, which can't be cut
-     out cleanly), on the area's light like the Hall's statues: the seat with its two round ends
-     and its two feet. */
+  /* The bench under the area's name, with the Knight sitting on it (css .hmC-kn, the sit strip):
+     a picture of him resting there, still; the Knight who moves, and marks the tab you're on,
+     stays on the screen bar (js/app-knight.js). The game's bench as a silhouette drawn by the
+     site (the wiki's picture comes on Godhome's gold, which can't be cut out cleanly), on the
+     area's light like the Hall's statues: the seat with its two round ends and its two feet. */
   const BENCH = `<div class="hmC-bench" aria-hidden="true"><svg class="hmC-seat" viewBox="0 0 360 124">
     <path d="M40 60 H320 a16 16 0 0 1 0 32 H40 a16 16 0 0 1 0 -32 Z M96 92 h28 l12 24 h-52 Z M236 92 h28 l12 24 h-52 Z"/>
     <circle cx="36" cy="76" r="21"/><circle cx="324" cy="76" r="21"/>
-    <rect x="72" y="112" width="76" height="8" rx="4"/><rect x="212" y="112" width="76" height="8" rx="4"/></svg></div>`;
+    <rect x="72" y="112" width="76" height="8" rx="4"/><rect x="212" y="112" width="76" height="8" rx="4"/></svg><span class="hmC-kn"></span></div>`;
   const fig = (k, v, big) => `<div class="hm-fig${big ? ' is-big' : ''}"><span class="hm-fig-k">${esc(k)}</span><span class="hm-fig-v">${v}</span></div>`;
   const played = (s) => (s >= 3600 ? `${num(Math.floor(s / 3600))}<span class="u">h</span> ` : '') + `${num(Math.floor(s / 60) % 60)}<span class="u">min</span>`;
   function ago(ms) {
@@ -100,7 +101,8 @@
   const areaVars = (a) => { const lt = (R.AREAS[a] || {}).light || 'crossroads';
     return `--area-l: var(--area-${lt}-light); --area-m: var(--area-${lt}-mid); --area-d: var(--area-${lt}-deep);`; };
 
-  // The link to the game's file: live, paused (a click to go on), the file gone, or none (kept by hand).
+  /* The link to the game's file: live, paused (a click to go on), the file gone, or none: imported
+     and not following it (the game's all the same: it isn't changed here, App.saveLock). */
   function linkLine(n) {
     const lv = App.liveInfo();
     if (lv) {
@@ -108,7 +110,7 @@
       return `<span class="hm-live is-${lv.state}"><i class="nav-live is-${lv.state}"></i>${esc(t('liveState_' + lv.state))}</span>
         ${btn ? `<button type="button" class="btn btn-primary" data-act="${btn}">${esc(t(btn))}</button>` : ''}`;
     }
-    return `<span class="hm-live">${esc(t('homeByHand'))}</span>
+    return `<span class="hm-live">${esc(t('homeImported'))}</span>
       ${L.canLive() ? `<button type="button" class="text-btn" data-act="liveFollow" data-value="${n}">${esc(t('liveFollow'))}</button>` : ''}`;
   }
 
@@ -178,8 +180,9 @@
 
   /* Nobody's game: the invitation shows what a game looks like here (an example bench, its
      figures and what it got last time, all from the site's own pieces) and asks for yours. Then
-     what the site keeps of it, each opening its screen, and the other two ways in: by hand, or
-     just trying builds. The steps (the folder, the file) are the import sheet's: js/app-saves.js. */
+     what the site keeps of it, each opening its screen, and the other way in: just trying builds
+     (a save is never made by hand: it's the game's, read here). The steps (the folder, the file)
+     are the import sheet's: js/app-saves.js. */
   const DEMO = { area: 'city', pct: 87, time: 41 * 3600 + 12 * 60, geo: 2350, journal: [131, 146],
     gained: [{ kind: 'spell', id: 'dd', to: 1 }, { kind: 'charm', id: 'twister' }, { kind: 'journal', id: 'soul-master', done: true }] };
   const FEATS = [
@@ -220,8 +223,6 @@
       </div>
       <div class="hmI-feats">${feats}</div>
       <div class="hmI-or">
-        <button type="button" class="hmI-way" data-act="homeNew"><img src="${D.art('items', 'wanderers-journal')}" alt="">
-          <b>${esc(t('homeByHandTitle'))}</b><span>${esc(t('homeByHandText'))}</span></button>
         <button type="button" class="hmI-way" data-act="view" data-value="charms"><img src="assets/charms/quickslash.png" alt="">
           <b>${esc(t('homeBuildsTitle'))}</b><span>${esc(t('homeBuildsText'))}</span></button>
       </div>
@@ -234,17 +235,15 @@
     el.home.innerHTML = `<div class="gear-body hm">${brackets}${screenHead(esc(t('navHome')))}${n ? gameHtml(n) : inviteHtml()}</div>`;
   }
 
-  /* The bar's tab carries the link's state, as the Journal's carries its entries: the diamond lit
-     while it follows the game, hollow when it's paused or the file is gone. */
+  /* The bar's tab: its name alone. The link's state isn't here (it was, as a diamond, and it
+     drew the eye on every screen): the header's save selector carries it, and Your game itself. */
   function paintHomeNav() {
     const a = document.getElementById('nav-home');
     if (!a) return;
-    const lv = App.liveInfo();
     a.querySelector('.nav-lbl').textContent = t('navHome');
-    a.querySelector('.nav-num').innerHTML = lv ? `<i class="nav-live is-${lv.state}"></i>` : '';
-    const lbl = lv ? `${t('navHome')} · ${t('liveState_' + lv.state)}` : t('navHome');
-    a.setAttribute('aria-label', lbl);
-    a.title = lbl;
+    a.querySelector('.nav-num').innerHTML = '';
+    a.removeAttribute('aria-label');
+    a.removeAttribute('title');
   }
 
   // "12 minutes ago" goes on counting while the screen is open.
@@ -255,7 +254,6 @@
 
   Object.assign(actions, {
     homeImport() { App.importFirstEmpty(); },
-    homeNew() { App.newInFirstEmpty(); },
   });
 
   Object.assign(App, { renderHome, paintHomeNav, gainedLine });

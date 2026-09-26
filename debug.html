@@ -127,7 +127,7 @@ f.style.height = h + 'px';
 f.addEventListener('load', () => {
   if (offsetY) f.contentDocument.documentElement.style.marginTop = -offsetY + 'px';
   /* &live=live|paused|lost draws the active save as following the game's file in that state
-     (headless can't pick a file): for captures of Your game and the bar. */
+     (headless can't pick a file): for captures of Your game and the header. */
   if (q.get('live')) {
     const A = f.contentWindow.HK.app;
     A.liveInfo = () => ({ state: q.get('live'), name: 'user1.dat' });
@@ -195,11 +195,9 @@ f.addEventListener('load', () => {
   for (const id of (q.get('info') || '').split(',').filter(Boolean)) clickN(`[data-act="help"][data-id="${id}"]`, 1);
   // ?click=restCocoon,restSit presses those buttons (by their data-act) in that order.
   for (const act of (q.get('click') || '').split(',').filter(Boolean)) clickN(`[data-act="${act}"]`, 1);
-  // The Knight (js/app-knight.js) fades between his lines with a CSS transition, which headless
-  // Chrome doesn't tick once the page is idle: he'd be captured half seen. Cut, he's always whole.
-  // ?knight=floor|bench puts him on that line whatever is in view (headless doesn't tell him after a scroll).
+  // The Knight (js/app-knight.js) fades in with a CSS transition, which headless Chrome doesn't
+  // tick once the page is idle: he'd be captured half seen. Cut, he's always whole.
   { const st = f.contentDocument.createElement('style'); st.textContent = '.kn { transition: none !important; }'; f.contentDocument.head.appendChild(st); }
-  if (q.get('knight')) f.contentWindow.HK.app.knight.show(q.get('knight'));
   if (q.get('freeze') !== null) {
     const st = f.contentDocument.createElement('style');
     st.textContent = `.kscene, .kscene *, .kscene::before, .kscene::after, .fstage, .fstage *, #panel .hud * { animation-delay: -${Number(q.get('freeze'))}ms !important; animation-play-state: paused !important; }`;

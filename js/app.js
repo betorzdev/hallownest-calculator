@@ -251,7 +251,8 @@
 
   function loadState() {
     const { build } = splitHash(location.hash);
-    if (!C.isEmpty(build)) return C.decode(build);
+    // Not into a save (saveLock): the boot says the link's build was left out.
+    if (!C.isEmpty(build) && !saveLock()) return C.decode(build);
     const stored = load(KEY.build);
     if (stored) return C.decode(stored);
     return C.normalize(C.PRESETS.max);   // the first time, everything maxed out: that way everything shows
@@ -387,10 +388,33 @@
     App.fightSync();
   }
 
-  /* Applies a new state and repaints. In the middle of a pantheon it rejects anything that
-     touches charms or notches (see charmLock) and says so; returns whether it was applied. */
+  /* ── The save lock: a save isn't changed by hand ──────────────────────
+     Free mode is the sandbox, everything unlocked, to try builds and mark whatever. A save is
+     your game as its file says it —it only comes from the file (js/app-saves.js, the import),
+     following it or not—: every screen shows it as the game saved it and nothing on the site
+     changes it, because a change here would look as if it went into the game (and, while the
+     save follows the file, the game wins at the next bench anyway). What it holds changes only
+     when the game does (js/live.js) or on importing again; the pantheon run and the pinned
+     build are the site's own (HK.saves.SITE_ONLY) and stay yours.
+     saveLock() is the reason, or '' in free mode. Nothing sits over the screens saying so (a
+     line did, and it wore): a click on anything that would change the record brings the game's
+     notice, which names the save and points to free mode, in Saves. Every action that writes
+     the game's record is listed in EDITS (each screen adds its own with edits()) and the click
+     listener refuses it with the notice; commit(), setOwned() and setProgress() refuse too, for
+     whatever reaches them another way; and a link's build doesn't come in (loadState,
+     onHistory). The charm grid isn't in EDITS: its click reaches the detail and says why not
+     (doCharm). */
+  const saveLock = () => { const n = App.activeSlot(); return n ? t('saveLock', { n }) : ''; };
+  const EDITS = new Set();
+  const edits = (...names) => { for (const n of names) EDITS.add(n); };
+
+  /* Applies a new state and repaints. In a save from the game it changes nothing (saveLock); in
+     the middle of a pantheon it rejects anything that touches charms or notches (see charmLock).
+     Either way it says so; returns whether it was applied. */
   function commit(next) {
     if (!next) return false;
+    const held = saveLock();
+    if (held) { toast(held); return false; }
     next = withFixed(next);
     const lock = App.charmLock();
     if (lock && App.touchesCharms(next)) { toast(lock); return false; }
@@ -665,9 +689,10 @@
       : '';
     // On the Pantheons tab you're already there: the notice doesn't send you where you are.
     const lock = prefs.view === 'godhome' && prefs.fightTab === 'pantheon' ? '' : runLockBanner();
-    /* The link paused or its file gone is said on every screen but Your game, which says it
-       itself; your shade and the invitation to import live on Your game (js/app-home.js). */
-    el.banner.innerHTML = over + lock + (prefs.view === 'home' ? '' : App.liveBanner());
+    /* The link paused or its file gone is said on every screen, Your game included (its card says
+       it too, with the same button, but the line is what's looked for); your shade and the
+       invitation to import live on Your game (js/app-home.js). */
+    el.banner.innerHTML = over + lock + App.liveBanner();
   }
 
   /* The notice that you're in a pantheon, with the button that takes you to the room and the one
@@ -889,18 +914,21 @@
     // Visible before writing: a hidden live region isn't announced when it changes.
     clearTimeout(toastTimer); clearTimeout(toastGone);
     el.toast.hidden = false;
-    // The figures go outside Cinzel; a Journal entry's notice carries its medallion (art).
-    const text = esc(msg).replace(/\d+(?:[.,]\d+)?/g, '<b class="toast-num">$&</b>');
+    // The figures go outside Cinzel (found before escaping: an escaped apostrophe, &#39;, carries
+    // digits of its own); a Journal entry's notice carries its medallion (art).
+    const text = String(msg).split(/(\d+(?:[.,]\d+)?)/).map((part, i) => (i % 2 ? `<b class="toast-num">${part}</b>` : esc(part))).join('');
     el.toast.innerHTML = `${TOAST_RULE}${art ? `<img class="toast-art" src="${art}" alt="">` : ''}<span class="toast-t">${text}</span>${TOAST_RULE}`;
     // Just under the bar, where the Journal's notice goes; in the arena, under its band if it's out.
     const band = document.querySelector('.fband-anchor.is-on .fband');
     const edge = Math.max(0, el.nav.getBoundingClientRect().bottom, band ? band.getBoundingClientRect().bottom : 0);
     el.toast.style.top = `calc(${Math.round(edge)}px + var(--sp-3))`;
     el.toast.classList.remove('is-on'); void el.toast.offsetWidth; el.toast.classList.add('is-on');
+    // 2.4 s, and a long one (the save's, a pantheon's) a little more: 0.2 s per word past ten.
+    const hold = 2400 + Math.max(0, String(msg).split(/\s+/).length - 10) * 200;
     toastTimer = setTimeout(() => {
       el.toast.classList.remove('is-on');
       toastGone = setTimeout(() => { el.toast.hidden = true; }, 400);   // after its fade (--dur-slow)
-    }, 2400);
+    }, hold);
   }
 
   /* ── Actions ─────────────────────────────────────────────────────────── */
@@ -936,13 +964,26 @@
   // The Journal isn't a dropdown: it doesn't close on a tap outside, only with its button or Esc.
   document.addEventListener('click', (ev) => {
     const node = ev.target.closest('[data-act]');
-    if (!node) return;
+    if (!node) { heldClick(ev); return; }
     // A link with Ctrl, Shift or the middle button opens wherever the browser asks.
     if (node.tagName === 'A' && (ev.ctrlKey || ev.metaKey || ev.shiftKey || ev.altKey || ev.button)) return;
     const act = node.dataset.act;
     if (act === 'row' && ev.target.closest('.chip, a, button')) return;
+    // What would change your game's record, while the save is the game's: the notice and nothing else.
+    if (EDITS.has(act) && saveLock()) { ev.preventDefault(); toast(saveLock()); return; }
     if (actions[act]) { ev.preventDefault(); actions[act](node); }   // the action already repaints
   });
+  /* A locked control (css: .is-held, whose disabled buttons let the pointer through) still answers a
+     click with the notice, like the pantheon's grid: the click lands on what's behind it, so the
+     control under the pointer is looked for by its box. */
+  function heldClick(ev) {
+    const held = ev.target.closest && ev.target.closest('.is-held');
+    if (!held || !saveLock()) return;
+    for (const b of held.querySelectorAll(':disabled')) {
+      const r = b.getBoundingClientRect();
+      if (ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom) { toast(saveLock()); return; }
+    }
+  }
   /* Hovering a row peeks it on the page, without moving the rectangle (the cursor);
      leaving the list without tapping any brings back the rectangle's one. Tapping it picks it. The
      same in your game's Journal, where tapping selects it for marking. */
@@ -1019,8 +1060,10 @@
     }
     if (h.lang && h.lang !== prefs.lang) { prefs.lang = I.setLang(h.lang); prefs.langChosen = true; savePrefs(); rebuildNF(); }
     setView(h.view || 'charms');
-    let kept = false;
-    if (!C.isEmpty(h.build)) {
+    let kept = false, held = false;
+    // Not into a save: it's said if the link's build is another one (a reload carries the save's own).
+    if (!C.isEmpty(h.build) && saveLock()) held = !C.equal(withFixed(C.decode(h.build)), App.state);
+    else if (!C.isEmpty(h.build)) {
       let next = C.decode(h.build);
       // Halfway through a pantheon, a link changes the rest of the build but not the charms.
       kept = App.charmLock() && App.touchesCharms(next);
@@ -1032,6 +1075,7 @@
     recompute();
     render();
     if (kept) toast(t('runLockUrl'));
+    if (held) toast(t('saveLockUrl'));
   }
   window.addEventListener('popstate', onHistory);
   window.addEventListener('hashchange', onHistory);
@@ -1068,8 +1112,9 @@
     try { App.progress = P.normalize(JSON.parse(load(KEY.progress) || 'null')); } catch (e) { App.progress = P.normalize(null); }
   };
   const saveProgress = () => save(KEY.progress, P.isEmpty(App.progress) ? null : JSON.stringify(App.progress));
-  // A change by hand: kept and repainted, with what changed lighting up (App.was).
+  // A change by hand: kept and repainted, with what changed lighting up (App.was). Not in a save (saveLock).
   function setProgress(next) {
+    if (saveLock()) { toast(saveLock()); return; }
     const was = App.progress;
     App.progress = P.normalize(next);
     saveProgress();
@@ -1084,6 +1129,7 @@
   /* Changes the collection. You never wear something you don't have: whatever leaves is removed,
      and Void Heart goes in by itself. */
   function setOwned(list) {
+    if (saveLock()) { toast(saveLock()); return; }
     const was = App.owned;
     App.owned = C.ownNormalize(list);
     const next = withFixed(C.normalize({ ...App.state, charms: App.state.charms.filter((id) => isOwned(id)) }));
@@ -1114,7 +1160,7 @@
     recompute();
     // What arrived lights up, as after any change (App.was): a charm found, one now worn.
     App.was = { state: kept, owned: ownedWas, progress: progressWas };
-    if (App.knight) App.knight.onSave(progressWas.bench);   // he gets up from his bench (js/app-knight.js)
+    if (App.knight) App.knight.onSave(progressWas.bench);   // his pin walks the map to the new bench (js/app-knight.js)
     render();
     App.was = null;
   }
@@ -1124,5 +1170,6 @@
     masksText, notchText, spellArt, shortOf, badgeText, goodClass, deltaChip, changeChip, prefs, loadPrefs,
     savePrefs, justWorn, justFound, splitHash, here, loadState, persist, compareLabel, compute, impact, recompute, commit, bindAllFx,
     brackets, chevron, cross, FLEURS, rule, screenHead, hudHtml, restoreFocus, focusDescriptor, render, go, navTo, screenOf,
-    underNav, toast, track, actions, isMaxOwned, loadOwned, saveOwned, isOwned, fragileAway, withFixed, isFixed, setOwned, loadProgress, saveProgress, setProgress, reloadGame });
+    underNav, toast, track, actions, isMaxOwned, loadOwned, saveOwned, isOwned, fragileAway, withFixed, isFixed, setOwned, loadProgress, saveProgress, setProgress, reloadGame,
+    saveLock, edits });
 })();

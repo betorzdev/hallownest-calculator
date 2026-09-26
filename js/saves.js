@@ -8,6 +8,8 @@
    Free mode (slot 0, FREE) is what shows while no save has been selected: the everything-unlocked
    sheet, to try builds, which is nobody's game. It's where the site starts, and it's where the
    data from before slots existed stays. It can be entered and left like a save, but not cleared.
+   A save only comes from the game's file (importTo): an empty slot isn't entered, since a save
+   is read on the site and never made or changed by hand (App.saveLock, js/app.js).
    The live keys (the ones every screen already reads and writes) always hold the ACTIVE slot,
    so nothing else has to know that slots exist. The inactive ones wait in SAVES_KEY as copies
    of those keys, raw strings copied as they were:
@@ -15,7 +17,6 @@
 (() => {
   'use strict';
   const HK = globalThis.HK || (globalThis.HK = {});
-  const C = HK.codec || require('./codec.js');
 
   const COUNT = 4;
   const FREE = 0;
@@ -60,11 +61,6 @@
     for (const k of KEYS) put(store, k, Object.prototype.hasOwnProperty.call(snap, k) ? snap[k] : null);
   }
 
-  /* A new game, as in the game: the base Knight (no Dream Nail, no cloak), no charms found and
-     the rest empty. The charms go in as an empty list: with nothing saved the site takes them
-     all as found (App.loadOwned). */
-  const fresh = () => ({ 'hollow.build': C.encode(C.PRESETS.base), 'hollow.owned': '[]' });
-
   /* Free mode and the four slots, each with its snapshot (the active one read from the live
      keys), or null if it's empty. Free mode is never empty: with no copy, it's the defaults. */
   function list(store) {
@@ -74,12 +70,14 @@
   }
 
   /* Changes the active slot. The one you leave is copied out, the one you enter is copied in;
-     an empty one is entered as a new game, and free mode with nothing saved, with the defaults
-     (everything unlocked). Returns whether anything changed. */
+     free mode with nothing saved comes in with the defaults (everything unlocked). An empty slot
+     isn't entered: a save only comes from the game's file (importTo). Returns whether anything
+     changed. */
   function select(store, n) {
     const saves = read(store);
     if (!ALL_IDS.includes(n) || n === saves.active) return false;
-    const next = saves.slots[n] || (n === FREE ? {} : fresh());
+    if (n !== FREE && !saves.slots[n]) return false;
+    const next = saves.slots[n] || {};
     saves.slots[saves.active] = snapshot(store);
     delete saves.slots[n];
     saves.active = n;
@@ -152,6 +150,6 @@
     return game ? 'game' : 'meta';
   }
 
-  HK.saves = { COUNT, FREE, SAVES_KEY, KEYS, SITE_ONLY, GAME, SLOT_IDS, ALL_IDS, read, snapshot, fresh, list, select, clear, importTo, sync };
+  HK.saves = { COUNT, FREE, SAVES_KEY, KEYS, SITE_ONLY, GAME, SLOT_IDS, ALL_IDS, read, snapshot, list, select, clear, importTo, sync };
   if (typeof module !== 'undefined' && module.exports) module.exports = HK.saves;
 })();

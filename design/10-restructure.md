@@ -32,8 +32,8 @@ hidden:
    shade and **what's missing near your bench**. Under it, **"Your Knight"**: today's Inventory
    screen (nail, body, arts, spells, equipment, items), which stops being a screen of its own.
 2. **No game (first visit, free mode, a phone) → an invitation**: "Connect your game" in three
-   steps, with the save folder's path, and the two other ways in: keep it by hand, or just try
-   builds (Charms).
+   steps, with the save folder's path, and the other way in: just try builds (Charms). (A save
+   kept by hand was offered too, and dropped on 27 September: a save is read here, never changed.)
 3. **The bar in two groups**: *Your game · Progress · Map · Journal · Godhome* | *Charms · Combat*.
    The record on the left, the tools on the right after a thin rule. The Map leaves Progress;
    **Godhome** takes the Hall of Gods and the Pantheons out of Combat, as its two tabs (one place
@@ -65,9 +65,9 @@ The same content in all three; what changes is what leads.
   every area you rest in.
 
 The states the bar at the bottom of the page walks through: **live**, **paused** (the Resume
-button moves here, and stops being a strip above every screen), **kept by hand** (imported once,
-marked here since: "Follow the game's file" as its action), **no game** and **a phone with no
-game** (it can't follow a file: it offers importing once or keeping it by hand).
+button moves here, and stops being a strip above every screen), **imported, not following**
+(imported once, read here: "Follow the game" as its action), **no game** and **a phone with no
+game** (it can't follow a file: it offers importing once).
 
 ## New data (per save)
 

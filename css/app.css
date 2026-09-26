@@ -257,7 +257,6 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 /* The footer: the fan-project notice and the sources, small and muted under a hairline. The
    figures don't live here, so no accent but on the links, which are what responds to the finger. */
 .colophon {
-  position: relative;   /* its top rule is the floor the Knight strolls (js/app-knight.js) */
   display: flex; flex-direction: column; gap: var(--sp-1);
   padding-top: var(--sp-4); border-top: 1px solid var(--line);
   font-size: var(--fs-xs); line-height: 1.5; color: var(--muted); text-align: center; text-wrap: balance;
@@ -269,25 +268,29 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 .colophon a:hover { color: var(--accent-ink); }
 /* The GitHub mark after the contact line: just the icon, so no underline. */
 .colophon .gh { display: inline-flex; vertical-align: -3px; margin-left: var(--sp-1); text-decoration: none; }
+/* One row: the tabs and, at the right, the mini-bar. The tabs never shrink (they'd overlap the
+   figures); if the figures ever don't fit beside them, they wrap under, as a net: the widths
+   below are measured so that they do fit from 1240 px in both languages. */
 .nav {
   position: sticky; top: 0; z-index: 30; isolation: isolate;
-  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2) var(--sp-6);
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2) var(--sp-4);
   min-height: var(--sticky-h);
 }
 .nav::before {
   content: ''; position: absolute; z-index: -1; top: 0; bottom: 0; left: calc(50% - 50vw); right: calc(50% - 50vw);
   background: var(--bg); border-bottom: 1px solid color-mix(in oklab, var(--lamp) 22%, transparent);
 }
-/* The tabs take the bar's full height, so the current one's rule lies on the bar's bottom edge,
-   like a page tab (the same mark as on mobile, and as Combat's tabs). */
-.nav-tabs { position: relative; display: flex; align-self: stretch; align-items: stretch; gap: var(--sp-1) var(--sp-6); min-width: 0; }
+/* The tabs take the bar's full height, so the mark of the current one lies on the bar's bottom
+   edge, like a page tab: on a computer the Knight, sitting under its title (js/app-knight.js),
+   and no rule; on a phone, where he isn't, an accent rule (the same mark as Combat's tabs). */
+.nav-tabs { position: relative; display: flex; flex-shrink: 0; align-self: stretch; align-items: stretch; gap: var(--sp-1) var(--sp-4); }
 .nav-tab {
   display: inline-flex; align-items: center; gap: var(--sp-2); min-height: 44px; padding: 0;
   font-family: var(--font-body); font-size: var(--fs-lg); line-height: 1.2; color: var(--muted); text-decoration: none;
   transition: color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
 }
 .nav-tab:hover { color: var(--accent); }
-.nav-tab[aria-current="page"] { color: var(--ink-strong); box-shadow: inset 0 -2px 0 var(--accent); }
+.nav-tab[aria-current="page"] { color: var(--ink-strong); }
 /* The Journal carries its completed entries over the total alongside. */
 .nav-num { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-xs); font-weight: 600; color: var(--ink-2); }
 .nav-hj:hover .nav-num { color: var(--accent); }
@@ -298,8 +301,8 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 /* ── The Knight who walks the page (js/app-knight.js) ──────────────────
    One sprite, drawn from a strip of 104 × 140 cells (assets/knight/, tools/fetch-knight.js):
    standing, running (six frames, stepped at --dur-step) or sitting; he faces right and turns
-   with a mirror. Where he is (the screen bar, his bench, the footer's floor) sets his height
-   (--kn-h) and where his feet go. He moves by translate, linear, like the motes, and reduced
+   with a mirror. He sits on the screen bar, --kn-bar tall (--kn-h), his feet on its bottom
+   edge. He moves by translate, linear, like the motes, and reduced
    motion leaves him on his first frame and, from the JS, only standing or sitting. Decorative:
    the button only exists for the click (he focuses soul). */
 .kn {
@@ -320,12 +323,10 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 }
 @keyframes kn-cycle { to { background-position-x: calc(-1 * var(--cell) * var(--n)); } }
 @keyframes kn-focus { 40% { filter: drop-shadow(0 0 3px var(--focus-glow)) drop-shadow(0 0 14px var(--focus-glow)); } }
-/* On the screen bar: sitting on the current tab's rule, at the bar's bottom edge, under its title. */
+/* On the screen bar: sitting at its bottom edge, under the current tab's title. */
 .nav-tabs > .kn { bottom: 0; left: 0; }
-/* On the footer's floor: feet on its top rule. */
-.colophon > .kn { --kn-h: var(--kn-floor); bottom: calc(100% + 1px); left: 0; }
 
-/* The link to the game's file, on Your game's tab: the diamond lit while it follows the game. */
+/* The link to the game's file, on Your game's link line: the diamond lit while it follows the game. */
 .nav-live { display: inline-block; width: var(--sp-2); height: var(--sp-2); transform: rotate(45deg); border: 1px solid currentColor; }
 .nav-live.is-live { background: var(--ink-strong); border-color: var(--ink-strong); box-shadow: 0 0 8px color-mix(in oklab, var(--ink-strong) 55%, transparent); }
 .nav-live.is-paused, .nav-live.is-lost { color: var(--cond); }
@@ -712,6 +713,18 @@ button.hud-vessel:focus-visible { outline-offset: 3px; }
 :is(.loadout-wrap, .inv-band):has(.quick.is-locked) .eq:hover img { filter: none; }
 .quick.is-locked .quick-hint { color: var(--cond); font-style: italic; }
 
+/* ── The save lock (App.saveLock, js/app.js): a save is read, not changed ──
+   Its controls stay as they are, at full light —they say what you have: the pieces, the
+   plates, the Hall's rings, the door's bindings—, but disabled: the pointer goes through them
+   (nothing reacts, no cursor) and a click on one lands behind and brings the notice (heldClick).
+   The charm grid is the exception: it keeps its hover, which drives the detail, so only the
+   cursor and its hint say it's locked. The Clear button keeps its own disabled look (hidden). */
+.is-held { cursor: default; }
+.is-held :disabled:not(.eq-clear) { opacity: 1; pointer-events: none; cursor: default; }
+.quick.is-held .qc, :is(.loadout-wrap, .inv-band):has(.quick.is-held) .eq { cursor: default; }
+.quick.is-held .quick-hint { color: var(--cond); font-style: italic; }
+.pgm-card-state { font-size: var(--fs-xs); color: var(--muted); }
+
 /* Spells and arts, as plates: the artwork on black, frameless, with its light behind it;
    white if you've learnt it and off if not, which leaves the artwork as a silhouette. */
 .inv-plates { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-6) var(--sp-12); margin-top: var(--sp-8); padding-top: var(--sp-6); border-top: 1px solid var(--inv-line); }
@@ -965,8 +978,10 @@ button.plate.is-on:is(:hover, :focus-visible) .plate-art > img { filter: brightn
 
 /* ── The mini-bar, in the screen bar ───────────────────────────────────
    With the game's sprites instead of labels: the nail, the mask, soul and a notch.
-   Its figures flash like the sheet's. In combat, those of the build you're fighting with. */
-.minihud { display: flex; gap: var(--sp-6); align-items: center; }
+   Its figures flash like the sheet's. In combat, those of the build you're fighting with.
+   At the bar's right, in the tabs' row: the eight tabs take up to 806 px in Spanish and this
+   about 300 (the page's column is 1152), so it fits from 1240 px; below that, the second row. */
+.minihud { display: flex; gap: var(--sp-3); align-items: center; }
 .minihud span { display: flex; align-items: center; gap: calc(var(--sp-1) + var(--sp-half)); min-width: 0; }
 .minihud b { font-size: var(--fs-lg); font-weight: 600; color: var(--ink-strong); }
 .minihud em { font-style: normal; font-size: var(--fs-xs); color: var(--lifeblood-line); }
@@ -977,11 +992,13 @@ button.plate.is-on:is(:hover, :focus-visible) .plate-art > img { filter: brightn
 .mini-lbl { font-family: var(--font-num); font-style: normal; font-size: var(--fs-2xs); font-weight: 600; letter-spacing: 0.06em; color: var(--label); }
 .minihud .notch { width: 16px; height: 16px; }
 /* The fight's scoreboard (.is-fight): your masks and your soul, and the name, bar and health of
-   whoever you're hitting. The bar is the one from their card (.fbar); here it stretches over what the name leaves. */
+   whoever you're hitting. The bar is the one from their card (.fbar); here it stretches over what
+   the name leaves. It stays in the tabs' row: it takes what the tabs leave (the name shortens,
+   the bar gives way down to its minimum), so the bar keeps one height on Combat as on Charms. */
 .mini-of { font-family: var(--font-num); font-style: normal; font-size: var(--fs-xs); color: var(--muted); margin-left: calc(var(--sp-1) * -1); }
-.minihud.is-fight { flex: 0 1 540px; justify-content: flex-end; }
+.minihud.is-fight { flex: 1 1 200px; min-width: 0; justify-content: flex-end; }
 .minihud .mini-me { flex: none; }
-.minihud .mini-foe { flex: 1 1 320px; gap: var(--sp-2); }
+.minihud .mini-foe { flex: 1 1 320px; min-width: 0; gap: var(--sp-2); }
 .minihud .mini-foe-name { display: block; min-width: 0; max-width: 18ch; font-size: var(--fs-sm); color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .minihud .mini-foe .fbar { display: block; flex: 1 1 64px; min-width: 40px; }
 .minihud .mini-foe .fbar span { display: block; }
@@ -1292,30 +1309,31 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
   /* Each tab as wide as its word (a long one, «Inventario», doesn't break), the free space between them. */
   .nav-tabs { display: grid; grid-template-columns: repeat(6, auto); justify-content: space-between; gap: 0 var(--sp-2); }
   .nav-tab { flex-direction: column; justify-content: center; gap: 0; min-height: 48px; font-size: var(--fs-md); text-align: center; }
-  /* No gap beside a tab here: the Knight (js/app-knight.js) keeps to his bench and the floor. */
+  /* No gap beside a tab here: no Knight (js/app-knight.js); the rule marks the tab. */
   .nav-tabs > .kn { display: none; }
 }
-/* The seven tabs and the mini-bar don't fit side by side below 1240 px: the mini-bar goes to a
-   second row, across the full width, as on a phone. */
+/* The eight tabs and the mini-bar (the build's figures or the fight's scoreboard) don't fit side
+   by side below 1240 px: the mini-bar goes to a second row, across the full width, as on a phone. */
 .nav-num { white-space: nowrap; }
 @media (min-width: 900px) and (max-width: 1239px) {
   .nav:has(#minihud:not([hidden])) { flex-direction: column; align-items: stretch; gap: 0; }
-  .nav:has(#minihud:not([hidden])) .minihud { justify-content: flex-end; padding: var(--sp-2) 0; border-top: 1px solid var(--line-row); }
+  .nav:has(#minihud:not([hidden])) .minihud { flex: none; justify-content: flex-end; padding: var(--sp-2) 0; border-top: 1px solid var(--line-row); }
   :root:has(#minihud:not([hidden])) { --sticky-h: 110px; }
 }
-/* The fight's scoreboard is wider than the build's figures: with it, the second row at any width. */
 @media (min-width: 900px) {
   .nav-tab { white-space: nowrap; }
-  .nav:has(#minihud.is-fight:not([hidden])) { flex-direction: column; align-items: stretch; gap: 0; }
-  .nav:has(#minihud.is-fight:not([hidden])) .minihud { flex: none; justify-content: flex-end; padding: var(--sp-2) 0; border-top: 1px solid var(--line-row); }
-  :root:has(#minihud.is-fight:not([hidden])) { --sticky-h: 110px; }
+}
+/* In the tabs' row the mini-bar keeps to the right, also if it ever wraps under them (the net above). */
+@media (min-width: 1240px) {
+  .minihud { margin-left: auto; }
 }
 /* Seven tabs don't fit below 900 px: the tools fold into one, Tools, and while you're in one a
    second row switches between Charms and Combat. */
 @media (max-width: 899px) {
   .nav-tabs { gap: var(--sp-1) var(--sp-4); }
   .nav-tool, .nav-sep, .nav-inv { display: none; }
-  .nav-home.is-parent { color: var(--ink-strong); box-shadow: inset 0 -2px 0 var(--accent); }
+  /* The current tab's rule, on the bar's bottom edge: the Knight isn't on this bar to mark it. */
+  .nav-tab[aria-current="page"], .nav-home.is-parent { color: var(--ink-strong); box-shadow: inset 0 -2px 0 var(--accent); }
   .nav-tools { display: inline-flex; }
   .nav-sub:not([hidden]) { display: flex; justify-content: center; gap: var(--sp-8); border-top: 1px solid var(--line-row); }
   .nav-sub .nav-tab { min-height: 40px; font-size: var(--fs-md); }
@@ -3462,6 +3480,8 @@ button.tl-go:focus-visible { outline-offset: 3px; }
 .save-link .text-btn { font-size: var(--fs-xs); }
 .save-ask { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-1); }
 .save-ask-q { padding-inline: var(--sp-4); font-size: var(--fs-sm); color: var(--ink-strong); }
+/* Under the question: only the site's copy goes, the game's file isn't touched. */
+.save-ask-note { max-width: 26ch; padding-inline: var(--sp-4); font-size: var(--fs-xs); line-height: 1.4; color: var(--muted); text-wrap: pretty; }
 .save-ask-yn { display: flex; gap: var(--sp-2); }
 /* The slot's buttons, as the game's menu items (js/app-saves.js, FLEURS): capitals in the menu's
    face, no box, and the menu's two pointers fading in on either side of the one you're on.
@@ -3515,30 +3535,28 @@ button.tl-go:focus-visible { outline-offset: 3px; }
 .save.is-free .save-n img { height: var(--sp-12); width: auto; }
 .save-name { grid-area: name; display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-1) var(--sp-4); }
 .save-name b { font-family: var(--font-display); font-weight: 600; text-transform: uppercase; letter-spacing: 0.14em; font-size: var(--fs-md); color: var(--ink-strong); }
-/* An empty slot is New Game, as in the game: the number unlit and the words between the menu's pointers. */
+/* An empty slot is its one way in, where the game's says New Game: the number unlit and «Import
+   from the game», with its tray, between the menu's pointers (a save only comes from the file). */
 .save.is-empty .save-main { grid-template-areas: "n new new"; min-height: calc(var(--sp-16) + var(--sp-6)); }
 .save.is-empty .save-n { color: var(--muted); transition: color var(--dur) var(--ease); }
 .save-new {
-  grid-area: new; justify-self: start; position: relative; margin-inline-start: calc(var(--sp-4) * -1); padding-inline: var(--sp-4);
+  grid-area: new; justify-self: start; position: relative; display: inline-flex; align-items: center; gap: var(--sp-2);
+  margin-inline-start: calc(var(--sp-4) * -1); padding-inline: var(--sp-4);
   font-family: var(--font-display); font-weight: 600; text-transform: uppercase; letter-spacing: 0.14em; font-size: var(--fs-md);
   color: var(--ink-2); transition: color var(--dur) var(--ease);
 }
 .save.is-empty .save-main:hover .save-new, .save.is-empty .save-main:focus-visible .save-new,
 .save.is-empty .save-main:hover .save-n { color: var(--ink-strong); }
-/* Going into a game (js/app-saves.js, leave): a full slot's nail catches the light and its masks
-   glow before the page fades; New Game shows the base Knight's masks appearing one by one in the
-   words' place, as a new game's HUD does. */
-.save.is-loading, .save.is-starting { pointer-events: none; }
+.save.is-empty .save-main:hover .save-ico-arrow, .save.is-empty .save-main:focus-visible .save-ico-arrow { transform: translateY(1.5px); }
+/* Going into a game (js/app-saves.js, leave): the slot's nail catches the light and its masks
+   glow before the page fades. */
+.save.is-loading { pointer-events: none; }
 .save.is-loading .save-nail img { animation: lit-in 600ms var(--ease) both; }
 .save.is-loading .save-masks img { animation: light-up 600ms var(--ease) both; }
-.save.is-starting .save-main { grid-template-areas: "n hud hud"; }
-.save.is-starting .save-new { display: none; }
-.save.is-starting .save-n { color: var(--ink-strong); }
-.save-born img { animation: mask-mend 500ms var(--ease) both; animation-delay: calc(var(--i) * 70ms + 100ms); }
 
 /* Clear Save, seen (js/app-saves.js, shatter): the masks break from the right one after another
    (a flash and gone, as on the HUD), the vessels drain after them, and the rest of the slot fades
-   while dust rises out of it. Then the slot is cleared and New Game fades in. */
+   while dust rises out of it. Then the slot is cleared and its Import fades in. */
 .save { position: relative; }
 /* Where you'd wake up (js/app-saves.js): the area of your last bench, as the game's profile
    screen says it, and its light (--where, the area's deep tone) rising from the right, behind
@@ -3757,14 +3775,15 @@ kbd {
 }
 @keyframes live-breathe { from { opacity: 0.55; } to { opacity: 1; } }
 @media (max-width: 899px) {
-  /* A full slot (and free mode) takes the whole row, and its menu (or note) goes under it. */
-  .save:not(.is-empty) .save-main { grid-column: 1 / -1; }
+  /* A slot takes the whole row, and a full one's menu (or free mode's note) goes under it. */
+  .save .save-main { grid-column: 1 / -1; }
   .save.is-free .save-note { grid-column: 1 / -1; max-width: none; margin: 0; padding: 0 var(--sp-4) var(--sp-6) calc(var(--sp-12) + var(--sp-6) + var(--sp-4)); border-left: 0; }
-  .save:not(.is-empty):not(.is-free) .save-foot {
+  .save:not(.is-free) .save-foot {
     grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; justify-content: flex-end; align-items: center;
     margin: calc(var(--sp-2) * -1) 0 0; padding: 0 var(--sp-2) var(--sp-2); border-left: 0;
   }
   .save-ask { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: flex-end; }
+  .save-ask-note { order: 1; flex: 1 1 100%; max-width: none; text-align: right; }
   .save-link { flex: 1 0 100%; flex-direction: row; flex-wrap: wrap; align-items: baseline; justify-content: flex-end; gap: var(--sp-1) var(--sp-4); padding: 0 var(--sp-3); }
   .imp-grid { grid-template-columns: minmax(0, 1fr); }
   .imp-drop { min-height: calc(var(--sp-16) * 6); }
@@ -3774,9 +3793,8 @@ kbd {
   .imp-found { grid-template-areas: "fname fname" "nail hud" "meta meta" "facts facts" "pans pans" "warn warn" "sync sync" "actions actions"; }
   .imp-meta { justify-content: center; }
   .imp-bar { margin-bottom: var(--sp-2); }
-  /* On a phone an empty slot's import says only «Import», beside New Game, with no rule. */
+  /* On a phone an empty slot says only «Import». */
   .save.is-empty .save-main { min-height: calc(var(--sp-16) + var(--sp-2)); }
-  .save.is-empty .save-foot { border-left: 0; margin: 0; padding: 0 var(--sp-2) 0 0; }
   .save-act-long { display: none; }
   .save-act-short { display: inline; }
   .save-act { padding-inline: var(--sp-3); letter-spacing: 0.06em; }
@@ -3816,8 +3834,9 @@ kbd {
    to look at never reacts to the pointer (it would promise a click): it moves by itself, slowly,
    as the game's lights and objects do (design/02 §5), and only without reduced motion. */
 @media (hover: hover) {
-  /* The screen bar: the current tab's rule, faint, under the one you'd go to. */
-  .nav-tab:hover:not([aria-current="page"]) { box-shadow: inset 0 -2px 0 color-mix(in oklab, var(--accent) 35%, transparent); }
+  /* The screen bar, on a phone, where the current tab carries a rule: that rule, faint, under the
+     one you'd go to. On a computer the Knight marks the tab, and the name alone lights up. */
+  @media (max-width: 899px) { .nav-tab:hover:not([aria-current="page"]) { box-shadow: inset 0 -2px 0 color-mix(in oklab, var(--accent) 35%, transparent); } }
   /* Your game: the nail under the pointer takes a faint spotlight; the plates light their artwork
      and their halo swells, like Charms' (a spell's plate, while you point at one of its levels). */
   .nailpick:not(.is-on):hover::before { opacity: 0.45; }
@@ -4092,36 +4111,43 @@ kbd {
   background: radial-gradient(ellipse 55% 80% at 50% 38%, var(--area-m), var(--area-d) 55%, transparent 80%); }
 .hmC-sup { font-family: var(--font-display); font-size: var(--fs-sm); letter-spacing: 0.3em; text-transform: uppercase; color: var(--ink-2); }
 .hmC-area { font-family: var(--font-display); font-size: clamp(1.8rem, 5vw, 3.2rem); font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-strong); line-height: 1.1; margin: 0; }
-/* His bench under the name (js/app-home.js, a silhouette in the page's black with the area's light
-   as its edge), where the Knight sits (js/app-knight.js): feet hanging in front of the seat, which
-   lies at half the picture's height. The Knight, lit in the area's colour as he was standing. */
+/* The bench under the name (js/app-home.js, a silhouette in the page's black with the area's light
+   as its edge), with the Knight sitting on it: a picture of him (the sit strip, --kn-bench tall,
+   the bench 2.75 of that wide), feet hanging in front of the seat, which lies at half the
+   picture's height, lit in the area's colour. Still: the Knight who moves, and marks the tab
+   you're on, is the one on the screen bar (js/app-knight.js). */
 .hmC-bench { position: relative; width: calc(var(--kn-bench) * 2.75); margin: var(--sp-3) 0 var(--sp-1); }
 .hmC-seat { display: block; width: 100%; height: auto; fill: var(--bg); stroke: color-mix(in oklab, var(--area-l) 55%, transparent); stroke-width: 2; paint-order: stroke; }
-.hmC-bench > .kn { --kn-h: var(--kn-bench); left: 0; bottom: 22%; filter: drop-shadow(0 0 18px color-mix(in oklab, var(--area-l) 60%, transparent)); }
+.hmC-kn { position: absolute; left: 50%; bottom: 22%; width: calc(var(--kn-bench) * 104 / 140); height: var(--kn-bench); translate: -50% 0;
+  background: url(../assets/knight/sit.png) 0 0 / auto 100% no-repeat; filter: drop-shadow(0 0 18px color-mix(in oklab, var(--area-l) 60%, transparent)); }
 .hmC-figs { justify-content: center; margin-top: var(--sp-6); }
 .hmC-figs .hm-fig { align-items: center; }
 .hmC-cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-8) var(--sp-12); margin-top: var(--sp-12); padding-top: var(--sp-8); border-top: 1px solid var(--inv-line); }
-/* Nobody's game: the invitation. An example bench on top, dimmed and fading out under the call
-   to connect yours, which rises into the fade; then what the site keeps, with the game's art, and
-   the other two ways in. The example is a picture: inert, and no pointer over it. */
-.hmI { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--sp-12); }
+/* Nobody's game: the invitation. Written phone first (the other way round from the rest of the
+   file): one column, an example bench on top, dimmed and fading out under the call to connect
+   yours, which rises into the fade; then what the site keeps, with the game's art, and the other
+   way in. On a computer (900 px up) the call and the example go side by side instead, the call on
+   the left, so that its button is on the first screen of a laptop whatever the example's height:
+   the example, compact (the area's name no bigger than a large figure, its list of gains shown),
+   fades out at its foot alone. The example is a picture: inert, and no pointer over it. */
+.hmI { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--sp-8); }
 .hmI-demo { pointer-events: none; user-select: none; opacity: 0.8;
   -webkit-mask: linear-gradient(to bottom, var(--bg) 50%, transparent 90%); mask: linear-gradient(to bottom, var(--bg) 50%, transparent 90%); }
-.hmI-demo .hmC-hero { margin-top: 0; padding-bottom: var(--sp-16); }
+.hmI-demo .hmC-hero { margin-top: 0; padding-bottom: var(--sp-12); }
 .hmI-tag { font-size: var(--fs-2xs); font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted);
   padding: var(--sp-half) var(--sp-3); border: 1px solid var(--inv-line); margin-bottom: var(--sp-4); }
-.hmI-since { width: min(100%, 420px); margin-top: var(--sp-8); text-align: left; display: flex; flex-direction: column; gap: var(--sp-2); }
+.hmI-since { display: none; width: min(100%, 420px); margin-top: var(--sp-6); text-align: left; flex-direction: column; gap: var(--sp-2); }
 .hmI-since .hm-list { align-self: stretch; }
-.hmI-cta { position: relative; margin-top: calc(-1 * var(--sp-16) - var(--sp-6)); text-align: center; display: flex; flex-direction: column; align-items: center; gap: var(--sp-3); }
-.hmI-cta h3 { font-family: var(--font-display); font-size: var(--fs-2xl); font-weight: 400; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-strong); margin: 0; }
-.hmI-cta p { margin: 0 0 var(--sp-2); max-width: 46ch; color: var(--ink-2); font-size: var(--fs-lg); line-height: 1.45; }
+.hmI-cta { position: relative; margin-top: calc(-1 * var(--sp-16)); text-align: center; display: flex; flex-direction: column; align-items: center; gap: var(--sp-3); }
+.hmI-cta h3 { font-family: var(--font-display); font-size: var(--fs-xl); font-weight: 400; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-strong); margin: 0; }
+.hmI-cta p { margin: 0 0 var(--sp-2); max-width: 46ch; color: var(--ink-2); font-size: var(--fs-md); line-height: 1.45; }
 .hmI-cta .btn { min-height: 48px; padding-inline: var(--sp-8); font-size: var(--fs-sm); }
 .hmI-drop { font-size: var(--fs-xs); color: var(--muted); }
 @media (hover: none), (max-width: 899px) { .hmI-drop { display: none; } }
 /* A file over the screen: the call lights up, as the import's drop zone does. */
 .hmI.is-drag .hmI-cta h3 { text-shadow: 0 0 18px var(--focus-glow); }
 .hmI.is-drag .hmI-drop { color: var(--accent); }
-.hmI-feats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--sp-4); }
+.hmI-feats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-4); }
 .hmI-feat, .hmI-way { display: grid; justify-items: center; align-content: start; gap: var(--sp-1); text-align: center; padding: var(--sp-4) var(--sp-3);
   border-top: 1px solid var(--inv-line); transition: border-color var(--dur) var(--ease); }
 .hmI-feat img { height: 48px; width: auto; max-width: 72px; object-fit: contain; margin-bottom: var(--sp-2); transition: transform var(--dur) var(--ease); }
@@ -4130,17 +4156,31 @@ kbd {
 .hmI-feat:is(:hover, :focus-visible), .hmI-way:is(:hover, :focus-visible) { border-top-color: var(--accent-line); }
 .hmI-feat:is(:hover, :focus-visible) b, .hmI-way:is(:hover, :focus-visible) b { color: var(--accent); }
 .hmI-feat:hover img { transform: translateY(calc(-1 * var(--sp-1))); }
-.hmI-or { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-4); }
+/* The other way in, just trying builds: one row (a save isn't made by hand, so there's no second). */
+.hmI-or { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--sp-4); }
 .hmI-way { grid-template-columns: 40px minmax(0, 1fr); justify-items: start; text-align: left; column-gap: var(--sp-3); }
 .hmI-way img { grid-row: span 2; width: 40px; height: 40px; object-fit: contain; }
+/* A computer: the call on the left with the four pieces under it, the example on the right
+   beside both, and the other way in under the two columns. The card doesn't bleed past its
+   column there (the fade's mask clips at the column's edge, so anything wider would be cut).
+   The example is its own container: in a narrow column (a window under the page's width) its
+   four figures go two by two, as on a phone, instead of wrapping three and one. */
+@media (min-width: 900px) {
+  .hmI { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-12); align-items: start; }
+  .hmI-demo { grid-column: 2; grid-row: 1 / span 2; container-type: inline-size;
+    -webkit-mask: linear-gradient(to bottom, var(--bg) 75%, transparent); mask: linear-gradient(to bottom, var(--bg) 75%, transparent); }
+  .hmI-demo .hmC-hero { margin-inline: 0; padding-bottom: var(--sp-8); }
+  .hmI-demo .hmC-area { font-size: clamp(var(--fs-xl), 2.5vw, var(--fs-2xl)); }
+  .hmI-demo .hmC-figs { margin-top: var(--sp-4); gap: var(--sp-4) var(--sp-6); }
+  .hmI-since { display: flex; }
+  .hmI-cta { grid-column: 1; grid-row: 1; margin-top: 0; padding-top: var(--sp-8); text-align: left; align-items: flex-start; }
+  .hmI-cta h3 { font-size: var(--fs-2xl); }
+  .hmI-cta p { font-size: var(--fs-lg); }
+  .hmI-feats { grid-column: 1; grid-row: 2; }
+  .hmI-or { grid-column: 1 / -1; grid-row: 3; }
+}
+@container (max-width: 499px) { .hmI-demo .hmC-figs { display: grid; grid-template-columns: repeat(2, auto); justify-content: center; } }
 @media (max-width: 899px) {
-  .hmC-cols, .hmI-or { grid-template-columns: minmax(0, 1fr); }
-  .hmI { gap: var(--sp-8); }
-  .hmI-feats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .hmI-since { display: none; }
-  .hmI-demo .hmC-hero { padding-bottom: var(--sp-12); }
-  .hmI-cta { margin-top: calc(-1 * var(--sp-16)); }
-  .hmI-cta h3 { font-size: var(--fs-xl); }
-  .hmI-cta p { font-size: var(--fs-md); }
+  .hmC-cols { grid-template-columns: minmax(0, 1fr); }
   .hm-figs { gap: var(--sp-3) var(--sp-6); }
 }

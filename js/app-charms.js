@@ -111,7 +111,8 @@
         const title = full ? t('vesselEmptyTitle') : orbFull ? t('vesselFillTitle') : t('vesselFillAllTitle');
         return ` data-act="soulVessel" data-value="${i}" aria-pressed="${full}" title="${esc(title)}" aria-label="${esc(title)}"`;
       },
-      slot: (g, cls, inner, on) => {
+      // In a save from the game (App.saveLock) the masks are the arena's: seen, not pressed.
+      slot: App.saveLock() ? null : (g, cls, inner, on) => {
         const to = g + 1 === maxHp ? 0 : g + 1;
         return `<button type="button" class="${cls} pip-mask" data-act="hp" data-value="${to}" aria-pressed="${on}"
           title="${esc(to ? t('hpSetTitle', { n: to }) : t('hpFullTitle'))}">${inner}</button>`;
@@ -174,13 +175,17 @@
      "info" is the cheap part —whether you wear it and what would happen if you touched it—:
      the full impact is only requested by the detail, one charm at a time. The sheet adds its
      own to the context (charmBand): the detail's charm, "Clear" and the overcharm notice. */
+  /* Two locks: the save's (App.saveLock: a save from the game is read, not changed; "held" in the
+     context, and the grid keeps its colour and its hover, which drives the detail) and a
+     pantheon's (App.charmLock: outside its benches, the grid goes grey). */
+  const anyLock = () => App.saveLock() || App.charmLock();
   const pageCharms = () => {
-    const locked = App.charmLock();
+    const held = !!App.saveLock(), locked = anyLock();
     return {
-      st: App.state, notches: App.sheet.notches, act: 'quick', locked,
+      st: App.state, notches: App.sheet.notches, act: 'quick', locked, held,
       info: (id) => ({ equipped: App.state.charms.includes(id), action: C.charmAction(App.state, id) }),
       // While some are missing, the hint also says they can be unlocked there (the grid carries no mark at rest).
-      hint: locked ? t('runLockShort') : (hoverable.matches ? t('quickHintHover') : t('quickHintTouch'))
+      hint: held ? t('saveLockShort') : locked ? t('runLockShort') : (hoverable.matches ? t('quickHintHover') : t('quickHintTouch'))
         + (D.CHARMS.some((c) => !isOwned(c.id) && !C.OWN_SLOT_OF[c.id]) || C.OWN_SLOTS.some((sl) => !C.ownState(App.owned, sl.id))
           ? '; ' + t('quickHintUnlock') : ''),
     };
@@ -224,7 +229,7 @@
     const n = ctx.notches;
     const dots = notchDots(ctx);
     const worn = ctx.st.charms.map((id) => D.CHARM_BY_ID[id]).filter(Boolean);
-    const tiles = worn.map((c) => `<button type="button" class="eq${justWorn(c.id) ? ' is-new' : ''}" data-act="${ctx.act}" data-id="${c.id}" ${ctx.locked ? 'aria-disabled="true"' : ''} title="${esc(ctx.locked || (isFixed(c.id) ? pick(c) + ' · ' + t('inspFixed') : t('unequipTitle', { charm: pick(c) })))}">
+    const tiles = worn.map((c) => `<button type="button" class="eq${justWorn(c.id) ? ' is-new' : ''}" data-act="${ctx.act}" data-id="${c.id}" ${ctx.locked ? 'aria-disabled="true"' : ''} title="${esc(ctx.held ? pick(c) + ' · ' + t('equipped') : ctx.locked || (isFixed(c.id) ? pick(c) + ' · ' + t('inspFixed') : t('unequipTitle', { charm: pick(c) })))}">
       <img src="assets/charms/${c.id}.png" alt="${esc(pick(c))}">
     </button>`).join('');
     // The game leaves a dark dot marking the next slot while something still fits.
@@ -289,7 +294,9 @@
       : imp.equipped ? t('unequipTitle', { charm: pick(c) })
       : a.action === 'swap' ? t('swapTitle', { old: pick(D.CHARM_BY_ID[a.partner]), new: pick(c) })
       : t('equipTitle', { charm: pick(c) });
-    return `<button type="button" class="${cls.join(' ')}" data-act="${ctx.act}" data-id="${c.id}" aria-pressed="${imp.equipped}" title="${esc(ctx.locked || title)}" ${ctx.locked || missing || a.action === 'blocked' ? 'aria-disabled="true"' : ''}>
+    // In a save from the game (held) the title only says what it is: nothing here equips it.
+    const heldTitle = pick(c) + (imp.equipped ? ' · ' + t('equipped') : missing ? ' · ' + t('notFound') : '');
+    return `<button type="button" class="${cls.join(' ')}" data-act="${ctx.act}" data-id="${c.id}" aria-pressed="${imp.equipped}" title="${esc(ctx.held ? heldTitle : ctx.locked || title)}" ${ctx.locked || missing || a.action === 'blocked' ? 'aria-disabled="true"' : ''}>
       <img src="assets/charms/${c.id}.png" alt="${esc(pick(c))}" loading="lazy">
     </button>`;
   }
@@ -308,7 +315,7 @@
     for (let i = 0; i < QUICK_SLOTS.length; i += QUICK_PER_ROW) {
       rows += `<div class="qrow">${QUICK_SLOTS.slice(i, i + QUICK_PER_ROW).map((s) => quickSlot(s, ctx)).join('')}</div>`;
     }
-    return `<div class="quick ${ctx.locked ? 'is-locked' : ''}">
+    return `<div class="quick ${ctx.held ? 'is-held' : ctx.locked ? 'is-locked' : ''}">
       <div class="block-head">${esc(t('charmsTitle'))}<span class="quick-hint">${esc(ctx.hint)}</span></div>
       <div class="quick-grid">${rows}</div>
     </div>`;
@@ -384,16 +391,19 @@
        shows one version of each two-version slot (the one you have, or the first), so it's never
        switching one for the other: that stays on Your game. Equipping is still tapping the grid. */
     const missing = !imp.equipped && !isOwned(id);
-    const pinned = missing && App.detailHover !== id;
+    // In a save from the game (held) the detail reads and marks nothing: no button, and "Not found" alone.
+    const held = !!App.saveLock();
+    const pinned = missing && !held && App.detailHover !== id;
     /* A fragile one you have but can't wear says why, in the game's words, and is set right here:
        repaired by Leg Eater, or back from the Divine unbreakable. One you can wear can be marked
        broken (dying with it on breaks it). */
     const away = fragileAway(id);
-    const breakable = !away && isOwned(id) && /^f(heart|greed|strength)$/.test(id);
+    const breakable = !away && !held && isOwned(id) && /^f(heart|greed|strength)$/.test(id);
     const fragRow = away ? `<p class="insp-state bad">${esc(t(away.startsWith('broken') ? 'fragBroken' : 'fragDivine'))}</p>
-          <div class="insp-own"><button type="button" class="btn btn-primary" data-act="fragBack" data-id="${id}">${esc(t(away.startsWith('broken') ? 'fragRepaired' : 'fragUnbreakable'))}</button></div>`
+          ${held ? '' : `<div class="insp-own"><button type="button" class="btn btn-primary" data-act="fragBack" data-id="${id}">${esc(t(away.startsWith('broken') ? 'fragRepaired' : 'fragUnbreakable'))}</button></div>`}`
       : breakable ? `<div class="insp-own"><button type="button" class="text-btn" data-act="fragBreak" data-id="${id}">${esc(t('fragBreak'))}</button></div>` : '';
     const ownRow = away ? '' : !missing ? ''
+      : held ? `<p class="insp-state bad">${esc(t('notFound'))}</p>`
       : pinned ? `<p class="insp-state bad">${esc(t('notFound'))}</p>
           <div class="insp-own"><button type="button" class="btn btn-primary" data-act="ownHere" data-id="${id}" title="${esc(t('ownHereHint'))}">${esc(t('ownHere'))}</button></div>`
       : `<p class="insp-state bad">${esc(t('inspMissing'))}</p>`;
@@ -459,7 +469,7 @@
   App.previewId = '';
   function paintPreview() {
     let next = null;
-    if (App.previewId && !App.charmLock() && C.charmAction(App.state, App.previewId).action !== 'blocked') {
+    if (App.previewId && !anyLock() && C.charmAction(App.state, App.previewId).action !== 'blocked') {
       const imp = impact(App.previewId);
       if (!imp.cond) {
         next = new Map(imp.changes.map((ch) => {
@@ -495,7 +505,7 @@
      back to white— and what goes, today's. No preview if the charm is blocked (the detail says
      why) or moves no notch (Void Heart without Kingsoul). */
   function notchPreview(id) {
-    if (!id || App.charmLock()) return null;
+    if (!id || anyLock()) return null;
     if (!App.state.charms.includes(id) && !isOwned(id)) return null;  // it can't be equipped
     const a = C.charmAction(App.state, id);
     const next = C.toggleCharm(App.state, id);
@@ -801,7 +811,7 @@
   /* ── Actions ─────────────────────────────────────────────────────────── */
   // Returns whether it was applied: if not, the reason shows in a notice.
   function doCharm(id) {
-    const lock = App.charmLock();
+    const lock = anyLock();
     if (lock) { toast(lock); return false; }
     const a = C.charmAction(App.state, id);
     // One you haven't found can be looked at but not equipped: the detail says why. Removing it, yes.
@@ -813,6 +823,8 @@
     return done;
   }
 
+  // What writes your game's record: refused in a save from the game (App.saveLock, js/app.js).
+  App.edits('fragBreak', 'fragBack', 'ownHere');
   Object.assign(actions, {
     /* The grid and the equipped ones equip or remove directly, with mouse and finger: that's what
        they're for. On the sheet, what's touched goes to the detail, which tells what changed or,
@@ -867,7 +879,7 @@
        The fixed one (Void Heart) stays. Without motion, at once. */
     clear() {
       if (!App.state.charms.length || clearing) return;
-      const lock = App.charmLock();
+      const lock = anyLock();
       if (lock) { toast(lock); return; }
       // From the state when it's applied, not when pressed: whatever changed meanwhile stays.
       const empty = () => commit(C.normalize({ ...App.state, charms: [] }));

@@ -30,7 +30,8 @@ Import your save file (`user1.dat`…) and **the site follows it**: with Chrome 
 the game saves at a bench the page catches up by itself and says what changed. The start screen
 is your game at a glance: the area you rest in, your completion, the time played, **what you got
 since last time**, your shade and **what's still missing around your bench**. Four save slots,
-like the game's, or keep one by hand if you play elsewhere.
+like the game's: a save is your game as its file says it, read and never changed here (builds
+are tried in free mode).
 
 </td>
 </tr>
@@ -119,8 +120,8 @@ with the synergies between them marked.
 
 ### Inventory
 Under your game, the Knight as the save has him: your nail, masks, soul vessels, notches, spells,
-nail arts, equipment and items. With no save, a free mode with everything unlocked to try builds,
-or start from the base Knight.
+nail arts, equipment and items. With no save, or to try things without touching yours, a free
+mode with everything unlocked, or start from the base Knight.
 
 <img src="docs/screenshots/your-game.webp" alt="Inventory: the five nails, the masks, vessels and notches as the game draws them, nail arts and spell levels chosen by their artwork">
 

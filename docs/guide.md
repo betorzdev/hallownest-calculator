@@ -36,10 +36,10 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   the language and *Share* on the right.
 - **The screen bar**, which stays stuck at the top, **in two groups** (`design/10-restructure.md`):
   your game as the save says it —**Your game · Inventory · Progress · Map · Journal · Godhome**— and, after a
-  thin rule, the tools —**Charms · Combat**—. In the serif and in lowercase, with an accent rule
-  under the one you're viewing, lying on the bar's bottom edge like a page tab; *Your game*
-  carries the diamond of the link to the game's file (lit and breathing while it follows it,
-  hollow and in amber when it's paused or the file is gone), Progress your completion ("58 %")
+  thin rule, the tools —**Charms · Combat**—. In the serif and in lowercase; the one you're viewing
+  is marked by the Knight, who sits under its title ("The Knight" below), with no rule of its
+  own; on a phone, where he isn't on the bar, an accent rule lies under it on the bar's bottom
+  edge like a page tab. Progress carries your completion ("58 %")
   and the Journal your completed entries over the total ("2/146"). **On a phone** (below 900 px)
   the eight don't fit: the two tools fold into one tab, *Tools*, which opens the last one used,
   and while you're in one a second row switches between Charms and Combat (`#nav-sub`); the
@@ -48,8 +48,10 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   (and in Godhome while you fight): nail damage, DPS, the mask, soul and a notch, with the game's
   sprites and the same flash as the sheet, to see them while you scroll down. On Combat it shows
   those of the build you're fighting with, and with an enemy in front it's the fight's
-  scoreboard, which is wider and goes to a second row of the bar (so do the figures between 900
-  and 1239 px). In a pantheon room, the build frozen on entry and with its bindings, which may
+  scoreboard, in the same row (it takes what the tabs leave: the name shortens and its bar
+  gives way, so the bar keeps one height on Combat as on Charms; the tabs never shrink, and
+  between 900 and 1239 px the mini-bar, scoreboard or not, goes to a second row). In a pantheon
+  room, the build frozen on entry and with its bindings, which may
   not be the sheet's. The screen goes in the URL (`view=`, in "State and link"): **Back and
   Forward** move from one to another without touching the build —going back from *Your game*
   doesn't return the nail you had—, and on reload you stay where you were. The old links still
@@ -64,46 +66,42 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   but the others keep being painted, hidden (`showScreen` in `js/app.js`): that way one's HUD
   doesn't animate on return what happened while you were looking at another.
 - **The Knight** (`js/app-knight.js`, css `.kn`): one small animated sprite that says where you
-  are, the way his pin does on the game's map. He has one line at a time: on Your game, while
-  its title card is in view, he sits on his bench under the area's name; on the Map, while it's
-  in view, he is the Knight standing by your bench there (drawn by `js/app-map.js`, with your
-  bench's layer), and when a save moves your bench he walks from the old one to the new one
-  room by room, through the game's doors (`DOORS` in `js/rooms.js`, from the randomizer's
-  `transitions.json`): the fewest rooms, at a steady pace, the whole way in 2 to 8 s, the whole
-  map first if either bench is out of view; it plays when the save arrives with the Map open,
-  or the next time you open it (once per bench, `walked` in the preferences), and not at all
-  where no door leads (Godhome and the White Palace are entered by dream); when the footer is in
-  view he strolls along its top rule, its floor (he stands a while, walks somewhere else at a
-  stroll, 2.4 s per 100 px, and now and then sits down for a bit; random, it's ambient);
-  otherwise he sits on the screen bar, on the rule of the tab you're on, under the middle of
-  its title (26 px tall, so he doesn't touch its letters). When you change screens he gets up
-  and runs along the bar to the new tab's title (at 200 px a second, `--dur-run`, never under a
-  response) and sits again.
-  Between lines he fades (`--dur-slow`), and once on one he stays at least 1.5 s before another
-  calls him (a line calls him when 60% of its box is in view and lets him go under 10%: no
-  flicker at the edge). His frames are the wiki's sprites
-  (`assets/knight/idle.png`, `run.png` with six frames stepped at 100 ms, `sit.png`; baked by
-  `npm run knight`, 104 × 140 a cell), drawn with a CSS `steps()` animation and moved with
-  `translate`, linear like the dust motes. The rule he follows (`design/00-system.md`, Motion):
-  he walks along a line and fades between lines, never slides. With `prefers-reduced-motion`
-  he only stands or sits. On a phone (below 900 px) the bar has no gap beside a tab, so he
-  isn't on it. He's decorative: hidden from screen readers and out of the tab order; a click
-  on him is an easter egg: he focuses soul as the game heals, standing still while the Focus's
-  white light (`--focus-glow`) swells around him and fades, then sits or strolls on (counted as
-  `knight`).
+  are, the way his pin does on the game's map. He sits on the screen bar, on the bottom edge of
+  the tab you're on, under the middle of its title (26 px tall, so he doesn't touch its
+  letters), and never leaves it: he is the bar's mark of the current tab, which draws no rule
+  under it on a computer. When you change screens he gets up and runs along the bar to the new
+  tab's title (at 200 px a second, `--dur-run`, never under a response) and sits again. The
+  other Knights on the page are pictures of him: on Your game he sits on the bench under the
+  area's name (css `.hmC-kn`, still), and on the Map his pin is the Knight standing by your
+  bench (drawn by `js/app-map.js`, with your bench's layer); when a save moves your bench the
+  pin walks from the old one to the new one room by room, through the game's doors (`DOORS` in
+  `js/rooms.js`, from the randomizer's `transitions.json`): the fewest rooms, at a steady pace,
+  the whole way in 2 to 8 s, the whole map first if either bench is out of view; it plays when
+  the save arrives with the Map in view (60% of it, and it lets go under 10%: no flicker at the
+  edge), or the next time you open it (once per bench, `walked` in the preferences), and not at
+  all where no door leads (Godhome and the White Palace are entered by dream).
+  His frames are the wiki's sprites (`assets/knight/idle.png`, `run.png` with six frames stepped
+  at 100 ms, `sit.png`; baked by `npm run knight`, 104 × 140 a cell), drawn with a CSS `steps()`
+  animation and moved with `translate`, linear like the dust motes. The rule he follows
+  (`design/00-system.md`, Motion): he walks along the bar and only fades in and out
+  (`--dur-slow`), never slides. With `prefers-reduced-motion` he only stands or sits. On a phone
+  (below 900 px) the bar has no gap beside a tab, so he isn't on it, and the tab keeps its rule.
+  He's decorative: hidden from screen readers and out of the tab order; a click on him is an
+  easter egg: he focuses soul as the game heals, standing still while the Focus's white light
+  (`--focus-glow`) swells around him and fades, then sits again (counted as `knight`).
 - **Your game**, the start screen (`view=home`, `js/app-home.js`; variant C, *the bench*, of
   `design/10-home-variants.html`): your real game at a glance, in the map's green like Progress.
   - **The area's title card**: *Resting at* over the name of the area of your bench, large, on
     that area's own light (`--area-*-mid/deep`), as the game shows an area's name on entering
-    it; under it his bench, a silhouette of the game's drawn by the site (the wiki's picture
+    it; under it the bench, a silhouette of the game's drawn by the site (the wiki's picture
     comes on Godhome's gold and can't be cut out cleanly), with the Knight sitting on it, lit in
-    the area's colour ("The Knight" above). When the game saves he gets up: on a new bench he
-    runs off the card (at the same pace) and comes back to this one, fading; on the same bench he
-    stretches his legs and sits again.
+    the area's colour: a picture of him resting there (css `.hmC-kn`), still, while the Knight
+    who marks the tab stays on the bar ("The Knight" above).
   - **The link to the game's file**: *Live*, *Paused* with its *Resume* button (after a reload the
-    browser asks for a click; this is where it lives, and on the other screens as a notice), *File
-    missing* with *Pick it again*, or *Kept by hand* with *Follow the game* (Chrome and Edge on a
-    computer). Under it, the save and **how long ago the game saved** (the file's `lastModified`,
+    browser asks for a click; the notice above the screen says so too, here as on the rest), *File
+    missing* with *Pick it again*, or, following no file, *Imported from the game, not following
+    it* with *Follow the game* (Chrome and Edge on a computer).
+    Under it, the save and **how long ago the game saved** (the file's `lastModified`,
     counting on while the screen is open).
   - **The figures** the game's profile screen shows —completion over 112, the time played, the
     geo— and the Journal's completed entries (`hollow.meta`, written on every import and sync).
@@ -119,15 +117,18 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
     notice above every screen).
   - **Missing nearby**: the collectibles of the area of your bench you haven't got (twelve in view,
     the count alongside), each with its place, and a link to the Map.
-  - **With no game** (free mode, the first visit) the screen is an **invitation** instead. On top,
-    an **example** game (resting in City of Tears, its figures and three things it got since last
-    time), dimmed and fading out under *Connect your game*: one line, *Import from the game* (the
-    import view of the first empty save) and, on a computer, *or drop your user1.dat here* —
-    dropping the file anywhere on the screen opens that import already reading it. Then four
-    pieces with the game's art (Progress, Map, Your shade, Journal), each opening its screen, and
-    the other two ways in: *Keep it by hand* (a New Game there) and *Just try builds* (Charms). The
-    steps (the folder, the file) are the import view's. It replaced the import notice that used to
-    sit above every screen.
+  - **With no game** (free mode, the first visit) the screen is an **invitation** instead. On a
+    computer, two columns. On the left, *Connect your game*: one line, *Import from the game* (the
+    import view of the first empty save) and *or drop your user1.dat here* —dropping the file
+    anywhere on the screen opens that import already reading it—, so that the button is on the
+    first screen of a laptop; under it, four pieces with the game's art (Progress, Map, Your
+    shade, Journal), each opening its screen. On the right, an **example** game (resting in City
+    of Tears, its figures and three things it got since last time), dimmed and fading out at its
+    foot; in a narrow window its figures go two by two. On a phone, one column: the example on
+    top, without its list, fading out under *Connect your game*, then the four pieces. Under
+    everything, the other way in: *Just try builds* (Charms); a save is never made by hand, since
+    it's the game's and isn't changed here ([Saves](#saves)). The steps (the folder, the file) are
+    the import view's. It replaced the import notice that used to sit above every screen.
   - The **Inventory** is its own screen (`view=game`, `#gear`, `js/app-game.js`), next in the bar (below).
 - **Charms**, the first of the tools: **the sheet, which is the game's Inventory screen** (the mould is the wiki's
   `Inventory_Godseeker_Mode.png`; the mockup, `design/06-sheet-variants.html`): almost pure
@@ -228,7 +229,10 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
       one**, whole, as the game does; with neither, it splits into two shadowed halves. Only the artwork, no data: lit the ones you wear, **with a soft
       light behind them** (a radial halo in the accent, as the game marks the equipped one,
       stronger under the pointer), dimmed the ones that don't fit. A click (or a tap) equips or removes, and what each one
-      does is read in the detail;
+      does is read in the detail (in a save —the lock, in [Saves](#saves)— the grid
+      keeps its colour and its hover, which drives the detail, but equips nothing: its hint says
+      so, a tap brings the notice, the detail carries no *Mark as found*, and the masks above
+      aren't the health control);
     - **the charm's detail**, to the right of the grid, which is where the game describes the
       chosen charm: on one row its name (and below it, in the other language), what it costs in
       the game's notch points —in magenta if it would overcharm you—; below, its line, a status line (overcharm, replaces, doesn't
@@ -298,8 +302,8 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   would fill or empty; and the orb shows the level a spell would leave, orb first and then the
   vessels. The spell, art and effect plates light their artwork and their halo swells a little.
   What can't be pressed (health, soul, the nail) doesn't react.
-  Across the site the same rule holds: the screen bar shows the current tab's rule, faint, under
-  the one you point at; on the Inventory the nail you point at takes a faint spotlight and the plates
+  Across the site the same rule holds: the screen bar lights the name of the tab you point at
+  (on a phone, with the current tab's rule, faint, under it); on the Inventory the nail you point at takes a faint spotlight and the plates
   light up; in Combat an attack's artwork takes the light and the Journal picker's row its
   portrait; in the Hall a difficulty you haven't marked shows its symbol at half and the statue
   brightens; on the Pantheons a binding not marked on the door previews its light; and the Journal's
@@ -321,7 +325,7 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
 - **The notices** (*Link copied*, a charm you can't touch in a pantheon, no soul for a spell…) are
   the game's on-screen messages, not a web card: the text in the game's face just under the
   screen bar —where the Journal's notice goes, and under the arena's band when it's out—, between two short rules with their diamond, over a soft dark veil so it reads on
-  anything. It fades in, holds 2.4 s and fades out (`toast` in `js/app.js`). Every notice goes
+  anything. It fades in, holds 2.4 s (a long one, 0.2 s more per word past ten) and fades out (`toast` in `js/app.js`). Every notice goes
   through it, the Journal's included, and its figures go in the numbers' face, not in Cinzel.
 - **One tint per section**, the system of the game's map screen (`design/00-system.md` §3):
   Charms, the guide and Inventory, in City of Tears' (`--tint-sheet`); combat, in Crystal
@@ -349,7 +353,10 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   and the row grows beyond your maximum** — which is exactly what the game does (with 11
   notches, 9 used and a 3-notch charm: nine white and three magenta, twelve in total).
 - **Inventory** (`view=game`), next to Your game: another page of the Inventory, with the same black and corner brackets and no
-  boxes inside: what you've achieved in the game. Under the title, two starting points, as text:
+  boxes inside: what you've achieved in the game. **In a save it's read, not
+  changed** (the lock, in [Saves](#saves)): the same pieces and plates, since they say what you
+  have, but every control inert, with no starting points, no *All · None* and no steppers, and a
+  click on a piece brings the notice. Under the title, two starting points, as text:
   *Base Knight* (a new game's: Old Nail, 5 masks, 3 notches, no Dream Nail, no cloak, no
   charms, no equipment, no key items and nothing carried: it removes those too) and *Everything maxed* (every
   upgrade, all the equipment and key items, keeping your charms). The screen's focal point is **the nail picker**, at the head of the left column:
@@ -456,8 +463,8 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   the visit counter: no cookies, one visit per page load and, as events, the screen switches
   (`screen-*`), the language (`lang-*`), *Share* and the way into a save, as a funnel: the import
   opened (`import-open`), a file read (`import-read`) or refused (`import-bad`), the game imported
-  (`save-import`), its slot linked to the file (`save-link`), a game started by hand (`save-new`)
-  and a live update received (`save-sync`, once per visit). The hash with the build is never sent, and it
+  (`save-import`), its slot linked to the file (`save-link`) and a live update received
+  (`save-sync`, once per visit). The hash with the build is never sent, and it
   counts nothing over `file://`, on `localhost` or in an iframe. Without it the site works the
   same (`track()` in `js/app.js`).
 - `es/index.html` — the same page in Spanish, at its own address (`/es/`) so that search
@@ -575,7 +582,8 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   each rule, charm by charm, is in `design/04-charms-in-combat.md`.
 - `js/codec.js` — the build's state: defaults, presets, equipping rules and the URL encoding.
 - `js/saves.js` — free mode and the four save slots over `localStorage`: what goes in a slot,
-  switching, a new game, clearing one, importing into one and syncing one with the game (which
+  switching (never into an empty slot: a save only comes from the game's file), clearing one,
+  importing into one and syncing one with the game (which
   keeps the pantheon in progress and the pinned build, and, when the game changed, what it was
   before in `hollow.prev`; it answers `'game'`, `'meta'` when only the clock moved, or `false`). Pure, with the storage passed in
   (`test/saves.test.js`).
@@ -594,7 +602,8 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   screen hides it; the browser spaces a hidden tab's timers out, and coming back checks at once). No DOM and no language;
   the plan and what was checked on Windows are in `design/08-live-sync.md`, and `debug-live.html`
   is the probe that checked it.
-- `js/app.js` — the core: state, `localStorage` and the link, the header, the screen bar and
+- `js/app.js` — the core: state, `localStorage` and the link, the save lock (`saveLock`: a save is
+  read, not changed), the header, the screen bar and
   the mini-bar, the HUD (`hudHtml`), the general render and the events. Each screen has its own
   script, loaded after it, and they all share the `HK.app` object: what changes value lives
   there (`App.state`, `App.run`…) and the rest is exported once and taken at the top of each
@@ -616,9 +625,9 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   - `js/app-saves.js` — the Saves screen: free mode, the four slots and their buttons, and the
     import view (steps, drop zone, preview), and the link with the game (the slot's line, the
     notice when it's paused, the watcher of the slot you're in).
-  - `js/app-knight.js` — the Knight who walks the page: sitting on the bar under the tab you're on, running
-    along it when you change screens, on his bench on Your game, by your bench on the Map (and
-    walking to a new one through the doors), or strolling the footer's floor ("The Knight" above).
+  - `js/app-knight.js` — the Knight who walks the page: sitting on the bar under the tab you're on
+    (its mark), running along it when you change screens, and walking his pin on the Map to a new
+    bench through the doors ("The Knight" above).
   - `js/app-boot.js` — startup: what's saved, the link and the first render. It goes last.
 - `assets/` — the game's artwork: `charms/`, `nails/`, `spells/`, `arts/`, `abilities/`
   and `hud/`. `tools/fetch-icons.js` downloads them from the wiki's CDN (`npm run icons`).
@@ -1050,7 +1059,9 @@ it's for rehearsing a boss.
   its plaque says it's still locked in your game. It can still be fought here (it's a
   simulator), and winning one of its symbols unlocks it. With no save, none is locked.
 - **The symbols are your real game's** —bronze, silver or radiant, the game's badges— and they're
-  marked by hand: each difficulty in the plaque's table (the *In your game* column) is a button
+  marked by hand in free mode (in a save they're read: the rings are inert, the plaque says the
+  symbols are won in the game and there's no bulk marking; the lock, in [Saves](#saves)): each
+  difficulty in the plaque's table (the *In your game* column) is a button
   with the game's empty ring where its symbol goes, tinged with the accent so it reads as
   something to press; beaten, the badge sits in it. Under the mouse it previews the click, like
   the notches: the badge you'd put breathes in, the one you'd remove fades. Each one goes on its own, as
@@ -1139,7 +1150,8 @@ room to the next, and **the rests are the only thing that heals**.
   the run, the header says which room you're in and how many bosses are left: the fights still
   ahead, the current one until you win it; the ones you skipped behind you don't count.
 - **The lifeblood door, from your game.** Under each pantheon you mark by hand the bindings you've
-  finished it with (and "×4" if it was with all four at once). They're the notches of Godhome's
+  finished it with (and "×4" if it was with all four at once; in a save they're
+  read, inert: the lock, in [Saves](#saves)). They're the notches of Godhome's
   door, next to the Hall of Gods: each binding of each pantheon counts once (20 in total) and
   with 8 it opens: every pantheon bench carries a cocoon of 3, 4 or 5 germs (with 8, 12 or 16). The site deduces it and
   the rest room uses it; the simulator marks nothing (it's saved in `hollow.bindings`). A binding
@@ -1198,7 +1210,9 @@ room to the next, and **the rests are the only thing that heals**.
 
 ### The Hunter's Journal: your game
 
-The Journal's quest, as in the game, and **from your real game**: it's marked by hand, and the
+The Journal's quest, as in the game, and **from your real game**: it's marked by hand in free
+mode, read as the game saved it in a save (the lock, in
+[Saves](#saves): the states inert, no stepper on the defeats left, no bulk marking), and the
 simulator never touches it. It isn't the combat Journal, which is for picking an enemy: it's
 **its own screen**, the fourth in the bar (`view=journal`), with the black, the corner brackets
 and the centred title of the others, in Fungal Wastes' tint (`--tint-journal`, the one the map
@@ -1304,7 +1318,9 @@ on Cornifer's map). It's the tablet chosen among three variants in
   turn green when the category is complete. Where there's no picture (the Dreamers, the trials,
   the pantheons), the rule's diamond.
 - **A row opens** (one at a time, remembered in `pgOpen`) to show its things as the Inventory's
-  plates. **A tap marks one where the site already keeps it**, so no two screens disagree: a
+  plates. **A tap marks one where the site already keeps it** (not in a save,
+  where the plates are inert and the lead says only to look: the lock, in [Saves](#saves)), so
+  no two screens disagree: a
   boss or a warrior dream is its Hunter's Journal entry (as its first defeat; unmarking clears
   it), a charm is your collection (a two-version one, as its first version), and the rest
   —equipment, Dreamers, trials, Hornet Sentinel, the Awoken Dream Nail, the Seer, the
@@ -1380,7 +1396,8 @@ on Cornifer's map). It's the tablet chosen among three variants in
   units: a shop's stock, a house's door) are laid out around it in a small grid, in the pins' own
   units, so it keeps its shape at any zoom. A card says what a thing asks when it has a price (a
   shop's in geo, the Seer's essence, the Grubfather's grubs).
-  A tap opens a thing's card, with its area and place (the game's titles) and its button.
+  A tap opens a thing's card, with its area and place (the game's titles) and its button (in a
+  save, a line saying whether you have it instead: the lock, in [Saves](#saves)).
   **Each pin sits on its own spot and keeps about its size on screen** (a quarter more at most
   close up): zooming in makes room between them rather than making them bigger. Nothing moves
   with the zoom: each pin stays on its spot (or its place in its spot's grid). **Close up, each carries its name**: one that would
@@ -1417,6 +1434,22 @@ masks, the nails and the buttons line up from one slot to the next.
   a number and its note in the buttons' column, and it can't be cleared (Your
   game's two starting points reset it). It's where a first visit lands, and where the data from
   before saves existed stayed: nobody had chosen a save.
+- **A save is read, not changed.** A save only comes from the game's file (imported, whether it
+  follows the file or not: there's no New Game) and shows the game as it saved it; nothing on the
+  site changes it, because a change here would look as if it went into the game, and while the
+  save follows the file the game wins at the next bench anyway. So on Charms the grid equips
+  nothing (it keeps its colour and its detail; its hint says why and a tap brings the notice) and
+  the masks aren't the health control; the Inventory, Progress, the Map's cards, the Journal, the
+  Hall's rings and the door's bindings are read, their controls inert at full light (a click on
+  one brings the notice), with no starting points, steppers or bulk marking; and a link's build
+  is left out, and it's said. A pantheon run and the pinned build are the site's own (`SITE_ONLY`
+  in `js/saves.js`) and stay yours. Nothing sits over the screens saying so (a line did, on every
+  screen, and it wore): a click on any of those controls brings the game's notice, which names
+  the save and points to free mode, in Saves (the header's selector opens it); on Charms the
+  grid's hint says it at rest. What the save holds changes when the game does (following the
+  file), on *Follow the game* or on importing again; free mode is where things are changed by hand
+  (`saveLock` in `js/app.js`; each screen lists the actions that write your game's record with
+  `App.edits`, and the click listener refuses them with the notice).
 
 - **What goes in a slot** is everything that describes one game: the build (`hollow.build`),
   the charms found (`hollow.owned`), the Journal (`hollow.journal`), the Hall's symbols
@@ -1432,23 +1465,25 @@ masks, the nails and the buttons line up from one slot to the next.
   nothing of the game you leave (an undo, the fight in progress) is left over. Tapping the one
   you're in takes you back to Your game. It's seen: the slot's nail catches the light and its masks
   glow, the page fades to black and the new one fades in (`leave`, and `hollow.entered` in
-  `sessionStorage` veils it in `index.html`); *New Game* shows the base Knight's five masks
-  appearing one by one first, as a new game's HUD does.
+  `sessionStorage` veils it in `index.html`).
 - **A slot's buttons are the game's menu items**, stacked in a column of their own behind a rule
   and quieter than the slot (they're what you do to it): capitals in the menu's face, no box, and on
-  hover or focus the menu's two pointers on either side (*New Game* gets them too) (drawn in SVG; they're also the focus
+  hover or focus the menu's two pointers on either side (drawn in SVG; they're also the focus
   mark). Their icons are the usual ones, drawn in the site's line: *Import from the game* a tray
   with an arrow coming in, which dips when you're on it; *Clear Save* a bin, whose lid lifts. Below
-  900 px a full slot's buttons go under it in a row; on a phone an empty slot's import says only
-  *Import*, beside *New Game*, and the facts become a little table.
-- **New Game** (`PROFILE_NEW_GAME`), on an empty slot, starts as in the game: the base Knight,
-  no charms found and everything else empty. You fill it in on the Inventory.
+  900 px a full slot's buttons go under it in a row; on a phone an empty slot says only
+  *Import*, and the facts become a little table.
+- **An empty slot** has one way in, the game's file: *Import from the game* is its whole row, with
+  its tray, where the game's profile screen says *New Game*. There's no New Game here: a save is
+  your game as the file says it and isn't changed on the site (the lock, below), so there'd be
+  nothing to fill in by hand.
 - **Clear Save** (`PROFILE_CLEAR_BUTTON`) asks first, inside the slot, with the game's
-  question (`PROFILE_CLEAR_PROMPT`). The slot is left empty and you stay on Saves. Clearing
-  the one you're playing drops you into free mode (the page fades to black and reloads, still on Saves, and fades back in with the row where it was, which then shrinks into *New Game*), since
+  question (`PROFILE_CLEAR_PROMPT`) and, under it, that only the site's copy goes: the game's
+  file isn't touched. The slot is left empty and you stay on Saves. Clearing
+  the one you're playing drops you into free mode (the page fades to black and reloads, still on Saves, and fades back in with the row where it was, which then shrinks into the empty row), since
   the site always shows some game. It's seen being cleared: the masks break one by one from the right, as
   health is lost on the HUD, the vessels drain, and the rest fades as dust rises out of it; then
-  the row shrinks to its empty height and *New Game* fades in (without motion, it's cleared at once).
+  the row shrinks to its empty height and its *Import from the game* fades in (without motion, it's cleared at once).
 - **Import from the game**, on each of the four, opens **the import view** in the list's place
   (*Saves* at its top, or Esc, goes back). It reads the game's own save file and puts that game in
   the slot. Left, three steps on medallions joined by a thread: **copy the saves folder** (tabs
@@ -1464,9 +1499,11 @@ masks, the nails and the buttons line up from one slot to the next.
   *Import into Save n*; over a full slot it warns first that it will replace it. A file that
   isn't a save brings up the Shade and *Choose another file*. On a phone a note says the saves
   are on the computer you play on. Then the page enters the imported game, as tapping the slot
-  would; when the slot is to follow the file, without reloading, so that the permission the
-  picker has just given still holds and it starts live, with no paused notice. The file is read
-  in the browser and never sent anywhere; the game's file isn't touched.
+  would; when the slot is to follow the file, the browser first asks, on that same click, whether
+  the site may read it (its own permission prompt), and the game is entered without reloading,
+  so that the permission holds and it starts live, with no paused notice; refused, it's entered
+  paused, and the notice's *Resume* asks again. The file is read in the browser and never sent
+  anywhere; the game's file isn't touched.
   A save that's already JSON (the Switch's, or one decrypted with an editor) is read too. What
   comes in, from the game's `playerData`:
   - **the build**: nail, masks, vessels, notches, spells, nail arts, Dream Nail, cloak,
@@ -1506,7 +1543,8 @@ masks, the nails and the buttons line up from one slot to the next.
   A full slot that follows no file (imported with the option off, made on the site, or after
   *Stop following*) carries **Follow the game** (*Follow* on a narrow screen) above *Import from
   the game*, its icon two arrows chasing each other that turn on hover: it opens the picker,
-  the slot takes that file in at once (the game wins) and follows it from then on.
+  the slot takes that file in at once (the game wins) and follows it from then on; on the save
+  you're in, the browser asks for the file on that click too, and the link starts live.
 - **The notice for whoever's new**: on a computer (not a phone, nor an iPad asking for the
   desktop site), while nobody has chosen a save (free mode, the four empty), a notice above
   every screen but Saves (*Your real game*) says the game's save can be imported. It isn't a
@@ -1522,7 +1560,8 @@ masks, the nails and the buttons line up from one slot to the next.
 - **The import's preview** also says, quietly at the end of its line, the game's version that
   wrote the save and the mods it had (a save from before 1.5 counts some things otherwise:
   Oblobbles needed three defeats).
-- A shared link still lands where you are (free mode or a save): its build replaces that one's.
+- A shared link still lands where you are: in free mode its build replaces that one's; in a save
+  it's left out (the lock, above), and a notice says so.
 
 ## State and link
 
@@ -1547,7 +1586,8 @@ screen: the fight doesn't travel in it. It's also saved in
 `localStorage` (`hollow.build`, `hollow.baseline`, `hollow.prefs`, and separately the half-done
 pantheon run in `hollow.run`, the Hall of Gods symbols in `hollow.hall` and your game's
 Hunter's Journal in `hollow.journal`); on
-load the URL rules if it carries anything. Those keys are where you are, free mode or a save:
+load the URL rules if it carries anything (not in a save, which is read as it
+is: [Saves](#saves)). Those keys are where you are, free mode or a save:
 the rest wait in `hollow.saves` ([Saves](#saves)).
 
 ## Where the numbers come from

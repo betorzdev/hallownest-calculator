@@ -12,7 +12,9 @@
           %USERPROFILE%\AppData\LocalLow\Team Cherry\Hollow Knight (Chromium blocks Roaming and Local);
        2. when the game writes it (resting on a bench, quitting, anything else) and whether a read
           made while it's being written fails cleanly;
-       3. whether the file handle survives a reload, and what permission it has then.
+       3. whether the file handle survives a reload, and what permission it has then;
+       4. whether the copy read back from IndexedDB carries the picker's permission on this same
+          page (it doesn't on Chrome 154: the site asks on that copy, in the click).
      The handle is kept in IndexedDB (a handle can't go in localStorage). Each change is read with
      js/savefile.js, as the import does. Nothing is sent anywhere. -->
 <p>
@@ -120,6 +122,14 @@ function start() {
   tick();
 }
 
+// 4: the copy read back from IndexedDB, on this same page: does the picker's permission reach it?
+async function checkCopy() {
+  try {
+    const c = await loadHandle();
+    log(`stored copy: permission ${c ? await c.queryPermission({ mode: 'read' }) : 'no copy'}`, 'new');
+  } catch (e) { log('stored copy: ' + err(e), 'bad'); }
+}
+
 async function checkPermission() {
   if (!handle) return false;
   let p = 'unknown';
@@ -141,6 +151,7 @@ document.getElementById('pick').addEventListener('click', async () => {
   handle = picked;
   log(`picked ${handle.name}`, 'ok');
   try { await saveHandle(handle); log('handle stored in IndexedDB'); } catch (e) { log('IndexedDB store failed: ' + err(e), 'bad'); }
+  await checkCopy();
   if (await checkPermission()) start();
 });
 
@@ -172,6 +183,7 @@ addEventListener('drop', async (e) => {
     handle = h;
     log(`dropped ${handle.name}`, 'ok');
     await saveHandle(handle); log('handle stored in IndexedDB');
+    await checkCopy();
     if (await checkPermission()) start();
   } catch (x) { log('drop failed: ' + err(x), 'bad'); }
 });

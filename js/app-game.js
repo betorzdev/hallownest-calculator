@@ -58,7 +58,7 @@
         <span class="field-num">${value}<i class="u">/${max}</i></span>
       </div>
       <div class="pieces is-${key}" role="group" aria-label="${esc(label)}" style="--n:${max}">${btns}</div>
-      ${value < max ? previewOf(previewNext, 'ifOneMore') : ''}
+      ${value < max && !App.saveLock() ? previewOf(previewNext, 'ifOneMore') : ''}
     </div>`;
   }
   const maskPiece = () => `<img src="${D.art('hud', 'mask')}" alt="">`;
@@ -198,14 +198,16 @@
     const name = pick(it);
     const lit = v > countWas(it.id) ? ' is-lit' : '';
     const bank = it.id === 'geo' && countP('bank') ? `<span class="gcount-note">${esc(t('bankNote', { geo: App.NF[0].format(countP('bank')) }))}</span>` : '';
+    // In a save from the game (App.saveLock) the number alone, in its box: nothing steps it.
+    const held = !!App.saveLock();
     return `<div class="gplate is-count${v ? ' is-on' : ''}${lit}">
         <span class="gplate-art"><img src="${D.art('items', it.id)}" alt=""></span>
         <span class="gplate-name"${NT}>${esc(name)}</span>
         <span class="gcount">
           <span class="stepper">
-            <button type="button" class="step" data-act="progStep" data-id="${it.id}" data-value="-1" ${v ? '' : 'disabled'} aria-label="${esc(t('countLess', { what: name }))}" title="${esc(t('countLess', { what: name }))}">−</button>
+            ${held ? '' : `<button type="button" class="step" data-act="progStep" data-id="${it.id}" data-value="-1" ${v ? '' : 'disabled'} aria-label="${esc(t('countLess', { what: name }))}" title="${esc(t('countLess', { what: name }))}">−</button>`}
             <input type="number" class="step-count${String(max).length > 3 ? ' is-wide' : ''}" data-change="progInput" data-id="${it.id}" value="${v}" min="0" max="${max}" step="1" inputmode="numeric" aria-label="${esc(name)}">
-            <button type="button" class="step" data-act="progStep" data-id="${it.id}" data-value="1" ${v < max ? '' : 'disabled'} aria-label="${esc(t('countMore', { what: name }))}" title="${esc(t('countMore', { what: name }))}">+</button>
+            ${held ? '' : `<button type="button" class="step" data-act="progStep" data-id="${it.id}" data-value="1" ${v < max ? '' : 'disabled'} aria-label="${esc(t('countMore', { what: name }))}" title="${esc(t('countMore', { what: name }))}">+</button>`}
           </span>${bank}
         </span>
       </div>`;
@@ -272,12 +274,13 @@
       rows += `<div class="qrow">${QUICK_SLOTS.slice(i, i + QUICK_PER_ROW).map(slot).join('')}</div>`;
     }
     const total = QUICK_SLOTS.length;
-    return `<section class="block quick quick-owned is-owned"><h3 class="block-head">${esc(t('ownedTitle'))}<span class="block-note">${n}/${total}</span>
-        <span class="own-all">
+    // All and None are actions alone: in a save from the game (App.saveLock) they aren't there.
+    const all = App.saveLock() ? '' : `<span class="own-all">
           <button type="button" class="text-btn" data-act="ownAll" data-value="1" ${isMaxOwned() ? 'disabled' : ''}>${esc(t('ownAll'))}</button>
           <span class="presets-sep" aria-hidden="true">·</span>
           <button type="button" class="text-btn" data-act="ownAll" data-value="0" ${App.owned.length ? '' : 'disabled'}>${esc(t('ownNone'))}</button>
-        </span></h3>
+        </span>`;
+    return `<section class="block quick quick-owned is-owned"><h3 class="block-head">${esc(t('ownedTitle'))}<span class="block-note">${n}/${total}</span>${all}</h3>
       <div class="quick-grid">${rows}</div>
     </section>`;
   }
@@ -302,17 +305,22 @@
      the title two starting points: the base Knight (which also clears the charms) and
      everything maxed out (which keeps them). */
   function renderGear() {
-    const presets = `<div class="presets">
+    /* In a save from the game (App.saveLock, js/app.js) the screen is read, not changed: the same
+       pieces and plates, since they say what you have, but every control inert and without the
+       two starting points (css: .is-held; a click on a piece brings the notice). */
+    const held = !!App.saveLock();
+    const presets = held ? '' : `<div class="presets">
       <span class="lbl">${esc(t('presetsLbl'))}</span>
       <button type="button" class="text-btn" data-act="preset" data-value="base" title="${esc(t('presetBaseHint'))}">${esc(t('presetBase'))}</button>
       <span class="presets-sep" aria-hidden="true">·</span>
       <button type="button" class="text-btn" data-act="preset" data-value="max" title="${esc(t('presetMaxHint'))}">${esc(t('presetMax'))}</button>
     </div>`;
-    el.gear.innerHTML = `<div class="gear-body">${brackets}
+    el.gear.innerHTML = `<div class="gear-body${held ? ' is-held' : ''}">${brackets}
       ${screenHead(esc(t('navGame')), presets)}
       <div class="gear-col">${renderNailBlock()}${renderArtsBlock()}${renderSpellsBlock()}${renderAbilitiesBlock()}${renderEquipmentBlock()}</div>
       <div class="gear-col">${renderBodyBlock()}${renderOwnedBlock()}${renderItemsBlock()}</div>
     </div>`;
+    if (held) for (const c of el.gear.querySelectorAll('button, input')) c.disabled = true;
   }
 
   const KNIGHT_IDS = [...D.EQUIPMENT, ...D.KEY_ITEMS].map((it) => it.id).concat(['dream-awakened']);
@@ -321,9 +329,12 @@
   el.gear.addEventListener('change', (ev) => {
     const box = ev.target.closest('[data-change="progInput"]');
     if (!box) return;
+    if (App.saveLock()) { App.toast(App.saveLock()); render(); return; }   // the box is disabled: just in case
     setProgress(PR.setCount(App.progress, box.dataset.id, Number(box.value)));
   });
 
+  // What writes your game's record: refused in a save from the game (App.saveLock, js/app.js).
+  App.edits('step', 'setv', 'seg', 'own', 'ownPick', 'ownAll', 'dreamLevel', 'progToggle', 'progCount', 'progStep', 'art', 'hp', 'preset');
   Object.assign(actions, {
     step(node) {
       const key = node.dataset.key, d = Number(node.dataset.delta);

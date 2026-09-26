@@ -1,7 +1,8 @@
 /* js/app-saves.js — the Saves screen: free mode, and the four slots like the game's profile
-   screen, with what each game carries and the game's own buttons: New Game on an empty one,
-   Clear Save with its confirmation on a full one. Any slot can also take a game imported from the
-   real one: its Import button opens the import view in place of the list, which explains how to
+   screen, with what each game carries and the game's own buttons: Import from the game on an
+   empty one (a save only comes from the game's file: there's no New Game, since a save isn't
+   changed here, App.saveLock), Clear Save with its confirmation on a full one. Any slot can
+   take a game imported from the real one: its Import button opens the import view in place of the list, which explains how to
    find the game's file (by system, with the folder to copy), takes it by drag and drop or with the
    picker, and shows what it read before anything is written (js/savefile.js reads it). The rules
    (what goes in a slot, switching, clearing) are in js/saves.js. Where the browser can (js/live.js),
@@ -19,7 +20,7 @@
   try { store = localStorage; } catch (e) { store = null; }
   // The slot whose Clear Save is asking for confirmation, or 0.
   let clearing = 0;
-  /* The slot just cleared, whose New Game comes in fading, or 0. After clearing the game you
+  /* The slot just cleared, whose Import comes in fading, or 0. After clearing the game you
      were in the page reloads, so it's handed over in sessionStorage (the preferences aren't the
      place: it's a one-off), with the row's height and where it was on the screen: the new page
      puts it back in the same place and lets it shrink as it does without a reload (landing). */
@@ -81,13 +82,13 @@
   function card(slot) {
     const n = slot.n, free = n === S.FREE;
     const label = free ? t('freeMode') : t('saveSlot', { n });
+    // An empty slot's one way in is the game's file: importing is its whole row, in the words' place.
     if (!slot.snap) {
       return `<li class="save is-empty${justCleared === n ? ' is-cleared' : ''}" data-slot="${n}">
-        <button type="button" class="save-main" data-act="saveNew" data-value="${n}" aria-label="${esc(label + ': ' + t('saveNew'))}">
+        <button type="button" class="save-main" data-act="saveImport" data-value="${n}" aria-label="${esc(label + ': ' + t('saveImport'))}">
           <span class="save-n">${n}</span>
-          <span class="save-new">${FLEURS}${esc(t('saveNew'))}</span>
+          <span class="save-new">${FLEURS}${ICON_IMPORT}<span class="save-act-long">${esc(t('saveImport'))}</span><span class="save-act-short">${esc(t('saveImportShort'))}</span></span>
         </button>
-        <span class="save-foot">${importBtn(n)}</span>
       </li>`;
     }
     const s = summary(slot.snap);
@@ -104,7 +105,7 @@
         <span class="save-link-t">${esc(t('liveFollows', { file: live.links[n] }))}${slot.active && live.state ? ` · <b>${esc(t('liveState_' + live.state))}</b>` : ''}</span>
         <button type="button" class="text-btn" data-act="liveUnlink" data-value="${n}">${esc(t('liveUnlink'))}</button>
       </span>` : '';
-    const confirm = clearing === n ? ask('saveClearAsk', 'saveClear', n)
+    const confirm = clearing === n ? ask('saveClearAsk', 'saveClear', n, 'saveClearNote')
       : `${linked ? '' : followBtn(n)}${importBtn(n)}<button type="button" class="save-act is-clear" data-act="saveClear" data-value="${n}">
           ${FLEURS}${ICON_CLEAR}
           <span class="save-act-t">${esc(t('saveClear'))}</span></button>`;
@@ -130,7 +131,7 @@
     </li>`;
   }
 
-  /* A slot's buttons are the game's menu items (and so is New Game, on an empty one): its capitals, and on hover or focus the menu's
+  /* A slot's buttons are the game's menu items (and so is an empty one's Import): its capitals, and on hover or focus the menu's
      pointers on either side of the one you're on (drawn: the wiki doesn't have the sprite; the
      game's interface arrows are abstracted stone pinnacles, design/02 §5). Their icons are the
      usual ones, drawn with the site's line: a tray with an arrow coming in (which dips when
@@ -145,9 +146,10 @@
     aria-label="${esc(t('saveSlot', { n }) + ': ' + t('liveFollow'))}" title="${esc(t('liveFollowHint'))}">${FLEURS}${ICON_FOLLOW}<span class="save-act-t"><span class="save-act-long">${esc(t('liveFollow'))}</span><span class="save-act-short">${esc(t('liveFollowShort'))}</span></span></button>` : '');
   const importBtn = (n) => `<button type="button" class="save-act is-import" data-act="saveImport" data-value="${n}"
     aria-label="${esc(t('saveSlot', { n }) + ': ' + t('saveImport'))}">${FLEURS}${ICON_IMPORT}<span class="save-act-t"><span class="save-act-long">${esc(t('saveImport'))}</span><span class="save-act-short">${esc(t('saveImportShort'))}</span></span></button>`;
-  // The question a slot's foot asks before clearing it: yes, no.
-  const ask = (q, act, n) => `<span class="save-ask" role="group" aria-label="${esc(t(q))}">
+  // The question a slot's foot asks before clearing it, with a note under it (that the game's file isn't touched): yes, no.
+  const ask = (q, act, n, note) => `<span class="save-ask" role="group" aria-label="${esc(t(q) + (note ? ' ' + t(note) : ''))}">
       <span class="save-ask-q">${esc(t(q))}</span>
+      ${note ? `<span class="save-ask-note">${esc(t(note))}</span>` : ''}
       <span class="save-ask-yn"><button type="button" class="save-act" data-act="${act}Yes" data-value="${n}">${FLEURS}<span class="save-act-t">${esc(t('yes'))}</span></button>
       <button type="button" class="save-act" data-act="${act}No" data-value="${n}">${FLEURS}<span class="save-act-t">${esc(t('no'))}</span></button></span>
     </span>`;
@@ -326,7 +328,7 @@
   /* Back from the reload after clearing the game you were in. The page is still veiled: the row
      keeps the height it had and the page is scrolled so that it's where it was when you cleared
      it (whatever changed above it: free mode now says you're in it). Once the fonts are in (they
-     move things) it's put back once more and the veil lifts; then the row shrinks to New Game's. */
+     move things) it's put back once more and the veil lifts; then the row shrinks to the empty row's. */
   function land(h) {
     const li = el.saves.querySelector(`.save[data-slot="${h.n}"]`);
     if (!li) { unveil(); return; }
@@ -361,10 +363,10 @@
   }
 
   /* Into the game without reloading the page, after an import that follows the file: the read
-     permission the picker has just given lasts as long as this page, and after a reload the
-     browser would ask for it again (the paused notice). So what the boot reads per game
-     (js/app-boot.js) is read again here. */
-  function enterHere() {
+     permission just given (link) lasts as long as this page, and after a reload the browser
+     would ask for it again (the paused notice). So what the boot reads per game
+     (js/app-boot.js) is read again here, and the watcher takes the very handle that was granted. */
+  function enterHere(rec) {
     imp.n = 0;
     stopLive();
     App.run = App.loadRun();
@@ -383,12 +385,30 @@
     App.fightReset();
     scrollTo(0, 0);
     App.go('home', true);
-    liveStart();
+    liveStart(rec);
   }
 
-  /* Going into a game, seen: a full slot's nail catches the light and its masks glow; an empty
-     one (New Game) shows the base Knight's masks appearing one by one, as a new game's HUD does.
-     Then the page fades to black and reloads (enter), and the next one fades in. Without motion, at once. */
+  /* Links a slot to the game's file: the handle is stored, and the read permission is asked on
+     the stored copy, here, inside the click. The browser doesn't carry the picker's permission
+     over to the copy it reads back from IndexedDB, not even on the same page (Chrome 154: the
+     picker's handle reads, the copy says 'prompt'), so the copy is what's asked for, and it's
+     what the watcher takes: asked on the picker's handle, nothing would be granted. Only when
+     the slot is the one you're in (ask): another one is entered with a reload, which forgets
+     the permission anyway. Refused or dismissed, the link stays, paused, with the notice's
+     Resume. → the record for liveStart, or null if the browser wouldn't keep the link. */
+  async function link(n, handle, name, stamp, ask) {
+    const stored = { handle, name, stamp };
+    if (!(await L.links.put(n, stored))) return null;
+    live.links[n] = name;
+    track('save-link');
+    const rec = await L.links.get(n);
+    if (!rec || !rec.handle) return stored;
+    if (ask) try { await rec.handle.requestPermission({ mode: 'read' }); } catch (e) { /* the watcher says paused */ }
+    return rec;
+  }
+
+  /* Going into a game, seen: the slot's nail catches the light and its masks glow. Then the page
+     fades to black and reloads (enter), and the next one fades in. Without motion, at once. */
   function leave(n, swap = null) {
     let still = false;
     try { still = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { still = false; }
@@ -396,13 +416,7 @@
     if (!swap) try { sessionStorage.setItem(ENTERED_KEY, '1'); } catch (e) { /* it comes in without fading */ }
     const li = n ? el.saves.querySelector(`.save[data-slot="${n}"]`) : null;
     let wait = 0;
-    if (li && li.classList.contains('is-empty')) {
-      const base = D.HEALTH.baseMasks;
-      const masks = Array.from({ length: base }, (_, i) => `<img src="${D.art('hud', 'mask')}" alt="" style="--i:${i}">`).join('');
-      li.querySelector('.save-main').insertAdjacentHTML('beforeend', `<span class="save-hud save-born" aria-hidden="true"><span class="save-masks">${masks}</span></span>`);
-      li.classList.add('is-starting');
-      wait = base * 70 + 550;
-    } else if (li) {
+    if (li) {
       li.classList.add('is-loading');
       wait = 350;
     }
@@ -420,7 +434,6 @@
       if (S.read(store).active === n) { App.go('home', true); return; }
       if (S.select(store, n)) leave(n);
     },
-    saveNew(node) { track('save-new'); actions.savePick(node); },
     saveImport(node) {
       if (!store) { toast(t('savesNoStorage')); return; }
       track('import-open');
@@ -466,15 +479,14 @@
       if (!f || !store) return;
       S.importTo(store, n, f.snap);
       track('save-import');
-      // Linked, it's entered in place (enterHere); if not, the page reloads, and the link goes first.
-      let linked = false;
-      if (f.handle && imp.sync) {
-        linked = await L.links.put(n, { handle: f.handle, name: f.name, stamp: f.stamp });
-        if (linked) { live.links[n] = f.name; track('save-link'); }
-      } else if (live.links[n] != null) { await L.links.drop(n); delete live.links[n]; }
+      /* Linked (the browser asks for the file here, in the click), it's entered in place
+         (enterHere); if not, the page reloads, and the link goes first. */
+      let rec = null;
+      if (f.handle && imp.sync) rec = await link(n, f.handle, f.name, f.stamp, true);
+      else if (live.links[n] != null) { await L.links.drop(n); delete live.links[n]; }
       // It goes straight into the imported game, as picking the slot would.
       if (S.read(store).active !== n) S.select(store, n);
-      leave(0, linked ? enterHere : null);
+      leave(0, rec ? () => enterHere(rec) : null);
     },
     /* Following a slot that follows nothing: the file is picked, the slot takes it in at once (the
        game wins, as on every save after) and from then on it follows it. */
@@ -486,10 +498,10 @@
       try { file = await h.getFile(); r = F.read(new Uint8Array(await file.arrayBuffer())); } catch (e) { r = null; }
       if (!r || !r.ok) { toast(t('saveImportBad')); return; }
       S.sync(store, n, F.toSnapshot(r.pd, r.sd, file.lastModified));
-      if (!(await L.links.put(n, { handle: h, name: file.name, stamp: L.stampOf(file) }))) { toast(t('liveFollowNo')); return; }
-      live.links[n] = file.name;
-      track('save-link');
-      if (n === activeSlot()) { stopLive(); App.reloadGame(); await liveStart(); } else render();
+      const active = n === activeSlot();
+      const rec = await link(n, h, file.name, L.stampOf(file), active);
+      if (!rec) { toast(t('liveFollowNo')); return; }
+      if (active) { stopLive(); App.reloadGame(); await liveStart(rec); } else render();
       toast(t('liveFollowing', { n, file: file.name }));
       focusIn(`.save[data-slot="${n}"] [data-act="liveUnlink"]`);
     },
@@ -540,14 +552,14 @@
         }
         render();
         settle(n, from);
-        focusIn(`[data-act="saveNew"][data-value="${n}"]`);
+        focusIn(`[data-act="saveImport"][data-value="${n}"]`);
         setTimeout(() => { justCleared = 0; }, 1000);
       });
     },
   });
   /* Clearing, seen: the masks break one by one from the right, as health is lost on the HUD,
      and the rest of the slot fades away as dust rising, the main menu's motes. Only then is
-     it cleared, and New Game fades in its place (css/app.css, .save.is-clearing). Without
+     it cleared, and its Import fades in its place (css/app.css, .save.is-clearing). Without
      motion, it's cleared at once. */
   function shatter(n, done) {
     const li = el.saves.querySelector(`.save[data-slot="${n}"]`);
@@ -703,19 +715,20 @@
      (entering reloads the page, and this runs again). When the game saves, the slot takes the
      file in (the game wins over what was changed here since) and every screen repaints. The
      stamp is kept with the link, so that a reload doesn't take in again a file already taken
-     in, over what you've changed since. */
+     in, over what you've changed since. liveStart(rec): the link just made (link), whose
+     handle already has the permission; without it, the slot's link is read from IndexedDB. */
   const parseSave = (bytes) => { const r = F.read(bytes); return r.ok ? r : null; };
   function stopLive() {
     if (live.watcher) live.watcher.stop();
     Object.assign(live, { n: 0, name: '', state: '', watcher: null });
   }
   let synced = false;
-  async function liveStart() {
+  async function liveStart(given = null) {
     if (!store || !L.canLive()) return;
     live.links = await L.links.all();
     live.ready = true;
     const n = activeSlot();
-    const rec = n !== S.FREE ? await L.links.get(n) : null;
+    const rec = n === S.FREE ? null : given || await L.links.get(n);
     if (!rec || !rec.handle) { if (prefs.view === 'saves') render(); return; }
     let stamp = rec.stamp || null;
     Object.assign(live, { n, name: rec.name || rec.handle.name, state: '' });
@@ -749,16 +762,12 @@
     </div>`;
   };
   /* From Your game's invitation (js/app-home.js): into the first empty save, importing the game's
-     file or as a new game. With the four full, the Saves screen, to choose. */
+     file. With the four full, the Saves screen, to choose. */
   const firstEmpty = () => (store ? S.SLOT_IDS.find((n) => { const x = S.read(store); return n !== x.active && !x.slots[n]; }) : null);
   App.importFirstEmpty = () => {
     const n = firstEmpty();
     App.go('saves');
     if (n) actions.saveImport({ dataset: { value: String(n) } });
-  };
-  App.newInFirstEmpty = () => {
-    const n = firstEmpty();
-    if (n) actions.saveNew({ dataset: { value: String(n) } }); else App.go('saves');
   };
   App.isDesktop = isDesktop;
 

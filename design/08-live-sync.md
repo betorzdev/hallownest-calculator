@@ -52,6 +52,12 @@ If (1) fails, stop and rethink.
 3. After a reload the handle was still in IndexedDB, with permission **`prompt`**; a click on
    *Resume* → `requestPermission` → the browser's own permission prompt → `granted`, and the
    watch went on. So the paused state (a click per visit) is the normal one, as designed.
+4. **(27 Sep 2026, in the site)** The picker's grant doesn't reach the copy of the handle read
+   back from IndexedDB, not even on the same page: right after an import with the option on, the
+   watcher (which reads the link from IndexedDB) started **paused**, and *Resume* was where the
+   browser's prompt came. So the permission is asked on the stored copy, inside the Import click
+   (`link()` in `js/app-saves.js`), and that very copy is the one the watcher takes. The probe
+   only ever watched the picker's own handle, which is why step 0 didn't see it.
 Not checked: GitHub Pages and Edge (same Chromium code), and whether Chrome's prompt offers
 "Allow on every visit" (persistent permission), which would skip the paused state.
 
@@ -84,9 +90,10 @@ Not checked: GitHub Pages and Edge (same Chromium code), and whether Chrome's pr
 - *En vivo*: a small tag on the slot card, like «Estás aquí».
 - *En pausa* (permission needs a click after a reload, or the tab lost it): banner «Tu partida está en
   pausa · Reanudar»; the button calls `requestPermission` (needs a user gesture).
-  An import that links the file enters its game in place (`enterHere()` in `js/app-saves.js`), not
-  with the usual reload: the picker's grant only lasts as long as the page, so a reload would open
-  the new game already paused.
+  An import that links the file asks for the permission on the Import click (`link()` in
+  `js/app-saves.js`, on the stored copy of the handle: the picker's grant doesn't reach it) and
+  enters its game in place (`enterHere()`), not with the usual reload: the grant only lasts as
+  long as the page, so a reload would open the new game already paused.
 - *Sin archivo* (moved/deleted/unreadable): the slot keeps its data; the card says it's no longer
   synced, with «Volver a vincular» (opens the import view for that slot).
 - Unlink: a text button on the card. Clearing the slot or importing another file also unlinks.

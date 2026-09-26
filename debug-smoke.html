@@ -314,24 +314,20 @@ f.addEventListener('load', async () => {
     await goto('home');
     ok('Your game is its own screen and goes in the URL', visible() === 'home' && w.location.hash.indexOf('view=home') >= 0
        && q('#nav [aria-current="page"]').dataset.value === 'home', visible() + ' · ' + w.location.hash);
-    ok('with no game chosen, it invites you to connect yours', !!q('#home [data-act="homeImport"]') && !!q('#home [data-act="homeNew"]'));
+    ok('with no game chosen, it invites you to connect yours, with no way of making a save by hand', !!q('#home [data-act="homeImport"]') && !q('#home [data-act="homeNew"]'));
     ok('on Your game the mini-bar hides: it belongs to the tools', q('#minihud').hidden);
-    // The Knight leaves the bar for the example's bench: after his dwell on the bar and the fade.
+    // The Knight keeps his seat on the bar here too: he is the mark of the tab you're on, and the
+    // example's bench under the area's name stays empty.
     await wait(2200);
-    ok('the Knight sits on the bench of Your game', !!q('#home .hmC-bench > .kn.is-sit') && !q('#nav .kn') && w.HK.app.knight.state().perch === 'bench',
-       JSON.stringify(w.HK.app.knight.state()));
+    ok('the Knight stays on the bar on Your game, under its tab, and a picture of him sits on the bench', !!q('#nav .nav-tabs > .kn') && !q('#home .hmC-bench > .kn')
+       && !!q('#home .hmC-bench .hmC-kn') && w.HK.app.knight.state().perch === 'bar' && w.HK.app.knight.state().tabId === 'home', JSON.stringify(w.HK.app.knight.state()));
+    ok('and the bar draws no rule under the current tab: he is the mark', w.getComputedStyle(q('#nav .nav-tab[aria-current="page"]')).boxShadow === 'none',
+       w.getComputedStyle(q('#nav .nav-tab[aria-current="page"]')).boxShadow);
     await goto('game');
     await wait(2200);
-    ok('and goes back to the bar on leaving it', !!q('#nav .nav-tabs > .kn') && w.HK.app.knight.state().perch === 'bar', JSON.stringify(w.HK.app.knight.state()));
-    // The footer's floor. Headless doesn't tell the observer what a scroll brought into view, so
-    // the line is asked for by hand (show, the debug page's &knight=), and the page followed again after.
-    w.HK.app.knight.show('floor');
-    await wait(600);
-    ok('the Knight strolls the footer floor when it comes into view', !!q('#colophon > .kn') && w.HK.app.knight.state().perch === 'floor'
-       && parseFloat(q('#colophon > .kn').style.translate) >= 32, JSON.stringify(w.HK.app.knight.state()) + ' ' + (q('#colophon > .kn') || {}).style?.translate);
-    w.HK.app.knight.show('');
-    await wait(2400);
-    ok('and returns to the bar when it goes', !!q('#nav .nav-tabs > .kn') && w.HK.app.knight.state().perch === 'bar', JSON.stringify(w.HK.app.knight.state()));
+    ok('and runs along it to the Inventory', !!q('#nav .nav-tabs > .kn') && w.HK.app.knight.state().perch === 'bar' && w.HK.app.knight.state().tabId === 'game',
+       JSON.stringify(w.HK.app.knight.state()));
+    ok('the footer has no Knight of its own: he never leaves the bar', !q('#colophon > .kn') && !!q('#nav .nav-tabs > .kn'));
     ok('the Inventory is its own screen, next to it, and goes in the URL', visible() === 'gear' && w.location.hash.indexOf('view=game') >= 0
        && q('#nav [aria-current="page"]').dataset.value === 'game' && q('#minihud').hidden, visible() + ' · ' + w.location.hash);
     ok('with its two starting points', !!q('#gear [data-act="preset"][data-value="base"]') && !!q('#gear [data-act="preset"][data-value="max"]'));
@@ -1436,9 +1432,120 @@ f.addEventListener('load', async () => {
   } catch (e) {
     errors.push('exception: ' + (e && e.message));
   }
-  show();
+  heldPhase();
 });
+
+/* ── A save is read, not changed (App.saveLock, js/app.js) ───────────────────────────
+   A second page, in Save 1 as an import leaves it, opened with a link that carries another
+   build: the link's build is left out and it's said, every screen is read-only and a click on a
+   control brings the notice, and free mode, chosen on Saves, has everything responding again. */
+function heldPhase() {
+  try { localStorage.clear(); } catch (e) { /* nothing */ }
+  try {
+    localStorage.setItem('hollow.saves', JSON.stringify({ active: 1, slots: {} }));
+    localStorage.setItem('hollow.build', 'v=1&nail=2&masks=7&notches=6&spells=111&arts=100&charms=quickslash');
+    localStorage.setItem('hollow.owned', JSON.stringify(['quickslash', 'ustrength', 'fury', 'longnail']));
+    localStorage.setItem('hollow.journal', JSON.stringify({ vengefly: 2 }));
+    localStorage.setItem('hollow.prefs', JSON.stringify({ lang: 'es', langChosen: true, view: 'charms' }));
+  } catch (e) { /* nothing */ }
+  f.remove();
+  const f2 = document.createElement('iframe');
+  f2.style.cssText = 'width:1280px;height:900px;border:0';
+  f2.src = 'index.html#v=1&nail=4&masks=9&notches=11&spells=222&arts=111&charms=ustrength,quickslash';
+  document.body.appendChild(f2);
+  let loads = 0;
+  f2.addEventListener('load', async () => {
+    const w = f2.contentWindow, d = f2.contentDocument;
+    const q = (sel) => d.querySelector(sel);
+    const all = (sel) => [...d.querySelectorAll(sel)];
+    const txt = (sel) => (q(sel) ? q(sel).textContent.trim() : '(missing)');
+    const click = async (sel) => { const n = q(sel); if (!n) { errors.push("can't find " + sel); return; } n.click(); await wait(40); };
+    const goto = async (v) => { await click('#nav [data-act="view"][data-value="' + v + '"]'); await wait(40); };
+    const onIds = () => all('#panel .quick-grid .qc.is-on').map((n) => n.dataset.id).join(',');
+    const visible = () => ['home', 'panel', 'gear', 'fight', 'hj', 'pg'].filter((id) => !q('#' + id).hidden).join(',');
+    // A click on an inert control: the button lets the pointer through (css: .is-held), so the click lands on what's behind it, where it is.
+    const clickAt = async (sel) => { const n = q(sel); if (!n) { errors.push("can't find " + sel); return; } const r = n.getBoundingClientRect();
+      n.parentNode.dispatchEvent(new w.MouseEvent('click', { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 })); await wait(40); };
+    const held = 'La partida 1 es tu juego';
+    w.addEventListener('error', (e) => errors.push('error in the site: ' + e.message));
+    loads += 1;
+    try {
+      if (loads === 1) {
+        ok('[held] in Save 1 the link\'s build is left out, and it\'s said', txt('.hero-num') === '13' && onIds() === 'quickslash'
+           && txt('#toast').indexOf('El enlace traía otra build') >= 0, txt('.hero-num') + ' · ' + onIds() + ' · ' + txt('#toast'));
+        ok('[held] and the link is rewritten with the save\'s', w.location.hash.indexOf('nail=2') >= 0 && w.location.hash.indexOf('nail=4') < 0, w.location.hash);
+        // A link typed by hand with another build says so too, in the language of the page, apostrophe and all;
+        // the save's own build in the link (a reload) says nothing.
+        await click('[data-act="lang"][data-value="en"]');
+        w.location.hash = '#v=1&nail=4&lang=en'; await wait(60);
+        ok('[held] another build typed in the link: left out, and said without a stray entity', txt('.hero-num') === '13'
+           && txt('#toast') === "The link had another build; your game's stays" && !q('#toast .toast-num'), txt('#toast'));
+        q('#toast').hidden = true;
+        w.location.hash = '#v=1&nail=2&masks=7&notches=6&spells=111&arts=100&charms=quickslash&lang=en'; await wait(60);
+        ok('[held] the save\'s own build in the link says nothing', q('#toast').hidden, txt('#toast'));
+        await click('[data-act="lang"][data-value="es"]');
+        ok('[held] nothing sits over the screen saying so: the notice comes when you try', !q('#banner .banner'), txt('#banner'));
+        ok('[held] the grid is held, with its hint, at full colour', q('#panel .quick').classList.contains('is-held') && !q('#panel .quick.is-locked')
+           && txt('#panel .quick-hint') === 'bloqueados: es tu partida real', txt('#panel .quick-hint'));
+        ok('[held] the masks are the arena\'s: seen, not pressed', !q('#panel .pip-mask') && all('#panel .hud-mask').length === 7, all('#panel .hud-mask').length + ' masks');
+        await click('#panel .quick-grid .qc[data-id="longnail"]');
+        ok('[held] a tap on a charm equips nothing and explains', onIds() === 'quickslash' && txt('#toast').indexOf(held) >= 0, onIds() + ' · ' + txt('#toast'));
+        ok('[held] and the detail still reads it', txt('#charm-detail .insp-name') === 'Largoaguijón', txt('#charm-detail .insp-name'));
+        await click('#panel .quick-grid .qc[data-id="grubsong"]');
+        ok('[held] one you haven\'t found says so, with no button to mark it', txt('#charm-detail .insp-state') === 'Sin conseguir' && !q('#charm-detail [data-act="ownHere"]'),
+           txt('#charm-detail .insp-state'));
+        await click('#panel .eq[data-id="quickslash"]');
+        ok('[held] nor does Equipped remove', onIds() === 'quickslash' && all('#panel .eq').length === 1, onIds());
+        ok('[held] Clear is gone', !q('#panel .eq-clear') || q('#panel .eq-clear').disabled);
+
+        await goto('game');
+        ok('[held] the Inventory is read: no starting points, every control inert', visible() === 'gear' && !q('#gear .presets') && q('#gear .gear-body').classList.contains('is-held')
+           && all('#gear button, #gear input').every((b) => b.disabled) && !q('#gear .own-all') && !q('#gear .step'), all('#gear button:not(:disabled)').length + ' live');
+        await clickAt('#gear .pieces.is-masks .piece:nth-child(9)');
+        ok('[held] a click on a mask adds none and explains', all('#gear .pieces.is-masks .piece.is-on').length === 7 && txt('#toast').indexOf(held) >= 0,
+           all('#gear .pieces.is-masks .piece.is-on').length + ' · ' + txt('#toast'));
+
+        await goto('progress');
+        ok('[held] Progress reads without marking', txt('#pg .pg-lead').indexOf('marcar') < 0 && !!q('#pg .pg-lead'), txt('#pg .pg-lead'));
+        await click('#pg [data-act="pgRow"][data-value="charms"]');
+        ok('[held] and its plates are inert', !!q('#pg .pg-plates.is-held') && all('#pg .pg-plates [data-act="pgMark"]').every((b) => b.disabled), all('#pg .pg-plates [data-act="pgMark"]').length + ' plates');
+
+        await goto('journal');
+        ok('[held] the Journal has no bulk marking and says how it stands', !q('#hj .hj-bulk-toggle') && txt('#hj .hj-howto') === 'Cada entrada va como en tu partida.', txt('#hj .hj-howto'));
+        await click('#hj-e-vengefly');
+        ok('[held] an entry\'s state is read, not set, and the defeats left have no stepper', !!q('#hj .hj-state.is-held') && all('#hj .hj-state button').every((b) => b.disabled)
+           && txt('#hj .hj-kills .hj-count') === '2' && !q('#hj .hj-step'), txt('#hj .hj-kills'));
+
+        await goto('godhome');
+        await click('#fight .ped-btn[data-id="gruz-mother"]');
+        ok('[held] the Hall\'s rings are inert and say the symbols are won in the game', !!q('#fight .hall-table.is-held') && all('#fight .hall-mark').every((b) => b.disabled)
+           && !q('#fight [data-act="hallBulk"]') && txt('#fight .hall-mark-hint') === 'Los símbolos son los de tu partida: se ganan en el juego.', txt('#fight .hall-mark-hint'));
+        await click('[data-act="fightTab"][data-value="pantheon"]');
+        ok('[held] and so is the door', all('#fight .pdone').length === 5 && all('#fight .pdone').every((n) => n.classList.contains('is-held'))
+           && all('#fight .pdone button').every((b) => b.disabled), all('#fight .pdone button:not(:disabled)').length + ' live');
+        ok('[held] a pantheon can still be entered: it\'s the site\'s, not the game\'s', !!q('#fight [data-act="runStart"]'));
+
+        await goto('home');
+        ok('[held] Your game says it\'s imported and not following the file', txt('#home .hm-live') === 'Importada del juego, sin seguirlo', txt('#home .hm-live'));
+
+        // Free mode is the way to change things, and Saves is where it's chosen: the header's selector opens it.
+        await click('.masthead .mh-save');
+        await click('#saves .save[data-slot="0"] [data-act="savePick"]');   // the page fades out and reloads in free mode (load fires again)
+      } else {
+        ok('[free] Free mode, from Saves, lands on Your game', w.HK.app.activeSlot() === 0 && visible() === 'home', w.HK.app.activeSlot() + ' · ' + visible());
+        await goto('charms');
+        ok('[free] with the grid responding', !q('#panel .quick.is-held') && !!q('#panel .pip-mask'));
+        await click('#panel .quick-grid .qc[data-id="longnail"]');
+        ok('[free] a tap equips again', onIds().indexOf('longnail') >= 0, onIds());
+        show();
+      }
+    } catch (e) {
+      errors.push('exception in the held phase: ' + (e && e.message));
+      show();
+    }
+  });
+}
 window.addEventListener('error', (e) => errors.push('in the harness: ' + e.message));
-setTimeout(show, 60000);
+setTimeout(show, 90000);
 </script>
 </body></html>

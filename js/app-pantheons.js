@@ -131,6 +131,8 @@
 
   let doorFx = null;                // { pid, k, all } only on the repaint after marking the door (doorBind)
   function pantheonPickHtml(head) {
+    // In a save from the game (App.saveLock, js/app.js) the door's bindings are read, not marked.
+    const held = !!App.saveLock();
     const cards = PN.PANTHEONS.map((p) => {
       const lastFoe = F.FOE_BY_ID[p.rooms[p.rooms.length - 1].foe];
       const on = prefs.pantheon === p.id;
@@ -138,11 +140,11 @@
       const boundDone = door.done[p.id] || [], allDone = door.all.includes(p.id), pantheonName = pick(p.name);
       // Just marked (doorFx): the binding lights up; the four at once, one after another in gold.
       const fx = doorFx && doorFx.pid === p.id ? doorFx : null;
-      const bindBtns = `<div class="pdone ${allDone ? 'is-all' : ''}${fx && fx.all ? ' is-sealing' : ''}" role="group" aria-label="${esc(t('doorDoneLbl', { name: pantheonName }))}">
+      const bindBtns = `<div class="pdone ${allDone ? 'is-all' : ''}${fx && fx.all ? ' is-sealing' : ''}${held ? ' is-held' : ''}" role="group" aria-label="${esc(t('doorDoneLbl', { name: pantheonName }))}">
         ${BINDS.map((k, i) => `<button type="button" class="pdone-bind ${boundDone.includes(k) ? 'is-on' : ''}${fx && !fx.all && fx.k === k && boundDone.includes(k) ? ' is-lit' : ''}" style="--i:${i}" data-act="doorBind" data-value="${p.id}:${k}"
-          aria-pressed="${boundDone.includes(k)}" title="${esc(t('bind_' + k))}"><img src="assets/pantheon/bind-${k}.png" alt="${esc(t('bind_' + k))}" width="22" height="22"></button>`).join('')}
+          aria-pressed="${boundDone.includes(k)}" title="${esc(t('bind_' + k))}" ${held ? 'disabled' : ''}><img src="assets/pantheon/bind-${k}.png" alt="${esc(t('bind_' + k))}" width="22" height="22"></button>`).join('')}
         <button type="button" class="pdone-all ${allDone ? 'is-on' : ''}" data-act="doorBind" data-value="${p.id}:all" aria-pressed="${allDone}"
-          title="${esc(t('doorAllTip'))}" aria-label="${esc(t('doorAllTip'))}">×4</button>
+          title="${esc(t('doorAllTip'))}" aria-label="${esc(t('doorAllTip'))}" ${held ? 'disabled' : ''}>×4</button>
       </div>`;
       return `<div class="pcard-wrap${fx && fx.all ? ' is-sealed' : ''}"><button type="button" class="pcard ${on ? 'is-on' : ''}" data-act="pantheonPick" data-value="${p.id}" aria-pressed="${on}">
         <img class="pcard-art" src="${D.art('enemies', lastFoe.id)}" alt="" loading="lazy">
@@ -171,7 +173,7 @@
         <button type="button" class="btn btn-primary" data-act="runStart">${esc(t('runEnter'))}</button>
       </div>`;
     return `<div class="fight-body">${brackets}${head}
-      <div class="block-head">${esc(t('pantheonPick'))}<span class="quick-hint">${esc(t('doorDoneHint'))}</span></div>
+      <div class="block-head">${esc(t('pantheonPick'))}<span class="quick-hint">${esc(t(held ? 'doorDoneHeld' : 'doorDoneHint'))}</span></div>
       <div class="pcards">${cards}</div>
       <div class="block-head">${esc(t('bindingsLabel'))}</div>
       <div class="binds ${BINDS.every((k) => prefs.bindings[k]) ? 'is-all' : ''}">${binds}</div>
@@ -330,10 +332,12 @@
     const cocoonWhy = !App.run.cocoon ? t('restCocoonNone') : rs.cocoonTaken ? t('restCocoonTaken') : '';
     // The bench's grid is the page's: the same selection, the same action. A
     // charm equipped here shows as equipped on the sheet and in combat. Only the
-    // Charms binding locks it, because then the pantheon doesn't let you wear any.
-    const locked = App.run.bindings.charms ? t('restCharmsBound') : '';
+    // Charms binding locks it, because then the pantheon doesn't let you wear any;
+    // and a save from the game (App.saveLock), where nothing is changed by hand.
+    const held = App.saveLock();
+    const locked = held || (App.run.bindings.charms ? t('restCharmsBound') : '');
     const ctx = { ...pageCharms(), locked,
-      hint: locked || t('restCharmsHint', { screen: t('navCharms') }) };
+      hint: held ? t('saveLockShort') : locked || t('restCharmsHint', { screen: t('navCharms') }) };
     return `<div class="arena">
       <div class="side-knight">${knightSide(App.runSheet, App.run, false, 'run')}</div>
       <div class="side-foes rest-room">
@@ -388,6 +392,8 @@
     ${fight.log.length ? logHtml(fight.log) : ''}`;
   }
 
+  // What writes your game's record: refused in a save from the game (App.saveLock, js/app.js).
+  App.edits('doorBind');
   Object.assign(actions, {
     pantheonPick(node) { prefs.pantheon = node.dataset.value; savePrefs(); render(); },
     bindToggle(node) {
