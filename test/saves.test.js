@@ -118,7 +118,7 @@ test('a synced game replaces the slot but keeps the site-only keys, and says whe
   s.setItem('hollow.run', '{"pantheon":"p1"}');
   s.setItem('hollow.baseline', 'v=1&nail=0');
   const game = { 'hollow.build': 'v=1&nail=4', 'hollow.owned': '[]', 'hollow.run': '{"x":1}' };
-  assert.equal(S.sync(s, 1, game), true);
+  assert.equal(S.sync(s, 1, game), 'game');
   assert.equal(s.getItem('hollow.build'), 'v=1&nail=4');
   assert.equal(s.getItem('hollow.journal'), null, 'what the save doesn\'t carry is the game\'s: gone');
   assert.equal(s.getItem('hollow.run'), '{"pantheon":"p1"}', 'the pantheon in progress stays, not the file\'s');
@@ -126,7 +126,27 @@ test('a synced game replaces the slot but keeps the site-only keys, and says whe
   assert.equal(S.sync(s, 1, game), false, 'the same game again changes nothing');
   // An inactive slot, in its copy.
   S.select(s, 2);
-  assert.equal(S.sync(s, 1, { 'hollow.build': 'v=1&nail=3' }), true);
-  assert.deepEqual(S.read(s).slots[1], { 'hollow.build': 'v=1&nail=3', 'hollow.run': '{"pantheon":"p1"}', 'hollow.baseline': 'v=1&nail=0' });
+  assert.equal(S.sync(s, 1, { 'hollow.build': 'v=1&nail=3' }), 'game');
+  const kept = S.read(s).slots[1];
+  assert.deepEqual({ ...kept, 'hollow.prev': undefined }, { 'hollow.build': 'v=1&nail=3', 'hollow.run': '{"pantheon":"p1"}', 'hollow.baseline': 'v=1&nail=0', 'hollow.prev': undefined });
   assert.equal(S.sync(s, S.FREE, game), false, 'free mode is nobody\'s game');
+});
+
+test('a sync keeps what the game was before it changed, for "Since last time"', () => {
+  const s = fakeStore();
+  S.select(s, 1);
+  const at = (nail, saved) => ({ 'hollow.build': 'v=1&nail=' + nail, 'hollow.owned': '[]', 'hollow.meta': JSON.stringify({ time: saved, saved }) });
+  S.importTo(s, 1, at(1, 100));
+  assert.equal(s.getItem('hollow.prev'), null, 'an import has nothing before it');
+  assert.equal(S.sync(s, 1, at(2, 200)), 'game');
+  const prev = JSON.parse(s.getItem('hollow.prev'));
+  assert.deepEqual(prev, { snap: { 'hollow.build': 'v=1&nail=1', 'hollow.owned': '[]' }, saved: 100 });
+  // A bench sat at with nothing new: the clock moves, the previous game stays.
+  assert.equal(S.sync(s, 1, at(2, 300)), 'meta');
+  assert.deepEqual(JSON.parse(s.getItem('hollow.prev')), prev);
+  assert.equal(JSON.parse(s.getItem('hollow.meta')).saved, 300);
+  assert.equal(S.sync(s, 1, at(2, 300)), false);
+  // The next change keeps the game as it was at that last save.
+  assert.equal(S.sync(s, 1, at(3, 400)), 'game');
+  assert.deepEqual(JSON.parse(s.getItem('hollow.prev')), { snap: { 'hollow.build': 'v=1&nail=2', 'hollow.owned': '[]' }, saved: 300 });
 });

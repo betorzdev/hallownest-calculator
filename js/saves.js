@@ -21,7 +21,7 @@
   const FREE = 0;
   const SAVES_KEY = 'hollow.saves';
   const KEYS = Object.freeze(['hollow.build', 'hollow.owned', 'hollow.journal', 'hollow.hall',
-    'hollow.bindings', 'hollow.progress', 'hollow.run', 'hollow.baseline']);
+    'hollow.bindings', 'hollow.progress', 'hollow.run', 'hollow.baseline', 'hollow.meta', 'hollow.prev']);
   const SLOT_IDS = Array.from({ length: COUNT }, (_, i) => i + 1);
   const ALL_IDS = [FREE, ...SLOT_IDS];
 
@@ -120,20 +120,38 @@
 
   /* The same game, read again because the real one saved (js/live.js): it replaces what the slot
      holds but the site's own keys, which a real save doesn't carry (a half-done pantheon and the
-     pinned build). Returns whether anything changed. */
+     pinned build). When the game itself changed, what it was is kept in hollow.prev (the game's
+     keys and when that save was made, from hollow.meta), for "Since last time"
+     (js/changes.js); a save that only moved the clock (a bench sat at with nothing new) keeps the
+     previous one. Returns 'game' when the game changed, 'meta' when only the time, the geo or the
+     save's moment did, and false when nothing did. */
   const SITE_ONLY = Object.freeze(['hollow.run', 'hollow.baseline']);
+  const OWN = Object.freeze(['hollow.meta', 'hollow.prev']);
+  const GAME = Object.freeze(KEYS.filter((k) => !SITE_ONLY.includes(k) && !OWN.includes(k)));
+  const same = (a, b, k) => (a[k] == null ? null : a[k]) === (b[k] == null ? null : b[k]);
+  function prevOf(was) {
+    const snap = {};
+    for (const k of GAME) if (was[k] != null) snap[k] = was[k];
+    let saved = null;
+    try { saved = (JSON.parse(was['hollow.meta'] || 'null') || {}).saved || null; } catch (e) { saved = null; }
+    return JSON.stringify({ snap, saved });
+  }
   function sync(store, n, snap) {
     if (!SLOT_IDS.includes(n)) return false;
     const saves = read(store);
     const was = n === saves.active ? snapshot(store) : saves.slots[n] || {};
     const next = cleanSnap(snap);
     for (const k of SITE_ONLY) { if (was[k] != null) next[k] = was[k]; else delete next[k]; }
-    if (KEYS.every((k) => (was[k] == null ? null : was[k]) === (next[k] == null ? null : next[k]))) return false;
+    const game = !GAME.every((k) => same(was, next, k));
+    if (!game && same(was, next, 'hollow.meta')) return false;
+    if (game) next['hollow.prev'] = prevOf(was);
+    else if (was['hollow.prev'] != null) next['hollow.prev'] = was['hollow.prev'];
+    else delete next['hollow.prev'];
     if (n === saves.active) restore(store, next);
     else { saves.slots[n] = next; write(store, saves); }
-    return true;
+    return game ? 'game' : 'meta';
   }
 
-  HK.saves = { COUNT, FREE, SAVES_KEY, KEYS, SITE_ONLY, SLOT_IDS, ALL_IDS, read, snapshot, fresh, list, select, clear, importTo, sync };
+  HK.saves = { COUNT, FREE, SAVES_KEY, KEYS, SITE_ONLY, GAME, SLOT_IDS, ALL_IDS, read, snapshot, fresh, list, select, clear, importTo, sync };
   if (typeof module !== 'undefined' && module.exports) module.exports = HK.saves;
 })();

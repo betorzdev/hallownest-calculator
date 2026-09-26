@@ -20,8 +20,8 @@ const SITE = 'https://betorzdev.github.io/hallownest-calculator/';
 const ES = {
   title: I.UI.docTitle.es,
   description: I.UI.metaDescription.es,
-  ogDescription: 'Elige tus amuletos y mira cómo cambia cada estadística del Caballero: daño del aguijón, DPS, hechizos, máscaras y alma. En español y en inglés.',
-  ogImageAlt: 'La pantalla de Amuletos: el HUD del Caballero, daño del aguijón 32, DPS 114,3 y la cuadrícula de amuletos',
+  ogDescription: 'Tu partida real de Hollow Knight, seguida en vivo: el 112 % cosa por cosa, el mapa del juego con lo que te falta y lo que conseguiste en cada banco. Y la calculadora de amuletos. En español y en inglés.',
+  ogImageAlt: 'La pantalla Partida: descansas en Ciudad de Lágrimas, la finalización, el tiempo jugado y lo encontrado desde el último banco',
 };
 
 const attr = (s) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');

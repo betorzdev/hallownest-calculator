@@ -169,22 +169,6 @@
   // A computer: not a phone, nor an iPad asking for the desktop site (it says Mac, but it's touch).
   const isDesktop = () => { try { return !isMobile() && !(/Mac/i.test(ua()) && navigator.maxTouchPoints > 1); } catch (e) { return false; } };
 
-  /* The notice for whoever's new, above the screen (js/app.js, renderBanner): on a computer, the
-     one the game's saves are on, it says they can be imported. Only while nobody has chosen a
-     save (free mode, the four empty), and until it's closed or the import view is opened. */
-  const CLOSE = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M2 2 L10 10 M10 2 L2 10"/></svg>';
-  App.importHint = () => {
-    if (prefs.importHintOff || prefs.view === 'saves' || !store || !isDesktop()) return '';
-    const saves = S.read(store);
-    if (saves.active !== S.FREE || S.SLOT_IDS.some((n) => saves.slots[n])) return '';
-    return `<div class="banner is-run is-hint">
-      <span class="banner-tag">${esc(t('importHintTag'))}</span>
-      <span class="banner-text">${esc(t('importHint'))}</span>
-      <button type="button" class="btn btn-primary" data-act="importHintGo">${esc(t('saveImport'))}</button>
-      <button type="button" class="banner-close" data-act="importHintOff" aria-label="${esc(t('importHintOff'))}" title="${esc(t('importHintOff'))}">${CLOSE}</button>
-    </div>`;
-  };
-  const hintOff = () => { if (!prefs.importHintOff) { prefs.importHintOff = true; savePrefs(); } };
 
   const kbd = (k) => `<kbd translate="no">${esc(k)}</kbd>`;
   const FILE_ICON = '<svg class="imp-ficon" width="14" height="18" viewBox="0 0 14 18" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" aria-hidden="true"><path d="M1 1 H9 L13 5 V17 H1 Z"/><path d="M9 1 V5 H13"/></svg>';
@@ -364,7 +348,7 @@
      in progress, the Journal's page) is left over in the one you enter. It lands on Charms
      (or on Saves, after clearing the game you were in), with no build in the link so the
      slot's one is read. */
-  function enter(view = 'charms', swap = null) {
+  function enter(view = 'home', swap = null) {
     prefs.view = view;
     savePrefs();
     const hash = [prefs.lang !== PAGE_LANG ? 'lang=' + prefs.lang : '', view !== 'charms' ? 'view=' + view : '']
@@ -398,7 +382,7 @@
     App.recompute();
     App.fightReset();
     scrollTo(0, 0);
-    App.go('charms', true);
+    App.go('home', true);
     liveStart();
   }
 
@@ -408,7 +392,7 @@
   function leave(n, swap = null) {
     let still = false;
     try { still = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { still = false; }
-    if (still) { enter('charms', swap); return; }
+    if (still) { enter('home', swap); return; }
     if (!swap) try { sessionStorage.setItem(ENTERED_KEY, '1'); } catch (e) { /* it comes in without fading */ }
     const li = n ? el.saves.querySelector(`.save[data-slot="${n}"]`) : null;
     let wait = 0;
@@ -425,7 +409,7 @@
     if (li) li.setAttribute('aria-busy', 'true');
     setTimeout(() => {
       document.documentElement.classList.add('is-leaving');
-      setTimeout(() => enter('charms', swap), 250);
+      setTimeout(() => enter('home', swap), 250);
     }, wait);
   }
 
@@ -433,13 +417,12 @@
     savePick(node) {
       const n = Number(node.dataset.value);
       if (!store) { toast(t('savesNoStorage')); return; }
-      if (S.read(store).active === n) { App.go('charms', true); return; }
+      if (S.read(store).active === n) { App.go('home', true); return; }
       if (S.select(store, n)) leave(n);
     },
     saveNew(node) { actions.savePick(node); },
     saveImport(node) {
       if (!store) { toast(t('savesNoStorage')); return; }
-      hintOff();   // whoever opens it has found it: the notice isn't needed any more
       Object.assign(imp, { n: Number(node.dataset.value), state: 'idle', file: null, fresh: true, copied: 0 });
       if (!imp.chosen) imp.os = detectOs();
       clearing = 0;
@@ -447,19 +430,6 @@
       // The view is taller than the list: if the sheet's top is out of sight, it's brought back.
       if (el.saves.getBoundingClientRect().top < 0) el.saves.scrollIntoView({ block: 'start' });
       focusIn('.screen-title');
-    },
-    // The notice's button: the four are empty, so it goes to the first.
-    importHintGo() {
-      App.go('saves');
-      actions.saveImport({ dataset: { value: String(S.SLOT_IDS[0]) } });
-      track('import-hint');
-    },
-    importHintOff() {
-      hintOff();
-      render();
-      // The button is gone: focus goes to the screen's title, below where the notice was.
-      const h = document.querySelector('.screens > section:not([hidden]) .screen-title');
-      if (h) h.focus({ preventScroll: true });
     },
     importClose() {
       const n = imp.n;
@@ -514,7 +484,7 @@
       try { [h] = await pickSave(); } catch (e) { return; }
       try { file = await h.getFile(); r = F.read(new Uint8Array(await file.arrayBuffer())); } catch (e) { r = null; }
       if (!r || !r.ok) { toast(t('saveImportBad')); return; }
-      S.sync(store, n, F.toSnapshot(r.pd, r.sd));
+      S.sync(store, n, F.toSnapshot(r.pd, r.sd, file.lastModified));
       if (!(await L.links.put(n, { handle: h, name: file.name, stamp: L.stampOf(file) }))) { toast(t('liveFollowNo')); return; }
       live.links[n] = file.name;
       track('save-link');
@@ -642,7 +612,7 @@
     reader.onload = () => {
       const r = F.read(new Uint8Array(reader.result));
       if (!r.ok) { imp.state = 'error'; paintDrop(); return; }
-      imp.file = { name: file.name, snap: F.toSnapshot(r.pd, r.sd), meta: { ...F.meta(r.pd), mods: r.mods }, handle, stamp: L.stampOf(file) };
+      imp.file = { name: file.name, snap: F.toSnapshot(r.pd, r.sd, file.lastModified), meta: { ...F.meta(r.pd), mods: r.mods }, handle, stamp: L.stampOf(file) };
       imp.state = 'ready';
       paintDrop();
       focusIn('[data-act="importDo"]');
@@ -732,11 +702,13 @@
       since: stamp,
       async onData(r, next) {
         stamp = next;
-        const changed = S.sync(store, n, F.toSnapshot(r.pd, r.sd));
+        // 'game' when the game changed, 'meta' when only its clock did (a bench with nothing new).
+        const changed = S.sync(store, n, F.toSnapshot(r.pd, r.sd, next.lastModified));
         await L.links.put(n, { ...rec, stamp });
         if (!changed || activeSlot() !== n) return;
         App.reloadGame();
-        toast(t('liveUpdated'));
+        // The notice says what you got, as the Your game screen's "Since last time" (js/app-home.js).
+        if (changed === 'game') toast(App.gainedLine() || t('liveUpdated'));
         track('save-sync');
       },
       onState(s) { live.state = s; render(); },
@@ -753,20 +725,19 @@
       <button type="button" class="btn btn-primary" data-act="${paused ? 'liveResume' : 'liveRelink'}">${esc(t(paused ? 'liveResume' : 'liveRelink'))}</button>
     </div>`;
   };
-  /* Your shade, above the screen, as long as it waits (only a save says so: js/progress.js):
-     where and with how much geo. The ✕ hides it until the shade is another one. */
-  const shadeKey = (sh) => sh.scene + ':' + sh.geo;
-  App.shadeBanner = () => {
-    const sh = App.progress.shade;
-    if (!sh || prefs.shadeOff === shadeKey(sh) || prefs.view === 'saves') return '';
-    const area = R.areaOf(sh.scene);
-    return `<div class="banner is-run is-hint">
-      <span class="banner-tag">${esc(t('shadeTag'))}</span>
-      <span class="banner-text">${esc(t('shadeBanner', { area: areaName(area) || '?', geo: num(sh.geo) }))}</span>
-      <button type="button" class="banner-close" data-act="shadeOff" aria-label="${esc(t('shadeOff'))}" title="${esc(t('shadeOff'))}">${CLOSE}</button>
-    </div>`;
+  /* From Your game's invitation (js/app-home.js): into the first empty save, importing the game's
+     file or as a new game. With the four full, the Saves screen, to choose. */
+  const firstEmpty = () => (store ? S.SLOT_IDS.find((n) => { const x = S.read(store); return n !== x.active && !x.slots[n]; }) : null);
+  App.importFirstEmpty = () => {
+    const n = firstEmpty();
+    App.go('saves');
+    if (n) actions.saveImport({ dataset: { value: String(n) } });
   };
-  actions.shadeOff = () => { if (App.progress.shade) { prefs.shadeOff = shadeKey(App.progress.shade); savePrefs(); render(); } };
+  App.newInFirstEmpty = () => {
+    const n = firstEmpty();
+    if (n) actions.saveNew({ dataset: { value: String(n) } }); else App.go('saves');
+  };
+  App.isDesktop = isDesktop;
 
   // The link of the save you're in, for the header: { state, name }, or null if it follows no file.
   App.liveInfo = () => (live.watcher && live.state ? { state: live.state, name: live.name } : null);

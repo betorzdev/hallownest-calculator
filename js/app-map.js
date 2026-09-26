@@ -444,7 +444,7 @@
   function btnHtml(th) {
     const a = th.act;
     return !a ? ''
-      : a.game ? `<button type="button" class="text-btn" data-act="view" data-value="game" title="${esc(t('pgInGameHint'))}">${esc(t('pgmGoInv'))}</button>`
+      : a.game ? `<button type="button" class="text-btn" data-act="view" data-value="home" title="${esc(t('pgInGameHint'))}">${esc(t('pgmGoInv'))}</button>`
         : `<button type="button" class="text-btn" ${a.find ? `data-act="pgFind" data-id="${esc(a.find)}"` : `data-act="pgMark" data-key="${a.cat}" data-id="${esc(a.id)}"`} aria-pressed="${hasIt(th)}">${esc(t(hasIt(th) ? 'pgUnmark' : 'pgMark'))}</button>`;
   }
   function cardHtml(th) {
@@ -705,7 +705,7 @@
       render();
     }
   });
-  window.addEventListener('resize', () => { if (prefs.view === 'progress' && prefs.pgTab === 'map') applyView(); });
+  window.addEventListener('resize', () => { if (prefs.view === 'map') applyView(); });
 
   Object.assign(actions, {
     pgmPick(node) {

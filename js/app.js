@@ -30,14 +30,22 @@
   const $ = (sel) => document.querySelector(sel);
   const el = {
     page: $('.page'), masthead: $('#masthead'), colophon: $('#colophon'), nav: $('#nav'), panel: $('#panel'),
-    mini: $('#minihud'), banner: $('#banner'), gear: $('#gear'), hj: $('#hj'),
+    mini: $('#minihud'), banner: $('#banner'), gear: $('#gear'), hj: $('#hj'), home: $('#home'), navSub: $('#nav-sub'),
     toast: $('#toast'), fx: $('#overcharm-fx'), fight: $('#fight'), saves: $('#saves'), pg: $('#pg'),
   };
   const hoverable = matchMedia('(hover: hover) and (pointer: fine)');
 
-  /* The screens, like the pages of the game's pause menu: Charms, Your game, Combat and the
-     Journal. And the save slots (js/app-saves.js), which aren't in the bar: the header opens them. */
-  const VIEWS = ['charms', 'game', 'fight', 'journal', 'progress', 'saves'];
+  /* The screens, like the pages of the game's pause menu, in two groups (design/10-restructure.md):
+     your game as the save says it (Your game, the start screen, with the Inventory under it;
+     Progress; the Map; the Journal; Godhome, with the Hall of Gods and the Pantheons, one place
+     in the game) and the tools (Charms and Combat, the arena). And the save slots
+     (js/app-saves.js), which aren't in the bar: the header opens them. The Map shares Progress's
+     section, and Godhome Combat's (its tabs 'hall' and 'pantheon'; the arena is 'combat'). */
+  const VIEWS = ['home', 'progress', 'map', 'journal', 'godhome', 'charms', 'fight', 'saves'];
+  const inArena = (v) => v === 'fight' || v === 'godhome';
+  const TOOLS = ['charms', 'fight'];
+  // The screens that were: Your game became the start screen's Inventory; the Map was a tab of Progress.
+  const OLD_VIEWS = { game: 'home', hall: 'godhome' };
   const SPELL_KEYS = ['vs', 'dd', 'hw'];
   const ART_KEYS = ['cyclone', 'dash', 'great'];
   const ART_STAT = { cyclone: 'nail.cyclone', dash: 'nail.dashSlash', great: 'nail.greatSlash' };
@@ -163,7 +171,7 @@
   /* ── State ───────────────────────────────────────────────────────────── */
   App.state = C.normalize({});
   App.baseline = null;              // state pinned for comparison, or null
-  let prefs = { lang: 'en', langChosen: false, compare: 'base', open: [], view: 'charms', detailOpen: false,
+  let prefs = { lang: 'en', langChosen: false, compare: 'base', open: [], view: 'home', tool: 'charms', detailOpen: false,
                 foeId: '', foeKind: 'all',
                 fightTab: 'combat', pantheon: 'master',
                 hallId: HG.STATUES[0].id, hallDiff: '',
@@ -195,10 +203,17 @@
     if (!Array.isArray(prefs.open)) prefs.open = [];
     delete prefs.diff;   // difficulty no longer belongs to Combat: it belongs to each statue in the Hall
     delete prefs.gearOpen; delete prefs.fightOpen;   // Gear and combat no longer collapse: they are screens
-    if (!VIEWS.includes(prefs.view)) prefs.view = 'charms';
+    // The Map was Progress's second tab, and the Hall and the Pantheons Combat's.
+    if (prefs.view === 'progress' && prefs.pgTab === 'map') prefs.view = 'map';
+    if (prefs.view === 'fight' && prefs.fightTab !== 'combat') prefs.view = 'godhome';
+    delete prefs.pgTab;
+    prefs.view = OLD_VIEWS[prefs.view] || prefs.view;
+    if (!VIEWS.includes(prefs.view)) prefs.view = 'home';
+    if (!TOOLS.includes(prefs.tool)) prefs.tool = 'charms';
     if (!F.FOE_BY_ID[prefs.foeId]) prefs.foeId = DEFAULT_FOE;
     if (!['all', 'boss', 'enemy'].includes(prefs.foeKind)) prefs.foeKind = 'all';
     if (!['combat', 'hall', 'pantheon'].includes(prefs.fightTab)) prefs.fightTab = 'combat';
+    if ((prefs.view === 'godhome') !== (prefs.fightTab !== 'combat')) prefs.fightTab = prefs.view === 'godhome' ? 'hall' : 'combat';
     if (!HG.STATUE_BY_ID[prefs.hallId]) prefs.hallId = HG.STATUES[0].id;
     if (!HG.DIFFS.includes(prefs.hallDiff)) prefs.hallDiff = '';
     if (!PN.PANTHEON_BY_ID[prefs.pantheon]) prefs.pantheon = 'master';
@@ -230,6 +245,7 @@
       else if (/^view=/.test(pair)) view = pair.slice(5);
       else if (pair) keep.push(pair);
     }
+    view = OLD_VIEWS[view] || view;
     return { build: keep.join('&'), lang: ['es', 'en'].includes(lang) ? lang : null, view: VIEWS.includes(view) ? view : null };
   }
 
@@ -265,8 +281,9 @@
   function applyNav(nav) {
     const was = navKey(navNow());
     const viewChanged = !!nav.view && nav.view !== prefs.view;
-    if (viewChanged) setView(nav.view);
+    if (viewChanged) setView(OLD_VIEWS[nav.view] || nav.view);
     if (nav.tab && nav.tab !== prefs.fightTab) App.setFightTab(nav.tab);
+    tabFollowsView();
     for (const k of Object.keys(App.navParts)) if (nav[k] !== undefined) App.navParts[k].set(nav[k]);
     return { viewChanged, changed: was !== navKey(navNow()) };
   }
@@ -489,12 +506,14 @@
     return `<a class="mh-save${lv ? ' is-' + lv.state : ''}" href="${here(hashFor('saves'))}" data-act="view" data-value="saves"${prefs.view === 'saves' ? ' aria-current="page"' : ''}
           aria-label="${esc(label + (lv ? ', ' + st : ''))}" title="${esc(title)}"><span class="mh-save-fig"><span class="mh-save-light" aria-hidden="true"></span><img src="${D.art('hud', 'knight')}" alt=""></span><span class="mh-save-lbl">${FLEURS}${esc(label)}${live}</span>${n ? `<span class="mh-save-n">${n}</span>` : ''}</a>`;
   }
-  const VIEW_KEY = { charms: 'navCharms', game: 'navGame', fight: 'navFight', journal: 'navJournal', progress: 'navProgress', saves: 'savesTitle' };
+  const VIEW_KEY = { home: 'navHome', charms: 'navCharms', fight: 'navFight', journal: 'navJournal', progress: 'navProgress',
+    map: 'navMap', godhome: 'navGodhome', saves: 'savesTitle' };
   function renderMasthead() {
-    document.title = prefs.view === 'charms' ? t('docTitle') : t(VIEW_KEY[prefs.view]) + ' · ' + t('title');
+    document.title = prefs.view === 'home' ? t('docTitle') : t(VIEW_KEY[prefs.view]) + ' · ' + t('title');
     const meta = document.querySelector('meta[name="description"]');
     if (meta) meta.setAttribute('content', t('metaDescription'));
     // The screen labels are fixed in index.html: they change with the language.
+    el.home.setAttribute('aria-label', t('navHome'));
     el.panel.setAttribute('aria-label', t('navCharms'));
     el.gear.setAttribute('aria-label', t('navGame'));
     el.fight.setAttribute('aria-label', t('navFight'));
@@ -507,7 +526,7 @@
         <div class="langsel" role="group" aria-label="${esc(t('langGroup'))}">${langBtn('en', 'English')}${langBtn('es', 'Español')}</div>
         <button type="button" class="mh-link" data-act="share" title="${esc(t('shareHint'))}">${esc(t('share'))}</button>
       </div>
-      <a class="brand" href="${here(hashFor('charms'))}" data-act="view" data-value="charms" title="${esc(t('goHome'))}">
+      <a class="brand" href="${here(hashFor('home'))}" data-act="view" data-value="home" title="${esc(t('goHome'))}">
         <img class="mh-hdr" src="assets/hall/tablet-hdr.png" alt="" width="862" height="111">
         <h1 class="title">${esc(t('title'))}</h1>
       </a>
@@ -534,18 +553,33 @@
         <a class="gh" href="https://github.com/betorzdev/hallownest-calculator" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">${GITHUB}</a></p>`;
   }
 
-  /* The screen bar: Charms, Your game, Combat, the Journal with your completed ones and Progress
-     with your completion. It lives in index.html and here only its texts and which one is active
-     change: repainted whole, the focus would be lost when switching screens. The Journal's text
-     is set by paintHjNav and Progress's by paintPgNav. */
+  /* The screen bar, in two groups: your game (Your game with the link's state, Progress with your
+     completion, the Map, the Journal with your completed ones, the Hall) and, after a thin rule,
+     the tools (Charms, Combat). On a phone the seven don't fit: the tools fold into one tab,
+     Tools, which opens the last one used, and while you're in one a second row lets you switch
+     (#nav-sub). It lives in index.html and here only its texts and which one is active change:
+     repainted whole, the focus would be lost when switching screens. Your game's text is set by
+     paintHomeNav, the Journal's by paintHjNav and Progress's by paintPgNav. */
   function renderNav() {
     el.nav.setAttribute('aria-label', t('navLabel'));
+    const tools = el.nav.querySelector('#nav-tools');
+    tools.dataset.value = prefs.tool;
     for (const a of el.nav.querySelectorAll('[data-act="view"]')) {
       const v = a.dataset.value;
-      if (v !== 'journal' && v !== 'progress') a.textContent = t(VIEW_KEY[v]);
+      if (a === tools) a.textContent = t('navTools');
+      // Godhome's name doesn't fit a phone's bar: a short one there, the full one for screen readers.
+      else if (v === 'godhome') {
+        a.innerHTML = `<span class="nav-long">${esc(t('navGodhome'))}</span><span class="nav-short" aria-hidden="true">${esc(t('navGodhomeShort'))}</span>`;
+        a.setAttribute('aria-label', t('navGodhome'));
+      }
+      else if (!a.querySelector('.nav-lbl')) a.textContent = t(VIEW_KEY[v]);
       a.setAttribute('href', here(hashFor(v)));
-      if (v === prefs.view) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+      const on = a === tools ? TOOLS.includes(prefs.view) : v === prefs.view;
+      if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
     }
+    el.navSub.hidden = !TOOLS.includes(prefs.view);
+    el.navSub.setAttribute('aria-label', t('navTools'));
+    App.paintHomeNav();
     App.paintHjNav();
     App.paintPgNav();
   }
@@ -555,11 +589,12 @@
      happened while you were on another one. Not the Journal: its 168 rows are only painted when
      it shows (render). */
   function showScreen() {
+    el.home.hidden = prefs.view !== 'home';
+    el.gear.hidden = prefs.view !== 'home';
     el.panel.hidden = prefs.view !== 'charms';
-    el.gear.hidden = prefs.view !== 'game';
-    el.fight.hidden = prefs.view !== 'fight';
+    el.fight.hidden = !inArena(prefs.view);
     el.hj.hidden = prefs.view !== 'journal';
-    el.pg.hidden = prefs.view !== 'progress';
+    el.pg.hidden = prefs.view !== 'progress' && prefs.view !== 'map';
     el.saves.hidden = prefs.view !== 'saves';
   }
 
@@ -572,12 +607,14 @@
   // The mini-bar's mask: the HUD's, Hiveblood included (and Joni's Blessing, if it's all lifeblood).
   const maskArt = (sh, allLb) => (App.sheetHas(sh, 'hiveblood') ? (allLb ? 'hiveblood-joni' : 'hiveblood') : allLb ? 'mask-lb' : 'mask');
   function renderMiniHud() {
-    const inFight = prefs.view === 'fight';
+    const inFight = inArena(prefs.view);
     // With an enemy in front of you (the arena, a Hall statue or a pantheon room), the mini-bar
     // is the fight's scoreboard: your attacks and theirs are a long list, and this keeps their health and
     // yours in view while you scroll down it.
     const score = inFight && App.foe() && App.fight.parts.length ? fightScoreHtml() : '';
     el.mini.classList.toggle('is-fight', !!score);
+    // With the tools only, and in Godhome while you fight: the rest is your game, not a build.
+    el.mini.hidden = !score && !TOOLS.includes(prefs.view);
     if (score) { el.mini.innerHTML = score; return; }
     scorePrev = null;
     const sh = inFight ? App.baseSheet() : App.sheet;
@@ -615,17 +652,18 @@
       </span>`;
   }
 
-  /* The notices above the screen. Overcharm, on Your game: on Charms it goes in the band, below
-     the notches (charmBand), and in combat the HUD's aura already says it. And, for whoever's
-     new on a computer, that the game's save can be imported, and when the save linked to the game
-     needs a click to go on following it (js/app-saves.js). */
+  /* The notices above the screen. Overcharm, on Your game (its Inventory): on Charms it goes in
+     the band, below the notches (charmBand), and in combat the HUD's aura already says it. And
+     when the save linked to the game needs a click to go on following it (js/app-saves.js). */
   function renderBanner() {
-    const over = prefs.view === 'game' && App.sheet.notches.overcharmed
+    const over = prefs.view === 'home' && App.sheet.notches.overcharmed
       ? `<div class="banner"><span class="banner-tag">${esc(t('overcharmed'))}</span><span class="banner-text">${esc(t('overcharmBanner'))}</span></div>`
       : '';
     // On the Pantheons tab you're already there: the notice doesn't send you where you are.
-    const lock = prefs.view === 'fight' && prefs.fightTab === 'pantheon' ? '' : runLockBanner();
-    el.banner.innerHTML = over + lock + App.liveBanner() + App.shadeBanner() + App.importHint();
+    const lock = prefs.view === 'godhome' && prefs.fightTab === 'pantheon' ? '' : runLockBanner();
+    /* The link paused or its file gone is said on every screen but Your game, which says it
+       itself; your shade and the invitation to import live on Your game (js/app-home.js). */
+    el.banner.innerHTML = over + lock + (prefs.view === 'home' ? '' : App.liveBanner());
   }
 
   /* The notice that you're in a pantheon, with the button that takes you to the room and the one
@@ -769,6 +807,7 @@
     renderColophon();
     renderNav();                           // with your game's Journal button
     renderBanner();
+    App.renderHome();
     App.renderPanel();
     renderMiniHud();
     App.renderGear();
@@ -789,17 +828,26 @@
   /* ── Switching screens ───────────────────────────────────────────────── */
   function setView(v) {
     const was = prefs.view;
-    prefs.view = VIEWS.includes(v) ? v : 'charms';
+    prefs.view = VIEWS.includes(v) ? v : 'home';
+    if (TOOLS.includes(prefs.view)) prefs.tool = prefs.view;
+    tabFollowsView();
     savePrefs();
     // The tablet is a view of the Hall, not a preference: whoever comes back, comes back to the statues.
     if (prefs.view !== was) App.hallTablet = false;
     if (prefs.view === 'journal' && was !== 'journal') App.hjEnter = true;
     // Entering combat does what opening it used to: the fight, ready, and with no enemy the
     // Journal open, which is where you start.
-    if (prefs.view === 'fight' && was !== 'fight') {
+    if (inArena(prefs.view) && !inArena(was)) {
       if (!App.fight.started) App.fightReset();
       if (prefs.fightTab === 'combat' && !prefs.foeId) App.openJournal();
     }
+  }
+  /* Godhome is Combat's section with its tabs 'hall' and 'pantheon', and Combat its tab 'combat':
+     the view and the tab go together. Godhome comes back to the tab it was left on. */
+  function tabFollowsView() {
+    if (prefs.view === 'godhome' && prefs.fightTab === 'combat') App.setFightTab(prefs.godTab === 'pantheon' ? 'pantheon' : 'hall');
+    else if (prefs.view === 'fight' && prefs.fightTab !== 'combat') App.setFightTab('combat');
+    if (prefs.fightTab !== 'combat') prefs.godTab = prefs.fightTab;
   }
   /* Leaves a history entry and scrolls up to the top of the screen, which sits just below the
      bar. If you arrive from inside another screen (the pantheon notice), focus goes
@@ -821,7 +869,8 @@
   }
   /* The screen you arrive at fades in, like the game's fades between areas (css: .is-entering). */
   const fadeIn = (node) => { node.classList.remove('is-entering'); void node.offsetWidth; node.classList.add('is-entering'); };
-  const screenOf = (v) => (v === 'game' ? el.gear : v === 'fight' ? el.fight : v === 'journal' ? el.hj : v === 'progress' ? el.pg : v === 'saves' ? el.saves : el.panel);
+  const screenOf = (v) => (v === 'home' ? el.home : inArena(v) ? el.fight : v === 'journal' ? el.hj
+    : v === 'progress' || v === 'map' ? el.pg : v === 'saves' ? el.saves : el.panel);
   // Is the sticky bar covering it? Then you have to scroll up to it.
   const underNav = (node) => node.getBoundingClientRect().top < el.nav.getBoundingClientRect().bottom;
 
@@ -1064,7 +1113,7 @@
     App.was = null;
   }
 
-  Object.assign(App, { t, pick, KEY, PAGE_LANG, $, el, hoverable, SPELL_KEYS, ART_KEYS, ART_STAT, POSITIONAL,
+  Object.assign(App, { t, pick, KEY, PAGE_LANG, $, el, hoverable, VIEWS, TOOLS, SPELL_KEYS, ART_KEYS, ART_STAT, POSITIONAL,
     NEED_KEY, NT, namedSrc, esc, load, save, rebuildNF, pctSpace, fmtValue, fmtStat, fmtStatRich, sign,
     masksText, notchText, spellArt, shortOf, badgeText, goodClass, deltaChip, changeChip, prefs, loadPrefs,
     savePrefs, justWorn, justFound, splitHash, here, loadState, persist, compareLabel, compute, impact, recompute, commit, bindAllFx,

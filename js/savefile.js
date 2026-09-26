@@ -322,8 +322,10 @@
 
   /* playerData → a slot's snapshot, the keys written as the screens write them (an empty
      Journal, Hall or door isn't written; the charms found always are: with no list, the site
-     would take them all as found). */
-  function toSnapshot(pd, sd = null) {
+     would take them all as found). And hollow.meta, what the game's profile screen shows and the
+     Your game screen too: the time played, the game's own completion, the geo and, when the
+     caller knows it (the file's lastModified), the moment of the save. */
+  function toSnapshot(pd, sd = null, saved = null) {
     const have = owned(pd);
     const snap = { 'hollow.build': C.encode(build(pd, have)), 'hollow.owned': JSON.stringify(have) };
     const book = journal(pd), marks = hall(pd), d = door(pd);
@@ -334,6 +336,9 @@
     const states = Object.entries(HALL_PD).map(([id, x]) => [id, pd['statueState' + x]]).filter(([, st]) => st && typeof st === 'object');
     const prog = P.fromSave(pd, sd, states.length ? states.filter(([, st]) => st.isUnlocked).map(([id]) => id) : null);
     if (!P.isEmpty(prog)) snap['hollow.progress'] = JSON.stringify(prog);
+    const m = meta(pd);
+    snap['hollow.meta'] = JSON.stringify({ time: m.time, completion: m.completion, geo: m.geo,
+      saved: Number.isFinite(saved) && saved > 0 ? saved : null });
     return snap;
   }
 

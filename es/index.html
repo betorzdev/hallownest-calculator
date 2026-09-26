@@ -5,8 +5,8 @@
 <meta charset="utf-8">
 <base href="../">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Calculadora de Hallownest para amuletos y estadísticas de Hollow Knight</title>
-<meta name="description" content="Cómo cambian las estadísticas del Caballero de Hollow Knight con cada amuleto y cada mejora: daño del aguijón, DPS, hechizos, máscaras y alma, un simulador de combate contra cada jefe y el Hogar de Dioses, y el Diario del Cazador.">
+<title>Calculadora de Hallownest: tu partida de Hollow Knight en vivo, el 112 % y los amuletos</title>
+<meta name="description" content="Sigue tu partida real de Hollow Knight: importa tu archivo y mira tu 112 % cosa por cosa, el mapa del juego con lo que te falta, tu sombra y el Diario del Cazador, al día en cada banco. Y una calculadora de amuletos y un simulador de combate contra cada jefe.">
 <meta name="google-site-verification" content="gMOOsULKOT9I0m85tW4NHufweIQ18ptFx7TnwCWC4AM">
 <link rel="canonical" href="https://betorzdev.github.io/hallownest-calculator/es/">
 <link rel="alternate" hreflang="en" href="https://betorzdev.github.io/hallownest-calculator/">
@@ -14,13 +14,13 @@
 <link rel="alternate" hreflang="x-default" href="https://betorzdev.github.io/hallownest-calculator/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Hallownest Calculator">
-<meta property="og:title" content="Calculadora de Hallownest para amuletos y estadísticas de Hollow Knight">
-<meta property="og:description" content="Elige tus amuletos y mira cómo cambia cada estadística del Caballero: daño del aguijón, DPS, hechizos, máscaras y alma. En español y en inglés.">
+<meta property="og:title" content="Calculadora de Hallownest: tu partida de Hollow Knight en vivo, el 112 % y los amuletos">
+<meta property="og:description" content="Tu partida real de Hollow Knight, seguida en vivo: el 112 % cosa por cosa, el mapa del juego con lo que te falta y lo que conseguiste en cada banco. Y la calculadora de amuletos. En español y en inglés.">
 <meta property="og:url" content="https://betorzdev.github.io/hallownest-calculator/es/">
 <meta property="og:image" content="https://betorzdev.github.io/hallownest-calculator/assets/site/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="La pantalla de Amuletos: el HUD del Caballero, daño del aguijón 32, DPS 114,3 y la cuadrícula de amuletos">
+<meta property="og:image:alt" content="La pantalla Partida: descansas en Ciudad de Lágrimas, la finalización, el tiempo jugado y lo encontrado desde el último banco">
 <meta property="og:locale" content="es_ES">
 <meta property="og:locale:alternate" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
@@ -32,7 +32,7 @@
   "alternateName": "Calculadora de Hallownest",
   "url": "https://betorzdev.github.io/hallownest-calculator/",
   "image": "https://betorzdev.github.io/hallownest-calculator/assets/site/og.jpg",
-  "description": "How the Knight's stats in Hollow Knight change with every charm and every upgrade.",
+  "description": "Follow your real Hollow Knight game live: the 112% item by item, the game's map with what you're missing, and a charm calculator.",
   "applicationCategory": "GameApplication",
   "operatingSystem": "Any",
   "inLanguage": ["en", "es"],
@@ -45,7 +45,7 @@
   "@context": "https://schema.org",
   "@type": "WebSite",
   "name": "Hallownest Calculator",
-  "alternateName": ["Calculadora de Hallownest", "Hollow Knight charm calculator"],
+  "alternateName": ["Calculadora de Hallownest", "Hollow Knight 112% tracker", "Hollow Knight charm calculator"],
   "url": "https://betorzdev.github.io/hallownest-calculator/"
 }
 </script>
@@ -69,17 +69,26 @@
     <header class="masthead" id="masthead"></header>
     <nav class="nav" id="nav" aria-label="Screens">
       <div class="nav-tabs">
-        <a class="nav-tab" data-act="view" data-value="charms" href="#">Charms</a>
-        <a class="nav-tab" data-act="view" data-value="game" href="#view=game">Inventory</a>
-        <a class="nav-tab" data-act="view" data-value="fight" href="#view=fight">Combat</a>
-        <a class="nav-tab nav-hj" id="nav-hj" data-act="view" data-value="journal" href="#view=journal"><span class="nav-lbl">Journal</span><span class="nav-num"></span></a>
+        <a class="nav-tab nav-hj nav-home" id="nav-home" data-act="view" data-value="home" href="#view=home"><span class="nav-lbl">Your game</span><span class="nav-num"></span></a>
         <a class="nav-tab nav-hj nav-pg" id="nav-pg" data-act="view" data-value="progress" href="#view=progress"><span class="nav-lbl">Progress</span><span class="nav-num"></span></a>
+        <a class="nav-tab" data-act="view" data-value="map" href="#view=map">Map</a>
+        <a class="nav-tab nav-hj" id="nav-hj" data-act="view" data-value="journal" href="#view=journal"><span class="nav-lbl">Journal</span><span class="nav-num"></span></a>
+        <a class="nav-tab" data-act="view" data-value="godhome" href="#view=godhome">Godhome</a>
+        <span class="nav-sep" aria-hidden="true"></span>
+        <a class="nav-tab nav-tool" data-act="view" data-value="charms" href="#">Charms</a>
+        <a class="nav-tab nav-tool" data-act="view" data-value="fight" href="#view=fight">Combat</a>
+        <a class="nav-tab nav-tools" id="nav-tools" data-act="view" data-value="charms" href="#">Tools</a>
+      </div>
+      <div class="nav-sub" id="nav-sub" hidden>
+        <a class="nav-tab" data-act="view" data-value="charms" href="#">Charms</a>
+        <a class="nav-tab" data-act="view" data-value="fight" href="#view=fight">Combat</a>
       </div>
       <div class="minihud" id="minihud" aria-hidden="true"></div>
     </nav>
     <main class="screens">
       <div id="banner"></div>
-      <section class="panel" id="panel" aria-label="Charms"></section>
+      <section class="gear home" id="home" aria-label="Your game" hidden></section>
+      <section class="panel" id="panel" aria-label="Charms" hidden></section>
       <section class="gear" id="gear" aria-label="Inventory" hidden></section>
       <section class="gear fight" id="fight" aria-label="Combat" hidden></section>
       <section class="hj-sec" id="hj" aria-label="Journal" hidden></section>
@@ -106,6 +115,7 @@
 <script src="js/engine.js"></script>
 <script src="js/fight.js"></script>
 <script src="js/codec.js"></script>
+<script src="js/changes.js"></script>
 <script src="js/saves.js"></script>
 <script src="js/savefile.js"></script>
 <script src="js/live.js"></script>
@@ -119,6 +129,7 @@
 <script src="js/app-progress.js"></script>
 <script src="js/app-map.js"></script>
 <script src="js/app-saves.js"></script>
+<script src="js/app-home.js"></script>
 <script src="js/app-boot.js"></script>
 </body>
 </html>

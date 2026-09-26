@@ -86,7 +86,7 @@
         <span class="gplate-val${on && !STEPPED.includes(cat) ? '' : ' is-none'}">${esc(val)}</span>`;
     // The build's things aren't marked here: the plate takes you to Your game.
     if (where === 'game') {
-      return `<button type="button" class="gplate is-far${st ? ' ' + st : ''}" data-act="view" data-value="game" title="${esc(t('pgInGameHint'))}">${body}</button>`;
+      return `<button type="button" class="gplate is-far${st ? ' ' + st : ''}" data-act="view" data-value="home" title="${esc(t('pgInGameHint'))}">${body}</button>`;
     }
     return `<button type="button" class="gplate${st ? ' ' + st : ''}" data-act="pgMark" data-key="${cat}" data-id="${it.id}" aria-pressed="${on}"
         title="${esc(m.name + ' · ' + t(on ? 'pgUnmark' : 'pgMark'))}">${body}</button>`;
@@ -111,18 +111,13 @@
     </li>`;
   }
 
-  const TABS = ['list', 'map'];
-
   function renderProgress() {
-    if (prefs.view !== 'progress') return;
+    if (prefs.view !== 'progress' && prefs.view !== 'map') return;
     const r = count();
-    /* Two tabs: the 112% (the game's figure and its fifteen categories) and the Map, with the
-       collectibles on it (js/app-map.js). */
-    const tab = TABS.includes(prefs.pgTab) ? prefs.pgTab : 'list';
-    const tabs = `<nav class="pg-tabs" aria-label="${esc(t('navProgress'))}">${TABS.map((v) => `<button type="button" class="pg-tab${tab === v ? ' is-on' : ''}"
-        data-act="pgTab" data-value="${v}" aria-pressed="${tab === v}">${esc(v === 'list' ? t('pgTab112', { pct: pctSpace() }) : t('pgTabMap'))}</button>`).join('')}</nav>`;
-    const head = `${brackets}${screenHead(esc(t('navProgress')))}${tabs}`;
-    if (tab === 'map') {
+    /* Two screens in this section: the 112% (the game's figure and its fifteen categories) and
+       the Map, with the collectibles on it (js/app-map.js). */
+    const head = `${brackets}${screenHead(esc(t(prefs.view === 'map' ? 'navMap' : 'navProgress')))}`;
+    if (prefs.view === 'map') {
       el.pg.innerHTML = `<div class="gear-body pg-body">${head}${App.renderPgMap()}</div>`;
       App.pgMapAfterPaint();
       return;
@@ -156,11 +151,6 @@
   }
   Object.assign(actions, {
     pgFind(node) { setProgress(P.toggleFound(App.progress, node.dataset.id)); },
-    pgTab(node) {
-      prefs.pgTab = TABS.includes(node.dataset.value) ? node.dataset.value : 'list';
-      savePrefs();
-      render();
-    },
     pgRow(node) {
       prefs.pgOpen = prefs.pgOpen === node.dataset.value ? '' : node.dataset.value;
       savePrefs();

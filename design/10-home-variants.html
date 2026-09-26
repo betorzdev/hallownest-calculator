@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Home screen: variants</title>
+<!-- Design material, not part of the site (design/10-restructure.md). The new start screen,
+     "Your game" (view=home), drawn three ways with the site's real CSS, data and 112% rules,
+     over a sample game half done (two saves apart, so there is something "since last time") or
+     over your own game (what index.html has saved: this page shares its localStorage; with no
+     previous save, "since last time" is empty). The bar at the bottom picks the variant, the
+     state of the link (live, paused, followed by hand, no game), the language and the width;
+     also via the URL: ?v=a|b|c&state=live|paused|manual|free|phone&game=sample|mine&lang=es|en&w=390.
+     "Your Knight" (today's Inventory) goes under all three and isn't drawn here.
+     The <base> points at the root so that the site's "assets/…" paths work as they are. -->
+<base href="../">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+/* ════ The mockup's bar: none of this goes into the site ═════════════════════════════════ */
+.mk-bar {
+  position: fixed; z-index: 90; left: 50%; bottom: var(--sp-2); transform: translateX(-50%);
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--sp-1) var(--sp-3);
+  max-width: calc(100vw - var(--sp-4)); padding: var(--sp-2) var(--sp-3);
+  background: color-mix(in oklab, var(--scene-bg) 92%, transparent); border: 1px solid var(--line-panel);
+  font-family: var(--font-num); font-size: var(--fs-xs); color: var(--muted); box-shadow: var(--shadow-md);
+}
+.mk-bar b { color: var(--label); font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; font-size: var(--fs-2xs); }
+.mk-bar button { padding: var(--sp-1) var(--sp-2); border: 1px solid var(--line-ctl); color: var(--ink-2); background: none; font: inherit; cursor: pointer; }
+.mk-bar button[aria-pressed="true"] { color: var(--ink-strong); border-color: var(--accent-line); background: var(--picked); }
+.mk-bar button:hover { color: var(--accent); }
+.mk-sep { width: 1px; align-self: stretch; background: var(--line); }
+.mk-wrap { width: 100%; margin: 0 auto; padding: 0 0 calc(var(--sp-16) * 2); }
+.mk-wrap.is-phone { max-width: 390px; }
+.mk-knight { margin-top: var(--sp-8); padding: var(--sp-6); border: 1px dashed var(--inv-line); color: var(--muted); font-size: var(--fs-sm); text-align: center; }
+
+/* ════ → css/app.css: the bar in two groups ════════════════════════════════════════════════
+   Your game on the left (the record: what the save says), the tools on the right after a thin
+   rule (what you try: builds and fights). The mini-HUD only shows with the tools. */
+.nav-sep { width: 1px; align-self: center; height: 1.4em; background: var(--line-ctl); }
+.nav-live { display: inline-block; width: var(--sp-2); height: var(--sp-2); transform: rotate(45deg); border: 1px solid currentColor; }
+.nav-live.is-live { background: var(--ink-strong); border-color: var(--ink-strong); box-shadow: 0 0 8px color-mix(in oklab, var(--ink-strong) 55%, transparent); }
+.nav-live.is-paused { color: var(--cond); }
+.mk-wrap.is-phone .nav-tabs { gap: var(--sp-3); overflow-x: auto; }
+.mk-wrap.is-phone .nav-tab { font-size: var(--fs-md); white-space: nowrap; }
+
+/* ════ → css/app.css: common to the three ══════════════════════════════════════════════════ */
+.hm { --tint: var(--tint-progress); display: block; }
+.hm-live { display: inline-flex; align-items: center; gap: var(--sp-2); font-weight: 600; font-size: var(--fs-2xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
+.hm-live .nav-live { flex-shrink: 0; }
+.hm-live.is-paused { color: var(--cond); }
+.hm-when { font-size: var(--fs-sm); color: var(--muted); }
+.hm-when b { color: var(--ink-2); font-weight: 400; }
+/* Figures in bone, as on the sheet: the number big, its unit small and grey. */
+.hm-figs { display: flex; flex-wrap: wrap; gap: var(--sp-4) var(--sp-12); }
+.hm-fig { display: flex; flex-direction: column; gap: var(--sp-half); }
+.hm-fig-k { font-size: var(--fs-2xs); letter-spacing: 0.12em; text-transform: uppercase; color: var(--label); }
+.hm-fig-v { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; font-size: var(--fs-xl); line-height: 1.1; color: var(--ink-strong); }
+.hm-fig-v .u { font-size: 0.55em; font-weight: 400; color: var(--muted); margin-left: 0.15em; }
+.hm-fig.is-big .hm-fig-v { font-size: calc(var(--fs-xl) * 2); }
+/* "Since last time": a line per thing gained, with its picture; the new % on its own. */
+.hm-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.hm-item { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: var(--sp-3); align-items: center; padding: var(--sp-2) 0; border-bottom: 1px solid var(--inv-line); }
+.hm-item:last-child { border-bottom: 0; }
+.hm-item-art { width: 36px; height: 32px; display: grid; place-items: center; }
+.hm-item-art img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.hm-item-name { font-size: var(--fs-sm); color: var(--ink); min-width: 0; }
+.hm-item-name small { display: block; font-size: var(--fs-xs); color: var(--muted); }
+.hm-item-k { font-size: var(--fs-2xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+.hm-item-v { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-sm); color: var(--ink-2); white-space: nowrap; }
+.hm-empty { font-size: var(--fs-sm); color: var(--muted); margin: 0; }
+.hm-link { font-size: var(--fs-sm); color: var(--accent); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--accent-line); background: none; border: 0; padding: 0; cursor: pointer; font-family: var(--font-body); }
+.hm-link:hover { color: var(--accent-ink); }
+.hm-block { display: flex; flex-direction: column; gap: var(--sp-3); min-width: 0; }
+.hm-block .block-head { display: flex; align-items: baseline; gap: var(--sp-3); flex-wrap: wrap; margin: 0; }
+/* What's missing near your bench: small pictures, grey until found, each with its place. */
+.hm-near { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: var(--sp-2); }
+.hm-near span { display: flex; flex-direction: column; align-items: center; gap: var(--sp-1); font-size: var(--fs-2xs); color: var(--muted); text-align: center; line-height: 1.2; }
+.hm-near img { height: 28px; width: auto; max-width: 48px; object-fit: contain; filter: brightness(0.55) saturate(0.4); }
+.hm-shade { display: flex; gap: var(--sp-3); align-items: center; }
+.hm-shade img { width: 40px; height: auto; filter: brightness(0.25) contrast(1.4); }
+.hm-shade p { margin: 0; font-size: var(--fs-sm); color: var(--ink-2); }
+.hm-actions { display: flex; flex-wrap: wrap; gap: var(--sp-3); align-items: center; }
+
+/* ── A · The profile: the game's save slot, grown (like Partidas' rows, full size) ── */
+.hmA-card { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--sp-3) var(--sp-8); align-items: center;
+  padding: var(--sp-6) var(--sp-8); border: 1px solid var(--inv-line); background: linear-gradient(90deg, color-mix(in oklab, var(--area-l) 12%, transparent), transparent 60%); }
+.hmA-knight { width: 72px; height: auto; }
+.hmA-who { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; }
+.hmA-name { font-family: var(--font-display); font-size: var(--fs-lg); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-strong); }
+.hmA-pct { text-align: right; }
+.hmA-body { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: var(--sp-8) var(--sp-12); margin-top: var(--sp-8); }
+.hmA-side { display: flex; flex-direction: column; gap: var(--sp-8); }
+.hmA-figs { margin-top: var(--sp-6); justify-content: space-between; }
+
+/* ── B · The chronicle: the status on the left, every bench you've sat at on the right ── */
+.hmB { display: grid; grid-template-columns: minmax(0, 280px) minmax(0, 1fr); gap: var(--sp-8) var(--sp-12); align-items: start; }
+.hmB-side { position: sticky; top: calc(var(--sticky-h) + var(--sp-4)); display: flex; flex-direction: column; gap: var(--sp-6); }
+.hmB-side .hmB-figs { flex-direction: column; gap: var(--sp-4); }
+.hmB-log { position: relative; display: flex; flex-direction: column; gap: var(--sp-6); padding-left: var(--sp-6); border-left: 1px solid var(--inv-line); }
+.hmB-entry { position: relative; display: flex; flex-direction: column; gap: var(--sp-2); }
+.hmB-entry::before { content: ''; position: absolute; left: calc(-1 * var(--sp-6) - 5px); top: 0.5em; width: 9px; height: 9px; transform: rotate(45deg); background: var(--inv-bg); border: 1px solid var(--bracket); }
+.hmB-entry.is-now::before { background: var(--ink-strong); border-color: var(--ink-strong); }
+.hmB-where { font-family: var(--font-display); font-size: var(--fs-md); letter-spacing: 0.1em; text-transform: uppercase; color: var(--area-l, var(--ink)); }
+.hmB-chips { display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-4); }
+.hmB-chip { display: inline-flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-sm); color: var(--ink); }
+.hmB-chip img { height: 22px; width: auto; max-width: 30px; object-fit: contain; }
+.hmB-chip.is-pct { font-family: var(--font-num); color: var(--ink-2); }
+
+/* ── C · The bench: the game's area title card over its lamp, then three plates ── */
+.hmC-hero { position: relative; isolation: isolate; display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); text-align: center;
+  padding: var(--sp-8) var(--sp-4); margin: var(--sp-4) calc(-1 * var(--inv-pad)) 0; }
+.hmC-hero::before { content: ''; position: absolute; inset: 0; z-index: -1;
+  background: radial-gradient(ellipse 55% 80% at 50% 38%, var(--area-m), var(--area-d) 55%, transparent 80%); opacity: 0.7; }
+.hmC-sup { font-family: var(--font-display); font-size: var(--fs-sm); letter-spacing: 0.3em; text-transform: uppercase; color: var(--ink-2); }
+.hmC-area { font-family: var(--font-display); font-size: clamp(1.8rem, 5cqi, 3.2rem); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-strong); line-height: 1.1; margin: 0; }
+.hmC-knight { width: 64px; height: auto; margin: var(--sp-3) 0 var(--sp-1); filter: drop-shadow(0 0 18px color-mix(in oklab, var(--area-l) 60%, transparent)); }
+.hmC-figs { justify-content: center; margin-top: var(--sp-6); }
+.hmC-figs .hm-fig { align-items: center; }
+.hmC-cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-8) var(--sp-12); margin-top: var(--sp-12); padding-top: var(--sp-8); border-top: 1px solid var(--inv-line); }
+
+/* ── No game: the invitation ── */
+.hmI { max-width: 820px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--sp-8); }
+.hmI-lead { text-align: center; display: flex; flex-direction: column; gap: var(--sp-3); align-items: center; }
+.hmI-lead h3 { font-family: var(--font-display); font-size: var(--fs-xl); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-strong); margin: 0; }
+.hmI-lead p { margin: 0; max-width: 56ch; color: var(--ink-2); font-size: var(--fs-md); line-height: 1.5; }
+.hmI-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-6); counter-reset: st; }
+.hmI-steps li { display: block; counter-increment: st; font-size: var(--fs-sm); color: var(--ink-2); line-height: 1.45; }
+.hmI-steps li::before { content: counter(st); display: block; margin-bottom: var(--sp-2); font-family: var(--font-num); font-size: var(--fs-xl); font-weight: 700; color: var(--ink-strong); }
+.hmI-steps b { color: var(--ink); font-weight: 600; }
+.hmI-path { margin-top: var(--sp-2); display: flex; gap: var(--sp-2); align-items: center; padding: var(--sp-2) var(--sp-3); border: 1px solid var(--line-ctl); font-family: var(--font-num); font-size: var(--fs-xs); color: var(--ink-2); overflow-x: auto; white-space: nowrap; }
+.hmI-cta { display: flex; flex-direction: column; align-items: center; gap: var(--sp-3); }
+.hmI-cta label { font-size: var(--fs-sm); color: var(--ink-2); display: inline-flex; gap: var(--sp-2); align-items: center; }
+.hmI-or { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-6); border-top: 1px solid var(--inv-line); padding-top: var(--sp-6); }
+.hmI-or div { display: flex; flex-direction: column; gap: var(--sp-2); align-items: flex-start; }
+.hmI-or h4 { margin: 0; font-size: var(--fs-md); color: var(--ink); font-weight: 600; }
+.hmI-or p { margin: 0; font-size: var(--fs-sm); color: var(--muted); line-height: 1.45; }
+
+/* ── Phone ── */
+.mk-wrap.is-phone .gear-body { --inv-pad: var(--sp-4); }
+.mk-wrap.is-phone .hmA-card { grid-template-columns: auto minmax(0, 1fr); padding: var(--sp-4); }
+.mk-wrap.is-phone .hmA-pct { grid-column: 1 / -1; text-align: left; }
+.mk-wrap.is-phone .hmA-body, .mk-wrap.is-phone .hmB, .mk-wrap.is-phone .hmC-cols, .mk-wrap.is-phone .hmI-steps, .mk-wrap.is-phone .hmI-or { grid-template-columns: minmax(0, 1fr); }
+.mk-wrap.is-phone .hmB-side { position: static; }
+.mk-wrap.is-phone .hmB-side .hmB-figs { flex-direction: row; }
+.mk-wrap.is-phone .hm-figs { gap: var(--sp-3) var(--sp-6); }
+</style>
+</head>
+<body>
+<div class="page"><div class="shell">
+  <div class="mk-wrap" id="wrap">
+    <nav class="nav" id="nav"></nav>
+    <main class="screens" style="margin-top: var(--sp-6)"><section class="gear" id="screen" aria-label="Your game"></section></main>
+  </div>
+</div></div>
+<div class="mk-bar" id="mk-bar"></div>
+<script src="js/i18n.js"></script>
+<script src="js/data.js"></script>
+<script src="js/enemies.js"></script>
+<script src="js/journal.js"></script>
+<script src="js/pantheons.js"></script>
+<script src="js/hall.js"></script>
+<script src="js/hunter.js"></script>
+<script src="js/codec.js"></script>
+<script src="js/rooms.js"></script>
+<script src="js/collectibles.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/completion.js"></script>
+<script>
+'use strict';
+(() => {
+  const HK = globalThis.HK;
+  const D = HK.data, C = HK.codec, HJ = HK.hunter, J = HK.journal, F = HK.foes, P = HK.progress, CP = HK.completion, R = HK.rooms, CO = HK.collectibles;
+  const q = new URLSearchParams(location.search);
+  const opt = { v: q.get('v') || 'a', state: q.get('state') || 'live', game: q.get('game') || 'sample', lang: q.get('lang') || 'es', phone: q.get('w') === '390' };
+  const pick = (o) => (o ? o[opt.lang] || o.en || '' : '');
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const L = (es, en) => (opt.lang === 'es' ? es : en);
+  const nf = () => new Intl.NumberFormat(opt.lang === 'es' ? 'es-ES' : 'en-GB');
+  const num = (n) => nf().format(n);
+  const pctU = () => L(' %', '%');
+
+  /* ── The games: a sample one saved four times (a bench each), or yours ─────────────────── */
+  const load = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  const json = (k, d) => { try { return JSON.parse(load(k) || 'null') || d; } catch (e) { return d; } };
+  const MIN = 60 * 1000;
+  function sampleStep(i) {
+    // Each save adds what was won since the one before: the four benches of an evening.
+    const bosses = [['false-knight', 'gruz-mother', 'hornet-protector', 'brooding-mawlek', 'gorb', 'xero'],
+      ['mantis-lords', 'elder-hu'], ['soul-master', 'crawlid', 'vengefly'], ['dung-defender', 'broken-vessel']];
+    const charms = [['compass', 'swarm', 'stalwart', 'catcher', 'shaman', 'eater', 'dashmaster', 'fury', 'fheart', 'steady', 'quickslash', 'grubsong', 'baldur'],
+      ['longnail', 'pride'], ['twister'], ['crest']];
+    const found = [['grub-crossroads-acid', 'grub-crossroads-center', 'mask-shard-5-grubs', 'vessel-fragment-crossroads', 'crossroads-map', 'crossroads-stag', 'whispering-root-crossroads'],
+      ['grub-city-of-tears-left', 'city-of-tears-map'], ['grub-soul-sanctum', 'hallownest-seal-soul-sanctum', 'vessel-fragment-city'], ['simple-key-city', 'wanderers-journal-city-storerooms', 'city-storerooms-stag']];
+    const ids = [['mantis-claw', 'dream-awakened'], ['monarch-wings'], [], ['crystal-heart']];
+    const benches = ['Crossroads_47', 'Fungus2_13', 'Ruins1_31', 'Ruins1_29'];
+    const upto = (a) => a.slice(0, i + 1).flat();
+    const book = {}; for (const id of upto(bosses)) book[id] = 0;
+    return {
+      build: C.normalize({ nail: [1, 2, 2, 2][i], masks: [6, 6, 7, 7][i], vessels: [1, 1, 1, 2][i], notches: [5, 5, 6, 6][i],
+        spells: { vs: 1, dd: i >= 2 ? 1 : 0, hw: 0 }, arts: { cyclone: true, dash: false, great: i >= 1 }, charms: [], dream: true, cloak: 1, grimm: 0 }),
+      owned: upto(charms), book: HJ.normalize(book),
+      progress: P.normalize({ ids: upto(ids), found: upto(found), bench: benches[i],
+        shade: i === 3 ? { scene: 'Deepnest_16', geo: 1240, x: 0, y: 0 } : null }),
+      meta: { time: 38 * 3600 + (i * 22 + 6) * 60, geo: [612, 1406, 380, 1830][i], saved: Date.now() - [165, 118, 61, 12][i] * MIN },
+    };
+  }
+  function mine() {
+    const b = load('hollow.build');
+    return { build: b ? C.decode(b) : C.normalize(C.PRESETS.max), owned: json('hollow.owned', C.OWN_MAX), book: HJ.normalize(json('hollow.journal', {})),
+      progress: P.normalize(json('hollow.progress', {})), meta: { time: 0, geo: 0, saved: Date.now() - 12 * MIN } };
+  }
+  const saves = () => (opt.game === 'mine' ? [mine()] : [0, 1, 2, 3].map(sampleStep));
+
+  /* ── What changed between two saves (→ js/changes.js, pure, no DOM or language) ────────── */
+  function diff(a, b) {
+    const out = [];
+    if (!a) return out;
+    for (const id of Object.keys(b.book)) if (!(id in a.book)) out.push({ kind: 'journal', id });
+    for (const id of b.owned) if (!a.owned.includes(id)) out.push({ kind: 'charm', id });
+    for (const id of b.progress.ids) if (!a.progress.ids.includes(id)) out.push({ kind: 'item', id });
+    for (const k of ['masks', 'vessels', 'notches', 'nail']) if (b.build[k] > a.build[k]) out.push({ kind: 'upgrade', id: k, to: b.build[k] });
+    for (const id of b.progress.found) if (!a.progress.found.includes(id)) out.push({ kind: 'found', id });
+    const pa = CP.count(a).total, pb = CP.count(b).total;
+    if (pb > pa) out.push({ kind: 'pct', from: pa, to: pb });
+    return out;
+  }
+
+  /* ── Names and pictures ── */
+  const bookName = (id) => { const r = HJ.ROW[id]; return (r && r.name) || (F.FOE_BY_ID[id] || {}).name || { es: id, en: id }; };
+  const ITEM = CO.ITEMS.reduce((m, it) => (m[it.id] = it, m), {});
+  const placeName = (scene) => pick(R.PLACES[R.placeOf(scene)]) || pick(R.AREAS[R.areaOf(scene)]);
+  const UPG = { masks: [L('Máscaras', 'Masks'), D.art('hud', 'mask')], vessels: [L('Vasijas de alma', 'Soul vessels'), D.art('hud', 'vessel')],
+    notches: [L('Muescas de amuletos', 'Charm notches'), D.art('hud', 'notch')], nail: [L('Aguijón', 'Nail'), null] };
+  function meta(c, g) {
+    if (c.kind === 'journal') return { name: pick(bookName(c.id)), k: L('Diario', 'Journal'), art: D.art('journal', c.id) };
+    if (c.kind === 'charm') return { name: pick(D.CHARM_BY_ID[c.id]), k: L('Amuleto', 'Charm'), art: `assets/charms/${c.id}.png` };
+    if (c.kind === 'item') {
+      const eq = [...D.EQUIPMENT, ...D.KEY_ITEMS].find((x) => x.id === c.id);
+      return { name: eq ? pick(eq) : c.id, k: L('Equipo', 'Equipment'), art: eq ? D.art('items', c.id) : '' };
+    }
+    if (c.kind === 'upgrade') {
+      const [name, art] = UPG[c.id];
+      return c.id === 'nail' ? { name: pick(D.NAILS[c.to]), k: L('Mejora', 'Upgrade'), art: D.art('nails', c.to) }
+        : { name, k: L('Mejora', 'Upgrade'), art, v: num(c.to) };
+    }
+    if (c.kind === 'found') {
+      const it = ITEM[c.id], kind = D.COLLECTIBLE_KINDS[it.kind];
+      return { name: pick(kind), sub: placeName(it.scene), k: '', art: D.art(kind.art[0], kind.art[1]) };
+    }
+    return null;
+  }
+
+  /* ── Shared pieces ── */
+  const rule = '<svg class="rule" width="220" height="12" viewBox="0 0 220 12" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><path d="M0 6 H92"/><path d="M128 6 H220"/><path d="M110 1 L116 6 L110 11 L104 6 Z"/></svg>';
+  const brackets = '<span class="bk tl"></span><span class="bk tr"></span><span class="bk bl"></span><span class="bk br"></span>';
+  const head = (title) => `<header class="inv-head"><h2 class="sec-title screen-title">${esc(title)}</h2>${rule}</header>`;
+  const areaVars = (scene) => { const a = R.areaOf(scene) || 'crossroads', lt = (R.AREAS[a] || {}).light || a;
+    return `--area-l: var(--area-${lt}-light); --area-m: var(--area-${lt}-mid); --area-d: var(--area-${lt}-deep);`; };
+  const ago = (ms) => { const m = Math.max(1, Math.round((Date.now() - ms) / MIN));
+    return m < 60 ? L(`hace ${m} min`, `${m} min ago`) : L(`hace ${Math.round(m / 60)} h`, `${Math.round(m / 60)} h ago`); };
+  const clock = (ms) => new Date(ms).toLocaleTimeString(opt.lang === 'es' ? 'es-ES' : 'en-GB', { hour: '2-digit', minute: '2-digit' });
+  const played = (s) => `${num(Math.floor(s / 3600))}<span class="u">h</span> ${num(Math.floor(s / 60) % 60)}<span class="u">min</span>`;
+  const fig = (k, v, big) => `<div class="hm-fig${big ? ' is-big' : ''}"><span class="hm-fig-k">${esc(k)}</span><span class="hm-fig-v">${v}</span></div>`;
+  function liveLine() {
+    const s = opt.state;
+    if (s === 'manual') return `<span class="hm-live">${L('Llevada a mano', 'Kept by hand')}</span>`;
+    const paused = s === 'paused';
+    return `<span class="hm-live${paused ? ' is-paused' : ''}"><i class="nav-live ${paused ? 'is-paused' : 'is-live'}"></i>${paused ? L('En pausa', 'Paused') : L('En vivo', 'Live')}</span>`;
+  }
+  function whenLine(g) {
+    const area = pick(R.AREAS[R.areaOf(g.progress.bench)]) || '?';
+    if (opt.state === 'manual') return `<span class="hm-when">${L('Importada del juego el martes; desde entonces, marcada aquí', 'Imported from the game on Tuesday; marked here since')}</span>`;
+    return `<span class="hm-when">${L('Último banco', 'Last bench')}: <b>${esc(area)}</b> · ${esc(ago(g.meta.saved))}</span>`;
+  }
+  const liveAction = () => (opt.state === 'paused' ? `<button type="button" class="btn btn-primary">${L('Reanudar', 'Resume')}</button>`
+    : opt.state === 'manual' ? `<button type="button" class="text-btn">${L('Seguir el archivo del juego', 'Follow the game\'s file')}</button>` : '');
+  const figs = (g, cls = '') => {
+    const r = CP.count(g);
+    return `<div class="hm-figs ${cls}">${fig(L('Finalización', 'Completion'), `${num(r.total)}<span class="u">${pctU()} / 112</span>`, cls !== 'hmB-figs')}
+      ${fig(L('Tiempo', 'Time'), played(g.meta.time))}${fig('Geo', num(g.meta.geo))}
+      ${fig(L('Diario', 'Journal'), `${num(HJ.counts ? Object.keys(g.book).length : 0)}<span class="u">/ 146</span>`)}</div>`;
+  };
+  const changesList = (list) => (list.length ? `<ul class="hm-list">${list.map((c) => {
+    if (c.kind === 'pct') return `<li class="hm-item"><span class="hm-item-art"></span><span class="hm-item-name">${L('Finalización', 'Completion')}</span><span class="hm-item-v">${num(c.from)} → ${num(c.to)}${pctU()}</span></li>`;
+    const m = meta(c);
+    return `<li class="hm-item"><span class="hm-item-art">${m.art ? `<img src="${m.art}" alt="">` : ''}</span>
+      <span class="hm-item-name">${esc(m.name)}${m.sub ? `<small>${esc(m.sub)}</small>` : ''}</span>
+      ${m.v ? `<span class="hm-item-v">${esc(m.v)}</span>` : `<span class="hm-item-k">${esc(m.k)}</span>`}</li>`;
+  }).join('')}</ul>` : `<p class="hm-empty">${L('Aún nada: en cuanto el juego vuelva a guardar (al sentarte en un banco), aquí verás lo que hayas conseguido.', 'Nothing yet: as soon as the game saves again (when you sit on a bench), what you got shows here.')}</p>`);
+  function nearBlock(g) {
+    const area = R.areaOf(g.progress.bench);
+    const left = CO.ITEMS.filter((it) => R.areaOf(it.scene) === area && !g.progress.found.includes(it.id));
+    const shown = left.slice(0, 12);
+    return `<section class="hm-block"><h3 class="block-head">${L('Te falta cerca', 'Missing nearby')}<span class="block-note">${esc(pick(R.AREAS[area]) || '')} · ${num(left.length)}</span></h3>
+      <div class="hm-near">${shown.map((it) => { const k = D.COLLECTIBLE_KINDS[it.kind];
+        return `<span title="${esc(pick(k))}"><img src="${D.art(k.art[0], k.art[1])}" alt="">${esc(placeName(it.scene))}</span>`; }).join('')}</div>
+      <button type="button" class="hm-link">${L('Verlo en el mapa', 'See it on the map')} →</button></section>`;
+  }
+  function shadeBlock(g) {
+    const sh = g.progress.shade;
+    return `<section class="hm-block"><h3 class="block-head">${L('Tu sombra', 'Your shade')}</h3>
+      ${sh ? `<div class="hm-shade"><img src="${D.art('hud', 'knight')}" alt=""><p>${L(`Te espera en <b>${esc(pick(R.AREAS[R.areaOf(sh.scene)]))}</b> con ${num(sh.geo)} geo.`, `It waits in <b>${esc(pick(R.AREAS[R.areaOf(sh.scene)]))}</b> with ${num(sh.geo)} geo.`)}</p></div>
+        <button type="button" class="hm-link">${L('Dónde, en el mapa', 'Where, on the map')} →</button>`
+        : `<p class="hm-empty">${L('No tienes sombra esperándote.', 'No shade is waiting for you.')}</p>`}</section>`;
+  }
+
+  /* A · The profile: the save slot grown, then two columns. */
+  function variantA(list) {
+    const g = list[list.length - 1], ch = diff(list[list.length - 2], g), r = CP.count(g);
+    return `<div class="hmA-card" style="${areaVars(g.progress.bench)}">
+        <img class="hmA-knight" src="${D.art('hud', 'knight')}" alt="">
+        <div class="hmA-who"><span class="hmA-name">${L('Partida', 'Save')} 2</span>${liveLine()}${whenLine(g)}</div>
+        <div class="hmA-pct">${fig(L('Finalización', 'Completion'), `${num(r.total)}<span class="u">${pctU()}</span>`, true)}${liveAction()}</div>
+      </div>
+      <div class="hm-figs hmA-figs">${fig(L('Tiempo', 'Time'), played(g.meta.time))}${fig('Geo', num(g.meta.geo))}
+        ${fig(L('Máscaras', 'Masks'), num(g.build.masks))}${fig(L('Vasijas', 'Vessels'), num(g.build.vessels))}${fig(L('Amuletos', 'Charms'), `${num(g.owned.length)}<span class="u">/ 40</span>`)}</div>
+      <div class="hmA-body">
+        <section class="hm-block"><h3 class="block-head">${L('Desde la última vez', 'Since last time')}<span class="block-note">${list.length > 1 ? esc(L('desde el banco de las ', 'since the bench at ') + clock(list[list.length - 2].meta.saved)) : ''}</span></h3>${changesList(ch)}</section>
+        <div class="hmA-side">${shadeBlock(g)}${nearBlock(g)}</div>
+      </div>`;
+  }
+  /* B · The chronicle: every bench of the session, newest first, what each one brought. */
+  function variantB(list) {
+    const g = list[list.length - 1];
+    const entries = list.map((s, i) => ({ s, ch: diff(list[i - 1], s) })).reverse();
+    const chip = (c) => {
+      if (c.kind === 'pct') return `<span class="hmB-chip is-pct">+${num(c.to - c.from)}${pctU()}</span>`;
+      const m = meta(c);
+      return `<span class="hmB-chip">${m.art ? `<img src="${m.art}" alt="">` : ''}${esc(m.name)}${m.v ? ` ${esc(m.v)}` : ''}</span>`;
+    };
+    const log = entries.map(({ s, ch }, i) => `<div class="hmB-entry${i === 0 ? ' is-now' : ''}" style="${areaVars(s.progress.bench)}">
+        <span class="hm-when">${esc(clock(s.meta.saved))}${i === 0 ? ` · ${esc(ago(s.meta.saved))}` : ''}</span>
+        <span class="hmB-where">${esc(pick(R.AREAS[R.areaOf(s.progress.bench)]) || '?')}</span>
+        ${ch.length ? `<div class="hmB-chips">${ch.map(chip).join('')}</div>` : `<p class="hm-empty">${i === entries.length - 1 ? L('Donde empezó a seguirse la partida.', 'Where the game started being followed.') : L('Nada nuevo.', 'Nothing new.')}</p>`}
+      </div>`).join('');
+    return `<div class="hmB"><aside class="hmB-side"><div class="hmA-who"><span class="hmA-name">${L('Partida', 'Save')} 2</span>${liveLine()}${liveAction()}</div>
+        ${figs(g, 'hmB-figs')}${shadeBlock(g)}</aside>
+      <div class="hm-block"><h3 class="block-head">${L('Hoy', 'Today')}<span class="block-note">${L('cada banco en el que te has sentado', 'every bench you sat at')}</span></h3><div class="hmB-log">${log}</div>
+        ${nearBlock(g)}</div></div>`;
+  }
+  /* C · The bench: the area's title card, as the game shows it on entering, and three plates. */
+  function variantC(list) {
+    const g = list[list.length - 1], ch = diff(list[list.length - 2], g), area = R.areaOf(g.progress.bench), r = CP.count(g);
+    return `<div class="hmC-hero" style="${areaVars(g.progress.bench)}">
+        <span class="hmC-sup">${L('Descansas en', 'Resting at')}</span><h3 class="hmC-area">${esc(pick(R.AREAS[area]) || '?')}</h3>
+        <img class="hmC-knight" src="${D.art('hud', 'knight')}" alt="">
+        ${liveLine()}<span class="hm-when">${L('Partida', 'Save')} 2 · ${esc(ago(g.meta.saved))}</span>${liveAction()}
+        <div class="hm-figs hmC-figs">${fig(L('Finalización', 'Completion'), `${num(r.total)}<span class="u">${pctU()} / 112</span>`, true)}
+          ${fig(L('Tiempo', 'Time'), played(g.meta.time))}${fig('Geo', num(g.meta.geo))}${fig(L('Amuletos', 'Charms'), `${num(g.owned.length)}<span class="u">/ 40</span>`)}</div>
+      </div>
+      <div class="hmC-cols">
+        <section class="hm-block"><h3 class="block-head">${L('Desde la última vez', 'Since last time')}</h3>${changesList(ch)}</section>
+        ${shadeBlock(g)}${nearBlock(g)}
+      </div>`;
+  }
+  /* No game (free mode, first visit) or a phone: the invitation. The same in the three. */
+  function invite() {
+    const phone = opt.state === 'phone';
+    const steps = phone
+      ? `<li><b>${L('Desde el ordenador', 'From a computer')}</b>${L(', con Chrome o Edge, la web lee tu partida y la sigue en vivo.', ', with Chrome or Edge, the site reads your game and follows it live.')}</li>
+         <li><b>${L('En el móvil', 'On a phone')}</b>${L(' puedes importar el archivo si lo tienes a mano (una vez).', ' you can import the file if you have it (once).')}</li>
+         <li><b>${L('O llévala a mano', 'Or keep it by hand')}</b>${L(': marca jefes, amuletos y coleccionables al conseguirlos.', ': mark bosses, charms and collectibles as you get them.')}</li>`
+      : `<li><b>${L('Busca tu partida', 'Find your save')}</b> ${L('en la carpeta del juego: user1.dat es la Partida 1.', 'in the game\'s folder: user1.dat is Save 1.')}
+           <span class="hmI-path">%USERPROFILE%\\AppData\\LocalLow\\Team Cherry\\Hollow Knight</span></li>
+         <li><b>${L('Impórtala', 'Import it')}</b>${L(': 112 %, mapa, Diario, Salón, amuletos y build, como en el juego.', ': 112%, map, Journal, Hall, charms and build, as in the game.')}</li>
+         <li><b>${L('Juega', 'Play')}</b>${L(': cada vez que te sientes en un banco, la web se pone al día sola.', ': every time you sit on a bench, the site catches up by itself.')}</li>`;
+    return `<div class="hmI">
+      <div class="hmI-lead"><img src="${D.art('hud', 'knight')}" alt="" width="56"><h3>${L('Conecta tu partida', 'Connect your game')}</h3>
+        <p>${L('Tu partida real, aquí: lo que te falta para el 112 %, dónde está en el mapa, tu sombra, el Diario del Cazador… y se actualiza mientras juegas.', 'Your real game, here: what you\'re missing for 112%, where it is on the map, your shade, the Hunter\'s Journal… and it updates while you play.')}</p></div>
+      <ol class="hmI-steps">${steps}</ol>
+      ${phone ? '' : `<div class="hmI-cta"><button type="button" class="btn btn-primary">${L('Importar del juego', 'Import from the game')}</button>
+        <label><input type="checkbox" checked> ${L('Seguir el archivo: se actualiza en cada banco', 'Follow the file: it updates at every bench')}</label></div>`}
+      <div class="hmI-or"><div><h4>${L('Llevarla a mano', 'Keep it by hand')}</h4><p>${L('Elige una partida vacía y marca lo que consigas en Progreso, Mapa y Diario.', 'Pick an empty save and mark what you get in Progress, Map and Journal.')}</p><button type="button" class="text-btn">${L('Partida nueva', 'New game')}</button></div>
+        <div><h4>${L('Solo probar builds', 'Just try builds')}</h4><p>${L('Todo desbloqueado: cómo cambia cada stat con cada amuleto, y cuántos golpes aguanta cada jefe.', 'Everything unlocked: how every stat changes with each charm, and how many hits each boss takes.')}</p><button type="button" class="text-btn">${L('Abrir Amuletos', 'Open Charms')} →</button></div></div>
+    </div>`;
+  }
+
+  /* ── The bar in two groups ── */
+  function paintNav(list) {
+    const g = list[list.length - 1], noGame = opt.state === 'free' || opt.state === 'phone';
+    const dot = noGame || opt.state === 'manual' ? '' : `<i class="nav-live ${opt.state === 'paused' ? 'is-paused' : 'is-live'}"></i>`;
+    const tab = (label, extra, on) => `<a class="nav-tab" href="javascript:void 0"${on ? ' aria-current="page"' : ''}>${esc(label)}${extra ? `<span class="nav-num">${extra}</span>` : ''}</a>`;
+    document.getElementById('nav').innerHTML = `<div class="nav-tabs">
+      ${tab(L('Partida', 'Your game'), dot, true)}${tab(L('Progreso', 'Progress'), noGame ? '' : num(CP.count(g).total) + pctU())}${tab(L('Mapa', 'Map'))}
+      ${tab(L('Diario', 'Journal'), noGame ? '' : num(Object.keys(g.book).length) + '/146')}${tab(L('Salón', 'Hall'))}
+      <span class="nav-sep" aria-hidden="true"></span>${tab(L('Amuletos', 'Charms'))}${tab(L('Combate', 'Combat'))}</div>`;
+  }
+
+  const screen = document.getElementById('screen');
+  function paint() {
+    document.documentElement.lang = opt.lang;
+    document.getElementById('wrap').classList.toggle('is-phone', opt.phone);
+    const list = saves();
+    paintNav(list);
+    const noGame = opt.state === 'free' || opt.state === 'phone';
+    const body = noGame ? invite() : opt.v === 'b' ? variantB(list) : opt.v === 'c' ? variantC(list) : variantA(list);
+    screen.innerHTML = `<div class="gear-body hm">${brackets}${head(L('Partida', 'Your game'))}${body}
+      ${noGame ? '' : `<div class="mk-knight">${L('Debajo: «Tu Caballero», el Inventario de hoy (aguijón, cuerpo, artes, hechizos, equipo, objetos)', 'Below: "Your Knight", today\'s Inventory (nail, body, arts, spells, equipment, items)')}</div>`}</div>`;
+    paintBar();
+  }
+
+  const bar = document.getElementById('mk-bar');
+  function paintBar() {
+    const b = (k, v, label) => `<button type="button" data-k="${k}" data-v="${v}" aria-pressed="${String(opt[k]) === String(v)}">${label}</button>`;
+    bar.innerHTML = `<b>Variante</b>${b('v', 'a', 'A · Perfil')}${b('v', 'b', 'B · Crónica')}${b('v', 'c', 'C · Banco')}<span class="mk-sep"></span>
+      <b>Estado</b>${b('state', 'live', 'En vivo')}${b('state', 'paused', 'En pausa')}${b('state', 'manual', 'A mano')}${b('state', 'free', 'Sin partida')}${b('state', 'phone', 'Móvil sin partida')}<span class="mk-sep"></span>
+      <b>Partida</b>${b('game', 'sample', 'Ejemplo')}${b('game', 'mine', 'La tuya')}<span class="mk-sep"></span>
+      ${b('lang', 'es', 'ES')}${b('lang', 'en', 'EN')}<span class="mk-sep"></span>${b('phone', 'false', '1280')}${b('phone', 'true', '390')}`;
+  }
+  bar.addEventListener('click', (e) => {
+    const x = e.target.closest('[data-k]');
+    if (!x) return;
+    const k = x.dataset.k, v = x.dataset.v;
+    opt[k] = k === 'phone' ? v === 'true' : v;
+    paint();
+  });
+  paint();
+})();
+</script>
+</body>
+</html>

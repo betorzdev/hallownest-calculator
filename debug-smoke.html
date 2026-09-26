@@ -43,18 +43,18 @@ f.addEventListener('load', async () => {
   w.prompt = (msg, url) => { copied = url || ''; return null; };
   try { Object.defineProperty(w.navigator, 'clipboard', { value: { writeText: (url) => { copied = url; return Promise.resolve(); } }, configurable: true }); } catch (e) { /* no clipboard */ }
   const goto = async (v) => { await click('#nav [data-act="view"][data-value="' + v + '"]'); await wait(40); };
-  const visible = () => ['panel', 'gear', 'fight', 'hj'].filter((id) => !q('#' + id).hidden).join(',');
+  const visible = () => ['home', 'panel', 'gear', 'fight', 'hj', 'pg'].filter((id) => !q('#' + id).hidden).join(',');
   try {
     ok('loads the state from the URL', txt('.hero-num') === '32', 'hero=' + txt('.hero-num'));
     ok('in English by default', txt('.title') === 'Hallownest Calculator' && d.documentElement.lang === 'en', txt('.title'));
     ok('the selector puts English first', [...d.querySelectorAll('[data-act="lang"]')].map((n) => n.dataset.value).join(',') === 'en,es');
-    ok('the screen labels follow the language', q('#gear').getAttribute('aria-label') === 'Inventory'
-       && txt('#nav [data-value="game"]') === 'Inventory', q('#gear').getAttribute('aria-label'));
+    ok('the screen labels follow the language', q('#home').getAttribute('aria-label') === 'Your game'
+       && txt('#nav [data-value="home"] .nav-lbl') === 'Your game' && txt('#nav-tools') === 'Tools', q('#home').getAttribute('aria-label'));
     await click('[data-act="lang"][data-value="es"]');
     ok('title in Spanish', txt('.title').startsWith('Calculadora'));
     ok('Spanish goes into the URL', w.location.hash.includes('lang=es'), w.location.hash);
-    ok('and so do the labels', q('#gear').getAttribute('aria-label') === 'Inventario'
-       && txt('#nav [data-value="game"]') === 'Inventario', q('#gear').getAttribute('aria-label'));
+    ok('and so do the labels', q('#home').getAttribute('aria-label') === 'Partida'
+       && txt('#nav [data-value="home"] .nav-lbl') === 'Partida' && txt('#nav-tools') === 'Herramientas', q('#home').getAttribute('aria-label'));
     ok('opens on Charms, with its tab marked and no "view=" in the URL', visible() === 'panel'
        && q('#nav [aria-current="page"]').dataset.value === 'charms' && w.location.hash.indexOf('view=') < 0, visible());
     ok('no top bar, floating button or collapsibles', !q('#topbar') && !q('#hj-fab') && !q('[data-act="gear"]') && !q('[data-act="fightOpen"]'));
@@ -309,11 +309,13 @@ f.addEventListener('load', async () => {
     ok('no flash when loading an overcharmed link', d.getElementById('overcharm-fx').hidden && !!q('.banner'),
        'notice: ' + (q('.banner') ? 'yes' : 'no'));
 
-    /* ── The screens: Charms, Your game and Combat ──────────────────────── */
+    /* ── The screens: Your game (with the Inventory under it), Charms and Combat ── */
     ok('on Charms, overcharm is flagged in the band and not at the top', !!q('#panel .banner.is-band') && !q('#banner .banner:not(.is-hint)'));
-    await goto('game');
-    ok('Your game is its own screen and goes in the URL', visible() === 'gear' && w.location.hash.indexOf('view=game') >= 0
-       && q('#nav [aria-current="page"]').dataset.value === 'game', visible() + ' · ' + w.location.hash);
+    await goto('home');
+    ok('Your game is its own screen, with the Inventory under it, and goes in the URL', visible() === 'home,gear' && w.location.hash.indexOf('view=home') >= 0
+       && q('#nav [aria-current="page"]').dataset.value === 'home', visible() + ' · ' + w.location.hash);
+    ok('with no game chosen, it invites you to connect yours', !!q('#home [data-act="homeImport"]') && !!q('#home [data-act="homeNew"]'));
+    ok('on Your game the mini-bar hides: it belongs to the tools', q('#minihud').hidden);
     ok('with its two starting points', !!q('#gear [data-act="preset"][data-value="base"]') && !!q('#gear [data-act="preset"][data-value="max"]'));
     ok('and there overcharm is flagged at the top', !!q('#banner .banner:not(.is-run):not(.is-hint)'));
     // Body with the game's pieces: tapping the dark 7th mask lights up to it (7); tapping the lit
@@ -329,8 +331,8 @@ f.addEventListener('load', async () => {
     ok('spell levels are chosen by their own artwork', d.querySelectorAll('#gear .lvlpick .lvl img').length >= 6);
     await click('#gear .pieces.is-masks .piece:nth-child(9)');
     await click('#gear [data-act="seg"][data-key="nail"][data-value="2"]');
-    ok("changing the nail doesn't change screen", visible() === 'gear' && w.location.hash.indexOf('nail=2') >= 0
-       && w.location.hash.indexOf('view=game') >= 0, w.location.hash);
+    ok("changing the nail doesn't change screen", visible() === 'home,gear' && w.location.hash.indexOf('nail=2') >= 0
+       && w.location.hash.indexOf('view=home') >= 0, w.location.hash);
     await click('[data-act="share"]');
     ok('Share copies the build without the screen', copied.indexOf('nail=2') >= 0 && copied.indexOf('view=') < 0, copied);
     w.history.back();
@@ -339,17 +341,21 @@ f.addEventListener('load', async () => {
        && w.location.hash.indexOf('view=') < 0, visible() + ' · ' + w.location.hash);
     w.history.forward();
     await wait(200);
-    ok('and Forward, to Your game', visible() === 'gear' && w.location.hash.indexOf('nail=2') >= 0, visible() + ' · ' + w.location.hash);
+    ok('and Forward, to Your game', visible() === 'home,gear' && w.location.hash.indexOf('nail=2') >= 0, visible() + ' · ' + w.location.hash);
     await goto('fight');
     // With an enemy in front, the mini-bar is the fight's scoreboard; without one, the build's figures.
     ok('Combat, on its own screen and with the mini-bar (the scoreboard if there is an enemy; if not, damage, DPS…)', visible() === 'fight' && !q('#minihud').hidden
        && (q('#minihud').classList.contains('is-fight') ? !!q('#minihud .mini-foe .fbar') : !!q('#minihud .mini-lbl'))
        && w.location.hash.indexOf('view=fight') >= 0, visible() + ' · ' + q('#minihud').className);
-    ok('the combat tabs are its header', !!q('#fight .fight-body > .fight-head [data-act="fightTab"]'));
+    ok('Combat is the arena alone: its title, no tabs (the Hall and the Pantheons are Godhome)', !!q('#fight .fight-body > .fight-head .screen-title') && !q('#fight [data-act="fightTab"]'));
     await click('.masthead a.brand');
-    ok("the site's title leads to Charms, the start screen", visible() === 'panel' && w.location.hash.indexOf('view=') < 0
+    ok("the site's title leads to Your game, the start screen", visible() === 'home,gear' && w.location.hash.indexOf('view=home') >= 0
        && q('.masthead a.brand h1.title') !== null, visible() + ' · ' + w.location.hash);
+    await goto('charms');
     ok('on Charms the mini-bar stays', visible() === 'panel' && !q('#minihud').hidden);
+    w.location.hash = '#view=game';
+    await wait(150);
+    ok('an old "#view=game" link opens Your game', visible() === 'home,gear', visible());
     w.location.hash = '#view=fight';
     await wait(150);
     ok('a bare "#view=fight" changes the screen and doesn\'t wipe the build', visible() === 'fight' && w.location.hash.indexOf('nail=2') >= 0,
@@ -859,9 +865,9 @@ f.addEventListener('load', async () => {
     await pick('pure-vessel');
     await click('[data-act="picker"]');
     ok('the Journal page is read-only: no "See their statue"', !q('.jr-statue') && !q('.journal .jr-page button'));
-    await click('[data-act="fightTab"][data-value="hall"]');
+    await goto('godhome'); await click('[data-act="fightTab"][data-value="hall"]');
     await click('.ped-btn[data-id="pure-vessel"]');
-    ok("the Hall opens the chosen statue's plaque", q('[data-act="fightTab"][data-value="hall"]').getAttribute('aria-selected') === 'true'
+    ok("the Hall opens the chosen statue's plaque", q('#nav [aria-current="page"]').dataset.value === 'godhome' && w.location.hash.indexOf('view=godhome') >= 0
        && txt('.hall-plaque .jr-title') === nameOf('pure-vessel'), txt('.hall-plaque .jr-title'));
     // 35 pedestals, 9 of them double; the last pair (Grimm) is drawn as two singles, so 36 and 8.
     ok('35 pedestals, 9 of them double, and 44 statues', d.querySelectorAll('.ped').length === 36
@@ -970,8 +976,8 @@ f.addEventListener('load', async () => {
     ok('and its own button opens and closes it', !q('.tablet') && !!q('.hall-grid') && d.activeElement === tabletBtn());
     // It's a view of the Hall, not a preference: whoever leaves it comes back to the statues.
     await click('[data-act="tablet"]');
-    await click('[data-act="fightTab"][data-value="combat"]');
-    await click('[data-act="fightTab"][data-value="hall"]');
+    await goto('fight');
+    await goto('godhome'); await click('[data-act="fightTab"][data-value="hall"]');
     ok('leaving for another tab closes it: on coming back, the statues', !q('.tablet') && !!q('.hall-grid'));
     // The count is a filter: it dims the ones already beaten at that difficulty.
     await click('.hall-count-btn[data-value="at"]');
@@ -1022,7 +1028,7 @@ f.addEventListener('load', async () => {
     ok('a lever pedestal leads to its other version', txt('.hall-other').indexOf(nameOf('sisters-of-battle')) >= 0, txt('.hall-other'));
     await click('.hall-other');
     ok('and the lever switches statue', txt('.hall-plaque .jr-title') === nameOf('sisters-of-battle'), txt('.hall-plaque .jr-title'));
-    await click('[data-act="fightTab"][data-value="combat"]');
+    await goto('fight');
     ok('going back to Combat leaves the fight out in the world, on Normal', !q('.hall') && firstDmg() !== '☠');
 
     /* ── Your game's Hunter's Journal: the fourth screen ─────────────────── */
@@ -1037,7 +1043,7 @@ f.addEventListener('load', async () => {
     ok('the Journal is one more screen: in the URL, with its tab marked and no dialog', visible() === 'hj'
        && w.location.hash.indexOf('view=journal') >= 0 && q('#nav [aria-current="page"]').dataset.value === 'journal'
        && txt('#hj-title') === 'Diario del Cazador' && !q('dialog.hj') && !q('.hj-exit'), visible() + ' · ' + txt('#hj-title'));
-    ok('with the bar and the mini-bar in view', !q('#nav').hidden && !q('#minihud').hidden);
+    ok('with the bar in view, and not the mini-bar: it belongs to the tools', !q('#nav').hidden && q('#minihud').hidden);
     ok("the game's 168 entries, 166 shadowed", hjRows() === 168 && d.querySelectorAll('.hj-row.is-unseen').length === 166,
        hjRows() + ' rows, ' + d.querySelectorAll('.hj-row.is-unseen').length + ' shadowed');
     ok("Crawlid and the Shade come complete, with the game's frame", !!q('.hj-row[data-id="crawlid"] .hj-frame') && !!q('.hj-row[data-id="shade"] .hj-frame'));
@@ -1162,7 +1168,7 @@ f.addEventListener('load', async () => {
     ok('Back returns to the previous screen', visible() === 'fight' && w.location.hash.indexOf('view=fight') >= 0, visible() + ' · ' + w.location.hash);
 
     /* ── Pantheons: the Master's from end to end ────────────────────────── */
-    w.location.hash = '#v=1&nail=4&masks=9&vessels=3&notches=11&spells=222&arts=111&charms=ustrength,quickslash&view=fight';
+    w.location.hash = '#v=1&nail=4&masks=9&vessels=3&notches=11&spells=222&arts=111&charms=ustrength,quickslash&view=godhome';
     await wait(140);
     await click('[data-act="fightTab"][data-value="pantheon"]');
     ok('the Pantheons tab shows all five', d.querySelectorAll('.pcard').length === 5, d.querySelectorAll('.pcard').length + ' panteones');
@@ -1230,12 +1236,12 @@ f.addEventListener('load', async () => {
     await wait(140);
     ok("nor a link: the pantheon's stay", equippedIds() === lockedIds && w.location.hash.indexOf('longnail') < 0
        && txt('#toast').indexOf('enlace') >= 0, w.location.hash);
-    await click('[data-act="fightTab"][data-value="hall"]');
+    await goto('godhome'); await click('[data-act="fightTab"][data-value="hall"]');
     ok('nor from the Hall of Gods', !!q('#banner .banner.is-run:not(.is-hint)') && q('#panel .quick').classList.contains('is-locked'));
-    await click('[data-act="fightTab"][data-value="combat"]');
+    await goto('fight');
     ok('nor from the Combat tab', !!q('#banner .banner.is-run:not(.is-hint)') && q('#panel .quick').classList.contains('is-locked'));
     await click('[data-act="runLockGo"]');
-    ok('"Go to the pantheon" goes back to the room', visible() === 'fight' && w.location.hash.indexOf('view=fight') >= 0
+    ok('"Go to the pantheon" goes back to the room', visible() === 'fight' && w.location.hash.indexOf('view=godhome') >= 0
        && d.activeElement.matches('#fight .screen-title')
        && q('[data-act="fightTab"][data-value="pantheon"]').getAttribute('aria-selected') === 'true'
        && txt('.run-head .run-stat') === 'Sala 3 de 12', txt('.run-head .run-stat'));
@@ -1271,10 +1277,10 @@ f.addEventListener('load', async () => {
     ok('and afterwards they have nothing left to give', txt('[data-act="restBath"] .rs-fxs') === 'ya estás al máximo', txt('[data-act="restBath"] .rs-fxs'));
     await click('[data-act="runNext"]');
     ok('on leaving the rest they lock again', q('#panel .quick').classList.contains('is-locked'));
-    await goto('game');
+    await goto('home');
     ok("and on Your game the notice that you're in a pantheon shows", !!q('#banner .banner.is-run:not(.is-hint)'), bannerText());
     ok('with its button to abandon it without going there', txt('#banner [data-act="runQuit"]') === 'Abandonar');
-    await goto('fight');
+    await goto('godhome');
     for (let i = 0; i < 4; i++) { winRoom(); await click('[data-act="runNext"]'); }
     ok('room 11 is the Godseeker', txt('.side-foes .foecard-name') === 'Buscador de Dioses', txt('.side-foes .foecard-name'));
     await click('[data-act="runNext"]');
@@ -1323,12 +1329,12 @@ f.addEventListener('load', async () => {
     ok('lifeblood carries into the next fight', lifeblood() === 3 && txt('.foes-head h3') === nameEs('gorb'), lifeblood() + ' · ' + txt('.foes-head h3'));
 
     /* ── Abandoning from the notice, without going to the tab ──────────── */
-    await goto('game');
+    await goto('home');
     await click('#banner [data-act="runQuit"]');
     ok('abandoning from the notice ends it and says so', !q('#banner .banner.is-run:not(.is-hint)') && !w.localStorage.getItem('hollow.run')
        && !q('#panel .quick').classList.contains('is-locked') && txt('#toast') === 'Has abandonado el Panteón del Maestro'
-       && d.activeElement === q('#gear .screen-title'), txt('#toast') + ' · foco: ' + d.activeElement.className);
-    await goto('fight');
+       && d.activeElement === q('#home .screen-title'), txt('#toast') + ' · foco: ' + d.activeElement.className);
+    await goto('godhome');
     ok('and the tab goes back to choosing a pantheon', d.querySelectorAll('.pcard').length === 5);
 
     /* ── Jumping straight to a room ─────────────────────────────────────── */
@@ -1386,7 +1392,7 @@ f.addEventListener('load', async () => {
     ok('and its room 1 is TWO Vengefly Kings', d.querySelectorAll('.side-foes .foecard:not(.is-minion)').length === 2,
        d.querySelectorAll('.side-foes .foecard:not(.is-minion)').length + ' tarjetas');
     await click('[data-act="runQuit"]');
-    await click('[data-act="fightTab"][data-value="combat"]');
+    await goto('fight');
   } catch (e) {
     errors.push('exception: ' + (e && e.message));
   }

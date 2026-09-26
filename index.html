@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Hallownest Calculator for Hollow Knight charms and stats</title>
-<meta name="description" content="How the Knight's stats in Hollow Knight change with every charm and every upgrade: nail damage, DPS, spells, masks and soul, a combat simulator against every boss and Godhome, and the Hunter's Journal.">
+<title>Hallownest Calculator: your Hollow Knight save live, 112% tracker and charms</title>
+<meta name="description" content="Follow your real Hollow Knight game: import your save and see your 112% item by item, the game's own map with what you're missing, your shade and the Hunter's Journal, up to date at every bench. Plus a charm calculator and a combat simulator against every boss.">
 <meta name="google-site-verification" content="gMOOsULKOT9I0m85tW4NHufweIQ18ptFx7TnwCWC4AM">
 <link rel="canonical" href="https://betorzdev.github.io/hallownest-calculator/">
 <link rel="alternate" hreflang="en" href="https://betorzdev.github.io/hallownest-calculator/">
@@ -12,13 +12,13 @@
 <link rel="alternate" hreflang="x-default" href="https://betorzdev.github.io/hallownest-calculator/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Hallownest Calculator">
-<meta property="og:title" content="Hallownest Calculator for Hollow Knight charms and stats">
-<meta property="og:description" content="Pick your charms and see how every stat of the Knight changes: nail damage, DPS, spells, masks and soul. In English and Spanish.">
+<meta property="og:title" content="Hallownest Calculator: your Hollow Knight save live, 112% tracker and charms">
+<meta property="og:description" content="Your real Hollow Knight game, followed live: the 112% item by item, the game's map with what you're missing, and what you got at every bench. Plus the charm calculator. In English and Spanish.">
 <meta property="og:url" content="https://betorzdev.github.io/hallownest-calculator/">
 <meta property="og:image" content="https://betorzdev.github.io/hallownest-calculator/assets/site/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="The Charms screen: the Knight's HUD, nail damage 32, DPS 114.3 and the charm grid">
+<meta property="og:image:alt" content="The Your game screen: resting at City of Tears, the completion, the time played, and what was found since the last bench">
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="es_ES">
 <meta name="twitter:card" content="summary_large_image">
@@ -30,7 +30,7 @@
   "alternateName": "Calculadora de Hallownest",
   "url": "https://betorzdev.github.io/hallownest-calculator/",
   "image": "https://betorzdev.github.io/hallownest-calculator/assets/site/og.jpg",
-  "description": "How the Knight's stats in Hollow Knight change with every charm and every upgrade.",
+  "description": "Follow your real Hollow Knight game live: the 112% item by item, the game's map with what you're missing, and a charm calculator.",
   "applicationCategory": "GameApplication",
   "operatingSystem": "Any",
   "inLanguage": ["en", "es"],
@@ -43,7 +43,7 @@
   "@context": "https://schema.org",
   "@type": "WebSite",
   "name": "Hallownest Calculator",
-  "alternateName": ["Calculadora de Hallownest", "Hollow Knight charm calculator"],
+  "alternateName": ["Calculadora de Hallownest", "Hollow Knight 112% tracker", "Hollow Knight charm calculator"],
   "url": "https://betorzdev.github.io/hallownest-calculator/"
 }
 </script>
@@ -67,17 +67,26 @@
     <header class="masthead" id="masthead"></header>
     <nav class="nav" id="nav" aria-label="Screens">
       <div class="nav-tabs">
-        <a class="nav-tab" data-act="view" data-value="charms" href="#">Charms</a>
-        <a class="nav-tab" data-act="view" data-value="game" href="#view=game">Inventory</a>
-        <a class="nav-tab" data-act="view" data-value="fight" href="#view=fight">Combat</a>
-        <a class="nav-tab nav-hj" id="nav-hj" data-act="view" data-value="journal" href="#view=journal"><span class="nav-lbl">Journal</span><span class="nav-num"></span></a>
+        <a class="nav-tab nav-hj nav-home" id="nav-home" data-act="view" data-value="home" href="#view=home"><span class="nav-lbl">Your game</span><span class="nav-num"></span></a>
         <a class="nav-tab nav-hj nav-pg" id="nav-pg" data-act="view" data-value="progress" href="#view=progress"><span class="nav-lbl">Progress</span><span class="nav-num"></span></a>
+        <a class="nav-tab" data-act="view" data-value="map" href="#view=map">Map</a>
+        <a class="nav-tab nav-hj" id="nav-hj" data-act="view" data-value="journal" href="#view=journal"><span class="nav-lbl">Journal</span><span class="nav-num"></span></a>
+        <a class="nav-tab" data-act="view" data-value="godhome" href="#view=godhome">Godhome</a>
+        <span class="nav-sep" aria-hidden="true"></span>
+        <a class="nav-tab nav-tool" data-act="view" data-value="charms" href="#">Charms</a>
+        <a class="nav-tab nav-tool" data-act="view" data-value="fight" href="#view=fight">Combat</a>
+        <a class="nav-tab nav-tools" id="nav-tools" data-act="view" data-value="charms" href="#">Tools</a>
+      </div>
+      <div class="nav-sub" id="nav-sub" hidden>
+        <a class="nav-tab" data-act="view" data-value="charms" href="#">Charms</a>
+        <a class="nav-tab" data-act="view" data-value="fight" href="#view=fight">Combat</a>
       </div>
       <div class="minihud" id="minihud" aria-hidden="true"></div>
     </nav>
     <main class="screens">
       <div id="banner"></div>
-      <section class="panel" id="panel" aria-label="Charms"></section>
+      <section class="gear home" id="home" aria-label="Your game" hidden></section>
+      <section class="panel" id="panel" aria-label="Charms" hidden></section>
       <section class="gear" id="gear" aria-label="Inventory" hidden></section>
       <section class="gear fight" id="fight" aria-label="Combat" hidden></section>
       <section class="hj-sec" id="hj" aria-label="Journal" hidden></section>
@@ -104,6 +113,7 @@
 <script src="js/engine.js"></script>
 <script src="js/fight.js"></script>
 <script src="js/codec.js"></script>
+<script src="js/changes.js"></script>
 <script src="js/saves.js"></script>
 <script src="js/savefile.js"></script>
 <script src="js/live.js"></script>
@@ -117,6 +127,7 @@
 <script src="js/app-progress.js"></script>
 <script src="js/app-map.js"></script>
 <script src="js/app-saves.js"></script>
+<script src="js/app-home.js"></script>
 <script src="js/app-boot.js"></script>
 </body>
 </html>

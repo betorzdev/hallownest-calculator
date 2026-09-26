@@ -424,8 +424,9 @@
       // Combat is only rebuilt when switching tabs: if you were already in the room, the
       // half-done fight stays as it was.
       if (prefs.fightTab !== 'pantheon') { prefs.fightTab = 'pantheon'; fightReset(); }
+      prefs.godTab = 'pantheon';
       savePrefs();
-      go('fight', true);
+      go('godhome', true);
     },
     runQuit(node) {
       const name = App.run ? pick(PN.PANTHEON_BY_ID[App.run.pantheon].name) : '';
