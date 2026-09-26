@@ -361,10 +361,10 @@
   }
 
   /* Into the game without reloading the page, after an import that follows the file: the read
-     permission the picker has just given lasts as long as this page, and after a reload the
-     browser would ask for it again (the paused notice). So what the boot reads per game
-     (js/app-boot.js) is read again here. */
-  function enterHere() {
+     permission just given (link) lasts as long as this page, and after a reload the browser
+     would ask for it again (the paused notice). So what the boot reads per game
+     (js/app-boot.js) is read again here, and the watcher takes the very handle that was granted. */
+  function enterHere(rec) {
     imp.n = 0;
     stopLive();
     App.run = App.loadRun();
@@ -383,7 +383,26 @@
     App.fightReset();
     scrollTo(0, 0);
     App.go('home', true);
-    liveStart();
+    liveStart(rec);
+  }
+
+  /* Links a slot to the game's file: the handle is stored, and the read permission is asked on
+     the stored copy, here, inside the click. The browser doesn't carry the picker's permission
+     over to the copy it reads back from IndexedDB, not even on the same page (Chrome 154: the
+     picker's handle reads, the copy says 'prompt'), so the copy is what's asked for, and it's
+     what the watcher takes: asked on the picker's handle, nothing would be granted. Only when
+     the slot is the one you're in (ask): another one is entered with a reload, which forgets
+     the permission anyway. Refused or dismissed, the link stays, paused, with the notice's
+     Resume. → the record for liveStart, or null if the browser wouldn't keep the link. */
+  async function link(n, handle, name, stamp, ask) {
+    const stored = { handle, name, stamp };
+    if (!(await L.links.put(n, stored))) return null;
+    live.links[n] = name;
+    track('save-link');
+    const rec = await L.links.get(n);
+    if (!rec || !rec.handle) return stored;
+    if (ask) try { await rec.handle.requestPermission({ mode: 'read' }); } catch (e) { /* the watcher says paused */ }
+    return rec;
   }
 
   /* Going into a game, seen: a full slot's nail catches the light and its masks glow; an empty
@@ -466,15 +485,14 @@
       if (!f || !store) return;
       S.importTo(store, n, f.snap);
       track('save-import');
-      // Linked, it's entered in place (enterHere); if not, the page reloads, and the link goes first.
-      let linked = false;
-      if (f.handle && imp.sync) {
-        linked = await L.links.put(n, { handle: f.handle, name: f.name, stamp: f.stamp });
-        if (linked) { live.links[n] = f.name; track('save-link'); }
-      } else if (live.links[n] != null) { await L.links.drop(n); delete live.links[n]; }
+      /* Linked (the browser asks for the file here, in the click), it's entered in place
+         (enterHere); if not, the page reloads, and the link goes first. */
+      let rec = null;
+      if (f.handle && imp.sync) rec = await link(n, f.handle, f.name, f.stamp, true);
+      else if (live.links[n] != null) { await L.links.drop(n); delete live.links[n]; }
       // It goes straight into the imported game, as picking the slot would.
       if (S.read(store).active !== n) S.select(store, n);
-      leave(0, linked ? enterHere : null);
+      leave(0, rec ? () => enterHere(rec) : null);
     },
     /* Following a slot that follows nothing: the file is picked, the slot takes it in at once (the
        game wins, as on every save after) and from then on it follows it. */
@@ -486,10 +504,10 @@
       try { file = await h.getFile(); r = F.read(new Uint8Array(await file.arrayBuffer())); } catch (e) { r = null; }
       if (!r || !r.ok) { toast(t('saveImportBad')); return; }
       S.sync(store, n, F.toSnapshot(r.pd, r.sd, file.lastModified));
-      if (!(await L.links.put(n, { handle: h, name: file.name, stamp: L.stampOf(file) }))) { toast(t('liveFollowNo')); return; }
-      live.links[n] = file.name;
-      track('save-link');
-      if (n === activeSlot()) { stopLive(); App.reloadGame(); await liveStart(); } else render();
+      const active = n === activeSlot();
+      const rec = await link(n, h, file.name, L.stampOf(file), active);
+      if (!rec) { toast(t('liveFollowNo')); return; }
+      if (active) { stopLive(); App.reloadGame(); await liveStart(rec); } else render();
       toast(t('liveFollowing', { n, file: file.name }));
       focusIn(`.save[data-slot="${n}"] [data-act="liveUnlink"]`);
     },
@@ -703,19 +721,20 @@
      (entering reloads the page, and this runs again). When the game saves, the slot takes the
      file in (the game wins over what was changed here since) and every screen repaints. The
      stamp is kept with the link, so that a reload doesn't take in again a file already taken
-     in, over what you've changed since. */
+     in, over what you've changed since. liveStart(rec): the link just made (link), whose
+     handle already has the permission; without it, the slot's link is read from IndexedDB. */
   const parseSave = (bytes) => { const r = F.read(bytes); return r.ok ? r : null; };
   function stopLive() {
     if (live.watcher) live.watcher.stop();
     Object.assign(live, { n: 0, name: '', state: '', watcher: null });
   }
   let synced = false;
-  async function liveStart() {
+  async function liveStart(given = null) {
     if (!store || !L.canLive()) return;
     live.links = await L.links.all();
     live.ready = true;
     const n = activeSlot();
-    const rec = n !== S.FREE ? await L.links.get(n) : null;
+    const rec = n === S.FREE ? null : given || await L.links.get(n);
     if (!rec || !rec.handle) { if (prefs.view === 'saves') render(); return; }
     let stamp = rec.stamp || null;
     Object.assign(live, { n, name: rec.name || rec.handle.name, state: '' });

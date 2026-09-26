@@ -14,7 +14,9 @@
                            one with the same shape.
    The permission to read the file doesn't survive a reload (checked on Windows, Chrome 154:
    'prompt' after a reload, 'granted' after a click): the watcher starts paused, and resume()
-   asks again, which only works from a click. */
+   asks again, which only works from a click. Nor does the picker's grant reach the copy read
+   back from IndexedDB, even on the same page: whoever stores a handle asks on the stored copy,
+   in the click, and hands that copy to the watcher (js/app-saves.js, link()). */
 (() => {
   'use strict';
   const HK = globalThis.HK || (globalThis.HK = {});

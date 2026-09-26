@@ -1464,9 +1464,11 @@ masks, the nails and the buttons line up from one slot to the next.
   *Import into Save n*; over a full slot it warns first that it will replace it. A file that
   isn't a save brings up the Shade and *Choose another file*. On a phone a note says the saves
   are on the computer you play on. Then the page enters the imported game, as tapping the slot
-  would; when the slot is to follow the file, without reloading, so that the permission the
-  picker has just given still holds and it starts live, with no paused notice. The file is read
-  in the browser and never sent anywhere; the game's file isn't touched.
+  would; when the slot is to follow the file, the browser first asks, on that same click, whether
+  the site may read it (its own permission prompt), and the game is entered without reloading,
+  so that the permission holds and it starts live, with no paused notice; refused, it's entered
+  paused, and the notice's *Resume* asks again. The file is read in the browser and never sent
+  anywhere; the game's file isn't touched.
   A save that's already JSON (the Switch's, or one decrypted with an editor) is read too. What
   comes in, from the game's `playerData`:
   - **the build**: nail, masks, vessels, notches, spells, nail arts, Dream Nail, cloak,
@@ -1506,7 +1508,8 @@ masks, the nails and the buttons line up from one slot to the next.
   A full slot that follows no file (imported with the option off, made on the site, or after
   *Stop following*) carries **Follow the game** (*Follow* on a narrow screen) above *Import from
   the game*, its icon two arrows chasing each other that turn on hover: it opens the picker,
-  the slot takes that file in at once (the game wins) and follows it from then on.
+  the slot takes that file in at once (the game wins) and follows it from then on; on the save
+  you're in, the browser asks for the file on that click too, and the link starts live.
 - **The notice for whoever's new**: on a computer (not a phone, nor an iPad asking for the
   desktop site), while nobody has chosen a save (free mode, the four empty), a notice above
   every screen but Saves (*Your real game*) says the game's save can be imported. It isn't a
