@@ -277,6 +277,8 @@
     pgMapWhole:     { es: 'Ver siempre el mapa entero', en: 'Always show the whole map' },
     pgMapWholeOn:   { es: 'El mapa entero, también lo que aún no has recorrido.', en: 'The whole map, what you haven\'t explored too.' },
     pgMapNames:     { es: 'Ver los nombres de las zonas', en: 'Show the area names' },
+    pgmEssence:     { es: '{n} de esencia', en: '{n} essence' },
+    pgmGrubs:       { es: '{n} larvas', en: '{n} grubs' },
     pgmShowAll:     { es: 'Mostrar todo', en: 'Show all' },
     pgmHideAll:     { es: 'Esconder todo', en: 'Hide all' },
     pgmGoInv:       { es: 'Ir al Inventario', en: 'Go to the Inventory' },

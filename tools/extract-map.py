@@ -55,6 +55,10 @@ TEXT = os.path.join(ROOT, 'kb', 'data', 'all_text.json')
 # own pin for them instead.
 TRANSITIONS = ('https://raw.githubusercontent.com/homothetyhk/RandomizerMod/'
                'cad3d5a7b73ed3ddf4af43795b20c23ced14bb4c/RandomizerMod/Resources/Data/transitions.json')
+# The community's ItemChanger (LGPL-2.1), the same pinned commit as tools/fetch-collectibles.js:
+# its locations.json names each place's scene and the object in it (or its coordinates there).
+IC_LOCATIONS = ('https://raw.githubusercontent.com/homothetyhk/HollowKnight.ItemChanger/'
+                'e57bc4e37bf7297f39b51b17af93f80c1ef8ce9e/ItemChanger/Resources/locations.json')
 HOST_PIN = {'Room_Colosseum_Bronze': 'colosseum', 'Room_Colosseum_Silver': 'colosseum', 'Room_Colosseum_Gold': 'colosseum',
             'Deepnest_Spider_Town': ('dreamer', 'herrah')}
 
@@ -98,6 +102,68 @@ def whole(sprite):
     canvas = Image.new('RGBA', (rw, rh), (0, 0, 0, 0))
     canvas.paste(im, (round(off.x), rh - round(off.y) - im.size[1]))
     return canvas
+
+class Scenes:
+    """The game's scenes (level<N>, their order is BuildSettings'), read one at a time: each
+    one's tile map size (its tk2dTileMap's width and height, in tiles = world units) and its
+    objects' world positions, by name and by path ("Parent\\Child")."""
+    def __init__(self):
+        gg = UnityPy.load(os.path.join(DATA, 'globalgamemanagers'))
+        bs = next(o.read() for o in gg.objects if o.type.name == 'BuildSettings')
+        self.index = {os.path.splitext(os.path.basename(sc))[0]: i for i, sc in enumerate(bs.scenes)}
+        self.cache = {}
+
+    def get(self, scene):
+        if scene in self.cache:
+            return self.cache[scene]
+        out = None
+        if scene in self.index:
+            env = UnityPy.load(os.path.join(DATA, 'level%d' % self.index[scene]))
+            trs = {o.path_id: o.read() for o in env.objects if o.type.name in ('Transform', 'RectTransform')}
+            size, objs = None, []
+            def world(t):
+                chain = []
+                while t is not None:
+                    chain.append(t)
+                    t = trs.get(t.m_Father.path_id) if t.m_Father.path_id else None
+                x = y = 0.0; sx = sy = 1.0; path = []
+                for u in reversed(chain):
+                    q = u.m_LocalPosition
+                    x, y = x + q.x * sx, y + q.y * sy
+                    sx, sy = sx * u.m_LocalScale.x, sy * u.m_LocalScale.y
+                    path.append(u.m_GameObject.read().m_Name)
+                return x, y, '\\'.join(path)
+            for o in env.objects:
+                if o.type.name != 'GameObject':
+                    continue
+                g = o.read()
+                t = next((c for c in comps(g) if c.type.name in ('Transform', 'RectTransform')), None)
+                if t is None:
+                    continue
+                x, y, path = world(trs.get(t.path_id) or t.read())
+                objs.append((g.m_Name, path, x, y))
+                if size is None and (g.m_Name == 'TileMap' or g.m_Name.endswith('-TileMap')):
+                    # tk2dTileMap: width, height, then its partition size (32, 32).
+                    for c in of_type(g, 'MonoBehaviour'):
+                        raw = c.deref().get_raw_data()
+                        ints = struct.unpack_from('<%di' % (min(len(raw), 2400) // 4), raw)
+                        for i in range(len(ints) - 3):
+                            if ints[i + 2] == ints[i + 3] == 32 and 4 <= ints[i] <= 3000 and 4 <= ints[i + 1] <= 3000:
+                                size = (ints[i], ints[i + 1]); break
+                        if size: break
+            out = (size, objs)
+        self.cache[scene] = out
+        return out
+
+    def find(self, scene, name):
+        """An object's world position: by its path's end ("Folder\\Heart Piece") or its name."""
+        got = self.get(scene)
+        if not got or not name:
+            return None
+        for n, path, x, y in got[1]:
+            if (path.endswith(name) if '\\' in name else n == name):
+                return x, y
+        return None
 
 def pack(images, width=2048, pad=2):
     """A simple shelf packing: (name → image) into one atlas; returns it and each rect."""
@@ -238,6 +304,16 @@ def main():
                     if key: subs.append({'scene': name, 'key': key})
                     continue
                 kind = PINS.get(pin.m_Name.split(' (')[0])
+                # The characters' own pins (Jiji, Iselda, Lemm, the Nailsmith…): "pin_<who>".
+                if not kind and pin.m_Name.startswith('pin_') and of_type(pin, 'SpriteRenderer'):
+                    who = pin.m_Name[4:].replace(' ', '_')
+                    pt = transform(pin)
+                    pins.append({'kind': 'npc', 'scene': who, 'x': round(gx + pt.m_LocalPosition.x * scale[0], 3),
+                                 'y': round(gy + pt.m_LocalPosition.y * scale[1], 3)})
+                    s_ = of_type(pin, 'SpriteRenderer')[0].read()
+                    if s_.m_Sprite.path_id:
+                        pin_imgs['npc-' + who] = s_.m_Sprite.read().image.convert('RGBA')
+                    continue
                 if not kind:
                     continue
                 pt = transform(pin)
@@ -269,21 +345,35 @@ def main():
         r['rough'] = list(rough_rects[name])
         if name + '#alt' in full_rects:
             r['alt'] = list(full_rects[name + '#alt'])
-    # Where to place what's in a room the map doesn't draw (js/collectibles.js and the rest).
-    scenes = set(re.findall(r"scene: '([^']+)'", open(os.path.join(ROOT, 'js', 'collectibles.js'), encoding='utf-8').read()))
+    # Where things are, exactly: the game's own formula for a point in a room (GameMap.
+    # PositionCompass): the room drawing's left edge plus (x / the scene's width) of the drawing's
+    # width, the same upwards. The scene's width is its tile map's (Scenes).
+    scenes_ = Scenes()
+    def in_room(scene, x, y):
+        r = rooms[scene]
+        got = scenes_.get(scene)
+        if not got or not got[0]:
+            return None
+        W, H = got[0]
+        fx, fy = min(1, max(0, x / W)), min(1, max(0, y / H))
+        return [round(r['x'] - r['rw'] / 2 + fx * r['rw'], 3), round(r['y'] - r['rh'] / 2 + fy * r['rh'], 3)]
+
+    # What's in a room the map doesn't draw goes on the door you enter it by, in the nearest drawn
+    # room through the game's doors (the community randomizer's transitions.json, pinned).
     with urllib.request.urlopen(TRANSITIONS) as res:
         trans = json.load(res).values()
-    adj = {}
+    edges = {}
     for tr in trans:
-        a, b = tr['SceneName'], (tr.get('VanillaTarget') or '').split('[')[0]
+        a, door = tr['SceneName'], tr.get('DoorName')
+        tgt = tr.get('VanillaTarget') or ''
+        b, bdoor = tgt.split('[')[0], tgt[tgt.find('[') + 1:-1] if '[' in tgt else ''
         if b:
-            adj.setdefault(a, set()).add(b); adj.setdefault(b, set()).add(a)
-    # Every undrawn room the doors reach, not only the collectibles': the map also places the
-    # charms, the bosses and the characters (js/app-map.js).
-    wanted = set(scenes)
-    scenes |= set(adj)
+            edges.setdefault(a, []).append((b, door)); edges.setdefault(b, []).append((a, bdoor))
+    ic = json.load(urllib.request.urlopen(IC_LOCATIONS))
+    wanted = {loc.get('sceneName') for loc in ic.values() if loc.get('sceneName')}
+    wanted |= set(re.findall(r"scene: '([^']+)'", open(os.path.join(ROOT, 'js', 'collectibles.js'), encoding='utf-8').read()))
     hosts = {}
-    for sc in sorted(scenes):
+    for sc in sorted(wanted | set(edges)):
         if sc in rooms or sc in anchors:
             continue
         hp = HOST_PIN.get(sc)
@@ -292,17 +382,56 @@ def main():
             p = next(p for p in pins if p['kind'] == kind and (who is None or p['scene'] == who))
             hosts[sc] = [p['x'], p['y']]
             continue
-        seen, queue = {sc}, deque([sc])
+        # Breadth first to a drawn room (or one drawn inside another), keeping the door there.
+        seen, queue = {sc}, deque([(sc, None)])
         while queue:
-            cur = queue.popleft()
+            cur, came = queue.popleft()
+            if cur in anchors:
+                hosts[sc] = anchors[cur]; break
             if cur in rooms:
-                hosts[sc] = [rooms[cur]['x'], rooms[cur]['y']]
+                door = next((d for (n, d) in edges.get(cur, []) if n == came), None)
+                q = scenes_.find(cur, door)
+                hosts[sc] = (q and in_room(cur, *q)) or [rooms[cur]['x'], rooms[cur]['y']]
                 break
-            for n in sorted(adj.get(cur, ())):
+            for n, _ in sorted(edges.get(cur, ()), key=lambda e: e[0]):
                 if n not in seen:
-                    seen.add(n); queue.append(n)
+                    seen.add(n); queue.append((n, cur))
         if sc not in hosts and sc in wanted:
             print('  no place for', sc)
+
+    def point(scene):
+        if scene in rooms: return [rooms[scene]['x'], rooms[scene]['y']]
+        return anchors.get(scene) or hosts.get(scene)
+    # Each of ItemChanger's places, where it is: its object in its scene (or its coordinates,
+    # or the object whose script gives it); in an undrawn room, that room's door. → [x, y, scene]
+    spots, missed = {}, []
+    # The special places ItemChanger gives no object for: the object that stands for them.
+    SPECIAL_OBJ = {'WhisperingRootLocation': 'Dream Plant', 'ShadeCloakLocation': 'Dish Plat',
+                   'ShadeSoulLocation': 'Shaman Sprite', 'AbyssShriekLocation': 'Scream 2 Get',
+                   'TukDefendersCrestLocation': 'Tuk NPC'}
+    def locate(loc):
+        for k in ('trueLocation', 'chestLocation', 'falseLocation'):
+            if loc.get(k): return locate(loc[k])
+        scene = loc.get('sceneName')
+        if not scene: return None
+        if scene not in rooms:
+            q = point(scene)
+            return q and [q[0], q[1], scene]
+        if 'x' in loc and 'y' in loc:
+            q = in_room(scene, loc['x'], loc['y'])
+        else:
+            kind = loc.get('$type', '').split(',')[0].split('.')[-1]
+            obj = loc.get('objectName') or ''
+            w = (scenes_.find(scene, obj) or scenes_.find(scene, obj.replace('_', ' '))
+                 or scenes_.find(scene, loc.get('fsmParent')) or scenes_.find(scene, SPECIAL_OBJ.get(kind)))
+            q = w and in_room(scene, *w)
+        if not q:
+            missed.append(loc.get('name')); q = point(scene)
+        return q and [q[0], q[1], scene]
+    for name, loc in ic.items():
+        q = locate(loc)
+        if q: spots[name] = q
+    print(f'  {len(spots)} places located ({len(missed)} at their room\'s centre: {", ".join(missed[:12])}…)')
 
     xs = [r['x'] - r['w'] / 2 for r in rooms.values()] + [r['x'] + r['w'] / 2 for r in rooms.values()]
     ys = [r['y'] - r['h'] / 2 for r in rooms.values()] + [r['y'] + r['h'] / 2 for r in rooms.values()]
@@ -329,14 +458,17 @@ def main():
             "             a tenth item, alt, is the full drawing the game swaps in once the world",
             "             changes there (js/progress.js, ALTS, says when)",
             "     PINS    [kind, scene, x, y]: the game's own pins (bench, stag, root, cocoon, tram, spa,",
-            "             vendor, grubfather, colosseum, blackegg, grub, flame, grave; dreamer, whose 'scene' is who)",
+            "             vendor, grubfather, colosseum, blackegg, grub, flame, grave; dreamer and npc, whose",
+            "             'scene' is who)",
             "     PLACE_LABELS [scene, name]: the map's own titles of the places inside the areas",
             "     PIN_ART their pictures in assets/map/pins.png, and the shade's, the Dreamgate's, the",
             "             compass's and the markers' (marker-b|r|y|w) [x, y, w, h]",
             "     BOUNDS  [minX, minY, maxX, maxY] of the rooms",
             "     ANCHORS scene → [x, y]: rooms the map draws inside another, only their place",
-            "     HOSTS   scene → [x, y]: where a collectible's undrawn room goes (the room you enter it",
-            "             from, through the game's doors; the Colosseum's and Beast's Den's pins)",
+            "     HOSTS   scene → [x, y]: where an undrawn room goes: its door in the drawn room you enter",
+            "             it from, through the game's doors (the Colosseum's and Beast's Den's: their pins)",
+            "     SPOTS   ItemChanger's place → [x, y, scene]: its object in its room, by the game's own",
+            "             formula (GameMap.PositionCompass: the room's drawing ∝ the scene's tile map)",
             "   The save's shadeMapPos and dreamgateMapPos are in this same frame. */",
             '(() => {',
             "  'use strict';",
@@ -359,7 +491,9 @@ def main():
             f"  const BOUNDS = {js(bounds)};",
             f"  const ANCHORS = {js(anchors)};",
             f"  const HOSTS = {js(hosts)};",
-            '  HK.map = { AREAS, AREA_IDS, PLACE_LABELS, ROOMS, ANCHORS, HOSTS, PINS, PIN_ART, ATLAS, BOUNDS };',
+            '  // ItemChanger\'s places (its locations.json, by name), each where it is: [x, y, scene].',
+            f"  const SPOTS = {js(spots)};",
+            '  HK.map = { AREAS, AREA_IDS, PLACE_LABELS, ROOMS, ANCHORS, HOSTS, SPOTS, PINS, PIN_ART, ATLAS, BOUNDS };',
             "  if (typeof module !== 'undefined' && module.exports) module.exports = HK.map;",
             '})();',
             '',

@@ -30,47 +30,61 @@
     const sc = ALIAS[scene] || scene, r = M.ROOMS[sc];
     return r ? [r[1], r[2]] : M.ANCHORS[sc] || M.HOSTS[sc] || null;
   };
+  /* Where a place of ItemChanger's is (js/map.js's SPOTS, from the game's scenes): the characters
+     with a pin of their own on the game's map stand there, and what they sell with them. The
+     storeroom behind Sly's shop is Sly's. → { p: [x, y], scene } or null */
+  const NPC_OF = { Iselda: 'mapper', Leg_Eater: 'leg_eater', Seer: 'dream_moth', Lemm: 'relic_dealer' };
+  const SPOT_ALIAS = { "Nailmaster's_Glory": 'Sly', Grubsong: 'Grubfather', Dream_Wielder: 'Seer', Awoken_Dream_Nail: 'Seer' };
+  const npcPin = (who) => { const p = M.PINS.find((x) => x[0] === 'npc' && x[1] === who); return p ? [p[2], p[3]] : null; };
+  // The Grubfather's and the Seer's rewards are theirs: on their pin, one stack each.
+  const aliasOf = (ic) => SPOT_ALIAS[ic] || (/-(5_)?Grubs$/.test(ic) ? 'Grubfather' : /-Seer$/.test(ic) ? 'Seer' : ic);
+  function spotOf(ic) {
+    const name = aliasOf(ic), sp = M.SPOTS[name];
+    if (!sp) return null;
+    const pin = name === 'Grubfather' ? pinsOf('grubfather')[0] : null;
+    return { p: (pin && [pin[2], pin[3]]) || (NPC_OF[name] && npcPin(NPC_OF[name])) || [sp[0], sp[1]], scene: sp[2] };
+  }
+  // A collectible: its own spot; the Grimmkin flames, which ItemChanger doesn't place, on the game's pins.
   const COL_POS = (() => {
     const out = {}, used = {};
     for (const it of CO.ITEMS) {
+      const sp = it.ic && spotOf(it.ic);
+      let pt = sp && sp.scene === it.scene ? sp.p : null;
       const kind = GAME_PIN[it.kind];
-      let pt = null;
-      if (kind) {
-        // The game's pins in that room, in order: two grubs in one room are its two pins.
+      if (!pt && kind) {
+        // The game's pins in that room, in order: two in one room are its two pins.
         const list = pinsOf(kind).filter((p) => p[1] === it.scene);
         const k = kind + '|' + it.scene;
         const i = used[k] || 0;
         used[k] = i + 1;
         if (list[i]) pt = [list[i][2], list[i][3]];
       }
-      out[it.id] = pt || roomPoint(it.scene);
+      out[it.id] = pt || (sp && sp.p) || roomPoint(it.scene);
     }
     return out;
   })();
 
-  /* Where the 112%'s things are: the room ItemChanger's locations.json gives each (the same
-     pinned commit as js/collectibles.js), the shop's for what's bought, and for the bosses the
-     room of their fight. Each spell has two pins, one per level. */
+  /* Where the 112%'s things are: ItemChanger's place for each (its SPOTS), the shop for what's
+     bought; and for the bosses, the room of their fight. Each spell has two pins, one per level. */
   const CHARM_AT = {
-    compass: 'Room_mapper', swarm: 'Room_shop', stalwart: 'Room_shop', catcher: 'Crossroads_ShamanTemple',
-    shaman: 'Room_Charm_Shop', eater: 'RestingGrounds_10', dashmaster: 'Fungus2_23', thorns: 'Fungus1_14',
-    fury: 'Tutorial_01', heart: 'Fungus2_26', greed: 'Fungus2_26', strength: 'Fungus2_26', twister: 'Ruins1_30',
-    steady: 'Room_Charm_Shop', heavy: 'Room_shop', quickslash: 'Deepnest_East_14b', longnail: 'Room_Charm_Shop',
-    pride: 'Fungus2_31', baldur: 'Fungus1_28', flukenest: 'Waterways_12', crest: 'Waterways_05', womb: 'Crossroads_22',
-    quickfocus: 'Room_Charm_Shop', deepfocus: 'Mines_36', lbheart: 'Room_Charm_Shop', lbcore: 'Abyss_08',
-    joni: 'Cliffs_05', grubsong: 'Crossroads_38', elegy: 'Crossroads_38', hiveblood: 'Hive_05', spore: 'Fungus2_20',
-    sharpshadow: 'Deepnest_44', unn: 'Fungus1_Slug', glory: 'Room_Sly_Storeroom', wielder: 'RestingGrounds_07',
-    king: 'White_Palace_09', dreamshield: 'RestingGrounds_17', sprintmaster: 'Room_shop', weaversong: 'Deepnest_45_v02',
-    grimmchild: 'Grimm_Main_Tent',
+    compass: 'Iselda', swarm: 'Sly', stalwart: 'Sly', catcher: 'Soul_Catcher', shaman: 'Salubra', eater: 'Soul_Eater',
+    dashmaster: 'Dashmaster', thorns: 'Thorns_of_Agony', fury: 'Fury_of_the_Fallen', heart: 'Leg_Eater', greed: 'Leg_Eater',
+    strength: 'Leg_Eater', twister: 'Spell_Twister', steady: 'Salubra', heavy: 'Sly_(Key)', quickslash: 'Quick_Slash',
+    longnail: 'Salubra', pride: 'Mark_of_Pride', baldur: 'Baldur_Shell', flukenest: 'Flukenest', crest: "Defender's_Crest",
+    womb: 'Glowing_Womb', quickfocus: 'Salubra', deepfocus: 'Deep_Focus', lbheart: 'Salubra', lbcore: 'Lifeblood_Core',
+    joni: "Joni's_Blessing", grubsong: 'Grubsong', elegy: 'Grubfather', hiveblood: 'Hiveblood', spore: 'Spore_Shroom',
+    sharpshadow: 'Sharp_Shadow', unn: 'Shape_of_Unn', glory: "Nailmaster's_Glory", wielder: 'Dream_Wielder',
+    king: 'Queen_Fragment', dreamshield: 'Dreamshield', sprintmaster: 'Sly', weaversong: 'Weaversong', grimmchild: 'Grimmchild',
   };
   const EQUIP_AT = {
-    'mothwing-cloak': 'Fungus1_04', 'mantis-claw': 'Fungus2_14', 'crystal-heart': 'Mines_31', 'monarch-wings': 'Abyss_21',
-    'isma-tear': 'Waterways_13', 'shade-cloak': 'Abyss_10', 'kings-brand': 'Room_Wyrm',
-    'vs-1': 'Crossroads_ShamanTemple', 'vs-2': 'Ruins1_31b', 'dd-1': 'Ruins1_24', 'dd-2': 'Mines_35',
-    'hw-1': 'Room_Fungus_Shaman', 'hw-2': 'Abyss_12',
-    cyclone: 'Room_nailmaster', great: 'Room_nailmaster_02', dash: 'Room_nailmaster_03',
-    'dream-nail': 'RestingGrounds_04', 'dream-awakened': 'RestingGrounds_07', 'seer-ascended': 'RestingGrounds_07',
+    'mothwing-cloak': 'Mothwing_Cloak', 'mantis-claw': 'Mantis_Claw', 'crystal-heart': 'Crystal_Heart',
+    'monarch-wings': 'Monarch_Wings', 'isma-tear': "Isma's_Tear", 'shade-cloak': 'Shade_Cloak', 'kings-brand': "King's_Brand",
+    'vs-1': 'Vengeful_Spirit', 'vs-2': 'Shade_Soul', 'dd-1': 'Desolate_Dive', 'dd-2': 'Descending_Dark',
+    'hw-1': 'Howling_Wraiths', 'hw-2': 'Abyss_Shriek', cyclone: 'Cyclone_Slash', great: 'Great_Slash', dash: 'Dash_Slash',
+    'dream-nail': 'RestingGrounds_04', 'dream-awakened': 'Awoken_Dream_Nail', 'seer-ascended': 'Seer',
   };
+  // An ItemChanger place, or a room's name when there's none (the Dream Nail's is a dream).
+  const placeAt = (key) => spotOf(key) || (roomPoint(key) && { p: roomPoint(key), scene: key });
   const BOSS_AT = {
     'false-knight': 'Crossroads_10', 'gruz-mother': 'Crossroads_04', 'brooding-mawlek': 'Crossroads_09',
     'hornet-protector': 'Fungus1_04', 'mantis-lords': 'Fungus2_15', 'soul-master': 'Ruins1_24', 'dung-defender': 'Waterways_05',
@@ -92,6 +106,10 @@
     ['grubfather', 'Crossroads_38', { pin: 'grubfather' }, 'grubfather'], ['colosseum', 'Deepnest_East_09_b', { pin: 'colosseum' }, 'colosseum'],
     ['blackegg', 'Crossroads_02', { pin: 'blackegg' }, 'blackegg'],
   ];
+  // Where each stands: their ItemChanger place (a shop's, on its door or on their own pin).
+  const PEOPLE_AT = { sly: 'Sly', iselda: 'Iselda', salubra: 'Salubra', legeater: 'Leg_Eater', lemm: 'Lemm', jiji: 'Egg_Shop', seer: 'Seer' };
+  // …or the game's own pin for them, when it has one.
+  const PEOPLE_NPC = { iselda: 'mapper', legeater: 'leg_eater', lemm: 'relic_dealer', jiji: 'jiji', nailsmith: 'nailsmith', seer: 'dream_moth' };
   // The Dreamers' pins are named by who they are; their rooms, for where they sleep.
   const DREAMER_ROOM = { lurien: 'Ruins2_Watcher_Room', monomon: 'Fungus3_archive_02', herrah: 'Deepnest_Spider_Town' };
 
@@ -128,21 +146,29 @@
     const a = R.areaOf(scene), pl = R.placeOf(scene);
     return [a && pick(R.AREAS[a]), pl && pick(R.PLACES[pl])].filter(Boolean).join(' · ');
   };
+  // What it asks for, when it isn't found: a shop's price, the Seer's essence, the Grubfather's grubs.
+  const priceOf = (it) => {
+    if (!it.src) return '';
+    const [who, n] = it.src, num = App.NF[0].format(n);
+    return who === 'sly' || who === 'salubra' ? `${num} geo` : who === 'seer' ? t('pgmEssence', { n: num }) : who === 'grubs' ? t('pgmGrubs', { n: num }) : '';
+  };
   function allThings() {
     const out = [];
     for (const it of CO.ITEMS) {
       if (!COL_POS[it.id]) continue;
       out.push({ id: it.id, layer: it.kind, p: COL_POS[it.id], art: { src: D.art(...D.COLLECTIBLE_KINDS[it.kind].art) },
-        name: pick(D.COLLECTIBLE_KINDS[it.kind]), where: where(it.scene), on: P.hasFound(App.progress, it.id), act: { find: it.id } });
+        name: pick(D.COLLECTIBLE_KINDS[it.kind]), where: where(it.scene), on: P.hasFound(App.progress, it.id), act: { find: it.id },
+        note: priceOf(it) });
     }
     // The 112%'s, read as the tablet reads them (js/app-progress.js).
     const cats = Object.fromEntries(App.pgCount().categories.map((c) => [c.id, c]));
     const item = (cat, id) => cats[cat].items.find((x) => x.id === id);
     const mark = (cat, id) => (App.pgWhereOf(cat, id) === 'game' ? { game: true } : { cat, id });
-    const add112 = (layer, cat, id, scene, p) => {
+    const add112 = (layer, cat, id, key, p) => {
       const it = item(cat, id), m = App.pgMeta(cat, id);
-      const pt = p || roomPoint(scene);
-      if (!it || !pt) return;
+      const at = p ? { p, scene: key } : placeAt(key);
+      if (!it || !at) return;
+      const pt = at.p, scene = at.scene;
       out.push({ id: 'c:' + id, layer, p: pt, art: m.art ? { src: m.art } : { pin: 'colosseum' }, name: m.name, where: where(scene),
         on: it.got >= it.max, act: mark(cat, id) });
     };
@@ -154,8 +180,9 @@
     // A spell, once per level: its name and picture are that level's.
     for (const it of cats.spells.items) {
       for (const lvl of [1, 2]) {
-        const scene = EQUIP_AT[it.id + '-' + lvl], pt = roomPoint(scene);
-        if (!pt) continue;
+        const at = placeAt(EQUIP_AT[it.id + '-' + lvl]);
+        if (!at) continue;
+        const pt = at.p, scene = at.scene;
         out.push({ id: 'c:' + it.id + lvl, layer: 'equip', p: pt, art: { src: D.art('spells', lvl === 2 ? it.id + '2' : it.id) },
           name: pick(D.SPELLS[it.id].levels[lvl]), where: where(scene), on: it.got >= lvl, act: { game: true } });
       }
@@ -175,48 +202,39 @@
         name: t('pgmP_' + kind), where: where(scene), on: null, scene }));
     }
     for (const [who, scene, art, pin] of PEOPLE) {
-      const pt = (pin && pinsOf(pin)[0] && pinsOf(pin)[0].slice(2)) || roomPoint(scene);
+      const pt = npcPin(PEOPLE_NPC[who]) || (pin && pinsOf(pin)[0] && pinsOf(pin)[0].slice(2))
+        || (PEOPLE_AT[who] && placeAt(PEOPLE_AT[who]).p) || roomPoint(scene);
       if (pt) out.push({ id: 'people:' + who, layer: 'people', p: pt, art, name: t('pgmW_' + who), where: where(scene), on: null });
     }
     return out;
   }
 
-  /* Each pin sits on its own spot. Only the ones that would overlap on screen at the current
-     zoom (closer than a pin) gather around their middle, in a ring just wide enough for them;
-     as you zoom in they come apart and go back to their own spots, so nothing drifts. Measured
-     again whenever the zoom changes (applyView), on what's shown. */
-  function layout(list) {
+  /* Each pin sits on its own spot, always, whatever the zoom. Only things on the very same spot
+     (within 0.15 map units: a shop's stock, a house's door, a room's centre) are laid out around
+     it in a small grid, in the pins' own units (css: --ox, --oy), so it keeps its shape at any
+     zoom and nothing jumps: all of them in view, none hidden behind another. */
+  const SAME = 0.15;
+  function arrange(list) {
     const groups = [];
     for (const th of list) {
-      const g = groups.find((x) => Math.hypot(x.c[0] - th.p[0], x.c[1] - th.p[1]) < pinK * 1.05);
-      if (!g) { groups.push({ c: [...th.p], list: [th] }); continue; }
-      g.list.push(th);
-      g.c = [g.list.reduce((n, x) => n + x.p[0], 0) / g.list.length, g.list.reduce((n, x) => n + x.p[1], 0) / g.list.length];
+      const g = groups.find((x) => Math.hypot(x.p[0] - th.p[0], x.p[1] - th.p[1]) < SAME);
+      if (g) g.list.push(th); else groups.push({ p: th.p, list: [th] });
     }
     for (const g of groups) {
-      const n = g.list.length;
-      const r = n < 2 ? 0 : Math.max(0.6, (n * 1.05) / (2 * Math.PI)) * pinK;
+      const n = g.list.length, cols = Math.ceil(Math.sqrt(n)), rows = Math.ceil(n / cols);
       g.list.forEach((th, i) => {
-        const a = -Math.PI / 2 + (i / n) * Math.PI * 2;
-        th.at = n < 2 ? th.p : [g.c[0] + Math.cos(a) * r, g.c[1] - Math.sin(a) * r];
+        const c = i % cols, r = Math.floor(i / cols);
+        // The last row, if short, centred under the others.
+        const inRow = r === rows - 1 ? n - cols * (rows - 1) : cols;
+        th.at = g.p;
+        th.off = n < 2 ? [0, 0] : [(c - (inRow - 1) / 2) * 1.08, (r - (rows - 1) / 2) * 1.08];
       });
     }
   }
   let pinK = 0.5, near = false;   // the pins' size in map units, and whether they're close up (applyView)
   let shown = new Map();          // id → the thing, as last painted
-  // Where a pin really is on the map, its group's ring included.
-  const pinAt = (th) => th.at || th.p;
-  // Moves the painted pins to where layout() put them.
-  function placePins(s) {
-    const list = [...shown.values()].filter((th) => !(th.layer in MINE));
-    layout(list);
-    for (const g of s.querySelectorAll('.pgm-pin:not(.pgm-mark)')) {
-      const th = shown.get(g.dataset.id);
-      if (!th) continue;
-      g.style.setProperty('--px', th.at[0].toFixed(3) + 'px');
-      g.style.setProperty('--py', (-th.at[1]).toFixed(3) + 'px');
-    }
-  }
+  // Where a pin really is on the map, its place in its spot's grid included.
+  const pinAt = (th) => (th.off ? [th.at[0] + th.off[0] * pinK, th.at[1] - th.off[1] * pinK] : th.p);
 
   /* ── The rooms, as your game has them ── */
   // The area's map from Cornifer, by the name js/map.js gives the area (Dirtmouth's comes with the game).
@@ -300,11 +318,13 @@
   function pinsSvg(layers) {
     const showFound = !!prefs.pgMapFound;
     const list = allThings().filter((th) => layers.has(th.layer) && (th.on !== true || showFound || th.id === selected));
+    arrange(list);
     const mine = mineThings().filter((th) => layers.has(th.layer));
     shown = new Map([...list, ...mine].map((th) => [th.id, th]));
     const pin = (th) => {
       const label = th.name + (th.where ? ' · ' + th.where : '');
-      return `<g class="pgm-pin${th.on ? ' is-on' : ''}${th.id === selected ? ' is-sel' : ''}" style="--px:${th.p[0].toFixed(3)}px;--py:${(-th.p[1]).toFixed(3)}px"
+      const at = th.at || th.p, o = th.off || [0, 0];
+      return `<g class="pgm-pin${th.on ? ' is-on' : ''}${th.id === selected ? ' is-sel' : ''}" style="--px:${at[0].toFixed(3)}px;--py:${(-at[1]).toFixed(3)}px;--ox:${o[0].toFixed(2)}px;--oy:${o[1].toFixed(2)}px"
         data-act="pgmPick" data-id="${esc(th.id)}" role="button" tabindex="0" aria-label="${esc(label)}">
         <title>${esc(label)}</title>
         <circle r="0.5"/>${artSvg(th.art)}
@@ -353,14 +373,13 @@
     s.style.setProperty('--k', String(pinK));
     s.classList.toggle('is-near', near);
     s.classList.toggle('is-mid', zoom >= 1.5);
-    if (Math.abs(zoom - placedAt) > 1e-6) { placedAt = zoom; placePins(s); }
     if (near) hideCrowdedLabels(s, zoom);
     paintCard();
   }
   /* Close up, a name that would run into one already shown is hidden (its pin still says it on
      hover, and its card on a tap): measured on screen, in the pins' order, the chosen one first,
      and only when the zoom changes (moving the map doesn't change what overlaps). */
-  let labelsAt = 0, placedAt = 0;
+  let labelsAt = 0;
   function hideCrowdedLabels(s, zoom) {
     if (Math.abs(zoom - labelsAt) < 1e-6) return;
     labelsAt = zoom;
@@ -392,14 +411,17 @@
 
   /* ── The card of the pin chosen, over the map: what it is, where, and its button (marking a
      collectible or a thing of the 112%, or taking you to the Inventory for what's marked there) ── */
-  function cardHtml(th) {
+  function btnHtml(th) {
     const a = th.act;
-    const btn = !a ? ''
+    return !a ? ''
       : a.game ? `<button type="button" class="text-btn" data-act="view" data-value="game" title="${esc(t('pgInGameHint'))}">${esc(t('pgmGoInv'))}</button>`
         : `<button type="button" class="text-btn" ${a.find ? `data-act="pgFind" data-id="${esc(a.find)}"` : `data-act="pgMark" data-key="${a.cat}" data-id="${esc(a.id)}"`} aria-pressed="${!!th.on}">${esc(t(th.on ? 'pgUnmark' : 'pgMark'))}</button>`;
+  }
+  function cardHtml(th) {
+    const btn = btnHtml(th);
     return `<div class="pgm-card" role="dialog" aria-label="${esc(th.name)}">
       <span class="pgm-card-art">${artHtml(th.art)}</span>
-      <span class="pgm-card-t"><b${NT}>${esc(th.name)}</b>${th.where ? `<span${NT}>${esc(th.where)}</span>` : ''}</span>
+      <span class="pgm-card-t"><b${NT}>${esc(th.name)}</b>${th.where ? `<span${NT}>${esc(th.where)}</span>` : ''}${th.note ? `<span>${esc(th.note)}</span>` : ''}</span>
       ${btn}
       <button type="button" class="banner-close pgm-card-x" data-act="pgmPick" data-id="" aria-label="${esc(t('importHintOff'))}">×</button>
     </div>`;
@@ -419,7 +441,7 @@
     const half = c.firstElementChild.offsetWidth / 2 + 8;
     c.style.left = (half * 2 > br.width ? br.width / 2 : Math.max(half, Math.min(br.width - half, sx))) + 'px';
     c.style.top = sy + 'px';
-    c.classList.toggle('is-below', sy < 110);
+    c.classList.toggle('is-below', sy < c.firstElementChild.offsetHeight + 24);
   }
   const MINE = { 'my-bench': 1, shade: 1, gate: 1, markers: 1 };
 
@@ -480,7 +502,7 @@
   }
   // After the screen is painted: the view as it was, and the card on its pin.
   // (render() shows the screen after painting it, so the measuring waits for the next frame.)
-  const afterPaint = () => { if (svg()) { labelsAt = 0; placedAt = 0; applyView(); requestAnimationFrame(() => { labelsAt = 0; placedAt = 0; applyView(); }); } };
+  const afterPaint = () => { if (svg()) { labelsAt = 0; applyView(); requestAnimationFrame(() => { labelsAt = 0; applyView(); }); } };
 
   /* ── Moving around ── */
   const touches = new Map();

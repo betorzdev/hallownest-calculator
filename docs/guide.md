@@ -441,7 +441,9 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   Dreamers, the warriors' graves…) and their pictures in `assets/map/pins.png`; its titles
   (`AREA_IDS`, each area by the site's name, and `PLACE_LABELS`, each place's text on its room);
   the rooms the map draws inside another (`ANCHORS`) and where to place what's in a room that
-  isn't drawn (`HOSTS`, the room you enter it from through the game's doors). The save's `shadeMapPos` and `dreamgateMapPos` are in its
+  isn't drawn (`HOSTS`: its door, in the room you enter it from through the game's doors) and
+  where each of ItemChanger's places is (`SPOTS`, from the game's scenes: each `level<N>` file,
+  its tile map's size and its objects' positions). The characters' own pins (`npc`) come too. The save's `shadeMapPos` and `dreamgateMapPos` are in its
   frame (checked on the 51 saves: every Dreamgate falls in its room). A room's drawing is kept
   whole, as big as its sprite's rect: the game's files trim the empty edges of 116 of them
   (`textureRect` and `textureRectOffset`), and the room's position is the middle of the whole
@@ -1225,8 +1227,6 @@ on Cornifer's map). It's the tablet chosen among three variants in
     Charm Notch 8, Simple Key 4, Rancid Egg 21, the four relics (14, 17, 8, 4), Whispering Root
     15, the Grimmkin flames 10, Map 13 and Stag Station 11—, each kind named as the game names
     it, each with **how many of it you have** («Captive Grub 23/46», in green when complete).
-    The game's own pin for grubs, whispering roots, stag stations and flames; its room's centre
-    for the rest.
   - **Towards 112%**: the charms (the 36 of the category and the Troupe's four), the equipment,
     the spells (a pin per level: Vengeful Spirit and Shade Soul are two), the nail arts and the
     Dream Nail's three steps, the bosses and the Colosseum's trials, the warrior dreams on the
@@ -1248,13 +1248,26 @@ on Cornifer's map). It's the tablet chosen among three variants in
     the places' once closer; they keep their size on screen), switched by their own box,
     *Show the area names*, beside the other two choices.
   A place has no state; the rest hides once you have it, unless *Also show what you have* brings
-  it back, dimmed. A shop or a house goes on the room you enter it from; a room the doors don't
-  reach, on its neighbour.
+  it back, dimmed.
+- **Each thing is where it is in the game**, not on its room's centre: its object in its scene
+  (ItemChanger's place for it: the grub's bottle, the charm's shiny, the Seer…), turned into the
+  map with the game's own formula for a point in a room (`GameMap.PositionCompass`: the room's
+  drawing stands for its scene's tile map, so a point at x of the scene's width is at x of the
+  drawing's). Checked on the grubs, against the game's own pins: no bias (its pins are placed by
+  hand, 0.2 units off on average). What's inside a house or a shop goes on its door, in the room
+  you enter it from; the characters with a pin of their own on the game's map (Iselda, Jiji,
+  Lemm, the Nailsmith, the Seer, Leg Eater) stand there, with what they sell; the Grubfather's
+  and the Seer's rewards on them. The Grimmkin flames, which ItemChanger doesn't place, keep the
+  game's pins; the bosses, their fight's room.
+- **Things on the very same spot are one pin, a stack**: its number in a bone disc, and its card
+  lists them, each with its button and what it asks (a shop's price in geo, the Seer's essence,
+  the Grubfather's grubs); with a character there, the stack takes their name and face (*Sly ·
+  Dirtmouth*).
   A tap opens a thing's card, with its area and place (the game's titles) and its button.
   **Each pin sits on its own spot and keeps about its size on screen** (a quarter more at most
-  close up): zooming in makes room between them rather than making them bigger. Only pins that
-  would overlap at the current zoom gather in a ring around their middle, and as you zoom in they
-  come apart and go back to their spots. **Close up, each carries its name**: one that would
+  close up): zooming in makes room between them rather than making them bigger. Pins that would
+  overlap at the current zoom are nudged apart, only as much as they overlap and never more than a
+  pin and a half from their spot; as you zoom in they go back to it. **Close up, each carries its name**: one that would
   cover another name or another pin is hidden, and shows when that pin is pointed at or chosen.
   Pointing at a pin also says its name and place. It's dragged, zoomed with
   the wheel or a pinch, and three buttons zoom in, out and back to the whole map (on a phone,

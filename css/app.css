@@ -3878,7 +3878,7 @@ kbd {
 .pgm-svg:active { cursor: grabbing; }
 .pgm-room.is-rough { opacity: 0.8; }
 .pgm-room.is-ghost { opacity: 0.16; }
-.pgm-pin { transform: translate(var(--px), var(--py)) scale(var(--k, 0.5)); cursor: pointer; }
+.pgm-pin { transform: translate(var(--px), var(--py)) scale(var(--k, 0.5)) translate(var(--ox, 0px), var(--oy, 0px)); cursor: pointer; }
 .pgm-pin circle { fill: var(--bg); stroke: var(--line-ctl); stroke-width: 0.06; }
 .pgm-pin:hover circle, .pgm-pin:focus-visible circle, .pgm-pin.is-sel circle { stroke: var(--accent); stroke-width: 0.1; }
 .pgm-pin:focus { outline: none; }
