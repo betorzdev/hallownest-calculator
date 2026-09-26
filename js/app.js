@@ -30,22 +30,22 @@
   const $ = (sel) => document.querySelector(sel);
   const el = {
     page: $('.page'), masthead: $('#masthead'), colophon: $('#colophon'), nav: $('#nav'), panel: $('#panel'),
-    mini: $('#minihud'), banner: $('#banner'), gear: $('#gear'), hj: $('#hj'), home: $('#home'), navSub: $('#nav-sub'),
+    mini: $('#minihud'), banner: $('#banner'), gear: $('#gear'), hj: $('#hj'), home: $('#home'), navSub: $('#nav-sub'), navSubGame: $('#nav-sub-game'),
     toast: $('#toast'), fx: $('#overcharm-fx'), fight: $('#fight'), saves: $('#saves'), pg: $('#pg'),
   };
   const hoverable = matchMedia('(hover: hover) and (pointer: fine)');
 
   /* The screens, like the pages of the game's pause menu, in two groups (design/10-restructure.md):
-     your game as the save says it (Your game, the start screen, with the Inventory under it;
+     your game as the save says it (Your game, the start screen; the Inventory, the Knight's gear;
      Progress; the Map; the Journal; Godhome, with the Hall of Gods and the Pantheons, one place
      in the game) and the tools (Charms and Combat, the arena). And the save slots
      (js/app-saves.js), which aren't in the bar: the header opens them. The Map shares Progress's
      section, and Godhome Combat's (its tabs 'hall' and 'pantheon'; the arena is 'combat'). */
-  const VIEWS = ['home', 'progress', 'map', 'journal', 'godhome', 'charms', 'fight', 'saves'];
+  const VIEWS = ['home', 'game', 'progress', 'map', 'journal', 'godhome', 'charms', 'fight', 'saves'];
   const inArena = (v) => v === 'fight' || v === 'godhome';
   const TOOLS = ['charms', 'fight'];
-  // The screens that were: Your game became the start screen's Inventory; the Map was a tab of Progress.
-  const OLD_VIEWS = { game: 'home', hall: 'godhome' };
+  // The screens that were: the Hall was a tab of Combat.
+  const OLD_VIEWS = { hall: 'godhome' };
   const SPELL_KEYS = ['vs', 'dd', 'hw'];
   const ART_KEYS = ['cyclone', 'dash', 'great'];
   const ART_STAT = { cyclone: 'nail.cyclone', dash: 'nail.dashSlash', great: 'nail.greatSlash' };
@@ -506,7 +506,7 @@
     return `<a class="mh-save${lv ? ' is-' + lv.state : ''}" href="${here(hashFor('saves'))}" data-act="view" data-value="saves"${prefs.view === 'saves' ? ' aria-current="page"' : ''}
           aria-label="${esc(label + (lv ? ', ' + st : ''))}" title="${esc(title)}"><span class="mh-save-fig"><span class="mh-save-light" aria-hidden="true"></span><img src="${D.art('hud', 'knight')}" alt=""></span><span class="mh-save-lbl">${FLEURS}${esc(label)}${live}</span>${n ? `<span class="mh-save-n">${n}</span>` : ''}</a>`;
   }
-  const VIEW_KEY = { home: 'navHome', charms: 'navCharms', fight: 'navFight', journal: 'navJournal', progress: 'navProgress',
+  const VIEW_KEY = { home: 'navHome', game: 'navGame', charms: 'navCharms', fight: 'navFight', journal: 'navJournal', progress: 'navProgress',
     map: 'navMap', godhome: 'navGodhome', saves: 'savesTitle' };
   function renderMasthead() {
     document.title = prefs.view === 'home' ? t('docTitle') : t(VIEW_KEY[prefs.view]) + ' · ' + t('title');
@@ -553,11 +553,11 @@
         <a class="gh" href="https://github.com/betorzdev/hallownest-calculator" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">${GITHUB}</a></p>`;
   }
 
-  /* The screen bar, in two groups: your game (Your game with the link's state, Progress with your
+  /* The screen bar, in two groups: your game (Your game with the link's state, the Inventory, Progress with your
      completion, the Map, the Journal with your completed ones, the Hall) and, after a thin rule,
-     the tools (Charms, Combat). On a phone the seven don't fit: the tools fold into one tab,
+     the tools (Charms, Combat). On a phone the eight don't fit: the tools fold into one tab,
      Tools, which opens the last one used, and while you're in one a second row lets you switch
-     (#nav-sub). It lives in index.html and here only its texts and which one is active change:
+     (#nav-sub); the Inventory folds the same way under Your game (#nav-sub-game). It lives in index.html and here only its texts and which one is active change:
      repainted whole, the focus would be lost when switching screens. Your game's text is set by
      paintHomeNav, the Journal's by paintHjNav and Progress's by paintPgNav. */
   function renderNav() {
@@ -577,7 +577,11 @@
       const on = a === tools ? TOOLS.includes(prefs.view) : v === prefs.view;
       if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
     }
+    // On a phone Your game's tab stands for the Inventory too, folded under it.
+    el.nav.querySelector('#nav-home').classList.toggle('is-parent', prefs.view === 'game');
     el.navSub.hidden = !TOOLS.includes(prefs.view);
+    el.navSubGame.hidden = prefs.view !== 'home' && prefs.view !== 'game';
+    el.navSubGame.setAttribute('aria-label', t('navHome'));
     el.navSub.setAttribute('aria-label', t('navTools'));
     App.paintHomeNav();
     App.paintHjNav();
@@ -590,7 +594,7 @@
      it shows (render). */
   function showScreen() {
     el.home.hidden = prefs.view !== 'home';
-    el.gear.hidden = prefs.view !== 'home';
+    el.gear.hidden = prefs.view !== 'game';
     el.panel.hidden = prefs.view !== 'charms';
     el.fight.hidden = !inArena(prefs.view);
     el.hj.hidden = prefs.view !== 'journal';
@@ -652,11 +656,11 @@
       </span>`;
   }
 
-  /* The notices above the screen. Overcharm, on Your game (its Inventory): on Charms it goes in
+  /* The notices above the screen. Overcharm, on the Inventory: on Charms it goes in
      the band, below the notches (charmBand), and in combat the HUD's aura already says it. And
      when the save linked to the game needs a click to go on following it (js/app-saves.js). */
   function renderBanner() {
-    const over = prefs.view === 'home' && App.sheet.notches.overcharmed
+    const over = prefs.view === 'game' && App.sheet.notches.overcharmed
       ? `<div class="banner"><span class="banner-tag">${esc(t('overcharmed'))}</span><span class="banner-text">${esc(t('overcharmBanner'))}</span></div>`
       : '';
     // On the Pantheons tab you're already there: the notice doesn't send you where you are.
@@ -869,7 +873,7 @@
   }
   /* The screen you arrive at fades in, like the game's fades between areas (css: .is-entering). */
   const fadeIn = (node) => { node.classList.remove('is-entering'); void node.offsetWidth; node.classList.add('is-entering'); };
-  const screenOf = (v) => (v === 'home' ? el.home : inArena(v) ? el.fight : v === 'journal' ? el.hj
+  const screenOf = (v) => (v === 'home' ? el.home : v === 'game' ? el.gear : inArena(v) ? el.fight : v === 'journal' ? el.hj
     : v === 'progress' || v === 'map' ? el.pg : v === 'saves' ? el.saves : el.panel);
   // Is the sticky bar covering it? Then you have to scroll up to it.
   const underNav = (node) => node.getBoundingClientRect().top < el.nav.getBoundingClientRect().bottom;

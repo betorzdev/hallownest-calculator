@@ -41,6 +41,7 @@ localStorage.setItem('hollow.prefs', JSON.stringify({
   hallId: q.get('statue') || 'gruz-mother',
   hallDiff: q.get('hdiff') || '',
   fightTab: q.get('tab') || 'combat',
+  pgMapBig: q.get('mapbig') === '1',   /* &mapbig=1: the Map's large size */
   cocoon: Number(q.get('cocoon') || 0),
   /* &binds=all or &binds=nail,soul: the bindings chosen on the choose-a-pantheon screen. */
   bindings: Object.fromEntries(['nail', 'shell', 'charms', 'soul'].map((k) =>

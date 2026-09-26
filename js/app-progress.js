@@ -86,7 +86,7 @@
         <span class="gplate-val${on && !STEPPED.includes(cat) ? '' : ' is-none'}">${esc(val)}</span>`;
     // The build's things aren't marked here: the plate takes you to Your game.
     if (where === 'game') {
-      return `<button type="button" class="gplate is-far${st ? ' ' + st : ''}" data-act="view" data-value="home" title="${esc(t('pgInGameHint'))}">${body}</button>`;
+      return `<button type="button" class="gplate is-far${st ? ' ' + st : ''}" data-act="view" data-value="game" title="${esc(t('pgInGameHint'))}">${body}</button>`;
     }
     return `<button type="button" class="gplate${st ? ' ' + st : ''}" data-act="pgMark" data-key="${cat}" data-id="${it.id}" aria-pressed="${on}"
         title="${esc(m.name + ' · ' + t(on ? 'pgUnmark' : 'pgMark'))}">${body}</button>`;
@@ -117,6 +117,7 @@
     /* Two screens in this section: the 112% (the game's figure and its fifteen categories) and
        the Map, with the collectibles on it (js/app-map.js). */
     const head = `${brackets}${screenHead(esc(t(prefs.view === 'map' ? 'navMap' : 'navProgress')))}`;
+    el.pg.classList.toggle('is-big', prefs.view === 'map' && !!prefs.pgMapBig);
     if (prefs.view === 'map') {
       el.pg.innerHTML = `<div class="gear-body pg-body">${head}${App.renderPgMap()}</div>`;
       App.pgMapAfterPaint();

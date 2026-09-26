@@ -444,7 +444,7 @@
   function btnHtml(th) {
     const a = th.act;
     return !a ? ''
-      : a.game ? `<button type="button" class="text-btn" data-act="view" data-value="home" title="${esc(t('pgInGameHint'))}">${esc(t('pgmGoInv'))}</button>`
+      : a.game ? `<button type="button" class="text-btn" data-act="view" data-value="game" title="${esc(t('pgInGameHint'))}">${esc(t('pgmGoInv'))}</button>`
         : `<button type="button" class="text-btn" ${a.find ? `data-act="pgFind" data-id="${esc(a.find)}"` : `data-act="pgMark" data-key="${a.cat}" data-id="${esc(a.id)}"`} aria-pressed="${hasIt(th)}">${esc(t(hasIt(th) ? 'pgUnmark' : 'pgMark'))}</button>`;
   }
   function cardHtml(th) {
@@ -509,19 +509,19 @@
   function renderPgMap() {
     const layers = shownLayers();
     const pins = pinsSvg(layers);
-    const reference = !App.progress.mapped.length;
-    const note = reference ? 'pgMapReference' : prefs.pgMapWhole ? 'pgMapWholeOn' : 'pgMapFromSave';
+    // With no game's save the map is whole and needs no note; with one, it says how it's drawn.
+    const note = !App.progress.mapped.length ? '' : prefs.pgMapWhole ? 'pgMapWholeOn' : 'pgMapFromSave';
     return `<div class="pgm">
       <div class="pgm-bar">
-        <p class="pgm-note">${esc(t(note))}</p>
+        ${note ? `<p class="pgm-note">${esc(t(note))}</p>` : ''}
         ${searchHtml()}
+      </div>
+      <div class="pgm-box">
         <span class="pgm-zoom">
           <button type="button" class="step" data-act="pgmZoom" data-value="in" aria-label="${esc(t('pgZoomIn'))}" title="${esc(t('pgZoomIn'))}">+</button>
           <button type="button" class="step" data-act="pgmZoom" data-value="out" aria-label="${esc(t('pgZoomOut'))}" title="${esc(t('pgZoomOut'))}">−</button>
-          <button type="button" class="step pgm-fit" data-act="pgmZoom" data-value="fit" aria-label="${esc(t('pgZoomFit'))}" title="${esc(t('pgZoomFit'))}">⤢</button>
+          <button type="button" class="step pgm-big" data-act="pgmBig" aria-pressed="${!!prefs.pgMapBig}" aria-label="${esc(t('pgMapBig'))}" title="${esc(t(prefs.pgMapBig ? 'pgMapSmall' : 'pgMapBig'))}">${prefs.pgMapBig ? '⤡' : '⤢'}</button>
         </span>
-      </div>
-      <div class="pgm-box">
         <svg class="pgm-svg" viewBox="${vb ? `${vb.x} ${vb.y} ${vb.w} ${vb.h}` : `${FIT.x} ${FIT.y} ${FIT.w} ${FIT.h}`}" role="img" aria-label="${esc(t('pgTabMap'))}">
           <g class="pgm-rooms">${roomsSvg()}</g>
           <g class="pgm-pins">${pins}</g>
@@ -705,7 +705,11 @@
       render();
     }
   });
-  window.addEventListener('resize', () => { if (prefs.view === 'map') applyView(); });
+  /* The large Map leaves the page's column for the window's whole width (css: .pg.is-big). 100vw would
+     count the scrollbar, so the page's real width goes to CSS as --page-w. */
+  const pageWidth = () => document.documentElement.style.setProperty('--page-w', document.documentElement.clientWidth + 'px');
+  pageWidth();
+  window.addEventListener('resize', () => { pageWidth(); if (prefs.view === 'map') applyView(); });
 
   Object.assign(actions, {
     pgmPick(node) {
@@ -724,9 +728,19 @@
       savePrefs();
       render();
     },
+    /* The large map, a choice (prefs.pgMapBig): the window's whole width and height (css:
+       .pg.is-big), refitted, and brought under the bar so it's seen whole. */
+    pgmBig() {
+      prefs.pgMapBig = !prefs.pgMapBig;
+      savePrefs();
+      vb = null;
+      render();
+      const btn = el.pg.querySelector('.pgm-big'), b = box();
+      if (btn) btn.focus({ preventScroll: true });
+      if (prefs.pgMapBig && b) b.scrollIntoView({ block: 'start' });
+    },
     pgmZoom(node) {
       const v = node.dataset.value;
-      if (v === 'fit') { vb = null; applyView(); return; }
       zoomAt(v === 'in' ? 1 / 1.4 : 1.4, vb.x + vb.w / 2, vb.y + vb.h / 2);
     },
   });

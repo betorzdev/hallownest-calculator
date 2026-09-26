@@ -420,9 +420,10 @@
       if (S.read(store).active === n) { App.go('home', true); return; }
       if (S.select(store, n)) leave(n);
     },
-    saveNew(node) { actions.savePick(node); },
+    saveNew(node) { track('save-new'); actions.savePick(node); },
     saveImport(node) {
       if (!store) { toast(t('savesNoStorage')); return; }
+      track('import-open');
       Object.assign(imp, { n: Number(node.dataset.value), state: 'idle', file: null, fresh: true, copied: 0 });
       if (!imp.chosen) imp.os = detectOs();
       clearing = 0;
@@ -611,10 +612,11 @@
     const reader = new FileReader();
     reader.onload = () => {
       const r = F.read(new Uint8Array(reader.result));
-      if (!r.ok) { imp.state = 'error'; paintDrop(); return; }
+      if (!r.ok) { imp.state = 'error'; paintDrop(); track('import-bad'); return; }
       imp.file = { name: file.name, snap: F.toSnapshot(r.pd, r.sd, file.lastModified), meta: { ...F.meta(r.pd), mods: r.mods }, handle, stamp: L.stampOf(file) };
       imp.state = 'ready';
       paintDrop();
+      track('import-read');
       focusIn('[data-act="importDo"]');
     };
     reader.onerror = () => { imp.state = 'error'; paintDrop(); };
@@ -642,6 +644,25 @@
       return;
     }
     if (file) readFile(file);
+  });
+  /* The same over Your game's invitation (js/app-home.js): letting the file go there opens the
+     import into the first empty save, already reading it. */
+  let homeDepth = 0;
+  const inviting = (e) => prefs.view === 'home' && !activeSlot() && hasFiles(e);
+  const setHomeDrag = (on) => { const z = el.home.querySelector('.hmI'); if (z) z.classList.toggle('is-drag', on); };
+  el.home.addEventListener('dragenter', (e) => { if (!inviting(e)) return; e.preventDefault(); homeDepth++; setHomeDrag(true); });
+  el.home.addEventListener('dragover', (e) => { if (!inviting(e)) return; e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
+  el.home.addEventListener('dragleave', () => { homeDepth = Math.max(0, homeDepth - 1); if (!homeDepth) setHomeDrag(false); });
+  el.home.addEventListener('drop', (e) => {
+    if (!inviting(e)) return;
+    e.preventDefault();
+    homeDepth = 0; setHomeDrag(false);
+    const item = e.dataTransfer.items && e.dataTransfer.items[0];
+    const file = e.dataTransfer.files && e.dataTransfer.files[0];
+    const handle = L.canLive() && item && item.getAsFileSystemHandle ? item.getAsFileSystemHandle() : null;
+    App.importFirstEmpty();
+    if (handle) handle.then(readHandle, () => { if (file) readFile(file); });
+    else if (file) readFile(file);
   });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && imp.n && prefs.view === 'saves') actions.importClose();
@@ -688,6 +709,7 @@
     if (live.watcher) live.watcher.stop();
     Object.assign(live, { n: 0, name: '', state: '', watcher: null });
   }
+  let synced = false;
   async function liveStart() {
     if (!store || !L.canLive()) return;
     live.links = await L.links.all();
@@ -709,7 +731,8 @@
         App.reloadGame();
         // The notice says what you got, as the Your game screen's "Since last time" (js/app-home.js).
         if (changed === 'game') toast(App.gainedLine() || t('liveUpdated'));
-        track('save-sync');
+        // Once per visit: that the link works, not how many benches.
+        if (!synced) { synced = true; track('save-sync'); }
       },
       onState(s) { live.state = s; render(); },
     });
