@@ -110,6 +110,10 @@ if (q.get('saves')) {
   localStorage.setItem('hollow.saves', JSON.stringify({ active, slots: active === 2 ? {} : { 2: mid } }));
   if (active === 2) for (const [k, v] of Object.entries(mid)) localStorage.setItem(k, v);
 }
+/* &ls=<JSON { key: value }>: those localStorage keys, as they are: a real game's slot, made with
+   js/savefile.js from a save file (with hollow.saves making it the active one), for captures of
+   Your game. */
+if (q.get('ls')) for (const [k, v] of Object.entries(JSON.parse(q.get('ls')))) localStorage.setItem(k, v);
 const f = document.createElement('iframe');
 f.src = 'index.html' + (q.get('hash') ? q.get('hash') + (view !== 'charms' ? '&view=' + view : '') : '');
 f.style.width = w + 'px';
@@ -118,6 +122,13 @@ f.style.height = h + 'px';
    negative margin, which does go into the reflow and therefore into the capture. */
 f.addEventListener('load', () => {
   if (offsetY) f.contentDocument.documentElement.style.marginTop = -offsetY + 'px';
+  /* &live=live|paused|lost draws the active save as following the game's file in that state
+     (headless can't pick a file): for captures of Your game and the bar. */
+  if (q.get('live')) {
+    const A = f.contentWindow.HK.app;
+    A.liveInfo = () => ({ state: q.get('live'), name: 'user1.dat' });
+    A.render();
+  }
   // &read=<id> opens the Journal, if it isn't open, and reads that page (hovering: tapping it would pick it).
   if (q.get('read')) {
     const doc = f.contentDocument;

@@ -67,7 +67,14 @@ test("the charm numbers are the game's: CHARM_NAME_<n> names the same charm", ()
 
 test('a new game comes in as the base Knight with nothing found', () => {
   const snap = F.toSnapshot(BASE);
-  assert.deepEqual(snap, { 'hollow.build': C.encode(C.PRESETS.base), 'hollow.owned': '[]' });
+  assert.deepEqual(snap, { 'hollow.build': C.encode(C.PRESETS.base), 'hollow.owned': '[]',
+    'hollow.meta': JSON.stringify({ time: 0, completion: 0, geo: 0, saved: null }) });
+});
+
+test('the profile screen\'s figures travel with the game, and the moment of the save when known', () => {
+  const pd = { ...BASE, playTime: 3725.5, completionPercentage: 48, geo: 1830 };
+  assert.deepEqual(JSON.parse(F.toSnapshot(pd, null, 1758900000000)['hollow.meta']), { time: 3725.5, completion: 48, geo: 1830, saved: 1758900000000 });
+  assert.equal(JSON.parse(F.toSnapshot(pd, null, 'x')['hollow.meta']).saved, null);
 });
 
 test('the build: upgrades, the swapped nail arts, the cloak and the charms in the order worn', () => {
@@ -103,7 +110,7 @@ test('the Journal, the Hall and the lifeblood door', () => {
   assert.deepEqual(F.hall(pd), { 'gruz-mother': ['at', 'asra'] });
   assert.deepEqual(F.door(pd), { done: { master: ['nail', 'soul'], knight: ['nail', 'shell', 'charms', 'soul'] }, all: ['knight'] });
   const snap = F.toSnapshot(pd);
-  assert.deepEqual(Object.keys(snap).sort(), ['hollow.bindings', 'hollow.build', 'hollow.hall', 'hollow.journal', 'hollow.owned', 'hollow.progress']);
+  assert.deepEqual(Object.keys(snap).sort(), ['hollow.bindings', 'hollow.build', 'hollow.hall', 'hollow.journal', 'hollow.meta', 'hollow.owned', 'hollow.progress']);
   // The pantheons cleared are part of the 112%, not of the door (js/completion.js).
   assert.deepEqual(JSON.parse(snap['hollow.progress']).ids, ['pantheon-master', 'pantheon-knight']);
 });

@@ -2,10 +2,11 @@
 
 # Hallownest Calculator
 
-**See how every charm changes the Knight's stats, in English and Spanish.**
+**Your real Hollow Knight game, followed live — and every charm's effect on the Knight. In English and Spanish.**
 
-Pick what you're wearing and the sheet shows you every value, how much it changed and which
-charm changed it. Then take that build into a fight.
+Import your save and the site shows it as the game does: the 112% item by item, the game's own
+map with what you're missing, the Hunter's Journal and Godhome. Keep playing, and every time you
+sit on a bench it catches up and tells you what you got. Then try builds and take them into a fight.
 
 [**Open the calculator**](https://betorzdev.github.io/hallownest-calculator/)
 &nbsp;·&nbsp; [Full guide](docs/guide.md)
@@ -13,7 +14,7 @@ charm changed it. Then take that build into a fight.
 
 <br>
 
-<img src="docs/screenshots/charms.webp" alt="The Charms screen: the Knight's HUD, nail damage 32, DPS 114.3 and the charm grid, with Shaman Stone hovered and its effect on each spell listed alongside" width="900">
+<img src="docs/screenshots/home.webp" alt="The Your game screen: resting at City of Tears, following the game live, 77% of 112, 3 h 20 min played, and what was found since the last bench: Watcher Knight, Lurien the Watcher, two grubs" width="900">
 
 </div>
 
@@ -21,36 +22,66 @@ charm changed it. Then take that build into a fight.
 
 <table>
 <tr>
-<td width="50%" valign="top">
-
-### Charms
-All 45 charms on the game's own Inventory screen. **Hover one and see what it would change**
-before you equip it: nail damage, DPS, hits until you die, soul per hit, healing time, every
-spell. Overcharm and notches work as in the game.
-
-</td>
-<td width="50%" valign="top">
-
-### Spells, Nail Arts and effects
-Under the charms, what each spell and Nail Art hits for with your build, and **what your
-charms do that the numbers don't show**: Weaverlings, Dreamshield, Thorns, the Elegy beams…
-with the synergies between them marked.
-
-</td>
-</tr>
-<tr>
 <td colspan="2" valign="top">
-<img src="docs/screenshots/spells-effects.webp" alt="Spells and Nail Arts with their damage, and the Effects row: Dreamshield, Weaverlings with Grubsong's synergy, Elegy's beams, Thorns, Grubsong's soul and the Void Heart">
+
+### Your game, live
+Import your save file (`user1.dat`…) and **the site follows it**: with Chrome or Edge, every time
+the game saves at a bench the page catches up by itself and says what changed. The start screen
+is your game at a glance: the area you rest in, your completion, the time played, **what you got
+since last time**, your shade and **what's still missing around your bench**. Four save slots,
+like the game's, or keep one by hand if you play elsewhere.
+
 </td>
 </tr>
 <tr>
 <td valign="top">
 
-### Inventory
-Your nail, masks, soul vessels, notches, spells and nail arts, plus the charms and abilities
-you've actually found. Start from the base Knight or from everything maxed. Four save slots,
-like the game's, so a Steel Soul run doesn't overwrite your main game, and a free mode with
-everything unlocked to try builds. Or import your real game straight from its save file.
+### Progress and the Map
+The **112% exactly as the game counts it**, category by category, and the **game's own map**, drawn
+from its files, with every grub, shard, relic and root on it, found or not.
+
+</td>
+<td valign="top">
+
+### Hunter's Journal
+Entry by entry, from "not encountered" to "completed", with the kills left to decipher each one.
+The total works like the game's: 146, growing to 164.
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+<img src="docs/screenshots/map.webp" alt="The game's map with the collectibles on it, and the area names">
+</td>
+<td valign="top">
+<img src="docs/screenshots/journal.webp" alt="The Hunter's Journal: counters of encountered and completed entries and the Vengefly page">
+</td>
+</tr>
+<tr>
+<td colspan="2" valign="top">
+
+### Godhome
+The **Hall of Gods' 44 statues** on Attuned, Ascended and Radiant, and the **five Pantheons** room by
+room, with bindings, the hot springs and the Lifeblood cocoon: the symbols you've won and a
+simulator to try each fight with your build.
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+<img src="docs/screenshots/hall-of-gods.webp" alt="Godhome's Hall of Gods: the statue grid with the symbols won on each difficulty and Gruz Mother's plaque">
+</td>
+<td valign="top">
+<img src="docs/screenshots/pantheons.webp" alt="Pantheon of the Master at room 6: the timeline of rooms and the hot spring, bench and cocoon choices">
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+### Charms
+All 45 charms on the game's own Inventory screen. **Hover one and see what it would change**
+before you equip it: nail damage, DPS, hits until you die, soul per hit, healing time, every
+spell. Overcharm and notches work as in the game.
 
 </td>
 <td valign="top">
@@ -64,7 +95,7 @@ take?*
 </tr>
 <tr>
 <td valign="top">
-<img src="docs/screenshots/your-game.webp" alt="Inventory screen: the five nails, the masks, vessels and notches as the game draws them, nail arts and spell levels chosen by their artwork">
+<img src="docs/screenshots/charms.webp" alt="The Charms screen: the Knight's HUD, nail damage 32, DPS 114.3 and the charm grid, with Shaman Stone hovered and its effect on each spell listed alongside">
 </td>
 <td valign="top">
 <img src="docs/screenshots/arena.webp" alt="Combat arena mid-fight against False Knight: the Knight and the enemy face to face with its title card, the scoreboard between them, and both sides' attacks below">
@@ -73,44 +104,36 @@ take?*
 <tr>
 <td colspan="2" valign="top">
 
-### Hall of Gods & Pantheons
-The **44 statues** on Attuned, Ascended and Radiant, and the **five Pantheons** room by room,
-with bindings, the hot springs and the Lifeblood cocoon.
+### Spells, Nail Arts and effects
+Under the charms, what each spell and Nail Art hits for with your build, and **what your
+charms do that the numbers don't show**: Weaverlings, Dreamshield, Thorns, the Elegy beams…
+with the synergies between them marked.
+
+<img src="docs/screenshots/spells-effects.webp" alt="Spells and Nail Arts with their damage, and the Effects row: Dreamshield, Weaverlings with Grubsong's synergy, Elegy's beams, Thorns, Grubsong's soul and the Void Heart">
 
 </td>
 </tr>
 <tr>
 <td valign="top">
-<img src="docs/screenshots/hall-of-gods.webp" alt="Hall of Gods: the statue grid with the symbols won on each difficulty and Gruz Mother's plaque">
-</td>
-<td valign="top">
-<img src="docs/screenshots/pantheons.webp" alt="Pantheon of the Master at room 6: the timeline of rooms and the hot spring, bench and cocoon choices">
-</td>
-</tr>
-<tr>
-<td valign="top">
 
-### Hunter's Journal
-Track your real playthrough entry by entry, from "not encountered" to "completed", with the
-kills left to decipher each one. The total works like the game's: 146, growing to 164.
+### Inventory
+Under your game, the Knight as the save has him: your nail, masks, soul vessels, notches, spells,
+nail arts, equipment and items. With no save, a free mode with everything unlocked to try builds,
+or start from the base Knight.
+
+<img src="docs/screenshots/your-game.webp" alt="Inventory: the five nails, the masks, vessels and notches as the game draws them, nail arts and spell levels chosen by their artwork">
 
 </td>
-<td valign="top">
+<td valign="top" align="center">
 
 ### In your pocket, in two languages
 Works just as well on a phone. English and Spanish, with every name copied from the game's own
 official translation.
 
-</td>
-</tr>
-<tr>
-<td valign="top">
-<img src="docs/screenshots/journal.webp" alt="The Hunter's Journal: counters of encountered and completed entries and the Vengefly page">
-</td>
-<td valign="top" align="center">
-<img src="docs/screenshots/mobile-en.webp" alt="The Charms screen on a phone, in English" width="45%">
+<img src="docs/screenshots/mobile-en.webp" alt="Your game on a phone, in English" width="45%">
 &nbsp;
-<img src="docs/screenshots/mobile-es.webp" alt="The Charms screen on a phone, in Spanish" width="45%">
+<img src="docs/screenshots/mobile-es.webp" alt="Your game on a phone, in Spanish" width="45%">
+
 </td>
 </tr>
 </table>
@@ -134,7 +157,9 @@ python3 -m http.server 8000    # then http://localhost:8000
 npm test                       # node --test, no dependencies
 ```
 
-Your build lives in the URL, so **Share** gives you a link to exactly what you're wearing.
+Your build lives in the URL, so **Share** gives you a link to exactly what you're wearing. Following
+a save live needs Chrome or Edge on a computer (the File System Access API); importing it once works
+anywhere.
 
 ## Documentation
 

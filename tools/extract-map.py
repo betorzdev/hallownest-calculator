@@ -59,6 +59,9 @@ TRANSITIONS = ('https://raw.githubusercontent.com/homothetyhk/RandomizerMod/'
 # its locations.json names each place's scene and the object in it (or its coordinates there).
 IC_LOCATIONS = ('https://raw.githubusercontent.com/homothetyhk/HollowKnight.ItemChanger/'
                 'e57bc4e37bf7297f39b51b17af93f80c1ef8ce9e/ItemChanger/Resources/locations.json')
+# The lifts that join two areas (and the Pleasure House's), by the scenes at their ends.
+LIFTS = ['Crossroads_49', 'Crossroads_49b', 'Ruins2_10', 'Ruins2_10b',
+         'Crossroads_45', 'Town', 'Ruins_Elevator']
 HOST_PIN = {'Room_Colosseum_Bronze': 'colosseum', 'Room_Colosseum_Silver': 'colosseum', 'Room_Colosseum_Gold': 'colosseum',
             'Deepnest_Spider_Town': ('dreamer', 'herrah')}
 
@@ -189,6 +192,7 @@ def main():
     root = next(o.read() for o in env.objects if o.type.name == 'GameObject' and o.read().m_Name == 'Game_Map')
 
     rooms, full_imgs, rough_imgs, pins, pin_imgs, areas, anchors = {}, {}, {}, [], {}, [], {}
+    sketched = []
 
     def sprite_of(go):
         srs = of_type(go, 'SpriteRenderer')
@@ -279,6 +283,10 @@ def main():
             h = full_img.size[1] / fppu * scale[1]
             rw = rough_img.size[0] / ppu * scale[0]
             rh = rough_img.size[1] / ppu * scale[1]
+            # Shown from the start once the area's map is bought (active in Game_Map, as Cornifer
+            # drew it); the rest only once you've been there (GameMap.SetupMap).
+            if g.m_IsActive:
+                sketched.append(g.m_Name)
             rooms[name] = {'area': len(areas), 'x': round(gx, 3), 'y': round(gy, 3),
                            'w': round(w, 3), 'h': round(h, 3), 'rw': round(rw, 3), 'rh': round(rh, 3)}
             full_imgs[name] = full_img
@@ -399,6 +407,17 @@ def main():
         if sc not in hosts and sc in wanted:
             print('  no place for', sc)
 
+    # The lifts between areas, which the game's map draws but doesn't pin: each end, on its lever
+    # or its cage in its scene.
+    for scene in LIFTS:
+        for obj in ('Mines Exit Lift', 'Mines Lift', 'Toll Machine Lift', 'Ruins Lift', 'Lift Call Lever'):
+            w = scenes_.find(scene, obj)
+            q = w and in_room(scene, *w)
+            if q:
+                pins.append({'kind': 'lift', 'scene': scene, 'x': q[0], 'y': q[1]}); break
+        else:
+            print('  no lift found in', scene)
+
     def point(scene):
         if scene in rooms: return [rooms[scene]['x'], rooms[scene]['y']]
         return anchors.get(scene) or hosts.get(scene)
@@ -458,7 +477,7 @@ def main():
             "             a tenth item, alt, is the full drawing the game swaps in once the world",
             "             changes there (js/progress.js, ALTS, says when)",
             "     PINS    [kind, scene, x, y]: the game's own pins (bench, stag, root, cocoon, tram, spa,",
-            "             vendor, grubfather, colosseum, blackegg, grub, flame, grave; dreamer and npc, whose",
+            "             vendor, grubfather, colosseum, blackegg, grub, flame, grave, lift; dreamer and npc, whose",
             "             'scene' is who)",
             "     PLACE_LABELS [scene, name]: the map's own titles of the places inside the areas",
             "     PIN_ART their pictures in assets/map/pins.png, and the shade's, the Dreamgate's, the",
@@ -493,7 +512,9 @@ def main():
             f"  const HOSTS = {js(hosts)};",
             '  // ItemChanger\'s places (its locations.json, by name), each where it is: [x, y, scene].',
             f"  const SPOTS = {js(spots)};",
-            '  HK.map = { AREAS, AREA_IDS, PLACE_LABELS, ROOMS, ANCHORS, HOSTS, SPOTS, PINS, PIN_ART, ATLAS, BOUNDS };',
+            '  // The rooms Cornifer\'s map shows once bought (the rest only once you\'ve been there).',
+            f"  const SKETCHED = {js(sketched)};",
+            '  HK.map = { AREAS, AREA_IDS, PLACE_LABELS, ROOMS, ANCHORS, HOSTS, SPOTS, SKETCHED, PINS, PIN_ART, ATLAS, BOUNDS };',
             "  if (typeof module !== 'undefined' && module.exports) module.exports = HK.map;",
             '})();',
             '',

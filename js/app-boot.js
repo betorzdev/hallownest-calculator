@@ -22,6 +22,9 @@
   // The screen: the link's; without it, a link with a build opens Charms, and with no link, wherever you left it.
   const urlHash = splitHash(location.hash);
   prefs.view = urlHash.view || (C.isEmpty(urlHash.build) ? prefs.view : 'charms');
+  if (App.TOOLS.includes(prefs.view)) prefs.tool = prefs.view;
+  // Godhome is Combat's tabs 'hall' and 'pantheon' shown as their own screen: the tab follows the screen.
+  if ((prefs.view === 'godhome') !== (prefs.fightTab !== 'combat')) prefs.fightTab = prefs.view === 'godhome' ? (prefs.godTab === 'pantheon' ? 'pantheon' : 'hall') : 'combat';
   I.setLang(fromUrl || prefs.lang);
   prefs.lang = I.current;
   if (fromUrl) prefs.langChosen = true;   // a link with a language counts as choosing it

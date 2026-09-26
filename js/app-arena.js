@@ -815,6 +815,7 @@
      and the arena with no enemy opens on the Journal. */
   function setFightTab(v) {
     prefs.fightTab = v;
+    if (v !== 'combat') prefs.godTab = v;   // Godhome comes back to the tab it was left on
     App.pickerOpen = false;
     App.hallTablet = false;
     if (prefs.fightTab === 'combat' && !prefs.foeId) openJournal();
@@ -844,19 +845,23 @@
     }
   }
 
-  /* ── Header: COMBAT | HALL OF GODS | PANTHEONS ────────────────────────── */
-  /* The combat header: the screen's title is its three tabs —the arena, the Hall of Gods and
-     the Pantheons—, centred and with the rule below, like the other screens. */
+  /* ── Header: HALL OF GODS | PANTHEONS, or COMBAT ─────────────────────── */
+  /* Godhome's header: the screen's title is its two tabs —the Hall of Gods and the Pantheons, one
+     place in the game—, centred and with the rule below, like the other screens. Combat, the
+     arena, is a screen of its own drawn in this section (design/10-restructure.md): its title alone. */
   function fightHead() {
+    if (prefs.view === 'fight') return `<header class="inv-head fight-head">
+      <h2 class="sec-title screen-title" tabindex="-1">${esc(t('navFight'))}</h2>${rule}
+    </header>`;
     // "Hall of Gods" doesn't fit on mobile: there that tab carries its short label.
     const tab = (id, key, short) => `<button type="button" role="tab" class="tab ${prefs.fightTab === id ? 'is-on' : ''}"
       data-act="fightTab" data-value="${id}" aria-selected="${prefs.fightTab === id}" ${short ? `aria-label="${esc(t(key))}"` : ''}>${short
         ? `<span class="tab-long" aria-hidden="true">${esc(t(key))}</span><span class="tab-short" aria-hidden="true">${esc(t(short))}</span>` : esc(t(key))}</button>`;
     const sep = '<span class="tab-sep" aria-hidden="true"></span>';
     return `<header class="inv-head fight-head">
-      <h2 class="sr-only screen-title" tabindex="-1">${esc(t('navFight'))}</h2>
-      <div class="tabs" role="tablist" aria-label="${esc(t('navFight'))}">
-        ${tab('combat', 'fightTabCombat')}${sep}${tab('hall', 'fightTabHall', 'fightTabHallShort')}${sep}${tab('pantheon', 'fightTabPantheon')}
+      <h2 class="sr-only screen-title" tabindex="-1">${esc(t('navGodhome'))}</h2>
+      <div class="tabs" role="tablist" aria-label="${esc(t('navGodhome'))}">
+        ${tab('hall', 'fightTabHall', 'fightTabHallShort')}${sep}${tab('pantheon', 'fightTabPantheon')}
       </div>${rule}
     </header>`;
   }
@@ -1109,7 +1114,7 @@
   }
   function bandCheck() {
     // Hidden, the stage measures zero and would read as scrolled away: render() checks again once it shows.
-    const stage = prefs.view === 'fight' && !el.fight.hidden ? el.fight.querySelector('.stage') : null;
+    const stage = (prefs.view === 'fight' || prefs.view === 'godhome') && !el.fight.hidden ? el.fight.querySelector('.stage') : null;
     if (!stage) { bandSet(false); return; }
     if (navBottom < 0) bandMeasure();
     const r = stage.getBoundingClientRect();
@@ -1595,7 +1600,7 @@
      field, where it belongs to the text. */
   document.addEventListener('keydown', (ev) => {
     if (!(ev.ctrlKey || ev.metaKey) || ev.shiftKey || ev.altKey || ev.key.toLowerCase() !== 'z') return;
-    if (prefs.view !== 'fight' || !undoStack.length) return;
+    if ((prefs.view !== 'fight' && prefs.view !== 'godhome') || !undoStack.length) return;
     if (ev.target.closest && ev.target.closest('input, textarea, select, [contenteditable]')) return;
     ev.preventDefault();
     if (undo()) render();

@@ -104,7 +104,7 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
    below. The figures and what responds to the finger don't change. */
 .panel, .gear { --tint: var(--tint-sheet); }
 .fight { --tint: var(--tint-combat); }
-.gear.pg { --tint: var(--tint-progress); }
+.gear.pg, .gear.home { --tint: var(--tint-progress); }
 .fight.is-godhome { --tint: var(--tint-godhome); }
 /* The page's chrome (the screen bar's rule, what sits outside a section) takes the tint of the
    screen in view. */
@@ -112,7 +112,7 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 .page:has(.fight:not([hidden])) { --tint: var(--tint-combat); }
 .page:has(.fight.is-godhome:not([hidden])) { --tint: var(--tint-godhome); }
 .page:has(.hj-sec:not([hidden])) { --tint: var(--tint-journal); }
-.page:has(.pg:not([hidden])) { --tint: var(--tint-progress); }
+.page:has(.pg:not([hidden])), .page:has(.home:not([hidden])) { --tint: var(--tint-progress); }
 /* The pale tints are all close to bone: on the lights they're carried by the section's lamp, the
    tint's hue with a little more chroma (tokens.css). Declared again on every element that sets
    --tint, because a custom property is resolved where it's declared: the lamp, the brackets, the
@@ -290,6 +290,18 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 /* The Journal carries its completed entries over the total alongside. */
 .nav-num { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-xs); font-weight: 600; color: var(--ink-2); }
 .nav-hj:hover .nav-num { color: var(--accent); }
+/* The two groups: your game, then the tools after a thin rule (design/10-restructure.md). On a
+   computer the tools go by name; the Tools tab and its second row are the phone's. */
+.nav-sep { width: 1px; height: 1.4em; align-self: center; background: var(--line-ctl); }
+.nav-tools, .nav-sub, .nav-short { display: none; }
+/* The link to the game's file, on Your game's tab: the diamond lit while it follows the game. */
+.nav-live { display: inline-block; width: var(--sp-2); height: var(--sp-2); transform: rotate(45deg); border: 1px solid currentColor; }
+.nav-live.is-live { background: var(--ink-strong); border-color: var(--ink-strong); box-shadow: 0 0 8px color-mix(in oklab, var(--ink-strong) 55%, transparent); }
+.nav-live.is-paused, .nav-live.is-lost { color: var(--cond); }
+@media (prefers-reduced-motion: no-preference) {
+  .nav-live.is-live { animation: live-breathe 2.4s var(--ease-fade) infinite alternate; }
+}
+.minihud[hidden] { display: none; }
 
 /* The atmosphere: the main menu behind the whole page (tokens.css, "Atmosphere"). Fixed to the
    window and behind everything: .page isolates, so z-index −2 and −1 paint over its background
@@ -1247,8 +1259,43 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
      fit) and without the Journal's book, which leaves room for its name with your completed entries. */
   :root { --sticky-h: 100px; }
   /* Each tab as wide as its word (a long one, «Inventario», doesn't break), the free space between them. */
-  .nav-tabs { display: grid; grid-template-columns: repeat(5, auto); justify-content: space-between; gap: 0 var(--sp-2); }
+  .nav-tabs { display: grid; grid-template-columns: repeat(6, auto); justify-content: space-between; gap: 0 var(--sp-2); }
   .nav-tab { flex-direction: column; justify-content: center; gap: 0; min-height: 48px; font-size: var(--fs-md); text-align: center; }
+}
+/* The seven tabs and the mini-bar don't fit side by side below 1240 px: the mini-bar goes to a
+   second row, across the full width, as on a phone. */
+.nav-num { white-space: nowrap; }
+@media (min-width: 900px) and (max-width: 1239px) {
+  .nav:has(#minihud:not([hidden])) { flex-direction: column; align-items: stretch; gap: 0; }
+  .nav:has(#minihud:not([hidden])) .minihud { justify-content: flex-end; padding: var(--sp-2) 0; border-top: 1px solid var(--line-row); }
+  :root:has(#minihud:not([hidden])) { --sticky-h: 110px; }
+}
+/* The fight's scoreboard is wider than the build's figures: with it, the second row at any width. */
+@media (min-width: 900px) {
+  .nav-tab { white-space: nowrap; }
+  .nav:has(#minihud.is-fight:not([hidden])) { flex-direction: column; align-items: stretch; gap: 0; }
+  .nav:has(#minihud.is-fight:not([hidden])) .minihud { flex: none; justify-content: flex-end; padding: var(--sp-2) 0; border-top: 1px solid var(--line-row); }
+  :root:has(#minihud.is-fight:not([hidden])) { --sticky-h: 110px; }
+}
+/* Seven tabs don't fit below 900 px: the tools fold into one, Tools, and while you're in one a
+   second row switches between Charms and Combat. */
+@media (max-width: 899px) {
+  .nav-tabs { gap: var(--sp-1) var(--sp-4); }
+  .nav-tool, .nav-sep { display: none; }
+  .nav-tools { display: inline-flex; }
+  .nav-sub:not([hidden]) { display: flex; justify-content: center; gap: var(--sp-8); border-top: 1px solid var(--line-row); }
+  .nav-sub .nav-tab { min-height: 40px; font-size: var(--fs-md); }
+  /* The bar's height follows its rows: the tabs alone on your game's screens, and the tools'
+     second row and the mini-bar with the tools. */
+  :root:has(#minihud[hidden]) { --sticky-h: 60px; }
+  :root:has(#nav-sub:not([hidden])) { --sticky-h: 140px; }
+}
+@media (max-width: 599px) {
+  /* Six tabs in 358 px: one step smaller. */
+  .nav-tabs { gap: 0 var(--sp-1); }
+  .nav-tabs > .nav-tab { font-size: var(--fs-sm); letter-spacing: 0; }
+  .nav-long { display: none; }
+  .nav-short { display: inline; }
 }
 /* The sheet arranges itself by its own width (container inv), not the window's. */
 /* No room for the row: the HUD and the damage on top, and the six below, after a rule. */
@@ -2256,19 +2303,19 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
 .tab:hover { color: var(--accent); }
 .tab.is-on { color: var(--tint); border-bottom-color: var(--accent-line); }
 .tab-sep { width: 1px; height: 16px; background: var(--line-ctl); flex: none; }
-/* Combat's three, with the middle one right over the rule's diamond: the side ones take equal
-   columns (the widest rules), one flush right and the other flush left. Otherwise "Arena" and
-   "Pantheons", of different lengths, left the Hall shifted to one side of the diamond even
-   though the whole group was centred. */
-.fight-head .tabs { display: grid; grid-template-columns: 1fr auto auto auto 1fr; column-gap: var(--sp-4); }
+/* Godhome's two, with the rule between them right over the diamond: each takes an equal column
+   (the widest rules), one flush right and the other flush left. Otherwise "Hall of Gods" and
+   "Pantheons", of different lengths, left the rule to one side of the diamond even though the
+   whole group was centred. */
+.fight-head .tabs { display: grid; grid-template-columns: 1fr auto 1fr; column-gap: var(--sp-4); }
 .fight-head .tabs > :first-child { justify-self: end; }
 .fight-head .tabs > :last-child { justify-self: start; }
 /* Letter-spacing leaves air after the last letter: the same in front, and the label stays
    centred in its box (and the underline, under it). */
 .tab { padding-inline-start: 0.14em; }
-/* On mobile the three don't fit on one line (in Spanish, «Salón de los Dioses» alone already
-   measures 200 px): they share the row, and the long one switches to its short label («Salón», "Hall")
-   rather than break or push the others. */
+/* On mobile the two don't fit on one line in equal columns (in Spanish, «Salón de los Dioses»
+   alone already measures 200 px): the long one switches to its short label («Salón», "Hall")
+   rather than break or push the other. */
 .tab-short { display: none; }
 @media (max-width: 599px) {
   /* Equal columns need twice the widest («Panteones»): with less air between letters and
@@ -3873,6 +3920,27 @@ kbd {
 .pgm-found { display: inline-flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-sm); color: var(--ink-2); cursor: pointer; }
 .pgm-found input { accent-color: var(--accent); }
 .pgm-zoom { display: inline-flex; border: 1px solid var(--line-ctl); background: var(--card); }
+/* The search, beside the zoom: a line to type on, as the Journal's, and its results under it,
+   over the map, each with its picture, its name and where it is; the one chosen by the keys lit. */
+.pgm-search { position: relative; flex: 1 1 14rem; max-width: 22rem; }
+.pgm-q {
+  width: 100%; min-height: 40px; padding: var(--sp-1) 0; font-family: var(--font-body); font-size: var(--fs-md); color: var(--ink);
+  background: transparent; border: 0; border-bottom: 1px solid var(--line-ctl); border-radius: 0;
+  -webkit-appearance: none; appearance: none; transition: border-color var(--dur) var(--ease);
+}
+.pgm-q:hover { border-bottom-color: var(--accent-line); }
+.pgm-q::placeholder { color: var(--muted); }
+.pgm-q:focus-visible { outline-offset: 2px; }
+.pgm-results {
+  position: absolute; z-index: 3; top: calc(100% + var(--sp-1)); left: 0; right: 0; min-width: 16rem;
+  list-style: none; margin: 0; padding: var(--sp-1) 0; max-height: 22rem; overflow-y: auto;
+  background: var(--card); border: 1px solid var(--line-panel); box-shadow: var(--shadow-md);
+}
+.pgm-result { display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-1) var(--sp-3); cursor: pointer; }
+.pgm-result:hover, .pgm-result.is-cur { background: var(--picked); }
+.pgm-result.is-cur .pgm-card-t b { color: var(--accent); }
+.pgm-result.is-none { cursor: default; font-size: var(--fs-sm); color: var(--muted); }
+.pgm-result .pgm-card-art, .pgm-result .pgm-card-art img, .pgm-result .pgm-card-art svg { width: 24px; height: 24px; }
 .pgm-box { position: relative; height: min(72vh, 720px, 62vw + 120px); background: var(--bg); border: 1px solid var(--inv-line); overflow: hidden; }
 .pgm-svg { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; user-select: none; }
 .pgm-svg:active { cursor: grabbing; }
@@ -3883,6 +3951,8 @@ kbd {
 .pgm-pin:hover circle, .pgm-pin:focus-visible circle, .pgm-pin.is-sel circle { stroke: var(--accent); stroke-width: 0.1; }
 .pgm-pin:focus { outline: none; }
 .pgm-pin.is-on { opacity: 0.4; }
+/* The lift, drawn by the site (the game has no pin for it): in bone, like the game's pins. */
+.pgm-glyph { fill: var(--ink-strong); }
 /* Close up (.is-near), each pin's name under it, in bone with the black of the map around its
    letters, so it reads over the rooms' lines. */
 .pgm-lbl { display: none; font-family: var(--font-body); font-size: 0.46px; text-anchor: middle; fill: var(--ink-strong);
@@ -3932,4 +4002,68 @@ kbd {
   .pg-head { grid-template-columns: minmax(0, 1fr) auto; }
   .pg-pips { grid-column: 1 / -1; grid-row: 2; }
   .pg-plates { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* ── Your game, the start screen (js/app-home.js; design/10-restructure.md, C · the bench) ──
+   The area's title card over its own light, the figures, then three columns: since last time,
+   your shade and what's missing nearby. The figures in bone, as on the sheet. */
+.hm { display: block; }
+.hm-live { display: inline-flex; align-items: center; gap: var(--sp-2); font-weight: 600; font-size: var(--fs-2xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
+.hm-live.is-paused, .hm-live.is-lost { color: var(--cond); }
+.hm-link-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--sp-2) var(--sp-4); }
+.hm-when { font-size: var(--fs-sm); color: var(--muted); }
+.hm-figs { display: flex; flex-wrap: wrap; gap: var(--sp-4) var(--sp-12); }
+.hm-fig { display: flex; flex-direction: column; gap: var(--sp-half); }
+.hm-fig-k { font-size: var(--fs-2xs); letter-spacing: 0.12em; text-transform: uppercase; color: var(--label); }
+.hm-fig-v { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; font-size: var(--fs-xl); line-height: 1.1; color: var(--ink-strong); }
+.hm-fig-v .u { font-size: 0.55em; font-weight: 400; color: var(--muted); margin-left: 0.15em; }
+.hm-fig.is-big .hm-fig-v { font-size: calc(var(--fs-xl) * 2); }
+.hm-block { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-3); min-width: 0; }
+.hm-block .block-head { display: flex; align-items: baseline; gap: var(--sp-3); flex-wrap: wrap; margin: 0; }
+.hm-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; align-self: stretch; }
+.hm-item { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: var(--sp-3); align-items: center; padding: var(--sp-2) 0; border-bottom: 1px solid var(--inv-line); }
+.hm-item:last-child { border-bottom: 0; }
+.hm-item-art { width: 36px; height: 32px; display: grid; place-items: center; }
+.hm-item-art img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.hm-item-name { font-size: var(--fs-sm); color: var(--ink); min-width: 0; }
+.hm-item-name small { display: block; font-size: var(--fs-xs); color: var(--muted); }
+.hm-item-k { font-size: var(--fs-2xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); text-align: right; }
+.hm-item-v { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-sm); color: var(--ink-2); white-space: nowrap; }
+.hm-empty { font-size: var(--fs-sm); color: var(--muted); margin: 0; line-height: 1.5; }
+/* What's missing near your bench: small pictures, grey until found, each with its place. */
+.hm-near { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: var(--sp-2); align-self: stretch; }
+.hm-near span { display: flex; flex-direction: column; align-items: center; gap: var(--sp-1); font-size: var(--fs-2xs); color: var(--muted); text-align: center; line-height: 1.2; }
+.hm-near img { height: 28px; width: auto; max-width: 48px; object-fit: contain; filter: brightness(0.55) saturate(0.4); }
+.hm-shade { display: flex; gap: var(--sp-3); align-items: center; }
+.hm-shade img { width: 40px; height: auto; filter: brightness(0.25) contrast(1.4); }
+.hm-shade p { margin: 0; font-size: var(--fs-sm); color: var(--ink-2); }
+/* The title card: "Resting at" over the area's name, on the area's light (--area-*: tokens.css). */
+.hmC-hero { position: relative; isolation: isolate; display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); text-align: center;
+  padding: var(--sp-8) var(--sp-4); margin: var(--sp-4) calc(-1 * var(--inv-pad)) 0; }
+.hmC-hero::before { content: ''; position: absolute; inset: 0; z-index: -1; opacity: 0.7;
+  background: radial-gradient(ellipse 55% 80% at 50% 38%, var(--area-m), var(--area-d) 55%, transparent 80%); }
+.hmC-sup { font-family: var(--font-display); font-size: var(--fs-sm); letter-spacing: 0.3em; text-transform: uppercase; color: var(--ink-2); }
+.hmC-area { font-family: var(--font-display); font-size: clamp(1.8rem, 5vw, 3.2rem); font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-strong); line-height: 1.1; margin: 0; }
+.hmC-knight { width: 64px; height: auto; margin: var(--sp-3) 0 var(--sp-1); filter: drop-shadow(0 0 18px color-mix(in oklab, var(--area-l) 60%, transparent)); }
+.hmC-figs { justify-content: center; margin-top: var(--sp-6); }
+.hmC-figs .hm-fig { align-items: center; }
+.hmC-cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-8) var(--sp-12); margin-top: var(--sp-12); padding-top: var(--sp-8); border-top: 1px solid var(--inv-line); }
+/* Nobody's game: the invitation. */
+.hmI { max-width: 820px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--sp-8); }
+.hmI-lead { text-align: center; display: flex; flex-direction: column; gap: var(--sp-3); align-items: center; }
+.hmI-lead h3 { font-family: var(--font-display); font-size: var(--fs-xl); font-weight: 400; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-strong); margin: 0; }
+.hmI-lead p { margin: 0; max-width: 56ch; color: var(--ink-2); font-size: var(--fs-md); line-height: 1.5; }
+.hmI-lead img { height: auto; margin-top: var(--sp-4); }
+.hmI-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-6); counter-reset: st; }
+.hmI-steps li { counter-increment: st; font-size: var(--fs-sm); color: var(--ink-2); line-height: 1.45; }
+.hmI-steps li::before { content: counter(st); display: block; margin-bottom: var(--sp-2); font-family: var(--font-num); font-size: var(--fs-xl); font-weight: 700; color: var(--ink-strong); }
+.hmI-steps b { color: var(--ink); font-weight: 600; }
+.hmI-cta { display: flex; justify-content: center; }
+.hmI-or { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-6); border-top: 1px solid var(--inv-line); padding-top: var(--sp-6); }
+.hmI-or div { display: flex; flex-direction: column; gap: var(--sp-2); align-items: flex-start; }
+.hmI-or h4 { margin: 0; font-size: var(--fs-md); color: var(--ink); font-weight: 600; }
+.hmI-or p { margin: 0; font-size: var(--fs-sm); color: var(--muted); line-height: 1.45; }
+@media (max-width: 899px) {
+  .hmC-cols, .hmI-steps, .hmI-or { grid-template-columns: minmax(0, 1fr); }
+  .hm-figs { gap: var(--sp-3) var(--sp-6); }
 }

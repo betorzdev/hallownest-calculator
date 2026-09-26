@@ -19,7 +19,7 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
 
 - **Header**, in one row: the title under the game's filigree —the one from the Hall of Gods
   screen, `assets/hall/tablet-hdr.png`, white as there and small—, which is the header's only
-  ornament and, like the logo on almost any website, a link to the start screen (Charms). On
+  ornament and, like the logo on almost any website, a link to the start screen (Your game). On
   its left, what belongs to the site: the language (English / Español; until you choose, the
   site follows the browser's language, English if it's neither) and *Share*. On its right,
   what's yours: the save selector (the Knight and the save you're playing, or *Select save* in
@@ -34,20 +34,27 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   between blocks, and never covers a word. On mobile it stays in one row, so content starts sooner: the title on the left,
   smaller and without its filigree, and the Knight (with the save's number, if you're in one),
   the language and *Share* on the right.
-- **The screen bar**, which stays stuck at the top: **Charms · Inventory · Combat · Journal · Progress**,
-  in the serif and in lowercase, with an accent rule under the one you're viewing, lying on the
-  bar's bottom edge like a page tab (the same mark as Combat's tabs); the Journal carries your completed entries
-  over the total alongside ("2/146"), and Progress your completion ("58 %"). On a phone the five
-  share the bar's width. On the
-  right, the **mini-bar**: nail damage, DPS, the mask, soul and a notch, with the game's sprites
-  and the same flash as the sheet, to see them while you scroll down (on mobile, when you reach
-  the grid, the status block stays up top and this is what stays in view). On Combat it shows
-  those of the build you're fighting with: in a pantheon room, the one frozen on entry and with
-  its bindings, which may not be the sheet's. The screen goes in the URL (`view=`, in "State and
-  link"): **Back and Forward** move from one to another without touching the build —going back
-  from *Inventory* doesn't return the nail you had—, and on reload you stay where you were.
+- **The screen bar**, which stays stuck at the top, **in two groups** (`design/10-restructure.md`):
+  your game as the save says it —**Your game · Progress · Map · Journal · Godhome**— and, after a
+  thin rule, the tools —**Charms · Combat**—. In the serif and in lowercase, with an accent rule
+  under the one you're viewing, lying on the bar's bottom edge like a page tab; *Your game*
+  carries the diamond of the link to the game's file (lit and breathing while it follows it,
+  hollow and in amber when it's paused or the file is gone), Progress your completion ("58 %")
+  and the Journal your completed entries over the total ("2/146"). **On a phone** (below 900 px)
+  the seven don't fit: the two tools fold into one tab, *Tools*, which opens the last one used,
+  and while you're in one a second row switches between Charms and Combat (`#nav-sub`); Godhome
+  goes as «Dioses» on a Spanish phone. On the right, the **mini-bar**, **only with the tools**
+  (and in Godhome while you fight): nail damage, DPS, the mask, soul and a notch, with the game's
+  sprites and the same flash as the sheet, to see them while you scroll down. On Combat it shows
+  those of the build you're fighting with, and with an enemy in front it's the fight's
+  scoreboard, which is wider and goes to a second row of the bar (so do the figures between 900
+  and 1239 px). In a pantheon room, the build frozen on entry and with its bindings, which may
+  not be the sheet's. The screen goes in the URL (`view=`, in "State and link"): **Back and
+  Forward** move from one to another without touching the build —going back from *Your game*
+  doesn't return the nail you had—, and on reload you stay where you were. The old links still
+  land: `view=game` (the Inventory, now under Your game) opens Your game, and `view=hall` Godhome.
   They also walk through the places inside a screen, which the history entry carries (not the
-  URL): Combat's tabs (Arena, Hall of Gods, Pantheons), the arena's Journal open, a Hall
+  URL): Godhome's tabs (Hall of Gods, Pantheons), the arena's Journal open, a Hall
   statue's fight, the tablet and, on mobile, the plaque and the Journal's page read in place of
   their list. A "‹" button, closing the tablet or the Journal undoes the entry that opened them
   (it's Back), so the history doesn't pile up. The marks, a half-done fight and the build
@@ -55,7 +62,38 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   Switching screens scrolls up to its start, just below the bar. Only the chosen one shows,
   but the others keep being painted, hidden (`showScreen` in `js/app.js`): that way one's HUD
   doesn't animate on return what happened while you were looking at another.
-- **Charms**, the start screen: **the sheet, which is the game's Inventory screen** (the mould is the wiki's
+- **Your game**, the start screen (`view=home`, `js/app-home.js`; variant C, *the bench*, of
+  `design/10-home-variants.html`): your real game at a glance, in the map's green like Progress.
+  - **The area's title card**: *Resting at* over the name of the area of your bench, large, on
+    that area's own light (`--area-*-mid/deep`), as the game shows an area's name on entering
+    it; the Knight under it, lit in the area's colour.
+  - **The link to the game's file**: *Live*, *Paused* with its *Resume* button (after a reload the
+    browser asks for a click; this is where it lives, and on the other screens as a notice), *File
+    missing* with *Pick it again*, or *Kept by hand* with *Follow the game* (Chrome and Edge on a
+    computer). Under it, the save and **how long ago the game saved** (the file's `lastModified`,
+    counting on while the screen is open).
+  - **The figures** the game's profile screen shows —completion over 112, the time played, the
+    geo— and the Journal's completed entries (`hollow.meta`, written on every import and sync).
+  - **Since last time**: what you got between the save before and this one —Journal entries
+    (encountered, or completed now), charms, equipment and key items, masks, vessels, notches,
+    the nail, spells, arts, cloaks, the Dream Nail, each collectible with its place, Hall
+    symbols— and the completion's points, each with its picture (`js/changes.js`, over the game
+    as it was before the last sync, `hollow.prev`). Only gains: a charm given to the Divine
+    isn't told. A bench sat at with nothing new doesn't empty it. **The live notice says the
+    same** when the game saves: "Bench in City of Tears: Watcher Knight, Lurien the Watcher,
+    Captive Grub and 1 more, +2%".
+  - **Your shade**: where it waits and with how much geo, and a link to the Map (it used to be a
+    notice above every screen).
+  - **Missing nearby**: the collectibles of the area of your bench you haven't got (twelve in view,
+    the count alongside), each with its place, and a link to the Map.
+  - **With no game** (free mode, the first visit) the screen is an **invitation** instead:
+    *Connect your game* in three steps (on a phone, the three ways in: from a computer, importing
+    the file, or by hand), *Import from the game* (the import view of the first empty save), *Keep
+    it by hand* (a New Game there) and *Just try builds* (Charms). It replaced the import notice
+    that used to sit above every screen.
+  - **Under it, the Inventory** (`#gear`, `js/app-game.js`): what was the *Inventory* screen, now
+    the lower half of Your game, as the game's pause menu has it (below).
+- **Charms**, the first of the tools: **the sheet, which is the game's Inventory screen** (the mould is the wiki's
   `Inventory_Godseeker_Mode.png`; the mockup, `design/06-sheet-variants.html`): almost pure
   black, corner brackets, the screen's title, "Charms", and, from top to bottom, **the status
   block** —everything that matters, above the charm grid and in one row, so that on an 800 px
@@ -274,7 +312,7 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   in the notch row **the notches of the charm that took you over the line come out in magenta
   and the row grows beyond your maximum** — which is exactly what the game does (with 11
   notches, 9 used and a 3-notch charm: nine white and three magenta, twelve in total).
-- **Inventory**: another page of the Inventory, with the same black and corner brackets and no
+- **Inventory**, under Your game: another page of the Inventory, with the same black and corner brackets and no
   boxes inside: what you've achieved in the game. Under the title, two starting points, as text:
   *Base Knight* (a new game's: Old Nail, 5 masks, 3 notches, no Dream Nail, no cloak, no
   charms, no equipment, no key items and nothing carried: it removes those too) and *Everything maxed* (every
@@ -362,21 +400,23 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   (`js/engine.js`, in `health()`) and `diff()` marks both halves —`transfer: 'out'` the one
   that empties, `'in'` the one that receives—, so "Masks 9 → 0" isn't painted red: the detail
   says "become lifeblood" and the balance shows in total health.
-- **Combat**: the third screen, with the arena, the Hall of Gods and the Pantheons (further
-  down, "Combat").
-- **Journal**: the fourth screen, your game's Hunter's Journal, to mark how far along its quest
-  you are (further down, "The Hunter's Journal: your game").
+- **Combat**: the second tool, the arena alone (further down, "Combat").
+- **Godhome**: the Hall of Gods and the Pantheons, one place in the game, as the two tabs of one
+  screen (`view=godhome`; further down, "Hall of Gods" and "Pantheons"). It comes back to the
+  tab it was left on (`godTab`).
+- **Journal**: your game's Hunter's Journal, to mark how far along its quest you are (further
+  down, "The Hunter's Journal: your game").
 
-On mobile everything stacks in one column, and the screen bar stays at the top in two rows:
-the four tabs spread out (the active one underlined, and the Journal with its completed
-entries below the name) and the mini-bar across the full width.
+On mobile everything stacks in one column, and the screen bar stays at the top: the six tabs
+spread out (the active one underlined, and the figures below the names), the tools' second row
+when you're in one, and the mini-bar across the full width.
 
 **Notches**: the game's rules. You can equip a charm that exceeds your notches if you have at
 least one free; you become *overcharmed* (double damage taken) and can't equip anything more.
 
 ## Files
 
-- `index.html` — the page; twenty-nine classic scripts (it works over `file://`) and GoatCounter's,
+- `index.html` — the page; thirty-one classic scripts (it works over `file://`) and GoatCounter's,
   the visit counter: no cookies, one visit per page load and, as events, the screen switches
   (`screen-*`), the language (`lang-*`) and *Share*. The hash with the build is never sent, and it
   counts nothing over `file://`, on `localhost` or in an iframe. Without it the site works the
@@ -495,8 +535,13 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
 - `js/codec.js` — the build's state: defaults, presets, equipping rules and the URL encoding.
 - `js/saves.js` — free mode and the four save slots over `localStorage`: what goes in a slot,
   switching, a new game, clearing one, importing into one and syncing one with the game (which
-  keeps the pantheon in progress and the pinned build). Pure, with the storage passed in
+  keeps the pantheon in progress and the pinned build, and, when the game changed, what it was
+  before in `hollow.prev`; it answers `'game'`, `'meta'` when only the clock moved, or `false`). Pure, with the storage passed in
   (`test/saves.test.js`).
+- `js/changes.js` — what a game gained between two saves: `fromSnap` decodes a slot's keys and
+  `diff(before, after)` lists the gains in the order they're told, the completion last. Pure
+  (`test/changes.test.js`; over the 51 saves of a real playthrough, each step's points match
+  the game's).
 - `js/savefile.js` — the game's save file (`userN.dat`) read and turned into a slot: the
   header, base64 and AES-256-ECB (written by hand: `crypto.subtle` has no ECB and isn't there
   over `file://`), then `playerData`'s fields mapped to the build, the charms found, the
@@ -517,13 +562,16 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
     the effects and the full sheet.
   - `js/app-game.js` — Inventory: nail, body (with the loose shards and fragments), arts, spells,
     abilities, equipment, the charms you've found and the items you carry.
-  - `js/app-arena.js` — Combat: the simulator, the combat Journal to pick an enemy and the arena.
-  - `js/app-hall.js` — the Hall of Gods tab: marks, statues, plaque and tablet.
-  - `js/app-pantheons.js` — the Pantheons tab: the lifeblood door and the run room by room.
+  - `js/app-arena.js` — Combat: the simulator, the combat Journal to pick an enemy and the arena;
+    its section also draws Godhome, whose tabs it heads (`fightHead`).
+  - `js/app-hall.js` — Godhome's Hall of Gods tab: marks, statues, plaque and tablet.
+  - `js/app-pantheons.js` — Godhome's Pantheons tab: the lifeblood door and the run room by room.
   - `js/app-journal.js` — the Hunter's Journal screen: your game's book.
   - `js/app-progress.js` — the Progress screen: the 112% as a tablet, category by category, and
     the collectibles.
-  - `js/app-map.js` — Progress's Map: the game's map with your collectibles on it, dragged and zoomed.
+  - `js/app-map.js` — the Map screen: the game's map with your collectibles on it, dragged and zoomed.
+  - `js/app-home.js` — Your game, the start screen: the area's title card, the link, the figures,
+    since last time, your shade and what's missing nearby; or, with no game, the invitation.
   - `js/app-saves.js` — the Saves screen: free mode, the four slots and their buttons, and the
     import view (steps, drop zone, preview), and the link with the game (the slot's line, the
     notice when it's paused, the watcher of the slot you're in).
@@ -570,8 +618,11 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   - `debug.html` — opens the page with fixed prefs for screenshots
     (`?w=390&h=2000&top=2450&lang=en&detail=1&guide=1&view=charms&open=fury&fx=70&hash=…`).
     It goes inside an iframe because headless Chrome crops below 500 px wide.
-    `view=charms|game|fight` picks the screen (it also goes in the iframe's hash, because a
-    link with a build and no `view=` opens Charms; `fight=1` and `tab=` already mean Combat).
+    `view=home|progress|map|journal|godhome|charms|fight` picks the screen (it also goes in the
+    iframe's hash, because a link with a build and no `view=` opens Charms; `fight=1` and `tab=`
+    already mean Combat). `ls=<JSON>` writes those `localStorage` keys first (a real game's slot,
+    made with `js/savefile.js`, for captures of Your game) and `live=live|paused|lost` draws the
+    save as following the file in that state.
     `view=saves&saves=1` opens Saves in free mode with slot 2 halfway through a game
     (`&slot=2` makes it the active one).
     `open=<id>` focuses that charm on the grid, with its detail alongside; `hover=<id>` hovers
@@ -611,7 +662,7 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
 
 ### Combat
 
-The third screen. On its **Arena** tab you pick any of the game's **180 enemies and bosses**
+The second tool, the arena alone (its title, *Combat*, and no tabs). You pick any of the game's **180 enemies and bosses**
 and you trade blows by hand: no animation, you decide the order, and time is counted but not
 simulated (below, "Charms in the arena"). It's
 **the fight out in the world, on Normal**: difficulty isn't chosen here, but at each statue in
@@ -906,9 +957,13 @@ with the time you've gone without damage (`Hiveblood_Mask.png`, and Joni's Bless
 and **Baldur Shell** sits under the orb with the hits it has left, dimmed when broken. The wiki
 doesn't have its HUD icon, so it's the game's blue shell (`Baldur_Shell_Trigger.png`) scaled down.
 
-### Hall of Gods
+### Godhome: Hall of Gods
 
-The second tab of the same section, **COMBAT | HALL OF GODS | PANTHEONS**. As in the game: one
+**Godhome** (`view=godhome`) is its own screen, in your game's group, with two tabs, **HALL OF GODS |
+PANTHEONS**, the rule between them over the diamond: in the game both are in the same place.
+Combat, the arena, stays with the tools.
+
+The Hall of Gods is the first tab. As in the game: one
 statue per boss, and each is challenged at three difficulties. **Attuned** is the fight as in
 Hallownest, with Godhome's health; **Ascended**, more health and **double damage** (what dealt 2
 now deals 4) and sometimes a new arena; **Radiant**, Ascended and **a single hit kills you**.
@@ -1021,9 +1076,9 @@ it's for rehearsing a boss.
   stacks in three short lines: the name, the three counts across the width and the two actions
   side by side.
 
-### Pantheons
+### Godhome: Pantheons
 
-The third tab of the same section. It's a real run: health, lifeblood and soul carry from one
+Godhome's second tab. It's a real run: health, lifeblood and soul carry from one
 room to the next, and **the rests are the only thing that heals**.
 
 - **Before going in** you choose the pantheon (all five, with their motto and their final boss)
@@ -1185,7 +1240,7 @@ inside. The game's notice when marking shows fixed just below the bar.
 ### Progress
 
 **Your game's completion, the 112% the game counts**, on its own screen (`view=progress`), the
-screen bar's fifth, in the map's green (`--tint-progress`, Fog Canyon's and the Queen's Gardens'
+screen bar's second, in the map's green (`--tint-progress`, Fog Canyon's and the Queen's Gardens'
 on Cornifer's map). It's the tablet chosen among three variants in
 `design/09-progress-variants.html` (`design/09-progress.md`).
 
@@ -1212,18 +1267,20 @@ on Cornifer's map). It's the tablet chosen among three variants in
 - Hornet's two fights are one Journal entry, so they're told apart by where they happen:
   *Hornet · Greenpath* (the Journal's entry) and *Hornet · Kingdom's Edge* (the Sentinel).
 - With a save linked to the game, the screen follows it: each bench repaints it.
-- **Two tabs** under the title: **112%** (the figure and the fifteen categories, and nothing
-  else) and **Map**; the one open is remembered (`pgTab`).
+- **The Map is a screen of its own** (`view=map`), the bar's third, in the same section and green;
+  Progress is the figure and the fifteen categories, and nothing else.
 - **The Map** is the game's own, drawn from its files (its
   `Game_Map`, the one its inventory shows): 344 rooms in 14 areas, each in its area's tint.
-  The rooms are as your game has them: whole where you've been (the save's `scenesVisited` and
-  `scenesMapped`), as Cornifer's rough drawing where you've only bought the area's map, and barely
-  there the rest; with no save from the game, all of it, whole. **Always show the whole map**
+  The rooms are as your game draws them (`GameMap.SetupMap`, `RoughMapRoom`): nothing of an area
+  until you have its map (Dirtmouth's comes with the game), even where you've been; with it,
+  Cornifer's sketch of the rooms his map shows (`SKETCHED`), and the whole drawing of those you've
+  been to (the save's `scenesVisited` and `scenesMapped`); barely there the rest; with no save from the game, all of it, whole. **Always show the whole map**
   draws it all whole anyway: it's your choice (a pref, `pgMapWhole`), so a bench never undoes it.
 - **Everything the map can show is a layer**, and the filter, **under the map**, lists them in
   four groups, each a chip with its picture that shows or hides it; **Show all** and **Hide all**
   above them. All show at first; which are hidden is remembered (`pgMapOff`).
-  - **Collectibles**: the 202 —Captive Grub 46, Mask Shard 16, Vessel Fragment 9, Pale Ore 6,
+  - **Collectibles** (the stag stations always on the map, each saying whether it's open yet in
+    your game; the game's own purple pin for them): the 202 —Captive Grub 46, Mask Shard 16, Vessel Fragment 9, Pale Ore 6,
     Charm Notch 8, Simple Key 4, Rancid Egg 21, the four relics (14, 17, 8, 4), Whispering Root
     15, the Grimmkin flames 10, Map 13 and Stag Station 11—, each kind named as the game names
     it, each with **how many of it you have** («Captive Grub 23/46», in green when complete).
@@ -1234,7 +1291,9 @@ on Cornifer's map). It's the tablet chosen among three variants in
     room ItemChanger's `locations.json` gives it, the shop for what's bought, the fight's room for
     a boss) and counts as the 112% tablet counts it; its card marks it as the tablet does, or, for
     what's marked on the Inventory (spells, arts, cloaks, the Dream Nail), takes you there.
-  - **Places**: benches, tram stations, hot
+  - **Places**: benches, tram stations (open with their line: `openedTramLower`, `openedTramRestingGrounds`…),
+    the lifts between areas (both ends; the game has no pin for them, so the site draws one, and its
+    flags for them aren't clear enough to say which are working), tram stations, hot
     springs and cocoons (the game's pins, named by its map key); and **shops and characters**
     (Sly, Iselda, Salubra, Leg Eater, Lemm, Jiji, the Nailsmith, the Seer, the Grubfather, the
     Colosseum of Fools and the Black Egg Temple).
@@ -1259,15 +1318,19 @@ on Cornifer's map). It's the tablet chosen among three variants in
   Lemm, the Nailsmith, the Seer, Leg Eater) stand there, with what they sell; the Grubfather's
   and the Seer's rewards on them. The Grimmkin flames, which ItemChanger doesn't place, keep the
   game's pins; the bosses, their fight's room.
-- **Things on the very same spot are one pin, a stack**: its number in a bone disc, and its card
-  lists them, each with its button and what it asks (a shop's price in geo, the Seer's essence,
-  the Grubfather's grubs); with a character there, the stack takes their name and face (*Sly ·
-  Dirtmouth*).
+- **A search over the map**, beside the zoom buttons: every thing it can show (the hidden layers'
+  and what you have too) and the map's own titles, by name or place, whatever the case and the
+  accents (*huevo negro*, *larva ciudad*). Up to eight results under the box, with the arrows and
+  Enter or a tap; picking one shows its layer if it was hidden, centres the map on it close up
+  and opens its card (a title only takes you there).
+- **Everything is in view, nothing behind a tap**: things on the very same spot (within 0.15 map
+  units: a shop's stock, a house's door) are laid out around it in a small grid, in the pins' own
+  units, so it keeps its shape at any zoom. A card says what a thing asks when it has a price (a
+  shop's in geo, the Seer's essence, the Grubfather's grubs).
   A tap opens a thing's card, with its area and place (the game's titles) and its button.
   **Each pin sits on its own spot and keeps about its size on screen** (a quarter more at most
-  close up): zooming in makes room between them rather than making them bigger. Pins that would
-  overlap at the current zoom are nudged apart, only as much as they overlap and never more than a
-  pin and a half from their spot; as you zoom in they go back to it. **Close up, each carries its name**: one that would
+  close up): zooming in makes room between them rather than making them bigger. Nothing moves
+  with the zoom: each pin stays on its spot (or its place in its spot's grid). **Close up, each carries its name**: one that would
   cover another name or another pin is hidden, and shows when that pin is pointed at or chosen.
   Pointing at a pin also says its name and place. It's dragged, zoomed with
   the wheel or a pinch, and three buttons zoom in, out and back to the whole map (on a phone,
@@ -1302,13 +1365,15 @@ masks, the nails and the buttons line up from one slot to the next.
   the charms found (`hollow.owned`), the Journal (`hollow.journal`), the Hall's symbols
   (`hollow.hall`), the lifeblood door (`hollow.bindings`), the rest of what the game has
   (`hollow.progress`: equipment, items, the rest of the 112%, bench and shade), the half-done pantheon (`hollow.run`)
-  and the pinned build (`hollow.baseline`). **What doesn't** is yours, not the game's:
+  the pinned build (`hollow.baseline`), what the game's profile screen shows (`hollow.meta`: time,
+  completion, geo, the moment of the save) and the game as it was before the last sync
+  (`hollow.prev`, for *Since last time*). **What doesn't** is yours, not the game's:
   `hollow.prefs` (the language, the screen, the enemy chosen).
 - Those keys always hold **the active slot** (free mode included, slot 0), so no screen has to
   know slots exist; the others wait in `hollow.saves` as copies.
-- **Tapping a slot** loads it: the page reloads —like the game's loading screen— on Charms, so
+- **Tapping a slot** loads it: the page reloads —like the game's loading screen— on Your game, so
   nothing of the game you leave (an undo, the fight in progress) is left over. Tapping the one
-  you're in takes you back to Charms. It's seen: the slot's nail catches the light and its masks
+  you're in takes you back to Your game. It's seen: the slot's nail catches the light and its masks
   glow, the page fades to black and the new one fades in (`leave`, and `hollow.entered` in
   `sessionStorage` veils it in `index.html`); *New Game* shows the base Knight's five masks
   appearing one by one first, as a new game's HUD does.
