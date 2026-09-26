@@ -79,6 +79,14 @@
   }
 
   /* ── Pieces ── */
+  /* His bench, under the area's name, where the Knight sits (js/app-knight.js): the game's bench as a
+     silhouette drawn by the site (the wiki's picture comes on Godhome's gold, which can't be cut
+     out cleanly), on the area's light like the Hall's statues: the seat with its two round ends
+     and its two feet. */
+  const BENCH = `<div class="hmC-bench" aria-hidden="true"><svg class="hmC-seat" viewBox="0 0 360 124">
+    <path d="M40 60 H320 a16 16 0 0 1 0 32 H40 a16 16 0 0 1 0 -32 Z M96 92 h28 l12 24 h-52 Z M236 92 h28 l12 24 h-52 Z"/>
+    <circle cx="36" cy="76" r="21"/><circle cx="324" cy="76" r="21"/>
+    <rect x="72" y="112" width="76" height="8" rx="4"/><rect x="212" y="112" width="76" height="8" rx="4"/></svg></div>`;
   const fig = (k, v, big) => `<div class="hm-fig${big ? ' is-big' : ''}"><span class="hm-fig-k">${esc(k)}</span><span class="hm-fig-v">${v}</span></div>`;
   const played = (s) => (s >= 3600 ? `${num(Math.floor(s / 3600))}<span class="u">h</span> ` : '') + `${num(Math.floor(s / 60) % 60)}<span class="u">min</span>`;
   function ago(ms) {
@@ -155,7 +163,7 @@
       : `<h3 class="hmC-area">${esc(slot)}</h3>`;
     return `<div class="hmC-hero" style="${areaVars(area)}">
         ${title}
-        <img class="hmC-knight" src="${D.art('hud', 'knight')}" alt="">
+        ${BENCH}
         <div class="hm-link-row">${linkLine(n)}</div>
         ${area ? `<span class="hm-when">${esc(slot)}${when}</span>` : ''}
         <div class="hm-figs hmC-figs">
@@ -194,7 +202,7 @@
         <div class="hmC-hero" style="${areaVars(DEMO.area)}">
           <span class="hmI-tag">${esc(t('homeExample'))}</span>
           <span class="hmC-sup">${esc(t('homeRestingAt'))}</span><h3 class="hmC-area"${NT}>${esc(pick(R.AREAS[DEMO.area]))}</h3>
-          <img class="hmC-knight" src="${D.art('hud', 'knight')}" alt="">
+          ${BENCH}
           <div class="hm-figs hmC-figs">
             ${fig(t('pgCompletion'), `${num(DEMO.pct)}<span class="u">${esc(pctSpace())} / ${num(112)}</span>`, true)}
             ${fig(t('homeTime'), played(DEMO.time))}

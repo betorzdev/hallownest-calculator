@@ -257,6 +257,7 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 /* The footer: the fan-project notice and the sources, small and muted under a hairline. The
    figures don't live here, so no accent but on the links, which are what responds to the finger. */
 .colophon {
+  position: relative;   /* its top rule is the floor the Knight strolls (js/app-knight.js) */
   display: flex; flex-direction: column; gap: var(--sp-1);
   padding-top: var(--sp-4); border-top: 1px solid var(--line);
   font-size: var(--fs-xs); line-height: 1.5; color: var(--muted); text-align: center; text-wrap: balance;
@@ -279,7 +280,7 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 }
 /* The tabs take the bar's full height, so the current one's rule lies on the bar's bottom edge,
    like a page tab (the same mark as on mobile, and as Combat's tabs). */
-.nav-tabs { display: flex; align-self: stretch; align-items: stretch; gap: var(--sp-1) var(--sp-6); min-width: 0; }
+.nav-tabs { position: relative; display: flex; align-self: stretch; align-items: stretch; gap: var(--sp-1) var(--sp-6); min-width: 0; }
 .nav-tab {
   display: inline-flex; align-items: center; gap: var(--sp-2); min-height: 44px; padding: 0;
   font-family: var(--font-body); font-size: var(--fs-lg); line-height: 1.2; color: var(--muted); text-decoration: none;
@@ -294,6 +295,36 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
    computer the tools go by name; the Tools tab and its second row are the phone's. */
 .nav-sep { width: 1px; height: 1.4em; align-self: center; background: var(--line-ctl); }
 .nav-tools, .nav-sub, .nav-short { display: none; }
+/* ── The Knight who walks the page (js/app-knight.js) ──────────────────
+   One sprite, drawn from a strip of 104 × 140 cells (assets/knight/, tools/fetch-knight.js):
+   standing, running (six frames, stepped at --dur-step) or sitting; he faces right and turns
+   with a mirror. Where he is (the screen bar, his bench, the footer's floor) sets his height
+   (--kn-h) and where his feet go. He moves by translate, linear, like the motes, and reduced
+   motion leaves him on his first frame and, from the JS, only standing or sitting. Decorative:
+   the button only exists for the click (he focuses soul). */
+.kn {
+  --n: 1; --kn-h: var(--kn-bar); --cell: calc(var(--kn-h) * 104 / 140);
+  position: absolute; z-index: 1; width: var(--cell); height: var(--kn-h); padding: 0; border: 0; margin: 0;
+  background: url(../assets/knight/idle.png) 0 0 / auto 100% no-repeat; cursor: default;
+  opacity: 1; transition: opacity var(--dur-slow) var(--ease-fade);
+}
+.kn:focus { outline: none; }
+.kn.is-run { background-image: url(../assets/knight/run.png); --n: 6; }
+.kn.is-sit { background-image: url(../assets/knight/sit.png); }
+.kn.is-left { scale: -1 1; }
+.kn.is-out { opacity: 0; }
+@media (prefers-reduced-motion: no-preference) {
+  .kn.is-run { animation: kn-cycle calc(var(--dur-step) * var(--n)) steps(var(--n)) infinite; }
+  /* Focusing soul (a click): standing still, the Focus's white light swells around him and fades. */
+  .kn.is-focus { animation: kn-focus var(--dur-flash) var(--ease-fade); }
+}
+@keyframes kn-cycle { to { background-position-x: calc(-1 * var(--cell) * var(--n)); } }
+@keyframes kn-focus { 40% { filter: drop-shadow(0 0 3px var(--focus-glow)) drop-shadow(0 0 14px var(--focus-glow)); } }
+/* On the screen bar: sitting on the current tab's rule, at the bar's bottom edge, under its title. */
+.nav-tabs > .kn { bottom: 0; left: 0; }
+/* On the footer's floor: feet on its top rule. */
+.colophon > .kn { --kn-h: var(--kn-floor); bottom: calc(100% + 1px); left: 0; }
+
 /* The link to the game's file, on Your game's tab: the diamond lit while it follows the game. */
 .nav-live { display: inline-block; width: var(--sp-2); height: var(--sp-2); transform: rotate(45deg); border: 1px solid currentColor; }
 .nav-live.is-live { background: var(--ink-strong); border-color: var(--ink-strong); box-shadow: 0 0 8px color-mix(in oklab, var(--ink-strong) 55%, transparent); }
@@ -1261,6 +1292,8 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
   /* Each tab as wide as its word (a long one, «Inventario», doesn't break), the free space between them. */
   .nav-tabs { display: grid; grid-template-columns: repeat(6, auto); justify-content: space-between; gap: 0 var(--sp-2); }
   .nav-tab { flex-direction: column; justify-content: center; gap: 0; min-height: 48px; font-size: var(--fs-md); text-align: center; }
+  /* No gap beside a tab here: the Knight (js/app-knight.js) keeps to his bench and the floor. */
+  .nav-tabs > .kn { display: none; }
 }
 /* The seven tabs and the mini-bar don't fit side by side below 1240 px: the mini-bar goes to a
    second row, across the full width, as on a phone. */
@@ -3977,6 +4010,8 @@ kbd {
 .pgm-pin:is(:hover, :focus-visible, .is-sel) { isolation: isolate; }
 /* Yours sit where they are, on top, with no disc; your bench carries a bone ring. */
 .pgm-mark circle { fill: none; stroke: var(--ink-strong); stroke-width: 0.08; }
+/* You, by your bench: the Knight (js/app-map.js, youSvg), not a pin to pick. */
+.pgm-you { pointer-events: none; cursor: default; }
 /* The map's own titles, as its map screen writes them: the areas' in the titles' face, from
    afar; the places' smaller, once you're closer (.is-mid), when the areas' step aside. They keep
    their size on screen, as the pins do (--k). */
@@ -4057,7 +4092,12 @@ kbd {
   background: radial-gradient(ellipse 55% 80% at 50% 38%, var(--area-m), var(--area-d) 55%, transparent 80%); }
 .hmC-sup { font-family: var(--font-display); font-size: var(--fs-sm); letter-spacing: 0.3em; text-transform: uppercase; color: var(--ink-2); }
 .hmC-area { font-family: var(--font-display); font-size: clamp(1.8rem, 5vw, 3.2rem); font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-strong); line-height: 1.1; margin: 0; }
-.hmC-knight { width: 64px; height: auto; margin: var(--sp-3) 0 var(--sp-1); filter: drop-shadow(0 0 18px color-mix(in oklab, var(--area-l) 60%, transparent)); }
+/* His bench under the name (js/app-home.js, a silhouette in the page's black with the area's light
+   as its edge), where the Knight sits (js/app-knight.js): feet hanging in front of the seat, which
+   lies at half the picture's height. The Knight, lit in the area's colour as he was standing. */
+.hmC-bench { position: relative; width: calc(var(--kn-bench) * 2.75); margin: var(--sp-3) 0 var(--sp-1); }
+.hmC-seat { display: block; width: 100%; height: auto; fill: var(--bg); stroke: color-mix(in oklab, var(--area-l) 55%, transparent); stroke-width: 2; paint-order: stroke; }
+.hmC-bench > .kn { --kn-h: var(--kn-bench); left: 0; bottom: 22%; filter: drop-shadow(0 0 18px color-mix(in oklab, var(--area-l) 60%, transparent)); }
 .hmC-figs { justify-content: center; margin-top: var(--sp-6); }
 .hmC-figs .hm-fig { align-items: center; }
 .hmC-cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-8) var(--sp-12); margin-top: var(--sp-12); padding-top: var(--sp-8); border-top: 1px solid var(--inv-line); }

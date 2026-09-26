@@ -63,11 +63,43 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   Switching screens scrolls up to its start, just below the bar. Only the chosen one shows,
   but the others keep being painted, hidden (`showScreen` in `js/app.js`): that way one's HUD
   doesn't animate on return what happened while you were looking at another.
+- **The Knight** (`js/app-knight.js`, css `.kn`): one small animated sprite that says where you
+  are, the way his pin does on the game's map. He has one line at a time: on Your game, while
+  its title card is in view, he sits on his bench under the area's name; on the Map, while it's
+  in view, he is the Knight standing by your bench there (drawn by `js/app-map.js`, with your
+  bench's layer), and when a save moves your bench he walks from the old one to the new one
+  room by room, through the game's doors (`DOORS` in `js/rooms.js`, from the randomizer's
+  `transitions.json`): the fewest rooms, at a steady pace, the whole way in 2 to 8 s, the whole
+  map first if either bench is out of view; it plays when the save arrives with the Map open,
+  or the next time you open it (once per bench, `walked` in the preferences), and not at all
+  where no door leads (Godhome and the White Palace are entered by dream); when the footer is in
+  view he strolls along its top rule, its floor (he stands a while, walks somewhere else at a
+  stroll, 2.4 s per 100 px, and now and then sits down for a bit; random, it's ambient);
+  otherwise he sits on the screen bar, on the rule of the tab you're on, under the middle of
+  its title (26 px tall, so he doesn't touch its letters). When you change screens he gets up
+  and runs along the bar to the new tab's title (at 200 px a second, `--dur-run`, never under a
+  response) and sits again.
+  Between lines he fades (`--dur-slow`), and once on one he stays at least 1.5 s before another
+  calls him (a line calls him when 60% of its box is in view and lets him go under 10%: no
+  flicker at the edge). His frames are the wiki's sprites
+  (`assets/knight/idle.png`, `run.png` with six frames stepped at 100 ms, `sit.png`; baked by
+  `npm run knight`, 104 × 140 a cell), drawn with a CSS `steps()` animation and moved with
+  `translate`, linear like the dust motes. The rule he follows (`design/00-system.md`, Motion):
+  he walks along a line and fades between lines, never slides. With `prefers-reduced-motion`
+  he only stands or sits. On a phone (below 900 px) the bar has no gap beside a tab, so he
+  isn't on it. He's decorative: hidden from screen readers and out of the tab order; a click
+  on him is an easter egg: he focuses soul as the game heals, standing still while the Focus's
+  white light (`--focus-glow`) swells around him and fades, then sits or strolls on (counted as
+  `knight`).
 - **Your game**, the start screen (`view=home`, `js/app-home.js`; variant C, *the bench*, of
   `design/10-home-variants.html`): your real game at a glance, in the map's green like Progress.
   - **The area's title card**: *Resting at* over the name of the area of your bench, large, on
     that area's own light (`--area-*-mid/deep`), as the game shows an area's name on entering
-    it; the Knight under it, lit in the area's colour.
+    it; under it his bench, a silhouette of the game's drawn by the site (the wiki's picture
+    comes on Godhome's gold and can't be cut out cleanly), with the Knight sitting on it, lit in
+    the area's colour ("The Knight" above). When the game saves he gets up: on a new bench he
+    runs off the card (at the same pace) and comes back to this one, fading; on the same bench he
+    stretches his legs and sits again.
   - **The link to the game's file**: *Live*, *Paused* with its *Resume* button (after a reload the
     browser asks for a click; this is where it lives, and on the other screens as a notice), *File
     missing* with *Pick it again*, or *Kept by hand* with *Follow the game* (Chrome and Edge on a
@@ -420,7 +452,7 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
 
 ## Files
 
-- `index.html` — the page; thirty-one classic scripts (it works over `file://`) and GoatCounter's,
+- `index.html` — the page; thirty-two classic scripts (it works over `file://`) and GoatCounter's,
   the visit counter: no cookies, one visit per page load and, as events, the screen switches
   (`screen-*`), the language (`lang-*`), *Share* and the way into a save, as a funnel: the import
   opened (`import-open`), a file read (`import-read`) or refused (`import-bad`), the game imported
@@ -480,6 +512,8 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   rooms (its scene, `Crossroads_47`) with its area, and each area's name as the game writes it
   (`MAP_NAME_*`) and the area light it takes. The room table comes from the community
   randomizer's `rooms.json` (homothetyhk/RandomizerMod, pinned to a commit).
+  And `DOORS`: which rooms each room's doors lead to, both ways, from the randomizer's
+  `transitions.json` (the commit `tools/extract-map.py` reads): the Knight walks them on the map.
 - `js/map.js` — generated by `tools/extract-map.py` from the game's own files, not edited by
   hand: the game's map (its `Game_Map` in `resources.assets`), each room's centre and size in
   the map's units and where its two drawings are (the rough one, Cornifer's, and the full one
@@ -582,6 +616,9 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   - `js/app-saves.js` — the Saves screen: free mode, the four slots and their buttons, and the
     import view (steps, drop zone, preview), and the link with the game (the slot's line, the
     notice when it's paused, the watcher of the slot you're in).
+  - `js/app-knight.js` — the Knight who walks the page: sitting on the bar under the tab you're on, running
+    along it when you change screens, on his bench on Your game, by your bench on the Map (and
+    walking to a new one through the doors), or strolling the footer's floor ("The Knight" above).
   - `js/app-boot.js` — startup: what's saved, the link and the first render. It goes last.
 - `assets/` — the game's artwork: `charms/`, `nails/`, `spells/`, `arts/`, `abilities/`
   and `hud/`. `tools/fetch-icons.js` downloads them from the wiki's CDN (`npm run icons`).
@@ -594,7 +631,11 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   `docs/screenshots/charms.webp`) and the favicon, Void Heart squared to 48 and 192 px, plus
   `apple-touch-icon.png` on the page's background. Regenerate them if the Charms screen changes.
   `knight/` is the artwork for your side of the arena: the Knight, his Shade and the HUD's
-  overcharm aura (`npm run knight`; with python3 and Pillow they're quantised on download).
+  overcharm aura (`npm run knight`; with python3 and Pillow they're quantised on download),
+  and the three strips of the Knight who walks the page (`idle.png`, `run.png`, `sit.png`:
+  cells of 104 × 140, feet on y = 134, facing right), baked by the same script from the wiki's
+  sprites; the run's gif comes on an opaque background, cut out there by colour, and runs to
+  the left, so its frames are mirrored.
   `journal/` is the Journal list's medallions (`npm run journal`), and `hunter/`, what your
   game's Journal paints: the book (the old button's, no longer used), the Hunter, the complete
   entry's frame, the page's flourish and the portraits of the Shade, the Hunter's Mark and the
@@ -1352,6 +1393,9 @@ on Cornifer's map). It's the tablet chosen among three variants in
   up from the floor as its room's object, and the rest in playerData. Checked on 51 real saves
   against the game's own counts: grubs, the masks and vessels with their loose pieces, the pale
   ore held and spent, the notches and each relic held or sold all match.
+- **You on the map**: with your bench's layer, the Knight stands by your bench's ring (not a pin
+  to pick: the bench says where). When a save moves your bench, he walks to the new one room by
+  room ("The Knight" in "What's on the page").
 
 ### Saves
 
@@ -1570,9 +1614,12 @@ linking to the repo), in the footer under every screen
   from them (the data in `js/enemies.js`, `js/journal.js`, `js/pantheons.js`, `js/hall.js`
   and the notes and data in `kb/`) keeps that licence. Thanks to their editors.
 - **Artwork** in `assets/` (except `assets/fonts/`): the game's, downloaded from the wikis
-  (`npm run icons` and the other `fetch-*` scripts). © Team Cherry.
-- **Which area each room is in** (`js/rooms.js`): from the `rooms.json` of the community's
-  [RandomizerMod](https://github.com/homothetyhk/RandomizerMod) (LGPL-2.1); only that fact is taken.
+  (`npm run icons` and the other `fetch-*` scripts). © Team Cherry. The Knight's strips in
+  `assets/knight/` are baked by `npm run knight` from the wiki's `Knight sprint.gif`,
+  `The Knight Idle.png` and `The Knight Resting.png`.
+- **Which area each room is in, and which rooms its doors lead to** (`js/rooms.js`): from the
+  `rooms.json` and `transitions.json` of the community's
+  [RandomizerMod](https://github.com/homothetyhk/RandomizerMod) (LGPL-2.1); only those facts are taken.
 - **The map** (`js/map.js`, `assets/map/`): the game's own, read from its files with
   [UnityPy](https://github.com/K0lb3/UnityPy) (`tools/extract-map.py`). © Team Cherry, like the
   rest of the artwork. Which room you enter an undrawn one from comes from the randomizer's

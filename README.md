@@ -6,7 +6,8 @@
 
 Import your save and the site shows it as the game does: the 112% item by item, the game's own
 map with what you're missing, the Hunter's Journal and Godhome. Keep playing, and every time you
-sit on a bench it catches up and tells you what you got. Then try builds and take them into a fight.
+sit on a bench it catches up and tells you what you got, and the Knight, who walks the page to say
+where you are, walks the map from your old bench to the new one. Then try builds and take them into a fight.
 
 [**Open the calculator**](https://betorzdev.github.io/hallownest-calculator/)
 &nbsp;·&nbsp; [Full guide](docs/guide.md)

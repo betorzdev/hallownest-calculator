@@ -827,6 +827,7 @@
     restoreFocus(focus);
     if (App.detailHover) App.highlightRows(App.detailHover);
     if (App.previewId) App.paintPreview();
+    if (App.knight) App.knight.sync();      // the Knight takes his place on what was just painted (js/app-knight.js)
   }
 
   /* ── Switching screens ───────────────────────────────────────────────── */
@@ -1113,6 +1114,7 @@
     recompute();
     // What arrived lights up, as after any change (App.was): a charm found, one now worn.
     App.was = { state: kept, owned: ownedWas, progress: progressWas };
+    if (App.knight) App.knight.onSave(progressWas.bench);   // he gets up from his bench (js/app-knight.js)
     render();
     App.was = null;
   }
