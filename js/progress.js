@@ -9,6 +9,10 @@
      bench   the room of the bench you'd wake up at (its area: js/rooms.js)
      shade   where your shade waits (its room, and x, y on the game's map) and the geo it carries, or null
      gate    where your Dreamgate is (its room, and x, y on the map), or null
+     statues the Hall of Gods' statues unlocked (statueState<X>.isUnlocked: the boss beaten in the
+             kingdom), or null when it isn't known (no save): then none is shown locked
+     markers the markers you've placed on the game's map (placedMarkers_r/b/y/w: its Shell,
+             Scarab, Token and Gleaming markers), each with its colour and x, y on the map
      mapped  the rooms you know: the ones you've been to (scenesVisited) and the ones the Quill
              has drawn (scenesMapped). The map draws them whole; the game only would with the
              area's map bought, but the site's map is for seeing where you've been
@@ -27,6 +31,9 @@
   };
   // A fragile charm given to the Divine and not yet back unbreakable: it's gone meanwhile.
   const withDivine = (gave, unbreakable) => (pd) => !!pd[gave] && !pd[unbreakable];
+  // One broken by dying with it on (brokenCharm_<n>): you have it, but it can't be worn until
+  // Leg Eater repairs it (wiki, "Fragile Heart"). An unbreakable one never is.
+  const broken = (n, unbreakable) => (pd) => !!pd['brokenCharm_' + n] && !pd[unbreakable];
 
   /* id → the playerData bool that says it, or a test. The order is the one they're shown in. */
   const IDS = Object.freeze({
@@ -53,6 +60,8 @@
     'divine-heart': withDivine('gaveFragileHeart', 'fragileHealth_unbreakable'),
     'divine-greed': withDivine('gaveFragileGreed', 'fragileGreed_unbreakable'),
     'divine-strength': withDivine('gaveFragileStrength', 'fragileStrength_unbreakable'),
+    'broken-heart': broken(23, 'fragileHealth_unbreakable'), 'broken-greed': broken(24, 'fragileGreed_unbreakable'),
+    'broken-strength': broken(25, 'fragileStrength_unbreakable'),
   });
   const ID_LIST = Object.keys(IDS);
 
@@ -75,7 +84,9 @@
   const SCENE = /^[A-Za-z0-9_]{1,64}$/;
   const scene = (s) => (typeof s === 'string' && SCENE.test(s) && s !== 'None' ? s : '');
 
-  const EMPTY = Object.freeze({ ids: [], counts: {}, found: [], bench: '', shade: null, gate: null, mapped: [] });
+  const EMPTY = Object.freeze({ ids: [], counts: {}, found: [], bench: '', shade: null, gate: null, statues: null, mapped: [], markers: [] });
+  // The game's four markers, by the letter of their playerData list, six of each at most.
+  const MARKERS = ['r', 'b', 'y', 'w'];
   // A point on the game's map, in its units (js/map.js), or null.
   const num = (v) => (typeof v === 'number' && Number.isFinite(v) && Math.abs(v) < 1000 ? Math.round(v * 1000) / 1000 : null);
   const point = (o) => { const x = num(o && o.x), y = num(o && o.y); return x === null || y === null ? null : { x, y }; };
@@ -96,7 +107,10 @@
     const gp = g && point(g);
     const gate = g && scene(g.scene) && gp ? { scene: scene(g.scene), ...gp } : null;
     const mapped = Array.isArray(o.mapped) ? [...new Set(o.mapped.map(scene).filter(Boolean))].slice(0, 800) : [];
-    return { ids, counts, found, bench: scene(o.bench), shade, gate, mapped };
+    const statues = Array.isArray(o.statues) ? [...new Set(o.statues.filter((x) => typeof x === 'string' && /^[a-z0-9-]{1,40}$/.test(x)))] : null;
+    const markers = Array.isArray(o.markers)
+      ? o.markers.map((m) => (m && MARKERS.includes(m.c) && point(m) ? { c: m.c, ...point(m) } : null)).filter(Boolean).slice(0, 24) : [];
+    return { ids, counts, found, bench: scene(o.bench), shade, gate, statues, mapped, markers };
   }
 
   /* Which collectibles a save says you have (js/collectibles.js, `how`). sd is the save's
@@ -122,8 +136,8 @@
     return CO.ITEMS.filter(has).map((it) => it.id);
   }
 
-  // playerData (and its sceneData) → progress.
-  function fromSave(pd, sd) {
+  // playerData (and its sceneData) → progress. The statues come from js/savefile.js, which knows their fields.
+  function fromSave(pd, sd, statues = null) {
     const list = (k) => (Array.isArray(pd[k]) ? pd[k] : []);
     const ids = ID_LIST.filter((id) => (typeof IDS[id] === 'function' ? IDS[id](pd) : !!pd[IDS[id]]));
     const counts = {};
@@ -131,12 +145,15 @@
     const shade = scene(pd.shadeScene) ? { scene: pd.shadeScene, geo: pd.geoPool, ...point(pd.shadeMapPos) } : null;
     const gate = pd.hasDreamGate && scene(pd.dreamGateScene) ? { scene: pd.dreamGateScene, ...point(pd.dreamgateMapPos) } : null;
     const mapped = [...list('scenesVisited'), ...list('scenesMapped')];
-    return normalize({ ids, counts, found: detect(pd, sd), bench: pd.respawnScene, shade, gate, mapped });
+    // Placed in the map's own frame, as the shade's (MapMarkerMenu.PlaceMarker: the map's local position).
+    const markers = MARKERS.flatMap((c) => list('placedMarkers_' + c).map((m) => ({ c, ...point(m) })));
+    return normalize({ ids, counts, found: detect(pd, sd), bench: pd.respawnScene, shade, gate, statues, mapped, markers });
   }
 
   const isEmpty = (p) => {
     const n = normalize(p);
-    return !n.ids.length && !Object.keys(n.counts).length && !n.found.length && !n.bench && !n.shade && !n.gate && !n.mapped.length;
+    return !n.ids.length && !Object.keys(n.counts).length && !n.found.length && !n.bench && !n.shade && !n.gate
+      && !(n.statues && n.statues.length) && !n.mapped.length && !n.markers.length;
   };
 
   /* Marking by hand, like the Journal's: they return a new progress without touching the one
@@ -165,6 +182,6 @@
   const hasFound = (p, id) => normalize(p).found.includes(id);
   const count = (p, id) => normalize(p).counts[id] || 0;
 
-  HK.progress = { IDS, ID_LIST, COUNTS, COUNT_LIST, EMPTY, normalize, detect, fromSave, isEmpty, toggle, toggleFound, setCount, has, hasFound, count };
+  HK.progress = { MARKERS, IDS, ID_LIST, COUNTS, COUNT_LIST, EMPTY, normalize, detect, fromSave, isEmpty, toggle, toggleFound, setCount, has, hasFound, count };
   if (typeof module !== 'undefined' && module.exports) module.exports = HK.progress;
 })();

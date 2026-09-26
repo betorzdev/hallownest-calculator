@@ -38,7 +38,16 @@ PINS = {
     'pin_bench': 'bench', 'pin_stag_station': 'stag', 'pin_dream_tree': 'root', 'pin_blue_health': 'cocoon',
     'pin_tram': 'tram', 'pin_spa': 'spa', 'pin_sly': 'vendor', 'pin_charm_slug': 'vendor', 'pin_grub_king': 'grubfather',
     'pin_colosseum': 'colosseum', 'Pin_Black_Egg': 'blackegg',
+    # The warrior dreams' graves: "backer ghosts" in the game's files (backers designed them).
+    'Pin_Backer Ghost': 'grave',
 }
+# The map's own titles: an area's (its "Area Name", named here by the site's area, js/rooms.js)
+# and a place's ("Sub Area Name", hung on the room it names, with its text key).
+AREA_ID = {'Crossroads': 'crossroads', 'Waterways': 'waterways', 'Cliffs': 'cliffs', 'Kingdoms_Edge': 'edge',
+           'Green_Path': 'greenpath', 'Fog_Canyon': 'fog', 'Fungal Wastes': 'fungal', 'Queens_Gardens': 'gardens',
+           'Deepnest': 'deepnest', 'Town_Tutorial': 'dirtmouth', 'Resting_Grounds': 'resting', 'Crystal Peak': 'crystal',
+           'Ancient Basin': 'basin', 'City of Tears': 'city'}
+TEXT = os.path.join(ROOT, 'kb', 'data', 'all_text.json')
 
 # The rooms the map doesn't draw (shops, houses, the Colosseum's arenas…) are placed on the one
 # you enter them from: the nearest drawn room through the game's doors, from the community
@@ -77,6 +86,19 @@ def tinted(img, color):
     b = b.point(lambda v: int(v * color.b)); a = a.point(lambda v: int(v * color.a))
     return Image.merge('RGBA', (r, g, b, a))
 
+def whole(sprite):
+    """The sprite's whole picture, as big as its rect: the game's files keep only the part with
+    something drawn (textureRect, placed at textureRectOffset from the rect's bottom-left), and
+    the pivot, the room's position, is the middle of the whole rect, not of that part."""
+    im = sprite.image.convert('RGBA')
+    rw, rh = round(sprite.m_Rect.width), round(sprite.m_Rect.height)
+    if im.size == (rw, rh):
+        return im
+    off = sprite.m_RD.textureRectOffset
+    canvas = Image.new('RGBA', (rw, rh), (0, 0, 0, 0))
+    canvas.paste(im, (round(off.x), rh - round(off.y) - im.size[1]))
+    return canvas
+
 def pack(images, width=2048, pad=2):
     """A simple shelf packing: (name → image) into one atlas; returns it and each rect."""
     items = sorted(images.items(), key=lambda kv: -kv[1].size[1])
@@ -108,6 +130,17 @@ def main():
             return None
         sr = srs[0].read()
         return sr.m_Sprite.read().image.convert('RGBA') if sr.m_Sprite.path_id else None
+
+    text = json.load(open(TEXT, encoding='utf-8'))
+    subs = []
+    def label_key(go):
+        # The label's text key: the upper-case word in its script's data that the game's text has.
+        for mb in of_type(go, 'MonoBehaviour'):
+            for w in re.findall(rb'[A-Z][A-Z0-9_]{3,40}', mb.deref().get_raw_data()):
+                w = w.decode()
+                if w in text['EN'] and w in text['ES']:
+                    return w
+        return ''
 
     for top in children(root):
         name = top.m_Name
@@ -142,6 +175,10 @@ def main():
         for g in children(area):
             t = transform(g)
             gx, gy = ax + t.m_LocalPosition.x, ay + t.m_LocalPosition.y
+            if g.m_Name.startswith('Sub Area Name'):
+                key = label_key(g)
+                if key == 'KINGS_PASS': subs.append({'scene': 'Tutorial_01', 'key': key})
+                continue
             if g.m_Name == 'Grub Pins':
                 for pin in children(g):
                     pt = transform(pin)
@@ -168,8 +205,8 @@ def main():
             ppu = rough.m_PixelsToUnits
             scale = (t.m_LocalScale.x, t.m_LocalScale.y)
             name = g.m_Name
-            full_img = tinted(full.image, sr.m_Color)
-            rough_img = tinted(rough.image, sr.m_Color)
+            full_img = tinted(whole(full), sr.m_Color)
+            rough_img = tinted(whole(rough), sr.m_Color)
             fppu = full.m_PixelsToUnits
             # The room's box in map units, centred on its position (the sprites' pivot is the middle).
             w = full_img.size[0] / fppu * scale[0]
@@ -182,11 +219,16 @@ def main():
             rough_imgs[name] = rough_img
             room_count += 1
             for pin in children(g):
+                if pin.m_Name.startswith('Sub Area Name'):
+                    key = label_key(pin)
+                    if key: subs.append({'scene': name, 'key': key})
+                    continue
                 kind = PINS.get(pin.m_Name.split(' (')[0])
                 if not kind:
                     continue
                 pt = transform(pin)
-                px, py = gx + pt.m_LocalPosition.x, gy + pt.m_LocalPosition.y
+                # Its place inside the room, stretched as the room is (some rooms are scaled).
+                px, py = gx + pt.m_LocalPosition.x * scale[0], gy + pt.m_LocalPosition.y * scale[1]
                 # A pin far outside its own room (the Hive's root, 18 units away in the game's
                 # files) goes to the room's centre.
                 if abs(px - gx) > w / 2 + 3 or abs(py - gy) > h / 2 + 3:
@@ -211,7 +253,7 @@ def main():
     for name, r in rooms.items():
         r['full'] = list(full_rects[name])
         r['rough'] = list(rough_rects[name])
-    # Where to place the collectibles whose room the map doesn't draw (js/collectibles.js).
+    # Where to place what's in a room the map doesn't draw (js/collectibles.js and the rest).
     scenes = set(re.findall(r"scene: '([^']+)'", open(os.path.join(ROOT, 'js', 'collectibles.js'), encoding='utf-8').read()))
     with urllib.request.urlopen(TRANSITIONS) as res:
         trans = json.load(res).values()
@@ -220,6 +262,10 @@ def main():
         a, b = tr['SceneName'], (tr.get('VanillaTarget') or '').split('[')[0]
         if b:
             adj.setdefault(a, set()).add(b); adj.setdefault(b, set()).add(a)
+    # Every undrawn room the doors reach, not only the collectibles': the map also places the
+    # charms, the bosses and the characters (js/app-map.js).
+    wanted = set(scenes)
+    scenes |= set(adj)
     hosts = {}
     for sc in sorted(scenes):
         if sc in rooms or sc in anchors:
@@ -239,12 +285,19 @@ def main():
             for n in sorted(adj.get(cur, ())):
                 if n not in seen:
                     seen.add(n); queue.append(n)
-        if sc not in hosts:
+        if sc not in hosts and sc in wanted:
             print('  no place for', sc)
 
     xs = [r['x'] - r['w'] / 2 for r in rooms.values()] + [r['x'] + r['w'] / 2 for r in rooms.values()]
     ys = [r['y'] - r['h'] / 2 for r in rooms.values()] + [r['y'] + r['h'] / 2 for r in rooms.values()]
     bounds = [round(min(xs), 3), round(min(ys), 3), round(max(xs), 3), round(max(ys), 3)]
+
+    def js(o):
+        return json.dumps(o, separators=(',', ':'), ensure_ascii=False)
+    norm = lambda x: x.replace('\u2019', "'").replace('\u2018', "'").strip()
+    sub_lines = [f"    [{json.dumps(sb['scene'])}, {js({'es': norm(text['ES'][sb['key']]), 'en': norm(text['EN'][sb['key']])})}],   // {sb['key']}"
+                 for sb in subs if sb['scene'] in rooms or sb['scene'] in anchors]
+    area_ids = [AREA_ID.get(a['name'], '') for a in areas]
 
     def js(o):
         return json.dumps(o, separators=(',', ':'), ensure_ascii=False)
@@ -258,7 +311,8 @@ def main():
             "             size, and where its two drawings are in assets/map/rooms-full.png and",
             "             rooms-rough.png ([x, y, w, h] in pixels), each already in its area's tint",
             "     PINS    [kind, scene, x, y]: the game's own pins (bench, stag, root, cocoon, tram, spa,",
-            "             vendor, grubfather, colosseum, blackegg, grub, flame; dreamer, whose 'scene' is who)",
+            "             vendor, grubfather, colosseum, blackegg, grub, flame, grave; dreamer, whose 'scene' is who)",
+            "     PLACE_LABELS [scene, name]: the map's own titles of the places inside the areas",
             "     PIN_ART their pictures in assets/map/pins.png, and the shade's, the Dreamgate's, the",
             "             compass's and the markers' (marker-b|r|y|w) [x, y, w, h]",
             "     BOUNDS  [minX, minY, maxX, maxY] of the rooms",
@@ -270,6 +324,12 @@ def main():
             "  'use strict';",
             '  const HK = globalThis.HK || (globalThis.HK = {});',
             f"  const AREAS = {js([a['name'] for a in areas])};",
+            f"  // The site's area (js/rooms.js) of each of AREAS, for its name on the map.",
+            f"  const AREA_IDS = {js(area_ids)};",
+            '  // The map\'s place titles, each on the room it names (the game\'s text, its key alongside; \\n is its own line break).',
+            '  const PLACE_LABELS = [',
+            *sub_lines,
+            '  ];',
             '  const ROOMS = {',
             *room_lines,
             '  };',
@@ -281,7 +341,7 @@ def main():
             f"  const BOUNDS = {js(bounds)};",
             f"  const ANCHORS = {js(anchors)};",
             f"  const HOSTS = {js(hosts)};",
-            '  HK.map = { AREAS, ROOMS, ANCHORS, HOSTS, PINS, PIN_ART, ATLAS, BOUNDS };',
+            '  HK.map = { AREAS, AREA_IDS, PLACE_LABELS, ROOMS, ANCHORS, HOSTS, PINS, PIN_ART, ATLAS, BOUNDS };',
             "  if (typeof module !== 'undefined' && module.exports) module.exports = HK.map;",
             '})();',
             '',

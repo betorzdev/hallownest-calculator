@@ -34,7 +34,7 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   between blocks, and never covers a word. On mobile it stays in one row, so content starts sooner: the title on the left,
   smaller and without its filigree, and the Knight (with the save's number, if you're in one),
   the language and *Share* on the right.
-- **The screen bar**, which stays stuck at the top: **Charms · Your game · Combat · Journal · Progress**,
+- **The screen bar**, which stays stuck at the top: **Charms · Inventory · Combat · Journal · Progress**,
   in the serif and in lowercase, with an accent rule under the one you're viewing, lying on the
   bar's bottom edge like a page tab (the same mark as Combat's tabs); the Journal carries your completed entries
   over the total alongside ("2/146"), and Progress your completion ("58 %"). On a phone the five
@@ -45,7 +45,7 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   those of the build you're fighting with: in a pantheon room, the one frozen on entry and with
   its bindings, which may not be the sheet's. The screen goes in the URL (`view=`, in "State and
   link"): **Back and Forward** move from one to another without touching the build —going back
-  from *Your game* doesn't return the nail you had—, and on reload you stay where you were.
+  from *Inventory* doesn't return the nail you had—, and on reload you stay where you were.
   They also walk through the places inside a screen, which the history entry carries (not the
   URL): Combat's tabs (Arena, Hall of Gods, Pantheons), the arena's Journal open, a Hall
   statue's fight, the tablet and, on mobile, the plaque and the Journal's page read in place of
@@ -148,9 +148,9 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
       by half a slot. The proportions come from measuring an official screenshot (slot 0.806 of
       the pitch, rows 0.968 of the pitch, offset 0.554), so a row measures 12.85 slots and the
       slot is the grid's width over that, up to 68 px (62 px on the band at full width, 40 px in
-      Your game's column), so the four rows fit at any width. Five slots change version in the game —the three
+      the Inventory's column), so the four rows fit at any width. Five slots change version in the game —the three
       fragile ones for their unbreakable versions, Kingsoul for Void Heart and Grimmchild for
-      Carefree Melody—; if you have one (you mark it on Your game), the slot shows **only that
+      Carefree Melody—; if you have one (you mark it on the Inventory), the slot shows **only that
       one**, whole, as the game does; with neither, it splits into two shadowed halves. Only the artwork, no data: lit the ones you wear, **with a soft
       light behind them** (a radial halo in the accent, as the game marks the equipped one,
       stronger under the pointer), dimmed the ones that don't fit. A click (or a tap) equips or removes, and what each one
@@ -211,7 +211,7 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   *Equipped* as a light that settles and lights up once on the grid, and its notches fill one
   by one from the left; removing it, they drain from the right. *Clear* sends the equipped
   ones away one after another, from the last, fading as dust, and only then empties. The detail
-  fades into another charm when it changes. On Your game, the masks, vessels and notches you add
+  fades into another charm when it changes. On the Inventory, the masks, vessels and notches you add
   light up from the dark in order (the ones you remove let their light go), the nail you pick
   takes the spotlight, and a spell, art or ability you learn (or a new level of it) lights its
   plate; a charm you mark as found lights up on its grid. Screens fade in when you switch
@@ -219,13 +219,13 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   and with `prefers-reduced-motion` only the result is seen.
 - **With a mouse, what can be pressed says what it will do.** The nail damage and the six figures
   open the full sheet at their row: on hover the label takes the accent and the figure a soft
-  white glow. The HUD previews the click, like Your game's pieces: the masks it
+  white glow. The HUD previews the click, like the Inventory's pieces: the masks it
   would fill come up to half light and the ones it would empty go dim; a vessel shows whether it
   would fill or empty; and the orb shows the level a spell would leave, orb first and then the
   vessels. The spell, art and effect plates light their artwork and their halo swells a little.
   What can't be pressed (health, soul, the nail) doesn't react.
   Across the site the same rule holds: the screen bar shows the current tab's rule, faint, under
-  the one you point at; on Your game the nail you point at takes a faint spotlight and the plates
+  the one you point at; on the Inventory the nail you point at takes a faint spotlight and the plates
   light up; in Combat an attack's artwork takes the light and the Journal picker's row its
   portrait; in the Hall a difficulty you haven't marked shows its symbol at half and the statue
   brightens; on the Pantheons a binding not marked on the door previews its light; and the Journal's
@@ -250,7 +250,7 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   anything. It fades in, holds 2.4 s and fades out (`toast` in `js/app.js`). Every notice goes
   through it, the Journal's included, and its figures go in the numbers' face, not in Cinzel.
 - **One tint per section**, the system of the game's map screen (`design/00-system.md` §3):
-  Charms, the guide and Your game, in City of Tears' (`--tint-sheet`); combat, in Crystal
+  Charms, the guide and Inventory, in City of Tears' (`--tint-sheet`); combat, in Crystal
   Peak's (`--tint-combat`); the Hall and the Pantheons, in Godhome's; the Journal, in Fungal
   Wastes' (`--tint-journal`). The section titles —in Cinzel— go in the tint. The map's tints are
   so pale that three of them read as the same bone, so the **lights** carry them: each section
@@ -269,12 +269,12 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   cause it, not on opening a link that's already overcharmed, and with `prefers-reduced-motion`
   nothing is seen. With the flash, the screen edges are tinted purple for a moment and fade out
   slowly, over about two seconds: they don't stay, which was tiring. While the overcharm lasts
-  the notice shows —on Charms below the notches, on Your game above the screen; on Combat the
+  the notice shows —on Charms below the notches, on the Inventory above the screen; on Combat the
   HUD's aura already says it—, and
   in the notch row **the notches of the charm that took you over the line come out in magenta
   and the row grows beyond your maximum** — which is exactly what the game does (with 11
   notches, 9 used and a 3-notch charm: nine white and three magenta, twelve in total).
-- **Your game**: another page of the Inventory, with the same black and corner brackets and no
+- **Inventory**: another page of the Inventory, with the same black and corner brackets and no
   boxes inside: what you've achieved in the game. Under the title, two starting points, as text:
   *Base Knight* (a new game's: Old Nail, 5 masks, 3 notches, no Dream Nail, no cloak, no
   charms, no equipment, no key items and nothing carried: it removes those too) and *Everything maxed* (every
@@ -314,6 +314,12 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   other). Void Heart, as in the game, is always equipped and can't be removed (except by the
   Charms binding), and it's always the first one equipped, even if a link lists it later
   (`normalize` in `js/codec.js`). Changing the collection removes whatever you wear and no longer have.
+  **A fragile charm broken** (you died wearing it: `brokenCharm_<n>` in a save) or **left with the
+  Divine** is yours but can't be worn, as in the game: it's shadowed on the grid and comes off if
+  it was on; its detail says why, the broken one in the game's own words («Este amuleto se ha roto
+  y el poder de su interior se ha apagado. No se puede equipar.»), with *It's been repaired* (Leg
+  Eater) or *It's unbreakable now* (back from the Divine, as the other version). A wearable
+  fragile one carries *It broke*, to mark it by hand. It still counts for the 112%, as in the game.
   Everything maxed is the end of the game: the unbreakable ones, Void Heart and Grimmchild. On
   Charms, the ones you don't have also show shadowed: they're looked at like the rest (the
   detail tells what they would do and says "Not found"), but they aren't equipped. **They're
@@ -321,7 +327,7 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   unlocked"); the tile itself carries no mark (a "+" on it looked like a button of its own, and
   it wasn't); under the mouse the detail says
   "Not found: click to unlock it", and clicked (or tapped) the detail shows a real button, **Mark
-  as found**, without going to Your game (in a two-version slot, as that version); then the grid
+  as found**, without going to the Inventory (in a two-version slot, as that version); then the grid
   equips it as usual. **A click pins the charm in the detail**: on the way from the grid to the
   button the pointer crosses other charms, and passing over them doesn't take its place; only
   resting on one (0.4 s) does, and leaving the grid ends the pin. They're
@@ -432,10 +438,16 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   the map's units and where its two drawings are (the rough one, Cornifer's, and the full one
   the Quill draws) in `assets/map/rooms-rough.png` and `rooms-full.png`, already in their area's
   tint; the game's own pins (benches, stag stations, roots, cocoons, grubs, flames, the
-  Dreamers…) and their pictures in `assets/map/pins.png`; the rooms the map draws inside another
-  (`ANCHORS`) and where to place a collectible whose room isn't drawn (`HOSTS`, the room you enter
-  it from through the game's doors). The save's `shadeMapPos` and `dreamgateMapPos` are in its
-  frame (checked on the 51 saves: every Dreamgate falls in its room). Rerun it once per game
+  Dreamers, the warriors' graves…) and their pictures in `assets/map/pins.png`; its titles
+  (`AREA_IDS`, each area by the site's name, and `PLACE_LABELS`, each place's text on its room);
+  the rooms the map draws inside another (`ANCHORS`) and where to place what's in a room that
+  isn't drawn (`HOSTS`, the room you enter it from through the game's doors). The save's `shadeMapPos` and `dreamgateMapPos` are in its
+  frame (checked on the 51 saves: every Dreamgate falls in its room). A room's drawing is kept
+  whole, as big as its sprite's rect: the game's files trim the empty edges of 116 of them
+  (`textureRect` and `textureRectOffset`), and the room's position is the middle of the whole
+  rect, so a trimmed one drawn as it comes sits off its place (by up to a third of a room).
+  Checked against the wiki's full map (`Hallownest_marked_map.png`), overlaid: every room is there
+  and in its place. Rerun it once per game
   patch: it needs the game installed and UnityPy (`python3 -m pip install UnityPy`, in a venv).
 - `js/collectibles.js` — generated by `npm run collectibles` (`tools/fetch-collectibles.js`), not
   edited by hand: the kingdom's 202 collectibles, each with its kind, its room and how a save
@@ -485,7 +497,8 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   site's lists in `test/savefile.test.js`, which also makes a `.dat` with Node's AES and reads it back.
 - `js/live.js` — a slot kept in step with the game's file: whether the browser can
   (`canLive()`), the file handles per slot in IndexedDB (`hollow-live`) with the stamp last taken
-  in, and a watcher that asks the file every 2 s while the tab is visible. No DOM and no language;
+  in, and a watcher that asks the file every 2 s, also while the tab is hidden (playing full
+  screen hides it; the browser spaces a hidden tab's timers out, and coming back checks at once). No DOM and no language;
   the plan and what was checked on Windows are in `design/08-live-sync.md`, and `debug-live.html`
   is the probe that checked it.
 - `js/app.js` — the core: state, `localStorage` and the link, the header, the screen bar and
@@ -495,7 +508,7 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   script (the rules, in its header).
   - `js/app-charms.js` — Charms: the status block, the charm band and its detail, the plates,
     the effects and the full sheet.
-  - `js/app-game.js` — Your game: nail, body (with the loose shards and fragments), arts, spells,
+  - `js/app-game.js` — Inventory: nail, body (with the loose shards and fragments), arts, spells,
     abilities, equipment, the charms you've found and the items you carry.
   - `js/app-arena.js` — Combat: the simulator, the combat Journal to pick an enemy and the arena.
   - `js/app-hall.js` — the Hall of Gods tab: marks, statues, plaque and tablet.
@@ -605,7 +618,7 @@ Peak's on the Arena, Godhome's in the Hall and the Pantheons), and no slate boxe
 can be touched goes without a background or a box: your attacks are plates like the spells and
 arts on the Charms screen, and the enemy's are the rows of a list, with a thin rule in the
 section's tint between them. On hover it's veiled (`--veil`) and the name takes the accent, and
-the chosen one carries the accent's veil and rule (`--picked`, the same as on Your game). The
+the chosen one carries the accent's veil and rule (`--picked`, the same as on the Inventory). The
 enemy is lit by **its area's light** (below), and who you're hitting is marked by an accent rule
 on its left. The pantheons aren't statues but doors:
 each final boss stands in an arch of Godhome's light with a thin gold frame, rising from the
@@ -922,6 +935,10 @@ it's for rehearsing a boss.
   hits of its own you survive at full health (on Radiant, one). Below, *Fight on* Attuned,
   Ascended or Radiant, and what changes about its arena in the Hall. On a wide screen it has no
   *‹ Hall* button: the grid is always beside it.
+- **Locked statues**: with a save from the game, a statue whose boss you haven't beaten in the
+  kingdom yet (`statueState<X>.isUnlocked`) shows in shadow, as the game's covered pedestal, and
+  its plaque says it's still locked in your game. It can still be fought here (it's a
+  simulator), and winning one of its symbols unlocks it. With no save, none is locked.
 - **The symbols are your real game's** —bronze, silver or radiant, the game's badges— and they're
   marked by hand: each difficulty in the plaque's table (the *In your game* column) is a button
   with the game's empty ring where its symbol goes, tinged with the accent so it reads as
@@ -1039,7 +1056,7 @@ room to the next, and **the rests are the only thing that heals**.
   even at the bench, because that pantheon doesn't let you wear any. On finishing or abandoning
   the run, everything responds again.
 - **The rest of the build freezes on entry** —nail, masks, vessels, spells and arts—, as in the
-  game: changing them on *Your game* halfway doesn't touch the pantheon.
+  game: changing them on the *Inventory* halfway doesn't touch the pantheon.
 - **The timeline is a path through Godhome** (`pathHtml`): the rooms as round medallions on a
   thin gold thread, which lights up as far as you've walked. The benches and the Godseeker's rooms
   are larger marks on it, cutting it into the stretches the pantheon is played in, and the final
@@ -1176,7 +1193,7 @@ on Cornifer's map). It's the tablet chosen among three variants in
   dimmed if half done (a spell with one level of two), in shadow if not— and its points, which
   turn green when the category is complete. Where there's no picture (the Dreamers, the trials,
   the pantheons), the rule's diamond.
-- **A row opens** (one at a time, remembered in `pgOpen`) to show its things as Your game's
+- **A row opens** (one at a time, remembered in `pgOpen`) to show its things as the Inventory's
   plates. **A tap marks one where the site already keeps it**, so no two screens disagree: a
   boss or a warrior dream is its Hunter's Journal entry (as its first defeat; unmarking clears
   it), a charm is your collection (a two-version one, as its first version), and the rest
@@ -1184,35 +1201,60 @@ on Cornifer's map). It's the tablet chosen among three variants in
   Godtuner, the pantheons cleared— is `hollow.progress`. Nightmare King Grimm is its Journal
   entry *or* the banishment; unmarking takes both away. What changes your figures —the masks,
   the vessels, the nail, spells, arts, the cloaks, the Dream Nail— isn't marked here: its plate
-  says *On Your game* and takes you there.
+  says *On the Inventory* and takes you there.
 - Hornet's two fights are one Journal entry, so they're told apart by where they happen:
   *Hornet · Greenpath* (the Journal's entry) and *Hornet · Kingdom's Edge* (the Sentinel).
 - With a save linked to the game, the screen follows it: each bench repaints it.
-- **Collectibles**, under the 112%, the same tablet: a row per kind —Captive Grub 46, Mask
-  Shard 16, Vessel Fragment 9, Pale Ore 6, Charm Notch 8, Simple Key 4, Rancid Egg 21, the four
-  relics (14, 17, 8, 4), Whispering Root 15, the Grimmkin flames 10, Map 13 and Stag Station 11,
-  202 in all, each kind named as the game names it (the Inventory's name, or its map's legend)—.
-  Each thing's plate says **where it is**: its area and the place inside it, both as the game
-  titles them on entering (*City of Tears · Soul Sanctum*), and when it isn't found on the floor,
-  who sells or gives it (*Sly · 150 geo*, *Seer · 1500 essence*, *Grubfather · 5 grubs*, a
-  Colosseum trial). A map is its area's (it's sold elsewhere). The exact spot is the Map's. A **filter by area** above them (each area's light as a dot; on a phone, a strip
-  that slides sideways) keeps only that area's things; the rows count them there.
-- **Rewards**: the Grubfather's seven steps (5 to 46 grubs) and the Seer's nine (100 to 2400
-  essence) as two more rows, each step with what it gives, marked where it's kept (a
-  collectible, a charm such as Grubsong or Dream Wielder, or your game's, as the Dreamgate).
-- **List · Map**, under the title. **The Map** is the game's own, drawn from its files (its
+- **Two tabs** under the title: **112%** (the figure and the fifteen categories, and nothing
+  else) and **Map**; the one open is remembered (`pgTab`).
+- **The Map** is the game's own, drawn from its files (its
   `Game_Map`, the one its inventory shows): 344 rooms in 14 areas, each in its area's tint.
   The rooms are as your game has them: whole where you've been (the save's `scenesVisited` and
   `scenesMapped`), as Cornifer's rough drawing where you've only bought the area's map, and barely
-  there the rest; with no save from the game, all of it, whole. On it, each collectible that's
-  missing, where it is: the game's own pin for grubs, whispering roots, stag stations and
-  flames, its room's centre for the rest (several in one room spread around it; a shop or a
-  house, on the room you enter it from). Your shade and your Dreamgate go where the save says.
-  A tap opens a thing's card, with *Mark as found*; *Also show what you have* brings back the
-  ones found, dimmed. Above, which kinds show (each with its picture). It's dragged, zoomed with
+  there the rest; with no save from the game, all of it, whole. **Always show the whole map**
+  draws it all whole anyway: it's your choice (a pref, `pgMapWhole`), so a bench never undoes it.
+- **Everything the map can show is a layer**, and the filter, **under the map**, lists them in
+  four groups, each a chip with its picture that shows or hides it; **Show all** and **Hide all**
+  above them. All show at first; which are hidden is remembered (`pgMapOff`).
+  - **Collectibles**: the 202 —Captive Grub 46, Mask Shard 16, Vessel Fragment 9, Pale Ore 6,
+    Charm Notch 8, Simple Key 4, Rancid Egg 21, the four relics (14, 17, 8, 4), Whispering Root
+    15, the Grimmkin flames 10, Map 13 and Stag Station 11—, each kind named as the game names
+    it, each with **how many of it you have** («Captive Grub 23/46», in green when complete).
+    The game's own pin for grubs, whispering roots, stag stations and flames; its room's centre
+    for the rest.
+  - **Towards 112%**: the charms (the 36 of the category and the Troupe's four), the equipment,
+    the spells (a pin per level: Vengeful Spirit and Shade Soul are two), the nail arts and the
+    Dream Nail's three steps, the bosses and the Colosseum's trials, the warrior dreams on the
+    game's pins for their graves, and the three Dreamers on theirs. Each is where it's found (the
+    room ItemChanger's `locations.json` gives it, the shop for what's bought, the fight's room for
+    a boss) and counts as the 112% tablet counts it; its card marks it as the tablet does, or, for
+    what's marked on the Inventory (spells, arts, cloaks, the Dream Nail), takes you there.
+  - **Places**: benches, tram stations, hot
+    springs and cocoons (the game's pins, named by its map key); and **shops and characters**
+    (Sly, Iselda, Salubra, Leg Eater, Lemm, Jiji, the Nailsmith, the Seer, the Grubfather, the
+    Colosseum of Fools and the Black Egg Temple).
+  - **Your game**: your bench (a ring, on its bench's pin), your shade, your Dreamgate, and **the
+    markers you've placed** in the game (`placedMarkers_r/b/y/w`, in the map's frame), each with
+    the game's picture. The save has no position of the Knight's own: the game saves at a bench
+    (and on dying or quitting), and the map's compass is only live. The shade and the Dreamgate
+    are at their room's centre: the game stores `shadeMapPos` and `dreamgateMapPos` so
+    (`GameMap.PositionCompass`), not the exact spot.
+  - **The areas' and the places' names**, as the game's map titles them (the areas' from afar,
+    the places' once closer; they keep their size on screen), switched by their own box,
+    *Show the area names*, beside the other two choices.
+  A place has no state; the rest hides once you have it, unless *Also show what you have* brings
+  it back, dimmed. A shop or a house goes on the room you enter it from; a room the doors don't
+  reach, on its neighbour.
+  A tap opens a thing's card, with its area and place (the game's titles) and its button.
+  **Each pin sits on its own spot and keeps about its size on screen** (a quarter more at most
+  close up): zooming in makes room between them rather than making them bigger. Only pins that
+  would overlap at the current zoom gather in a ring around their middle, and as you zoom in they
+  come apart and go back to their spots. **Close up, each carries its name**: one that would
+  cover another name or another pin is hidden, and shows when that pin is pointed at or chosen.
+  Pointing at a pin also says its name and place. It's dragged, zoomed with
   the wheel or a pinch, and three buttons zoom in, out and back to the whole map (on a phone,
   the map fills the box's height and slides sideways); the pins keep their size on screen.
-- A save says all of it itself (`js/progress.js`, `detect`): the game keeps each thing picked
+- A save says the collectibles itself (`js/progress.js`, `detect`): the game keeps each thing picked
   up from the floor as its room's object, and the rest in playerData. Checked on 51 real saves
   against the game's own counts: grubs, the masks and vessels with their loose pieces, the pale
   ore held and spent, the notches and each relic held or sold all match.
@@ -1260,7 +1302,7 @@ masks, the nails and the buttons line up from one slot to the next.
   900 px a full slot's buttons go under it in a row; on a phone an empty slot's import says only
   *Import*, beside *New Game*, and the facts become a little table.
 - **New Game** (`PROFILE_NEW_GAME`), on an empty slot, starts as in the game: the base Knight,
-  no charms found and everything else empty. You fill it in on Your game.
+  no charms found and everything else empty. You fill it in on the Inventory.
 - **Clear Save** (`PROFILE_CLEAR_BUTTON`) asks first, inside the slot, with the game's
   question (`PROFILE_CLEAR_PROMPT`). The slot is left empty and you stay on Saves. Clearing
   the one you're playing drops you into free mode (the page fades to black and reloads, still on Saves, and fades back in with the row where it was, which then shrinks into *New Game*), since

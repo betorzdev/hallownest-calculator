@@ -60,3 +60,41 @@ one that grows best when the collectibles come (a row more per kind, not a page 
   files (`tools/extract-map.py`), rooms whole where you've been, rough where you only bought the
   area's map, barely there the rest; the missing collectibles on it, a card per pin to mark it,
   your shade and your Dreamgate. Drag, wheel, pinch, and three zoom buttons.
+
+## Phase 7 (26 September 2026, done)
+
+From the plan of 25 September 2026 (what the save file offers, item by item), the last part:
+
+- **Shops**: on Progress, what's left to buy from Sly, Salubra, Iselda and Leg Eater, with its
+  price (the save says what's been bought: `slyShellFrag<n>`, `salubraNotch<n>`…), to plan the geo.
+- **Characters and quests**: a chosen fifteen or so with their state (Bretta, Sly, Zote, Cloth,
+  Tiso, Quirrel, the Nailsmith, Myla, the Delicate Flower…), not the hundreds of dialogue flags.
+- **Locked statues in the Hall of Gods**: the ones you don't have yet shown locked, as in the
+  game (`statueState<X>.isUnlocked` / `hasBeenSeen`).
+- **Broken fragile charms**: the Charms detail says "Broken" or "With the Divine"
+  (`brokenCharm_23…25`, `gaveFragile*`). The wiki says a broken one "can not be equipped": it's
+  kept as yours but not wearable, and still counts for the 112% (the game keeps gotCharm).
+
+All four are built: the shops and the characters as two more sections of the tablet, the locked
+statues in the Hall's grid and plaque, the broken fragile charms in Charms' grid and detail.
+
+Left out on purpose: written hints for each collectible (the Map gives the exact spot), the
+rooms' raw state (`sceneData` is only used to detect things), the endings seen (the save doesn't
+keep them clearly).
+
+**26 September 2026, after phase 7**: the tablet's first tab holds the 112% and nothing else. The
+collectibles, the characters and the shops, which had gone under it, each have their own tab:
+*112% · Collectibles · Characters · Shops · Map*.
+
+**Then, the same day: only the 112% and the Map.** The collectibles' tab repeated the Map, the
+reward ladders repeated things already counted elsewhere, and the characters and the shops
+added little to what the site is for; they were removed, with their data (`QUESTS`, `SHOPS`,
+the progress flags). The Map's kind filter carries each kind's count instead («23/46»).
+
+**26 September 2026, the Map's layers.** Everything the map can show is a layer the user shows
+or hides, in a filter moved under the map with *Show all* and *Hide all*: the collectibles; the
+112%'s things where they're found (charms, equipment, spells and arts, bosses and trials, the
+warriors' graves, the Dreamers); the places (the game's titles, benches, shops and characters,
+trams, hot springs, cocoons); and yours (your bench, shade, Dreamgate and the markers placed in
+the game). *Always show the whole map* is a preference, not the save's, so a bench never
+undoes it.

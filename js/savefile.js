@@ -266,11 +266,13 @@
   }
 
   /* The charms worn, in the order the game keeps (equippedCharms); an older save without that
-     list, by the equippedCharm_<n> flags. A charm it doesn't have isn't worn. */
+     list, by the equippedCharm_<n> flags. A charm it doesn't have, or a broken one, isn't worn. */
   function equipped(pd, have) {
     const nums = Array.isArray(pd.equippedCharms) ? pd.equippedCharms
       : Object.keys(CHARM_OF_NUM).map(Number).filter((n) => pd['equippedCharm_' + n]);
-    return nums.map((n) => versionOf(pd, int(n))).filter((id) => id && have.includes(id));
+    // A broken fragile charm can't be worn (js/progress.js, broken-*).
+    const brokenNow = (n) => FRAGILE[CHARM_OF_NUM[n]] && pd['brokenCharm_' + n] && !pd[FRAGILE[CHARM_OF_NUM[n]] + '_unbreakable'];
+    return nums.filter((n) => !brokenNow(int(n))).map((n) => versionOf(pd, int(n))).filter((id) => id && have.includes(id));
   }
 
   function build(pd, have) {
@@ -328,7 +330,9 @@
     if (Object.keys(book).length) snap['hollow.journal'] = JSON.stringify(book);
     if (Object.keys(marks).length) snap['hollow.hall'] = JSON.stringify(marks);
     if (PN.doorNotches(d)) snap['hollow.bindings'] = JSON.stringify(d);
-    const prog = P.fromSave(pd, sd);
+    // The Hall's statues unlocked (the boss beaten in the kingdom), when the save has the Hall.
+    const states = Object.entries(HALL_PD).map(([id, x]) => [id, pd['statueState' + x]]).filter(([, st]) => st && typeof st === 'object');
+    const prog = P.fromSave(pd, sd, states.length ? states.filter(([, st]) => st.isUnlocked).map(([id]) => id) : null);
     if (!P.isEmpty(prog)) snap['hollow.progress'] = JSON.stringify(prog);
     return snap;
   }

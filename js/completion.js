@@ -3,7 +3,15 @@
 
    The rules are the wiki's ("Completion (Hollow Knight)"), fifteen categories that add up to
    112, and they were checked against the game's own figure (playerData.completionPercentage)
-   in 51 real saves from 1% to 107%: all 51 match. Most of it the site already keeps, and it's
+   in 51 real saves from 1% to 107%: all 51 match. And against the game's own code (26 September
+   2026): PlayerData.CountGameCompletion and CountCharms, read from Assembly-CSharp.dll (patch
+   1.5, Unity 6), read exactly these fields with these weights: the charms by gotCharm_1…35 and
+   37…40 plus royalCharmState > 2 (a broken fragile charm still counts: it isn't looked at), the
+   fourteen bosses (Hornet by hornet1Defeated and hornetOutskirtsDefeated), the Hive Knight, the
+   three trials, the seven warrior dreams, the spells' levels, the three arts, 2 per piece of
+   equipment, the Dreamers, the Dream Nail with its awakening and mothDeparted, the nail
+   upgrades, maxHealthBase − 5, 1–3 for MPReserveMax 33/66/99, Grimm, Nightmare King or the
+   lantern destroyed, the Godtuner and the first four pantheons' doors completed. Most of it the site already keeps, and it's
    read from there, not copied:
      build     masks (maxHealthBase − 5), vessels, nail, spells, nail arts, Dream Nail, the cloaks
      owned     the charms: numbers 1–36 for the base game (Kingsoul only once whole: the site

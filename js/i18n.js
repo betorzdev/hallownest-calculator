@@ -42,7 +42,7 @@
     /* The screen bar: the pages of the game's pause menu, and the Journal */
     navLabel:       { es: 'Pantallas', en: 'Screens' },
     navCharms:      { es: 'Amuletos', en: 'Charms' },          // PANE_CHARMS
-    navGame:        { es: 'Tu partida', en: 'Your game' },
+    navGame:        { es: 'Inventario', en: 'Inventory' },   // PANE_INVENTORY
     navFight:       { es: 'Combate', en: 'Combat' },
     navJournal:     { es: 'Diario', en: 'Journal' },           // PANE_JOURNAL
     presetsLbl:     { es: 'Empezar desde', en: 'Start from' },
@@ -225,7 +225,7 @@
     hpSetTitle:     { es: 'Quedarte en {n} máscaras', en: 'Drop to {n} masks' },
     hpFullTitle:    { es: 'Volver a la vida completa', en: 'Back to full health' },
 
-    /* Your game */
+    /* Inventory (the screen was "Your game" until 26 September 2026) */
     theNail:        { es: 'El aguijón', en: 'The nail' },
     body:           { es: 'Cuerpo', en: 'Body' },
     charmsTitle:    { es: 'Amuletos', en: 'Charms' },
@@ -245,8 +245,8 @@
     pgNavHint:      { es: 'Progreso: {pct} de finalización', en: 'Progress: {pct} completion' },
     pgLead:         { es: 'Lo que el juego cuenta para el 112 %, categoría por categoría. Toca una fila para ver lo que tiene y marcar lo que ya consigas.',
                       en: 'What the game counts towards 112%, category by category. Tap a row to see what it holds and mark what you get.' },
-    pgInGame:       { es: 'En Tu partida', en: 'On Your game' },
-    pgInGameHint:   { es: 'Se marca en Tu partida, porque cambia tus números', en: 'Marked on Your game, because it changes your figures' },
+    pgInGame:       { es: 'En el Inventario', en: 'On the Inventory' },
+    pgInGameHint:   { es: 'Se marca en el Inventario, porque cambia tus números', en: 'Marked on the Inventory, because it changes your figures' },
     pgMark:         { es: 'Marcar como conseguido', en: 'Mark as done' },
     pgUnmark:       { es: 'Quitar la marca', en: 'Unmark' },
     pgOpen:         { es: '{cat}: {got} de {max}', en: '{cat}: {got} of {max}' },
@@ -266,8 +266,7 @@
     pgCat_hive:     { es: 'Saviavida', en: 'Lifeblood' },
     pgCat_godmaster:{ es: 'Buscador de Dioses', en: 'Godmaster' },   // UI_MENU_STYLE_GG
     pgSeerNote:     { es: '2400 de esencia', en: '2400 essence' },
-    pgCollectibles: { es: 'Coleccionables', en: 'Collectibles' },
-    pgTabList:      { es: 'Lista', en: 'List' },
+    pgTab112:       { es: '112{pct}', en: '112{pct}' },
     pgTabMap:       { es: 'Mapa', en: 'Map' },   // INV_NAME_MAP
     pgMapKinds:     { es: 'Qué se ve en el mapa', en: 'What the map shows' },
     pgMapReference: { es: 'Sin partida del juego, el mapa se ve entero. Toca un punto para ver qué es y marcarlo.',
@@ -275,18 +274,52 @@
     pgMapFromSave:  { es: 'Como en tu partida: entero lo que has recorrido, en boceto lo que solo conoces por el mapa de Cornifer, y apenas insinuado lo demás.',
                       en: 'As in your game: whole where you\'ve been, sketched what you only know from Cornifer\'s map, and barely there the rest.' },
     pgMapShowFound: { es: 'Ver también lo conseguido', en: 'Also show what you have' },
+    pgMapWhole:     { es: 'Ver siempre el mapa entero', en: 'Always show the whole map' },
+    pgMapWholeOn:   { es: 'El mapa entero, también lo que aún no has recorrido.', en: 'The whole map, what you haven\'t explored too.' },
+    pgMapNames:     { es: 'Ver los nombres de las zonas', en: 'Show the area names' },
+    pgmShowAll:     { es: 'Mostrar todo', en: 'Show all' },
+    pgmHideAll:     { es: 'Esconder todo', en: 'Hide all' },
+    pgmGoInv:       { es: 'Ir al Inventario', en: 'Go to the Inventory' },
+    pgmG_collect:   { es: 'Coleccionables', en: 'Collectibles' },
+    pgmG_c112:      { es: 'Del 112{pct}', en: 'Towards 112{pct}' },
+    pgmG_places:    { es: 'Lugares', en: 'Places' },
+    pgmG_mine:      { es: 'Tu partida', en: 'Your game' },
+    pgmL_charms:    { es: 'Amuletos', en: 'Charms' },          // PANE_CHARMS
+    pgmL_equip:     { es: 'Equipo, hechizos y artes', en: 'Equipment, spells and arts' },
+    pgmL_bosses:    { es: 'Jefes y pruebas', en: 'Bosses and trials' },
+    pgmL_graves:    { es: 'Tumba de Guerrero', en: 'Warrior\'s Grave' },   // KEY_GHOST
+    pgmL_dreamers:  { es: 'Soñador', en: 'Dreamer' },   // KEY_DREAMER
+    pgmL_benches:   { es: 'Banco', en: 'Bench' },   // KEY_BENCH
+    pgmL_people:    { es: 'Tiendas y personajes', en: 'Shops and characters' },
+    pgmL_trams:     { es: 'Estación de tranvía', en: 'Tram Station' },   // KEY_TRAM
+    pgmL_springs:   { es: 'Aguas termales', en: 'Hot Spring' },   // KEY_SPA
+    pgmL_cocoons:   { es: 'Capullo', en: 'Cocoon' },   // KEY_COCOON
+    'pgmL_my-bench':{ es: 'Tu banco', en: 'Your bench' },
+    pgmL_shade:     { es: 'Tu sombra', en: 'Your shade' },
+    pgmL_gate:      { es: 'Portal Onírico', en: 'Dreamgate' },   // INV_NAME_DREAMGATE
+    pgmL_markers:   { es: 'Marcadores', en: 'Markers' },   // CTRL_MARKERS
+    pgmP_bench:     { es: 'Banco', en: 'Bench' },   // KEY_BENCH
+    pgmP_tram:      { es: 'Estación de tranvía', en: 'Tram Station' },   // KEY_TRAM
+    pgmP_spa:       { es: 'Aguas termales', en: 'Hot Spring' },   // KEY_SPA
+    pgmP_cocoon:    { es: 'Capullo', en: 'Cocoon' },   // KEY_COCOON
+    pgmM_r:         { es: 'Marcador Acorazado', en: 'Shell Marker' },   // MARKER_R_NAME
+    pgmM_b:         { es: 'Marcador Escarabajo', en: 'Scarab Marker' },   // MARKER_B_NAME
+    pgmM_y:         { es: 'Marcador Ficha', en: 'Token Marker' },   // MARKER_Y_NAME
+    pgmM_w:         { es: 'Marcador Brillante', en: 'Gleaming Marker' },   // MARKER_W_NAME
+    pgmW_sly:       { es: 'Sly', en: 'Sly' },   // SLY_MAIN
+    pgmW_iselda:    { es: 'Iselda', en: 'Iselda' },   // ISELDA_MAIN
+    pgmW_salubra:   { es: 'Salubra', en: 'Salubra' },   // CHARM_SLUG_MAIN
+    pgmW_legeater:  { es: 'Comepiernas', en: 'Leg Eater' },   // LEGEATER_MAIN
+    pgmW_lemm:      { es: 'Lemm', en: 'Lemm' },   // RELICDEALER_MAIN
+    pgmW_jiji:      { es: 'Jiji', en: 'Jiji' },   // JIJI_MAIN
+    pgmW_nailsmith: { es: 'Forjaguijones', en: 'Nailsmith' },   // NAILSMITH_MAIN
+    pgmW_seer:      { es: 'Vidente', en: 'Seer' },   // DREAM_MOTH_MAIN
+    pgmW_grubfather:{ es: 'Padre Larva', en: 'Grubfather' },   // no game text: the Spanish wiki's name
+    pgmW_colosseum: { es: 'Coliseo de los Insensatos', en: 'Colosseum of Fools' },   // COLOSSEUM
+    pgmW_blackegg:  { es: 'Templo del Huevo Negro', en: 'Black Egg Temple' },   // KEY_BLACKEGG
     pgZoomIn:       { es: 'Acercar', en: 'Zoom in' },
     pgZoomOut:      { es: 'Alejar', en: 'Zoom out' },
-    pgZoomFit:      { es: 'Ver el mapa entero', en: 'Show the whole map' },
-    pgCollLead:     { es: 'Todo lo que hay por el reino, con dónde está. No cuenta para el 112 % salvo lo que se convierte en máscaras, vasijas, muescas o mejoras del aguijón.',
-                      en: 'Everything there is around the kingdom, with where it is. It doesn\'t count towards 112% except what becomes masks, vessels, notches or nail upgrades.' },
-    pgRewards:      { es: 'Recompensas', en: 'Rewards' },
-    pgAllAreas:     { es: 'Todo el reino', en: 'The whole kingdom' },
-    pgAreaFilter:   { es: 'Filtrar por zona', en: 'Filter by area' },
-    pgSrcShop:      { es: '{who} · {geo} geo', en: '{who} · {geo} geo' },
-    pgSrcSeer:      { es: '{who} · {n} de esencia', en: '{who} · {n} essence' },
-    pgSrcGrubs:     { es: '{who} · {n} larvas', en: '{who} · {n} grubs' },
-    pgStep:         { es: '{n}: {what}', en: '{n}: {what}' },
+    pgZoomFit:      { es: 'Encuadrar el mapa entero', en: 'Fit the whole map' },
     pgNkgOr:        { es: 'o el destierro', en: 'or the banishment' },
     shadeTag:       { es: 'Tu sombra', en: 'Your shade' },
     shadeBanner:    { es: 'Te espera en {area} con {geo} geo.', en: 'It waits in {area} with {geo} geo.' },
@@ -309,6 +342,13 @@
     ownHere:        { es: 'Marcar como conseguido', en: 'Mark as found' },
     ownHereHint:    { es: 'Márcalo como conseguido en tu partida', en: 'Mark it as found in your game' },
     inspFixed:      { es: 'No se puede quitar', en: 'It cannot be removed' },
+    hallLockedShort:{ es: 'Aún bloqueada en tu partida', en: 'Still locked in your game' },
+    hallLocked:     { es: 'En tu partida esta estatua aún está bloqueada: se desbloquea venciendo a su jefe en el reino.', en: 'In your game this statue is still locked: it unlocks by beating its boss in the kingdom.' },
+    fragBroken:     { es: 'Este amuleto se ha roto y el poder de su interior se ha apagado. No se puede equipar.', en: 'This charm has broken, and the power inside has been silenced. It can not be equipped.' }, // CHARM_DESC_23_BROKEN, its last line
+    fragDivine:     { es: 'Lo tiene la Divina: te lo devolverá irrompible.', en: 'The Divine has it: she\'ll give it back unbreakable.' },
+    fragRepaired:   { es: 'Ya está reparado', en: 'It\'s been repaired' },
+    fragUnbreakable:{ es: 'Ya es irrompible', en: 'It\'s unbreakable now' },
+    fragBreak:      { es: 'Se ha roto', en: 'It broke' },
     ownedTitle:     { es: 'Amuletos conseguidos', en: 'Charms found' },
     ownAll:         { es: 'Todos', en: 'All' },
     ownNone:        { es: 'Ninguno', en: 'None' },

@@ -93,7 +93,6 @@
     'trial-conqueror': { es: 'Prueba del Conquistador', en: 'Trial of the Conqueror' }, // COLOSSEUM_2_TEXT
     'trial-fool': { es: 'Prueba de los Insensatos', en: 'Trial of the Fool' },         // COLOSSEUM_3_TEXT
     'seer-ascended': { es: 'Vidente', en: 'Seer' },                             // DREAM_MOTH_MAIN
-    ascension: { es: 'Ascensión', en: 'Ascension' },                            // ASCENSION_TITLE
   };
   /* The collectibles' kinds (js/collectibles.js), each with its name as the game writes it (the
      Inventory's, or the map's legend, KEY_*) and its picture. The flames have no name of their
@@ -114,13 +113,6 @@
     'grimmkin-flame': { es: 'Llama de los Grimarios', en: 'Grimmkin Flame', art: ['items', 'grimmkin-flame'] },
     'map': { es: 'Mapa', en: 'Map', art: ['effects', 'map'] },                                         // INV_NAME_MAP
     'stag': { es: 'Estación de ciervos', en: 'Stag Station', art: ['items', 'stag'] },                // KEY_STAG
-  };
-  // Who gives rewards for what you bring (the Grubfather, from the Spanish wiki's page «Padre Larva»,
-  // and the Seer), and who sells collectibles.
-  const GIVERS = {
-    grubfather: { es: 'Padre Larva', en: 'Grubfather' },
-    seer: { es: 'Vidente', en: 'Seer' },                                        // DREAM_MOTH_MAIN
-    sly: { es: 'Sly', en: 'Sly' }, salubra: { es: 'Salubra', en: 'Salubra' },
   };
   const SHARDS = { es: 'Fragmentos de máscara', en: 'Mask Shards' };             // INV_NAME_HEARTPIECE_0
   const FRAGMENTS = { es: 'Fragmentos de vasija', en: 'Vessel Fragments' };     // INV_NAME_SOULORBS_0
@@ -289,12 +281,10 @@
       'hallownest-seal':   'Hallownest_Seal.png',
       'kings-idol':        "King's_Idol.png",
       'arcane-egg':        'Arcane_Egg.png',
-      // The collectibles' kinds that have no inventory icon (COLLECTIBLE_KINDS), and the two who give rewards.
+      // The collectibles' kinds that have no inventory icon (COLLECTIBLE_KINDS).
       'whispering-root':   'Whispering_Root.png',
       'grimmkin-flame':    'FlameConsumed.png',
       'stag':              'Stag_Circle.png',
-      'grubfather':        'Grubfather_Circle.png',
-      'seer':              'Seer_Circle.png',
     },
     hud: {
       'mask':        'HK_Mask.png',
@@ -828,7 +818,7 @@
   const STAT_BY_ID = Object.fromEntries(STAT_DEFS.map((d) => [d.id, d]));
 
   HK.data = {
-    NAILS, NAIL, ARTS, ABILITIES, EQUIPMENT, KEY_ITEMS, CARRIED, SHARDS, FRAGMENTS, COMPLETION_NAMES, COLLECTIBLE_KINDS, GIVERS, SPELLS, SPELL_COST, SPELL_COST_TWISTER,
+    NAILS, NAIL, ARTS, ABILITIES, EQUIPMENT, KEY_ITEMS, CARRIED, SHARDS, FRAGMENTS, COMPLETION_NAMES, COLLECTIBLE_KINDS, SPELLS, SPELL_COST, SPELL_COST_TWISTER,
     SOUL, HEALTH, FOCUS, MOVE, PETS, CHARM_NOTCHES,
     CHARMS, CHARM_BY_ID, EFFECT_WHEN, CHARM_EFFECTS, GROUPS, STAT_DEFS, STAT_BY_ID, ART, art,
   };

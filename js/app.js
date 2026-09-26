@@ -993,11 +993,18 @@
     } catch (e) { App.owned = C.OWN_MAX.slice(); }
   };
   const saveOwned = () => save(KEY.owned, isMaxOwned() ? null : JSON.stringify(App.owned));
-  const isOwned = (id) => C.ownEquippable(App.owned, id);
+  /* A fragile charm you have but can't wear: broken (Leg Eater repairs it) or with the Divine
+     (it comes back unbreakable). Its state in your game (js/progress.js), or ''. */
+  const AWAY = { fheart: ['broken-heart', 'divine-heart'], fgreed: ['broken-greed', 'divine-greed'], fstrength: ['broken-strength', 'divine-strength'] };
+  const fragileAway = (id) => (AWAY[id] || []).find((x) => P.has(App.progress, x)) || '';
+  const isOwned = (id) => C.ownEquippable(App.owned, id) && !fragileAway(id);
   /* Void Heart can't be removed (wiki, "Void Heart"): if you have it, it's always equipped. It
      costs 0 notches, and the Pantheons' Charms binding already removes it in the engine. */
-  const withFixed = (st) => (isOwned('voidheart') && !st.charms.includes('voidheart')
-    ? C.normalize({ ...st, charms: [...st.charms, 'voidheart'] }) : st);
+  const withFixed = (st) => {
+    // Nor is a fragile one worn while it's broken or with the Divine (a link or an older build may carry it).
+    const s = st.charms.some((id) => fragileAway(id)) ? C.normalize({ ...st, charms: st.charms.filter((id) => !fragileAway(id)) }) : st;
+    return isOwned('voidheart') && !s.charms.includes('voidheart') ? C.normalize({ ...s, charms: [...s.charms, 'voidheart'] }) : s;
+  };
   const isFixed = (id) => id === 'voidheart' && isOwned('voidheart');
   /* What your game has beyond the Knight's numbers (js/progress.js): equipment and key items,
      what you carry, the rest of the 112%, your bench and your shade. With nothing saved, none of
@@ -1013,6 +1020,9 @@
     App.progress = P.normalize(next);
     saveProgress();
     App.was = { state: App.state, owned: App.owned, progress: was };
+    // A fragile charm that just broke (or went to the Divine) comes off.
+    const worn = App.state.charms.filter((id) => !fragileAway(id));
+    if (worn.length !== App.state.charms.length) { commit(C.normalize({ ...App.state, charms: worn })); App.was = null; return; }
     render();
     App.was = null;
   }
@@ -1059,5 +1069,5 @@
     masksText, notchText, spellArt, shortOf, badgeText, goodClass, deltaChip, changeChip, prefs, loadPrefs,
     savePrefs, justWorn, justFound, splitHash, here, loadState, persist, compareLabel, compute, impact, recompute, commit, bindAllFx,
     brackets, chevron, cross, FLEURS, rule, screenHead, hudHtml, restoreFocus, focusDescriptor, render, go, navTo, screenOf,
-    underNav, toast, track, actions, isMaxOwned, loadOwned, saveOwned, isOwned, withFixed, isFixed, setOwned, loadProgress, saveProgress, setProgress, reloadGame });
+    underNav, toast, track, actions, isMaxOwned, loadOwned, saveOwned, isOwned, fragileAway, withFixed, isFixed, setOwned, loadProgress, saveProgress, setProgress, reloadGame });
 })();

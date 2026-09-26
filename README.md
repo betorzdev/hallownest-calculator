@@ -46,7 +46,7 @@ with the synergies between them marked.
 <tr>
 <td valign="top">
 
-### Your game
+### Inventory
 Your nail, masks, soul vessels, notches, spells and nail arts, plus the charms and abilities
 you've actually found. Start from the base Knight or from everything maxed. Four save slots,
 like the game's, so a Steel Soul run doesn't overwrite your main game, and a free mode with
@@ -64,7 +64,7 @@ take?*
 </tr>
 <tr>
 <td valign="top">
-<img src="docs/screenshots/your-game.webp" alt="Your game screen: the five nails, the masks, vessels and notches as the game draws them, nail arts and spell levels chosen by their artwork">
+<img src="docs/screenshots/your-game.webp" alt="Inventory screen: the five nails, the masks, vessels and notches as the game draws them, nail arts and spell levels chosen by their artwork">
 </td>
 <td valign="top">
 <img src="docs/screenshots/arena.webp" alt="Combat arena mid-fight against False Knight: the Knight and the enemy face to face with its title card, the scoreboard between them, and both sides' attacks below">

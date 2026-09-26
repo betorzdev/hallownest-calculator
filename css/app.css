@@ -1246,7 +1246,8 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
   /* The bar, on mobile: the four tabs spread out (the active one underlined: the diamond doesn't
      fit) and without the Journal's book, which leaves room for its name with your completed entries. */
   :root { --sticky-h: 100px; }
-  .nav-tabs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; }
+  /* Each tab as wide as its word (a long one, «Inventario», doesn't break), the free space between them. */
+  .nav-tabs { display: grid; grid-template-columns: repeat(5, auto); justify-content: space-between; gap: 0 var(--sp-2); }
   .nav-tab { flex-direction: column; justify-content: center; gap: 0; min-height: 48px; font-size: var(--fs-md); text-align: center; }
 }
 /* The sheet arranges itself by its own width (container inv), not the window's. */
@@ -2708,6 +2709,11 @@ button.tl-go:focus-visible { outline-offset: 3px; }
    keeps its accent rule. */
 .ped-btn.is-dim .ped-niche::before { background: var(--godhome-light-off); }
 .ped-btn.is-dim .ped-niche > img:first-child { opacity: 0.55; }
+/* Locked in your game (the boss not beaten in the kingdom yet): the statue in shadow, as the
+   game draws a pedestal still covered, with no light in its niche. */
+.ped-btn.is-locked .ped-niche::before { background: var(--godhome-light-off); }
+.ped-btn.is-locked .ped-niche > img:first-child { filter: brightness(0.25) saturate(0); opacity: 0.8; }
+.ped-btn.is-locked .ped-name { color: var(--muted); }
 .ped-btn.is-dim .ped-name { color: var(--muted); }
 .ped-btn.is-dim .ped-marks { opacity: 0.5; }
 
@@ -3835,7 +3841,7 @@ kbd {
 /* The build's things are marked on Your game: they say so, and take you there. */
 .pg-plates .gplate.is-far .gplate-val { font-family: var(--font-body); }
 /* List · Map, under the title: text tabs, the chosen one with the accent's rule, like Combat's. */
-.pg-tabs { display: flex; justify-content: center; gap: var(--sp-6); margin: 0 0 var(--sp-6); }
+.pg-tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-1) var(--sp-6); margin: 0 0 var(--sp-6); }
 .pg-tab { padding: var(--sp-1) 0; font-family: var(--font-body); font-size: var(--fs-md); color: var(--muted); border-bottom: 2px solid transparent; transition: color var(--dur) var(--ease); }
 .pg-tab:hover { color: var(--accent); }
 .pg-tab.is-on { color: var(--ink-strong); border-bottom-color: var(--accent); }
@@ -3844,7 +3850,24 @@ kbd {
    own tint (baked into the drawings). Whole what the Quill drew, rough what you only bought,
    barely there what you don't know. The pins keep their size on screen (--k). ── */
 .pgm { display: flex; flex-direction: column; gap: var(--sp-3); }
-.pgm-kinds .pg-area img { width: 18px; height: 18px; object-fit: contain; }
+.pgm-kinds .pg-area img, .pgm-ico { width: 18px; height: 18px; object-fit: contain; flex: none; }
+/* The area names' layer has no picture: a letter in the titles' face stands for it. */
+.pgm-ico.is-name { display: inline-grid; place-items: center; font-family: var(--font-display); font-style: normal; font-size: var(--fs-sm); line-height: 1; color: var(--ink-2); }
+/* How many of each kind you have: the figures in the sans, in bone; a kind complete, in --good. */
+.pgm-kind-n { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-xs); color: var(--muted); }
+.pgm-kind-n b { font-weight: 700; color: var(--ink-strong); }
+.pgm-kind-n .u { font-style: normal; }
+.pgm-kind.is-full .pgm-kind-n b { color: var(--good); }
+/* The filter, under the map: a title with show all · hide all, the two choices, and the layers
+   in four groups (collectibles, the 112%, places, yours), each a row of chips that wraps. */
+.pgm-filter { display: flex; flex-direction: column; gap: var(--sp-3); padding-top: var(--sp-3); border-top: 1px solid var(--inv-line); }
+.pgm-filter-bar { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--sp-2) var(--sp-6); }
+.pgm-filter-t { margin: 0; font-family: var(--font-display); font-size: var(--fs-md); font-weight: 400; color: var(--ink-strong); }
+.pgm-all { display: inline-flex; gap: var(--sp-4); }
+.pgm-opts { display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-6); }
+.pgm-group { display: flex; flex-direction: column; gap: var(--sp-1); }
+.pgm-group-t { margin: 0; font-family: var(--font-body); font-size: var(--fs-xs); font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.pgm-filter .pg-areas { max-width: none; margin: 0; flex-wrap: wrap; overflow: visible; padding-bottom: 0; }
 .pgm-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-6); }
 .pgm-note { flex: 1 1 32ch; margin: 0; font-size: var(--fs-sm); color: var(--muted); }
 .pgm-found { display: inline-flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-sm); color: var(--ink-2); cursor: pointer; }
@@ -3860,7 +3883,26 @@ kbd {
 .pgm-pin:hover circle, .pgm-pin:focus-visible circle, .pgm-pin.is-sel circle { stroke: var(--accent); stroke-width: 0.1; }
 .pgm-pin:focus { outline: none; }
 .pgm-pin.is-on { opacity: 0.4; }
-.pgm-mark { cursor: default; }
+/* Close up (.is-near), each pin's name under it, in bone with the black of the map around its
+   letters, so it reads over the rooms' lines. */
+.pgm-lbl { display: none; font-family: var(--font-body); font-size: 0.46px; text-anchor: middle; fill: var(--ink-strong);
+  stroke: var(--bg); stroke-width: 0.12px; paint-order: stroke; pointer-events: none; }
+.pgm-svg.is-near .pgm-lbl { display: block; }
+/* A name that would cover another is hidden; its pin shows it when pointed at or chosen. */
+.pgm-svg.is-near .pgm-lbl.is-off { display: none; }
+.pgm-svg.is-near .pgm-pin:is(:hover, :focus-visible, .is-sel) .pgm-lbl.is-off { display: block; }
+.pgm-pin:is(:hover, :focus-visible, .is-sel) { isolation: isolate; }
+/* Yours sit where they are, on top, with no disc; your bench carries a bone ring. */
+.pgm-mark circle { fill: none; stroke: var(--ink-strong); stroke-width: 0.08; }
+/* The map's own titles, as its map screen writes them: the areas' in the titles' face, from
+   afar; the places' smaller, once you're closer (.is-mid), when the areas' step aside. They keep
+   their size on screen, as the pins do (--k). */
+.pgm-names { pointer-events: none; }
+.pgm-name { text-anchor: middle; dominant-baseline: middle; fill: var(--ink-2); stroke: var(--bg); paint-order: stroke; }
+.pgm-name.is-area { font-family: var(--font-display); font-size: calc(var(--k, 0.5) * 0.6px); letter-spacing: 0.04em; stroke-width: calc(var(--k, 0.5) * 0.14px); opacity: 0.9; }
+.pgm-name.is-place { display: none; font-family: var(--font-body); font-size: calc(var(--k, 0.5) * 0.46px); stroke-width: calc(var(--k, 0.5) * 0.12px); }
+.pgm-svg.is-mid .pgm-name.is-place { display: block; }
+.pgm-svg.is-mid .pgm-name.is-area { display: none; }
 /* The card of the pin chosen, over it (below it near the top edge). */
 .pgm-card-wrap { position: absolute; z-index: 2; transform: translate(-50%, calc(-100% - var(--sp-4))); pointer-events: none; }
 .pgm-card-wrap.is-below { transform: translate(-50%, var(--sp-6)); }
@@ -3868,17 +3910,13 @@ kbd {
   pointer-events: auto; display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-2) var(--sp-3);
   background: var(--card); border: 1px solid var(--line-panel); box-shadow: var(--shadow-md); white-space: nowrap;
 }
-.pgm-card img { width: 32px; height: 32px; object-fit: contain; }
+.pgm-card-art { display: inline-grid; place-items: center; width: 32px; height: 32px; }
+.pgm-card-art img, .pgm-card-art svg { width: 32px; height: 32px; object-fit: contain; }
 .pgm-card-t { display: flex; flex-direction: column; font-size: var(--fs-sm); color: var(--ink-2); }
 .pgm-card-t b { color: var(--ink-strong); font-weight: 600; }
 .pgm-card-x { width: auto; height: auto; padding: 0 var(--sp-1); font-size: var(--fs-md); }
 
-/* The collectibles, under the 112%: their own title, the filter by area (each area's light as
-   a dot, the chosen one with the accent's line) and the same tablet; then the reward ladders. */
-.pg-coll { margin-top: var(--sp-16); }
-.pg-title { margin: 0; text-align: center; font-family: var(--font-display); font-size: var(--fs-lg); letter-spacing: 0.08em; color: var(--ink-strong); }
-.pg-coll > .pg-lead { margin: var(--sp-2) auto var(--sp-6); text-align: center; }
-.pg-sub { max-width: 900px; margin: var(--sp-8) auto var(--sp-2); font-size: var(--fs-2xs); letter-spacing: 0.12em; text-transform: uppercase; color: var(--label); }
+/* The Map's filter by kind: chips in a row, the chosen ones with the accent's line. */
 .pg-areas { max-width: 900px; margin: 0 auto var(--sp-4); display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-2); }
 .pg-area {
   display: inline-flex; align-items: center; gap: var(--sp-2); padding: var(--sp-1) var(--sp-2);
@@ -3886,9 +3924,8 @@ kbd {
 }
 .pg-area:hover { color: var(--accent); }
 .pg-area.is-on { color: var(--ink-strong); background: var(--picked); border-bottom-color: var(--accent-line); }
-.pg-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--dot, var(--ink-2)); flex: none; }
 @media (max-width: 599px) {
-  /* The areas in one strip that slides sideways, inside its own box: nineteen would fill the screen. */
+  /* The kinds in one strip that slides sideways, inside its own box: fifteen would fill the screen. */
   .pg-areas { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: var(--sp-1); }
   .pg-areas::-webkit-scrollbar { display: none; }
   .pg-area { flex: none; }
