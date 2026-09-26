@@ -52,3 +52,22 @@ test("the map's titles and the warriors' graves", () => {
   assert.deepEqual(M.PINS.filter((p) => p[0] === 'grave').map((p) => p[1]).sort(),
     ['Cliffs_02', 'Deepnest_40', 'Deepnest_East_10', 'Fungus1_34', 'Fungus2_32', 'Fungus3_40', 'RestingGrounds_02']);
 });
+
+test("the doors join rooms both ways, and every bench can be walked to from King's Pass", () => {
+  assert.ok(Object.keys(R.DOORS).length > 300);
+  // Three rooms the doors reach that the map places on a neighbour (js/app-map.js, ALIAS); and the
+  // White Palace, which the game's map doesn't draw (the walk skips a room with no point).
+  const ALIASED = new Set(['Room_Sly_Storeroom', 'Room_Bretta_Basement']);
+  for (const [a, list] of Object.entries(R.DOORS)) {
+    assert.ok(place(a) || ALIASED.has(a) || a.startsWith('White_Palace_'), a);
+    for (const b of list) assert.ok(R.DOORS[b] && R.DOORS[b].includes(a), a + ' <-> ' + b);
+  }
+  // Breadth first from the first room. Godhome and the White Palace are entered by dream, not by a door.
+  const seen = new Set(['Tutorial_01']), queue = ['Tutorial_01'];
+  while (queue.length) { const sc = queue.shift(); for (const n of R.DOORS[sc] || []) if (!seen.has(n)) { seen.add(n); queue.push(n); } }
+  const sceneOf = (name) => name.replace(/_(b|c|d|part_b|left|right)$/, '');
+  for (const [kind, scene] of M.PINS) {
+    if (kind !== 'bench' || /^(GG_|White_Palace_)/.test(scene)) continue;
+    assert.ok(seen.has(sceneOf(scene)), scene);
+  }
+});

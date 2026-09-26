@@ -115,6 +115,9 @@ if (q.get('saves')) {
    js/savefile.js from a save file (with hollow.saves making it the active one), for captures of
    Your game. */
 if (q.get('ls')) for (const [k, v] of Object.entries(JSON.parse(q.get('ls')))) localStorage.setItem(k, v);
+/* &walk=<scene>: the save before rested at that bench (hollow.prev), so that opening the Map
+   plays the Knight's walk from it to the bench of hollow.progress (js/app-knight.js). */
+if (q.get('walk')) localStorage.setItem('hollow.prev', JSON.stringify({ snap: { 'hollow.progress': JSON.stringify({ bench: q.get('walk') }) }, saved: null }));
 const f = document.createElement('iframe');
 f.src = 'index.html' + (q.get('hash') ? q.get('hash') + (view !== 'charms' ? '&view=' + view : '') : '');
 f.style.width = w + 'px';
@@ -192,6 +195,11 @@ f.addEventListener('load', () => {
   for (const id of (q.get('info') || '').split(',').filter(Boolean)) clickN(`[data-act="help"][data-id="${id}"]`, 1);
   // ?click=restCocoon,restSit presses those buttons (by their data-act) in that order.
   for (const act of (q.get('click') || '').split(',').filter(Boolean)) clickN(`[data-act="${act}"]`, 1);
+  // The Knight (js/app-knight.js) fades between his lines with a CSS transition, which headless
+  // Chrome doesn't tick once the page is idle: he'd be captured half seen. Cut, he's always whole.
+  // ?knight=floor|bench puts him on that line whatever is in view (headless doesn't tell him after a scroll).
+  { const st = f.contentDocument.createElement('style'); st.textContent = '.kn { transition: none !important; }'; f.contentDocument.head.appendChild(st); }
+  if (q.get('knight')) f.contentWindow.HK.app.knight.show(q.get('knight'));
   if (q.get('freeze') !== null) {
     const st = f.contentDocument.createElement('style');
     st.textContent = `.kscene, .kscene *, .kscene::before, .kscene::after, .fstage, .fstage *, #panel .hud * { animation-delay: -${Number(q.get('freeze'))}ms !important; animation-play-state: paused !important; }`;

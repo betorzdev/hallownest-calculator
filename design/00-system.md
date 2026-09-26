@@ -371,6 +371,14 @@ surface underneath, with three intensities depending on the state, and the pedes
 ~250 ms to respond to an interaction, ~400 ms for a fade, `cubic-bezier(.4,0,.2,1)`, **no
 bounce**. The game doesn't have a single transition with overshoot.
 
+**The Knight (decided on 26 September 2026): the one thing that moves across the page.** A
+small animated Knight (`js/app-knight.js`, the game's own six running frames at 10 a second)
+says where you are: sitting on the screen bar under the tab you're on, on his bench on Your game, on
+the footer's floor, by your bench on the Map. He **walks along a line and fades between lines**:
+along the bar, along the floor, from room to room on the map, always by `translate` at a steady
+pace, linear like the motes; from the bar to the bench or the floor, a fade of `--dur-slow`.
+Never a slide, nothing bounces. With `prefers-reduced-motion` he only stands or sits.
+
 ## 5. The plan, by value-to-cost ratio
 
 ### Now (hours, not days)

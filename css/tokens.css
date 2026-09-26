@@ -233,6 +233,16 @@
   --dur-slow: 400ms;
   /* For what fades by itself, without anyone touching it: starts and fades out softly, with no cut. */
   --ease-fade: cubic-bezier(0.45, 0, 0.55, 1);
+  /* The Knight who walks the page (js/app-knight.js, css: .kn): a frame of his run (the game's
+     sprite runs at 10 a second), how long 100 px take him running (along the bar, off his
+     bench) and strolling on the footer's floor, and his height on the screen bar, on his bench
+     and on that floor (the strips are 104 × 140). */
+  --dur-step: 100ms;
+  --dur-run: 500ms;
+  --dur-stride: 2400ms;
+  --kn-bar: 26px;      /* sitting under a tab's title without touching its letters */
+  --kn-bench: 64px;
+  --kn-floor: 48px;
 
   --page-max: 1216px;
   --page-pad: var(--sp-8);

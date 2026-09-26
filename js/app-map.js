@@ -326,12 +326,12 @@
     : a.glyph ? `<svg class="pgm-ico" viewBox="-0.5 -0.5 1 1" aria-hidden="true">${LIFT}</svg>` : a.pin ? atlasSvg(a.pin, null, ' pgm-ico') : `<img src="${a.src}" alt="">`);
 
   // Yours: your bench, your shade, your Dreamgate and the markers you've placed, where the save says.
+  // Where a bench is: its pin, which can sit on its room's other drawing (Deepnest_30_b, Ruins1_18_b…), else its room.
+  const benchPoint = (scene) => { const b = pinsOf('bench').find((x) => sceneOf(x[1]) === scene); return b ? [b[2], b[3]] : roomPoint(scene); };
   function mineThings() {
     const pr = App.progress, out = [];
     if (pr.bench) {
-      // The bench's pin can sit on its room's other drawing (Deepnest_30_b, Ruins1_18_b…).
-      const b = pinsOf('bench').find((x) => sceneOf(x[1]) === pr.bench);
-      const pt = b ? [b[2], b[3]] : roomPoint(pr.bench);
+      const pt = benchPoint(pr.bench);
       if (pt) out.push({ id: 'mine:bench', layer: 'my-bench', p: pt, art: { pin: 'bench' }, name: t('pgmL_my-bench'), where: where(pr.bench), on: null });
     }
     if (pr.shade && pr.shade.x !== undefined) out.push({ id: 'mine:shade', layer: 'shade', p: [pr.shade.x, pr.shade.y], art: { pin: 'shade' },
@@ -362,7 +362,17 @@
     const mark = (th) => `<g class="pgm-pin pgm-mark is-${th.layer}${th.id === selected ? ' is-sel' : ''}" style="--px:${th.p[0].toFixed(3)}px;--py:${(-th.p[1]).toFixed(3)}px"
         data-act="pgmPick" data-id="${esc(th.id)}" role="button" tabindex="0" aria-label="${esc(th.name + (th.where ? ' · ' + th.where : ''))}">
         <title>${esc(th.name + (th.where ? ' · ' + th.where : ''))}</title>${th.layer === 'my-bench' ? '<circle r="0.62"/>' : ''}${artSvg(th.art, 1.2)}</g>`;
-    return list.map(pin).join('') + mine.map(mark).join('');
+    return list.map(pin).join('') + mine.map(mark).join('') + (layers.has('my-bench') ? youSvg() : '');
+  }
+  /* You: the Knight standing by your bench, with your bench's layer (as the game shows you on
+     its map). Not a pin to pick: nothing to say that the bench doesn't. When your bench moves,
+     js/app-knight.js walks him here from the old one, room by room, stepping his run's frames
+     (assets/knight/run.png) through this svg's viewBox and turning him with the inner group. */
+  function youSvg() {
+    const pt = App.progress.bench && benchPoint(App.progress.bench);
+    if (!pt) return '';
+    return `<g class="pgm-pin pgm-mark pgm-you" style="--px:${pt[0].toFixed(3)}px;--py:${(-pt[1]).toFixed(3)}px;--ox:0.85px" aria-hidden="true">
+        <g class="pgm-you-art"><svg class="pgm-atlas" x="-0.52" y="-1.25" width="1.04" height="1.4" viewBox="0 0 104 140"><image href="assets/knight/idle.png" width="104" height="140"/></svg></g></g>`;
   }
 
   /* ── The view: the SVG's viewBox, kept between repaints ── */
@@ -431,6 +441,9 @@
     vb = { x: cx - (cx - vb.x) * (w / vb.w), y: cy - (cy - vb.y) * (h / vb.h), w, h };
     applyView();
   }
+  // Is a map point in view? And the whole map again (js/app-knight.js, before a walk that starts or ends out of view).
+  const sees = (p) => !!vb && p[0] >= vb.x && p[0] <= vb.x + vb.w && -p[1] >= vb.y && -p[1] <= vb.y + vb.h;
+  const fit = () => { vb = null; applyView(); };
   // A point on screen → the map's units.
   function toMap(clientX, clientY) {
     const r = svg().getBoundingClientRect();
@@ -745,5 +758,5 @@
     },
   });
 
-  Object.assign(App, { renderPgMap, pgMapAfterPaint: afterPaint });
+  Object.assign(App, { renderPgMap, pgMapAfterPaint: afterPaint, pgmBenchPoint: benchPoint, pgmRoomPoint: roomPoint, pgmSees: sees, pgmFit: fit });
 })();
