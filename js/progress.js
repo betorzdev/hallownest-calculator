@@ -63,6 +63,10 @@
     'divine-strength': withDivine('gaveFragileStrength', 'fragileStrength_unbreakable'),
     'broken-heart': broken(23, 'fragileHealth_unbreakable'), 'broken-greed': broken(24, 'fragileGreed_unbreakable'),
     'broken-strength': broken(25, 'fragileStrength_unbreakable'),
+    // The tram lines, open once you've gone through their doors with the Tram Pass: the stations
+    // of each line are shown open on the map.
+    'tram-upper': (pd) => !!pd.openedTramRestingGrounds || !!pd.tramOpenedCrossroads,
+    'tram-lower': (pd) => !!pd.openedTramLower || !!pd.tramOpenedDeepnest,
   });
   const ID_LIST = Object.keys(IDS);
 

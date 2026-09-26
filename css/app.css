@@ -3873,6 +3873,27 @@ kbd {
 .pgm-found { display: inline-flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-sm); color: var(--ink-2); cursor: pointer; }
 .pgm-found input { accent-color: var(--accent); }
 .pgm-zoom { display: inline-flex; border: 1px solid var(--line-ctl); background: var(--card); }
+/* The search, beside the zoom: a line to type on, as the Journal's, and its results under it,
+   over the map, each with its picture, its name and where it is; the one chosen by the keys lit. */
+.pgm-search { position: relative; flex: 1 1 14rem; max-width: 22rem; }
+.pgm-q {
+  width: 100%; min-height: 40px; padding: var(--sp-1) 0; font-family: var(--font-body); font-size: var(--fs-md); color: var(--ink);
+  background: transparent; border: 0; border-bottom: 1px solid var(--line-ctl); border-radius: 0;
+  -webkit-appearance: none; appearance: none; transition: border-color var(--dur) var(--ease);
+}
+.pgm-q:hover { border-bottom-color: var(--accent-line); }
+.pgm-q::placeholder { color: var(--muted); }
+.pgm-q:focus-visible { outline-offset: 2px; }
+.pgm-results {
+  position: absolute; z-index: 3; top: calc(100% + var(--sp-1)); left: 0; right: 0; min-width: 16rem;
+  list-style: none; margin: 0; padding: var(--sp-1) 0; max-height: 22rem; overflow-y: auto;
+  background: var(--card); border: 1px solid var(--line-panel); box-shadow: var(--shadow-md);
+}
+.pgm-result { display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-1) var(--sp-3); cursor: pointer; }
+.pgm-result:hover, .pgm-result.is-cur { background: var(--picked); }
+.pgm-result.is-cur .pgm-card-t b { color: var(--accent); }
+.pgm-result.is-none { cursor: default; font-size: var(--fs-sm); color: var(--muted); }
+.pgm-result .pgm-card-art, .pgm-result .pgm-card-art img, .pgm-result .pgm-card-art svg { width: 24px; height: 24px; }
 .pgm-box { position: relative; height: min(72vh, 720px, 62vw + 120px); background: var(--bg); border: 1px solid var(--inv-line); overflow: hidden; }
 .pgm-svg { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; user-select: none; }
 .pgm-svg:active { cursor: grabbing; }
@@ -3883,6 +3904,8 @@ kbd {
 .pgm-pin:hover circle, .pgm-pin:focus-visible circle, .pgm-pin.is-sel circle { stroke: var(--accent); stroke-width: 0.1; }
 .pgm-pin:focus { outline: none; }
 .pgm-pin.is-on { opacity: 0.4; }
+/* The lift, drawn by the site (the game has no pin for it): in bone, like the game's pins. */
+.pgm-glyph { fill: var(--ink-strong); }
 /* Close up (.is-near), each pin's name under it, in bone with the black of the map around its
    letters, so it reads over the rooms' lines. */
 .pgm-lbl { display: none; font-family: var(--font-body); font-size: 0.46px; text-anchor: middle; fill: var(--ink-strong);

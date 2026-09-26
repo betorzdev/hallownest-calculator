@@ -1216,14 +1216,16 @@ on Cornifer's map). It's the tablet chosen among three variants in
   else) and **Map**; the one open is remembered (`pgTab`).
 - **The Map** is the game's own, drawn from its files (its
   `Game_Map`, the one its inventory shows): 344 rooms in 14 areas, each in its area's tint.
-  The rooms are as your game has them: whole where you've been (the save's `scenesVisited` and
-  `scenesMapped`), as Cornifer's rough drawing where you've only bought the area's map, and barely
-  there the rest; with no save from the game, all of it, whole. **Always show the whole map**
+  The rooms are as your game draws them (`GameMap.SetupMap`, `RoughMapRoom`): nothing of an area
+  until you have its map (Dirtmouth's comes with the game), even where you've been; with it,
+  Cornifer's sketch of the rooms his map shows (`SKETCHED`), and the whole drawing of those you've
+  been to (the save's `scenesVisited` and `scenesMapped`); barely there the rest; with no save from the game, all of it, whole. **Always show the whole map**
   draws it all whole anyway: it's your choice (a pref, `pgMapWhole`), so a bench never undoes it.
 - **Everything the map can show is a layer**, and the filter, **under the map**, lists them in
   four groups, each a chip with its picture that shows or hides it; **Show all** and **Hide all**
   above them. All show at first; which are hidden is remembered (`pgMapOff`).
-  - **Collectibles**: the 202 —Captive Grub 46, Mask Shard 16, Vessel Fragment 9, Pale Ore 6,
+  - **Collectibles** (the stag stations always on the map, each saying whether it's open yet in
+    your game; the game's own purple pin for them): the 202 —Captive Grub 46, Mask Shard 16, Vessel Fragment 9, Pale Ore 6,
     Charm Notch 8, Simple Key 4, Rancid Egg 21, the four relics (14, 17, 8, 4), Whispering Root
     15, the Grimmkin flames 10, Map 13 and Stag Station 11—, each kind named as the game names
     it, each with **how many of it you have** («Captive Grub 23/46», in green when complete).
@@ -1234,7 +1236,9 @@ on Cornifer's map). It's the tablet chosen among three variants in
     room ItemChanger's `locations.json` gives it, the shop for what's bought, the fight's room for
     a boss) and counts as the 112% tablet counts it; its card marks it as the tablet does, or, for
     what's marked on the Inventory (spells, arts, cloaks, the Dream Nail), takes you there.
-  - **Places**: benches, tram stations, hot
+  - **Places**: benches, tram stations (open with their line: `openedTramLower`, `openedTramRestingGrounds`…),
+    the lifts between areas (both ends; the game has no pin for them, so the site draws one, and its
+    flags for them aren't clear enough to say which are working), tram stations, hot
     springs and cocoons (the game's pins, named by its map key); and **shops and characters**
     (Sly, Iselda, Salubra, Leg Eater, Lemm, Jiji, the Nailsmith, the Seer, the Grubfather, the
     Colosseum of Fools and the Black Egg Temple).
@@ -1259,6 +1263,11 @@ on Cornifer's map). It's the tablet chosen among three variants in
   Lemm, the Nailsmith, the Seer, Leg Eater) stand there, with what they sell; the Grubfather's
   and the Seer's rewards on them. The Grimmkin flames, which ItemChanger doesn't place, keep the
   game's pins; the bosses, their fight's room.
+- **A search over the map**, beside the zoom buttons: every thing it can show (the hidden layers'
+  and what you have too) and the map's own titles, by name or place, whatever the case and the
+  accents (*huevo negro*, *larva ciudad*). Up to eight results under the box, with the arrows and
+  Enter or a tap; picking one shows its layer if it was hidden, centres the map on it close up
+  and opens its card (a title only takes you there).
 - **Everything is in view, nothing behind a tap**: things on the very same spot (within 0.15 map
   units: a shop's stock, a house's door) are laid out around it in a small grid, in the pins' own
   units, so it keeps its shape at any zoom. A card says what a thing asks when it has a price (a

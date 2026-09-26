@@ -271,14 +271,17 @@
     pgMapKinds:     { es: 'Qué se ve en el mapa', en: 'What the map shows' },
     pgMapReference: { es: 'Sin partida del juego, el mapa se ve entero. Toca un punto para ver qué es y marcarlo.',
                       en: 'With no save from the game, the whole map shows. Tap a point to see what it is and mark it.' },
-    pgMapFromSave:  { es: 'Como en tu partida: entero lo que has recorrido, en boceto lo que solo conoces por el mapa de Cornifer, y apenas insinuado lo demás.',
-                      en: 'As in your game: whole where you\'ve been, sketched what you only know from Cornifer\'s map, and barely there the rest.' },
+    pgMapFromSave:  { es: 'Como en tu partida: de cada zona cuyo mapa tienes, entero lo que has recorrido y en boceto lo que dibujó Cornifer; sin su mapa, apenas insinuada.',
+                      en: 'As in your game: in each area whose map you have, whole where you\'ve been and sketched what Cornifer drew; without its map, barely there.' },
     pgMapShowFound: { es: 'Ver también lo conseguido', en: 'Also show what you have' },
     pgMapWhole:     { es: 'Ver siempre el mapa entero', en: 'Always show the whole map' },
     pgMapWholeOn:   { es: 'El mapa entero, también lo que aún no has recorrido.', en: 'The whole map, what you haven\'t explored too.' },
     pgMapNames:     { es: 'Ver los nombres de las zonas', en: 'Show the area names' },
     pgmEssence:     { es: '{n} de esencia', en: '{n} essence' },
     pgmGrubs:       { es: '{n} larvas', en: '{n} grubs' },
+    pgmSearch:      { es: 'Buscar en el mapa', en: 'Search the map' },
+    pgmSearchNone:  { es: 'Nada con ese nombre', en: 'Nothing by that name' },
+    pgmSearchTitle: { es: 'Nombre del mapa', en: 'Map title' },
     pgmShowAll:     { es: 'Mostrar todo', en: 'Show all' },
     pgmHideAll:     { es: 'Esconder todo', en: 'Hide all' },
     pgmGoInv:       { es: 'Ir al Inventario', en: 'Go to the Inventory' },
@@ -294,6 +297,7 @@
     pgmL_benches:   { es: 'Banco', en: 'Bench' },   // KEY_BENCH
     pgmL_people:    { es: 'Tiendas y personajes', en: 'Shops and characters' },
     pgmL_trams:     { es: 'Estación de tranvía', en: 'Tram Station' },   // KEY_TRAM
+    pgmL_lifts:     { es: 'Ascensor', en: 'Lift' },
     pgmL_springs:   { es: 'Aguas termales', en: 'Hot Spring' },   // KEY_SPA
     pgmL_cocoons:   { es: 'Capullo', en: 'Cocoon' },   // KEY_COCOON
     'pgmL_my-bench':{ es: 'Tu banco', en: 'Your bench' },
@@ -302,6 +306,9 @@
     pgmL_markers:   { es: 'Marcadores', en: 'Markers' },   // CTRL_MARKERS
     pgmP_bench:     { es: 'Banco', en: 'Bench' },   // KEY_BENCH
     pgmP_tram:      { es: 'Estación de tranvía', en: 'Tram Station' },   // KEY_TRAM
+    pgmP_lift:      { es: 'Ascensor', en: 'Lift' },
+    pgmOpen:        { es: 'Abierta en tu partida', en: 'Open in your game' },
+    pgmClosed:      { es: 'Aún cerrada en tu partida', en: 'Still closed in your game' },
     pgmP_spa:       { es: 'Aguas termales', en: 'Hot Spring' },   // KEY_SPA
     pgmP_cocoon:    { es: 'Capullo', en: 'Cocoon' },   // KEY_COCOON
     pgmM_r:         { es: 'Marcador Acorazado', en: 'Shell Marker' },   // MARKER_R_NAME

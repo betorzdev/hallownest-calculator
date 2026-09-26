@@ -54,6 +54,9 @@ test('what you carry, your bench and your shade', () => {
     { persistentBoolItems: [{ sceneName: 'Deepnest_03', id: 'Breakable Wall', activated: true }] });
   assert.deepEqual(w.alts, ['Town', 'Deepnest_East_01', 'Deepnest_03']);
   assert.deepEqual(P.fromSave(pd).alts, []);
+  // The tram lines, open as the save says (either door of each).
+  assert.deepEqual(P.fromSave({ ...pd, openedTramLower: true }).ids.filter((x) => x.startsWith('tram-')), ['tram-lower']);
+  assert.deepEqual(P.fromSave({ ...pd, tramOpenedCrossroads: true }).ids.filter((x) => x.startsWith('tram-')), ['tram-upper']);
   assert.equal(R.areaOf(p.bench), 'godhome');
   assert.equal(R.areaOf(p.shade.scene), 'fog');
   // No shade: the game leaves "None" in its room.
