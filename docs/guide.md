@@ -35,14 +35,15 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   smaller and without its filigree, and the Knight (with the save's number, if you're in one),
   the language and *Share* on the right.
 - **The screen bar**, which stays stuck at the top, **in two groups** (`design/10-restructure.md`):
-  your game as the save says it —**Your game · Progress · Map · Journal · Godhome**— and, after a
+  your game as the save says it —**Your game · Inventory · Progress · Map · Journal · Godhome**— and, after a
   thin rule, the tools —**Charms · Combat**—. In the serif and in lowercase, with an accent rule
   under the one you're viewing, lying on the bar's bottom edge like a page tab; *Your game*
   carries the diamond of the link to the game's file (lit and breathing while it follows it,
   hollow and in amber when it's paused or the file is gone), Progress your completion ("58 %")
   and the Journal your completed entries over the total ("2/146"). **On a phone** (below 900 px)
-  the seven don't fit: the two tools fold into one tab, *Tools*, which opens the last one used,
-  and while you're in one a second row switches between Charms and Combat (`#nav-sub`); Godhome
+  the eight don't fit: the two tools fold into one tab, *Tools*, which opens the last one used,
+  and while you're in one a second row switches between Charms and Combat (`#nav-sub`); the
+  Inventory folds the same way under *Your game*, with its own second row (`#nav-sub-game`); Godhome
   goes as «Dioses» on a Spanish phone. On the right, the **mini-bar**, **only with the tools**
   (and in Godhome while you fight): nail damage, DPS, the mask, soul and a notch, with the game's
   sprites and the same flash as the sheet, to see them while you scroll down. On Combat it shows
@@ -52,7 +53,7 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   not be the sheet's. The screen goes in the URL (`view=`, in "State and link"): **Back and
   Forward** move from one to another without touching the build —going back from *Your game*
   doesn't return the nail you had—, and on reload you stay where you were. The old links still
-  land: `view=game` (the Inventory, now under Your game) opens Your game, and `view=hall` Godhome.
+  land: `view=hall` opens Godhome.
   They also walk through the places inside a screen, which the history entry carries (not the
   URL): Godhome's tabs (Hall of Gods, Pantheons), the arena's Journal open, a Hall
   statue's fight, the tablet and, on mobile, the plaque and the Journal's page read in place of
@@ -86,13 +87,16 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
     notice above every screen).
   - **Missing nearby**: the collectibles of the area of your bench you haven't got (twelve in view,
     the count alongside), each with its place, and a link to the Map.
-  - **With no game** (free mode, the first visit) the screen is an **invitation** instead:
-    *Connect your game* in three steps (on a phone, the three ways in: from a computer, importing
-    the file, or by hand), *Import from the game* (the import view of the first empty save), *Keep
-    it by hand* (a New Game there) and *Just try builds* (Charms). It replaced the import notice
-    that used to sit above every screen.
-  - **Under it, the Inventory** (`#gear`, `js/app-game.js`): what was the *Inventory* screen, now
-    the lower half of Your game, as the game's pause menu has it (below).
+  - **With no game** (free mode, the first visit) the screen is an **invitation** instead. On top,
+    an **example** game (resting in City of Tears, its figures and three things it got since last
+    time), dimmed and fading out under *Connect your game*: one line, *Import from the game* (the
+    import view of the first empty save) and, on a computer, *or drop your user1.dat here* —
+    dropping the file anywhere on the screen opens that import already reading it. Then four
+    pieces with the game's art (Progress, Map, Your shade, Journal), each opening its screen, and
+    the other two ways in: *Keep it by hand* (a New Game there) and *Just try builds* (Charms). The
+    steps (the folder, the file) are the import view's. It replaced the import notice that used to
+    sit above every screen.
+  - The **Inventory** is its own screen (`view=game`, `#gear`, `js/app-game.js`), next in the bar (below).
 - **Charms**, the first of the tools: **the sheet, which is the game's Inventory screen** (the mould is the wiki's
   `Inventory_Godseeker_Mode.png`; the mockup, `design/06-sheet-variants.html`): almost pure
   black, corner brackets, the screen's title, "Charms", and, from top to bottom, **the status
@@ -312,7 +316,7 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   in the notch row **the notches of the charm that took you over the line come out in magenta
   and the row grows beyond your maximum** — which is exactly what the game does (with 11
   notches, 9 used and a 3-notch charm: nine white and three magenta, twelve in total).
-- **Inventory**, under Your game: another page of the Inventory, with the same black and corner brackets and no
+- **Inventory** (`view=game`), next to Your game: another page of the Inventory, with the same black and corner brackets and no
   boxes inside: what you've achieved in the game. Under the title, two starting points, as text:
   *Base Knight* (a new game's: Old Nail, 5 masks, 3 notches, no Dream Nail, no cloak, no
   charms, no equipment, no key items and nothing carried: it removes those too) and *Everything maxed* (every
@@ -418,7 +422,10 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
 
 - `index.html` — the page; thirty-one classic scripts (it works over `file://`) and GoatCounter's,
   the visit counter: no cookies, one visit per page load and, as events, the screen switches
-  (`screen-*`), the language (`lang-*`) and *Share*. The hash with the build is never sent, and it
+  (`screen-*`), the language (`lang-*`), *Share* and the way into a save, as a funnel: the import
+  opened (`import-open`), a file read (`import-read`) or refused (`import-bad`), the game imported
+  (`save-import`), its slot linked to the file (`save-link`), a game started by hand (`save-new`)
+  and a live update received (`save-sync`, once per visit). The hash with the build is never sent, and it
   counts nothing over `file://`, on `localhost` or in an iframe. Without it the site works the
   same (`track()` in `js/app.js`).
 - `es/index.html` — the same page in Spanish, at its own address (`/es/`) so that search
@@ -1276,6 +1283,11 @@ on Cornifer's map). It's the tablet chosen among three variants in
   Cornifer's sketch of the rooms his map shows (`SKETCHED`), and the whole drawing of those you've
   been to (the save's `scenesVisited` and `scenesMapped`); barely there the rest; with no save from the game, all of it, whole. **Always show the whole map**
   draws it all whole anyway: it's your choice (a pref, `pgMapWhole`), so a bench never undoes it.
+  **Large map**, the zoom's third button, ⤢ (a pref, `pgMapBig`; off by default, so the filter
+  shows at first sight): on a computer the Map leaves the page's column, takes the window's whole width and its
+  box the window's height under the bar (up to the map's own 3:2), and the page scrolls to it.
+  The same button, now ⤡ and lit, brings it back. On a phone it already has the whole width, and
+  there's no button.
 - **Everything the map can show is a layer**, and the filter, **under the map**, lists them in
   four groups, each a chip with its picture that shows or hides it; **Show all** and **Hide all**
   above them. All show at first; which are hidden is remembered (`pgMapOff`).
@@ -1318,7 +1330,7 @@ on Cornifer's map). It's the tablet chosen among three variants in
   Lemm, the Nailsmith, the Seer, Leg Eater) stand there, with what they sell; the Grubfather's
   and the Seer's rewards on them. The Grimmkin flames, which ItemChanger doesn't place, keep the
   game's pins; the bosses, their fight's room.
-- **A search over the map**, beside the zoom buttons: every thing it can show (the hidden layers'
+- **A search over the map**, above it: every thing it can show (the hidden layers'
   and what you have too) and the map's own titles, by name or place, whatever the case and the
   accents (*huevo negro*, *larva ciudad*). Up to eight results under the box, with the arrows and
   Enter or a tap; picking one shows its layer if it was hidden, centres the map on it close up
@@ -1333,7 +1345,8 @@ on Cornifer's map). It's the tablet chosen among three variants in
   with the zoom: each pin stays on its spot (or its place in its spot's grid). **Close up, each carries its name**: one that would
   cover another name or another pin is hidden, and shows when that pin is pointed at or chosen.
   Pointing at a pin also says its name and place. It's dragged, zoomed with
-  the wheel or a pinch, and three buttons zoom in, out and back to the whole map (on a phone,
+  the wheel or a pinch, and two buttons zoom in and out, floating on the map's top right corner so they stay in sight
+  (the large map too); the large map refits it whole (on a phone,
   the map fills the box's height and slides sideways); the pins keep their size on screen.
 - A save says the collectibles itself (`js/progress.js`, `detect`): the game keeps each thing picked
   up from the floor as its room's object, and the rest in playerData. Checked on 51 real saves

@@ -1,4 +1,4 @@
-/* js/app-game.js — the Your game screen: nail, body, arts, spells, abilities and the charms
+/* js/app-game.js — the Inventory screen (view=game): nail, body, arts, spells, abilities and the charms
    you've found, with their actions. Shares HK.app with js/app.js (see there). */
 (() => {
   'use strict';

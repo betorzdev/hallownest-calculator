@@ -4,9 +4,9 @@
    and the figures the game's profile screen shows (completion, time, geo) with the Journal's.
    Under it, three columns: what you got since the last save (js/changes.js, over the game as it
    was before the last sync, hollow.prev), your shade and what's missing in the area of your
-   bench. Under the whole screen, the Inventory (js/app-game.js), as the game's pause menu has it.
-   In free mode (nobody's game) the screen is an invitation instead: connect your game, keep one
-   by hand, or just try builds.
+   bench. The Inventory (js/app-game.js) is its own screen, next in the bar.
+   In free mode (nobody's game) the screen is an invitation instead: an example game, connect
+   yours (a button, or dropping the file on the screen), keep one by hand, or just try builds.
    Shares HK.app with js/app.js (see there). */
 (() => {
   'use strict';
@@ -168,21 +168,54 @@
       <div class="hmC-cols">${changesBlock()}${shadeBlock()}${nearBlock()}</div>`;
   }
 
-  // Nobody's game: connect yours, keep one by hand, or just try builds.
+  /* Nobody's game: the invitation shows what a game looks like here (an example bench, its
+     figures and what it got last time, all from the site's own pieces) and asks for yours. Then
+     what the site keeps of it, each opening its screen, and the other two ways in: by hand, or
+     just trying builds. The steps (the folder, the file) are the import sheet's: js/app-saves.js. */
+  const DEMO = { area: 'city', pct: 87, time: 41 * 3600 + 12 * 60, geo: 2350, journal: [131, 146],
+    gained: [{ kind: 'spell', id: 'dd', to: 1 }, { kind: 'charm', id: 'twister' }, { kind: 'journal', id: 'soul-master', done: true }] };
+  const FEATS = [
+    { view: 'progress', title: 'navProgress', text: 'homeFeatPct', art: D.art('effects', 'grub') },
+    { view: 'map', title: 'navMap', text: 'homeFeatMap', art: D.art('effects', 'map') },
+    { view: 'map', title: 'shadeTag', text: 'homeFeatShade', art: D.art('knight', 'shade') },
+    { view: 'journal', title: 'navJournal', text: 'homeFeatJournal', art: D.art('hunter', 'book') },
+  ];
   function inviteHtml() {
     const desk = App.isDesktop();
-    const steps = (desk ? ['homeStep1', 'homeStep2', 'homeStep3'] : ['homeStepPc', 'homeStepPhone', 'homeStepHand'])
-      .map((k) => `<li><b>${esc(t(k))}</b> ${esc(t(k + 'Text'))}</li>`).join('');
+    const gained = DEMO.gained.map((c) => {
+      const m = describe(c);
+      return `<li class="hm-item"><span class="hm-item-art"><img src="${m.art}" alt=""></span>
+        <span class="hm-item-name"${NT}>${esc(m.name)}</span>${m.note ? `<span class="hm-item-k">${esc(m.note)}</span>` : ''}</li>`;
+    }).join('');
+    const feats = FEATS.map((f) => `<button type="button" class="hmI-feat" data-act="view" data-value="${f.view}">
+        <img src="${f.art}" alt=""><b>${esc(t(f.title))}</b><span>${esc(t(f.text))}</span></button>`).join('');
     return `<div class="hmI">
-      <div class="hmI-lead"><img src="${D.art('hud', 'knight')}" alt="" width="56" height="84"><h3>${esc(t('homeConnect'))}</h3>
-        <p>${esc(t('homeConnectLead'))}</p></div>
-      <ol class="hmI-steps">${steps}</ol>
-      <div class="hmI-cta"><button type="button" class="btn btn-primary" data-act="homeImport">${esc(t('saveImport'))}</button></div>
+      <div class="hmI-demo" aria-hidden="true" inert>
+        <div class="hmC-hero" style="${areaVars(DEMO.area)}">
+          <span class="hmI-tag">${esc(t('homeExample'))}</span>
+          <span class="hmC-sup">${esc(t('homeRestingAt'))}</span><h3 class="hmC-area"${NT}>${esc(pick(R.AREAS[DEMO.area]))}</h3>
+          <img class="hmC-knight" src="${D.art('hud', 'knight')}" alt="">
+          <div class="hm-figs hmC-figs">
+            ${fig(t('pgCompletion'), `${num(DEMO.pct)}<span class="u">${esc(pctSpace())} / ${num(112)}</span>`, true)}
+            ${fig(t('homeTime'), played(DEMO.time))}
+            ${fig('Geo', num(DEMO.geo))}
+            ${fig(t('navJournal'), `${num(DEMO.journal[0])}<span class="u">/ ${num(DEMO.journal[1])}</span>`)}
+          </div>
+          <div class="hmI-since"><span class="block-head">${esc(t('homeSince'))}</span><ul class="hm-list">${gained}</ul></div>
+        </div>
+      </div>
+      <div class="hmI-cta">
+        <h3>${esc(t('homeConnect'))}</h3>
+        <p>${esc(t(L.canLive() ? 'homeConnectLine' : 'homeConnectLineFile'))}</p>
+        <button type="button" class="btn btn-primary" data-act="homeImport">${esc(t('saveImport'))}</button>
+        ${desk ? `<span class="hmI-drop">${esc(t('homeDrop'))}</span>` : ''}
+      </div>
+      <div class="hmI-feats">${feats}</div>
       <div class="hmI-or">
-        <div><h4>${esc(t('homeByHandTitle'))}</h4><p>${esc(t('homeByHandText'))}</p>
-          <button type="button" class="text-btn" data-act="homeNew">${esc(t('saveNew'))}</button></div>
-        <div><h4>${esc(t('homeBuildsTitle'))}</h4><p>${esc(t('homeBuildsText'))}</p>
-          <button type="button" class="text-btn" data-act="view" data-value="charms">${esc(t('homeBuildsGo'))}</button></div>
+        <button type="button" class="hmI-way" data-act="homeNew"><img src="${D.art('items', 'wanderers-journal')}" alt="">
+          <b>${esc(t('homeByHandTitle'))}</b><span>${esc(t('homeByHandText'))}</span></button>
+        <button type="button" class="hmI-way" data-act="view" data-value="charms"><img src="assets/charms/quickslash.png" alt="">
+          <b>${esc(t('homeBuildsTitle'))}</b><span>${esc(t('homeBuildsText'))}</span></button>
       </div>
     </div>`;
   }

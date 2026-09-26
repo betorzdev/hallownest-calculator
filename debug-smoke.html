@@ -309,13 +309,16 @@ f.addEventListener('load', async () => {
     ok('no flash when loading an overcharmed link', d.getElementById('overcharm-fx').hidden && !!q('.banner'),
        'notice: ' + (q('.banner') ? 'yes' : 'no'));
 
-    /* ── The screens: Your game (with the Inventory under it), Charms and Combat ── */
+    /* ── The screens: Your game, the Inventory, Charms and Combat ── */
     ok('on Charms, overcharm is flagged in the band and not at the top', !!q('#panel .banner.is-band') && !q('#banner .banner:not(.is-hint)'));
     await goto('home');
-    ok('Your game is its own screen, with the Inventory under it, and goes in the URL', visible() === 'home,gear' && w.location.hash.indexOf('view=home') >= 0
+    ok('Your game is its own screen and goes in the URL', visible() === 'home' && w.location.hash.indexOf('view=home') >= 0
        && q('#nav [aria-current="page"]').dataset.value === 'home', visible() + ' · ' + w.location.hash);
     ok('with no game chosen, it invites you to connect yours', !!q('#home [data-act="homeImport"]') && !!q('#home [data-act="homeNew"]'));
     ok('on Your game the mini-bar hides: it belongs to the tools', q('#minihud').hidden);
+    await goto('game');
+    ok('the Inventory is its own screen, next to it, and goes in the URL', visible() === 'gear' && w.location.hash.indexOf('view=game') >= 0
+       && q('#nav [aria-current="page"]').dataset.value === 'game' && q('#minihud').hidden, visible() + ' · ' + w.location.hash);
     ok('with its two starting points', !!q('#gear [data-act="preset"][data-value="base"]') && !!q('#gear [data-act="preset"][data-value="max"]'));
     ok('and there overcharm is flagged at the top', !!q('#banner .banner:not(.is-run):not(.is-hint)'));
     // Body with the game's pieces: tapping the dark 7th mask lights up to it (7); tapping the lit
@@ -331,17 +334,17 @@ f.addEventListener('load', async () => {
     ok('spell levels are chosen by their own artwork', d.querySelectorAll('#gear .lvlpick .lvl img').length >= 6);
     await click('#gear .pieces.is-masks .piece:nth-child(9)');
     await click('#gear [data-act="seg"][data-key="nail"][data-value="2"]');
-    ok("changing the nail doesn't change screen", visible() === 'home,gear' && w.location.hash.indexOf('nail=2') >= 0
-       && w.location.hash.indexOf('view=home') >= 0, w.location.hash);
+    ok("changing the nail doesn't change screen", visible() === 'gear' && w.location.hash.indexOf('nail=2') >= 0
+       && w.location.hash.indexOf('view=game') >= 0, w.location.hash);
     await click('[data-act="share"]');
     ok('Share copies the build without the screen', copied.indexOf('nail=2') >= 0 && copied.indexOf('view=') < 0, copied);
     w.history.back();
     await wait(200);
-    ok('Back returns to Charms and keeps the new nail', visible() === 'panel' && w.location.hash.indexOf('nail=2') >= 0
-       && w.location.hash.indexOf('view=') < 0, visible() + ' · ' + w.location.hash);
+    ok('Back returns to Your game and keeps the new nail', visible() === 'home' && w.location.hash.indexOf('nail=2') >= 0
+       && w.location.hash.indexOf('view=home') >= 0, visible() + ' · ' + w.location.hash);
     w.history.forward();
     await wait(200);
-    ok('and Forward, to Your game', visible() === 'home,gear' && w.location.hash.indexOf('nail=2') >= 0, visible() + ' · ' + w.location.hash);
+    ok('and Forward, to the Inventory', visible() === 'gear' && w.location.hash.indexOf('nail=2') >= 0, visible() + ' · ' + w.location.hash);
     await goto('fight');
     // With an enemy in front, the mini-bar is the fight's scoreboard; without one, the build's figures.
     ok('Combat, on its own screen and with the mini-bar (the scoreboard if there is an enemy; if not, damage, DPS…)', visible() === 'fight' && !q('#minihud').hidden
@@ -349,13 +352,20 @@ f.addEventListener('load', async () => {
        && w.location.hash.indexOf('view=fight') >= 0, visible() + ' · ' + q('#minihud').className);
     ok('Combat is the arena alone: its title, no tabs (the Hall and the Pantheons are Godhome)', !!q('#fight .fight-body > .fight-head .screen-title') && !q('#fight [data-act="fightTab"]'));
     await click('.masthead a.brand');
-    ok("the site's title leads to Your game, the start screen", visible() === 'home,gear' && w.location.hash.indexOf('view=home') >= 0
+    ok("the site's title leads to Your game, the start screen", visible() === 'home' && w.location.hash.indexOf('view=home') >= 0
        && q('.masthead a.brand h1.title') !== null, visible() + ' · ' + w.location.hash);
     await goto('charms');
     ok('on Charms the mini-bar stays', visible() === 'panel' && !q('#minihud').hidden);
     w.location.hash = '#view=game';
     await wait(150);
-    ok('an old "#view=game" link opens Your game', visible() === 'home,gear', visible());
+    ok('a "#view=game" link opens the Inventory', visible() === 'gear', visible());
+    await goto('map');
+    ok('the Map starts at its normal size', visible() === 'pg' && !q('#pg').classList.contains('is-big') && q('.pgm-big').getAttribute('aria-pressed') === 'false');
+    await click('.pgm-big');
+    ok('Large map makes it large and is remembered', q('#pg').classList.contains('is-big') && q('.pgm-big').getAttribute('aria-pressed') === 'true'
+       && JSON.parse(w.localStorage.getItem('hollow.prefs')).pgMapBig === true);
+    await click('.pgm-big');
+    ok('and Normal map brings it back', !q('#pg').classList.contains('is-big'));
     w.location.hash = '#view=fight';
     await wait(150);
     ok('a bare "#view=fight" changes the screen and doesn\'t wipe the build', visible() === 'fight' && w.location.hash.indexOf('nail=2') >= 0,
