@@ -458,6 +458,8 @@
     const a = th.act;
     return !a ? ''
       : a.game ? `<button type="button" class="text-btn" data-act="view" data-value="game" title="${esc(t('pgInGameHint'))}">${esc(t('pgmGoInv'))}</button>`
+        // In a save from the game (App.saveLock, js/app.js) the card says whether you have it, and marks nothing.
+        : App.saveLock() ? `<span class="pgm-card-state">${esc(t(hasIt(th) ? 'pgmGot' : 'notFound'))}</span>`
         : `<button type="button" class="text-btn" ${a.find ? `data-act="pgFind" data-id="${esc(a.find)}"` : `data-act="pgMark" data-key="${a.cat}" data-id="${esc(a.id)}"`} aria-pressed="${hasIt(th)}">${esc(t(hasIt(th) ? 'pgUnmark' : 'pgMark'))}</button>`;
   }
   function cardHtml(th) {

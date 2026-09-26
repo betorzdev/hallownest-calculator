@@ -128,8 +128,10 @@
   function hjControlHtml(r, s) {
     const k = HJ.kindOf(r.id);
     if (k === 'start' || k === 'idol') return '';
+    // In a save from the game (App.saveLock, js/app.js) the state is read, not set: the same words, inert.
+    const held = !!App.saveLock();
     if (k === 'mark' && !s.done) {
-      return HJ.markReady(book)
+      return HJ.markReady(book) && !held
         ? `<button type="button" class="btn btn-primary hj-reward" data-act="hjSet" data-id="${r.id}" data-value="done">${esc(t('hjReward'))}</button>` : '';
     }
     const opts = k === 'count' ? ['none', 'seen', 'done'] : ['none', 'done'];
@@ -137,8 +139,8 @@
     const lbl = { none: 'hjUnseen', seen: 'hjSeen', done: 'hjDone' };
     // With its label in view: the list's tabs use the same words, but they filter;
     // this marks your game.
-    return `<span class="hj-state" role="group" aria-labelledby="hj-state-lbl"><span class="hj-state-lbl" id="hj-state-lbl">${esc(t('hjStateLbl'))}</span>${opts.map((v) =>
-      `<button type="button" data-act="hjSet" data-id="${r.id}" data-value="${v}" aria-pressed="${on === v}">${esc(t(lbl[v]))}</button>`)
+    return `<span class="hj-state${held ? ' is-held' : ''}" role="group" aria-labelledby="hj-state-lbl"><span class="hj-state-lbl" id="hj-state-lbl">${esc(t('hjStateLbl'))}</span>${opts.map((v) =>
+      `<button type="button" data-act="hjSet" data-id="${r.id}" data-value="${v}" aria-pressed="${on === v}" ${held ? 'disabled' : ''}>${esc(t(lbl[v]))}</button>`)
       .join('<span class="hj-state-sep" aria-hidden="true">·</span>')}</span>`;
   }
 
@@ -146,6 +148,8 @@
      number is the control. "−" is one more defeat (fewer left). */
   function hjKillsHtml(r, s) {
     const max = HJ.maxLeft(r.id);
+    // In a save from the game, the number in its box and nothing that steps it.
+    if (App.saveLock()) return `<p class="hj-kills">${esc(t('hjKill1'))} <span class="hj-stepper"><span class="hj-count">${s.left}</span></span> ${esc(t('hjKill2'))}</p>`;
     return `<p class="hj-kills">${esc(t('hjKill1'))}
       <span class="hj-stepper">
         <button type="button" class="hj-step" data-act="hjStep" data-id="${r.id}" data-value="-1" title="${esc(t('hjStepDown'))}" aria-label="${esc(t('hjStepDown'))}">−</button>
@@ -231,7 +235,7 @@
           <ul class="hj-counts" aria-label="${esc(t('hjCountsTitle'))}" title="${esc(t('hjRules'))}">${tally('hjSeen', c.encountered, w && w.encountered)}${tally('hjDone', c.completed, w && w.completed)}</ul>
           <p class="hj-total-note">${esc(t('hjTotalNote', { req: App.NF[0].format(c.required), max: App.NF[0].format(c.max) }))}</p>
           <ul class="hj-feats">${feat('hjKeen', 'hjKeenText', c.reqSeen, c.reqSeen === c.required, w && w.reqSeen === w.required)}${feat('hjTrue', 'hjTrueText', c.reqDone, markDone, hjWas && HJ.stateOf(hjWas, HJ.MARK).done)}</ul>
-          <p class="hj-howto">${esc(t('hjHowTo'))}</p>
+          <p class="hj-howto">${esc(t(App.saveLock() ? 'hjHowToHeld' : 'hjHowTo'))}</p>
         </div>
       </div>`;
   }
@@ -248,6 +252,7 @@
     return pickedIds.length ? { ids: pickedIds, picked: true } : { ids: hjVisible(true).map((r) => r.id), picked: false };
   };
   function hjBulkHtml() {
+    if (App.saveLock()) return '';           // a save from the game: nothing is marked, in bulk either
     const toggle = `<button type="button" class="text-btn hj-bulk-toggle" data-act="hjBulk" aria-expanded="${hjBulkOpen}"
       title="${esc(t('hjBulkHint'))}">${esc(t('hjBulk'))}${chevron(hjBulkOpen)}</button>`;
     if (!hjBulkOpen) return `<div class="hj-bulk-head">${toggle}</div>`;
@@ -430,6 +435,8 @@
     },
   };
 
+  // What writes your game's record: refused in a save from the game (App.saveLock, js/app.js).
+  App.edits('hjSet', 'hjStep', 'hjBulkDo', 'hjUndo');
   Object.assign(actions, {
     hjRead(node) {
       App.hjCursor = node.dataset.id;
@@ -534,6 +541,7 @@
   /* The number is confirmed on release (change) or with Enter, not on every key: repainting
      would take its cursor away. With Enter the focus stays on the new number, to carry on. */
   function hjCount(inp, focusCount) {
+    if (App.saveLock()) { App.toast(App.saveLock()); paintHunter(false); return; }   // there's no box then: just in case
     const v = inp.value.trim();
     if (v === '' || !Number.isFinite(Number(v))) { paintHunter(focusCount); return; }
     if (Number(v) === hjState(inp.dataset.id).left) return;

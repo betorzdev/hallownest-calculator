@@ -102,9 +102,11 @@
       (hallUndo.on ? 'hallBulkDoneSet' : 'hallBulkDoneUnset') + (hallUndo.n === 1 ? 'One' : ''),
       { diff: t(DIFF_KEY[hallUndo.d]), n: App.NF[0].format(hallUndo.n) }))}</span>
       <button type="button" class="btn hall-undo" data-act="hallUndo">${esc(t('hallUndo'))}</button></p>` : '';
-    const bulkBtn = `<button type="button" class="btn hall-bulk-toggle" data-act="hallBulk" aria-expanded="${hallBulk}"
+    // In a save from the game (App.saveLock, js/app.js) the symbols are read, not marked: no bulk marking either.
+    const held = !!App.saveLock();
+    const bulkBtn = held ? '' : `<button type="button" class="btn hall-bulk-toggle" data-act="hallBulk" aria-expanded="${hallBulk}"
         aria-controls="hall-bulk" title="${esc(t('hallBulkHint', { n: total }))}">${esc(t('hallBulk'))}${chevron(hallBulk)}</button>`;
-    const bulkPanel = hallBulk ? `<div class="hall-bulk" id="hall-bulk">${rowEl(true)}${rowEl(false)}${undoNote}</div>` : '';
+    const bulkPanel = hallBulk && !held ? `<div class="hall-bulk" id="hall-bulk">${rowEl(true)}${rowEl(false)}${undoNote}</div>` : '';
     // The Idol changing tier (all 44 at a difficulty) lights up like what you get on Your game.
     const idolFx = markFx && markFx.tier !== tier ? (tier ? ' is-lit' : ' is-out') : '';
     /* The Idol is the room's header, in one row: its figure, the three counts (the secondary
@@ -181,12 +183,14 @@
     /* A table and not three cards: what matters is comparing the three difficulties. */
     const perDiff = Object.fromEntries(HG.DIFFS.map((d) => [d, { total: totalHp(x, d), ...enduranceOf(x, d) }]));
     /* Each difficulty is a button that marks or removes your real game's symbol: the game's
-       empty ring where the symbol goes, filled with the badge once beaten. */
+       empty ring where the symbol goes, filled with the badge once beaten. In a save from the
+       game (App.saveLock) the same rings, inert: the symbols are won in the game. */
+    const held = !!App.saveLock();
     const diffRows = HG.DIFFS.map((d) => {
       const c = perDiff[d], won = hasMark(s.id, d);
       return `<tr class="${won ? 'is-won' : ''}">
-        <th scope="row"><button type="button" class="hall-mark" data-act="hallMark" data-value="${d}" aria-pressed="${won}"
-          title="${esc(t(won ? 'hallMarkUnset' : 'hallMarkSet', { diff: t(DIFF_KEY[d]) }))}"><span class="hall-socket">${hallBadge(d, true, inkOf(s.id, d))}</span>${esc(t(DIFF_KEY[d]))}</button></th>
+        <th scope="row"><button type="button" class="hall-mark" data-act="hallMark" data-value="${d}" aria-pressed="${won}" ${held ? 'disabled' : ''}
+          title="${esc(held ? t(DIFF_KEY[d]) : t(won ? 'hallMarkUnset' : 'hallMarkSet', { diff: t(DIFF_KEY[d]) }))}"><span class="hall-socket">${hallBadge(d, true, inkOf(s.id, d))}</span>${esc(t(DIFF_KEY[d]))}</button></th>
         <td>${App.NF[0].format(c.total)}</td>
         <td>${App.NF[0].format(Math.ceil(c.total / nail))}</td>
         <td>${App.NF[0].format(c.n)}</td>
@@ -200,7 +204,7 @@
       t('hallNoteHits', { n: App.NF[0].format(nail) }),
       t(worstHitAt === 1 ? 'hallNoteSurviveOne' : 'hallNoteSurvive', { at: worstHitAt, asra: worstHitAsra }),
     ].filter(Boolean).join(' ');
-    const tableHtml = `<table class="hall-table">
+    const tableHtml = `<table class="hall-table${held ? ' is-held' : ''}">
         <thead><tr>
           <th scope="col">${esc(t('hallColGame'))}</th>
           <th scope="col">${esc(t('jrHp'))}</th>
@@ -209,7 +213,7 @@
         </tr></thead>
         <tbody>${diffRows}</tbody>
       </table>
-      <p class="hall-mark-hint">${esc(t('hallMarkHint'))}</p>
+      <p class="hall-mark-hint">${esc(t(held ? 'hallMarkHeld' : 'hallMarkHint'))}</p>
       <p class="hall-notes">${esc(hallNotes)}</p>
       <p class="hall-arena"><b>${esc(t('hallArena'))}</b> ${esc(s.arena ? pick(s.arena) : t(godhomeOnly(x) ? 'hallArenaPantheon' : 'hallArenaSame'))}</p>
       <div class="hall-go-row" role="group" aria-labelledby="hall-go-lbl">
@@ -338,6 +342,8 @@
     },
   };
 
+  // What writes your game's record: refused in a save from the game (App.saveLock, js/app.js).
+  App.edits('hallMark', 'hallMarkAll', 'hallUndo');
   Object.assign(actions, {
     /* Hall of Gods. Choosing a statue only reads it on the plaque; fighting is each difficulty's
        button. On mobile the plaque replaces the grid, and the page scrolls up to it. */

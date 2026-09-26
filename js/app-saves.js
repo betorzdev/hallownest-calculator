@@ -1,7 +1,8 @@
 /* js/app-saves.js — the Saves screen: free mode, and the four slots like the game's profile
-   screen, with what each game carries and the game's own buttons: New Game on an empty one,
-   Clear Save with its confirmation on a full one. Any slot can also take a game imported from the
-   real one: its Import button opens the import view in place of the list, which explains how to
+   screen, with what each game carries and the game's own buttons: Import from the game on an
+   empty one (a save only comes from the game's file: there's no New Game, since a save isn't
+   changed here, App.saveLock), Clear Save with its confirmation on a full one. Any slot can
+   take a game imported from the real one: its Import button opens the import view in place of the list, which explains how to
    find the game's file (by system, with the folder to copy), takes it by drag and drop or with the
    picker, and shows what it read before anything is written (js/savefile.js reads it). The rules
    (what goes in a slot, switching, clearing) are in js/saves.js. Where the browser can (js/live.js),
@@ -19,7 +20,7 @@
   try { store = localStorage; } catch (e) { store = null; }
   // The slot whose Clear Save is asking for confirmation, or 0.
   let clearing = 0;
-  /* The slot just cleared, whose New Game comes in fading, or 0. After clearing the game you
+  /* The slot just cleared, whose Import comes in fading, or 0. After clearing the game you
      were in the page reloads, so it's handed over in sessionStorage (the preferences aren't the
      place: it's a one-off), with the row's height and where it was on the screen: the new page
      puts it back in the same place and lets it shrink as it does without a reload (landing). */
@@ -81,13 +82,13 @@
   function card(slot) {
     const n = slot.n, free = n === S.FREE;
     const label = free ? t('freeMode') : t('saveSlot', { n });
+    // An empty slot's one way in is the game's file: importing is its whole row, in the words' place.
     if (!slot.snap) {
       return `<li class="save is-empty${justCleared === n ? ' is-cleared' : ''}" data-slot="${n}">
-        <button type="button" class="save-main" data-act="saveNew" data-value="${n}" aria-label="${esc(label + ': ' + t('saveNew'))}">
+        <button type="button" class="save-main" data-act="saveImport" data-value="${n}" aria-label="${esc(label + ': ' + t('saveImport'))}">
           <span class="save-n">${n}</span>
-          <span class="save-new">${FLEURS}${esc(t('saveNew'))}</span>
+          <span class="save-new">${FLEURS}${ICON_IMPORT}<span class="save-act-long">${esc(t('saveImport'))}</span><span class="save-act-short">${esc(t('saveImportShort'))}</span></span>
         </button>
-        <span class="save-foot">${importBtn(n)}</span>
       </li>`;
     }
     const s = summary(slot.snap);
@@ -104,7 +105,7 @@
         <span class="save-link-t">${esc(t('liveFollows', { file: live.links[n] }))}${slot.active && live.state ? ` · <b>${esc(t('liveState_' + live.state))}</b>` : ''}</span>
         <button type="button" class="text-btn" data-act="liveUnlink" data-value="${n}">${esc(t('liveUnlink'))}</button>
       </span>` : '';
-    const confirm = clearing === n ? ask('saveClearAsk', 'saveClear', n)
+    const confirm = clearing === n ? ask('saveClearAsk', 'saveClear', n, 'saveClearNote')
       : `${linked ? '' : followBtn(n)}${importBtn(n)}<button type="button" class="save-act is-clear" data-act="saveClear" data-value="${n}">
           ${FLEURS}${ICON_CLEAR}
           <span class="save-act-t">${esc(t('saveClear'))}</span></button>`;
@@ -130,7 +131,7 @@
     </li>`;
   }
 
-  /* A slot's buttons are the game's menu items (and so is New Game, on an empty one): its capitals, and on hover or focus the menu's
+  /* A slot's buttons are the game's menu items (and so is an empty one's Import): its capitals, and on hover or focus the menu's
      pointers on either side of the one you're on (drawn: the wiki doesn't have the sprite; the
      game's interface arrows are abstracted stone pinnacles, design/02 §5). Their icons are the
      usual ones, drawn with the site's line: a tray with an arrow coming in (which dips when
@@ -145,9 +146,10 @@
     aria-label="${esc(t('saveSlot', { n }) + ': ' + t('liveFollow'))}" title="${esc(t('liveFollowHint'))}">${FLEURS}${ICON_FOLLOW}<span class="save-act-t"><span class="save-act-long">${esc(t('liveFollow'))}</span><span class="save-act-short">${esc(t('liveFollowShort'))}</span></span></button>` : '');
   const importBtn = (n) => `<button type="button" class="save-act is-import" data-act="saveImport" data-value="${n}"
     aria-label="${esc(t('saveSlot', { n }) + ': ' + t('saveImport'))}">${FLEURS}${ICON_IMPORT}<span class="save-act-t"><span class="save-act-long">${esc(t('saveImport'))}</span><span class="save-act-short">${esc(t('saveImportShort'))}</span></span></button>`;
-  // The question a slot's foot asks before clearing it: yes, no.
-  const ask = (q, act, n) => `<span class="save-ask" role="group" aria-label="${esc(t(q))}">
+  // The question a slot's foot asks before clearing it, with a note under it (that the game's file isn't touched): yes, no.
+  const ask = (q, act, n, note) => `<span class="save-ask" role="group" aria-label="${esc(t(q) + (note ? ' ' + t(note) : ''))}">
       <span class="save-ask-q">${esc(t(q))}</span>
+      ${note ? `<span class="save-ask-note">${esc(t(note))}</span>` : ''}
       <span class="save-ask-yn"><button type="button" class="save-act" data-act="${act}Yes" data-value="${n}">${FLEURS}<span class="save-act-t">${esc(t('yes'))}</span></button>
       <button type="button" class="save-act" data-act="${act}No" data-value="${n}">${FLEURS}<span class="save-act-t">${esc(t('no'))}</span></button></span>
     </span>`;
@@ -326,7 +328,7 @@
   /* Back from the reload after clearing the game you were in. The page is still veiled: the row
      keeps the height it had and the page is scrolled so that it's where it was when you cleared
      it (whatever changed above it: free mode now says you're in it). Once the fonts are in (they
-     move things) it's put back once more and the veil lifts; then the row shrinks to New Game's. */
+     move things) it's put back once more and the veil lifts; then the row shrinks to the empty row's. */
   function land(h) {
     const li = el.saves.querySelector(`.save[data-slot="${h.n}"]`);
     if (!li) { unveil(); return; }
@@ -405,9 +407,8 @@
     return rec;
   }
 
-  /* Going into a game, seen: a full slot's nail catches the light and its masks glow; an empty
-     one (New Game) shows the base Knight's masks appearing one by one, as a new game's HUD does.
-     Then the page fades to black and reloads (enter), and the next one fades in. Without motion, at once. */
+  /* Going into a game, seen: the slot's nail catches the light and its masks glow. Then the page
+     fades to black and reloads (enter), and the next one fades in. Without motion, at once. */
   function leave(n, swap = null) {
     let still = false;
     try { still = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { still = false; }
@@ -415,13 +416,7 @@
     if (!swap) try { sessionStorage.setItem(ENTERED_KEY, '1'); } catch (e) { /* it comes in without fading */ }
     const li = n ? el.saves.querySelector(`.save[data-slot="${n}"]`) : null;
     let wait = 0;
-    if (li && li.classList.contains('is-empty')) {
-      const base = D.HEALTH.baseMasks;
-      const masks = Array.from({ length: base }, (_, i) => `<img src="${D.art('hud', 'mask')}" alt="" style="--i:${i}">`).join('');
-      li.querySelector('.save-main').insertAdjacentHTML('beforeend', `<span class="save-hud save-born" aria-hidden="true"><span class="save-masks">${masks}</span></span>`);
-      li.classList.add('is-starting');
-      wait = base * 70 + 550;
-    } else if (li) {
+    if (li) {
       li.classList.add('is-loading');
       wait = 350;
     }
@@ -439,7 +434,6 @@
       if (S.read(store).active === n) { App.go('home', true); return; }
       if (S.select(store, n)) leave(n);
     },
-    saveNew(node) { track('save-new'); actions.savePick(node); },
     saveImport(node) {
       if (!store) { toast(t('savesNoStorage')); return; }
       track('import-open');
@@ -558,14 +552,14 @@
         }
         render();
         settle(n, from);
-        focusIn(`[data-act="saveNew"][data-value="${n}"]`);
+        focusIn(`[data-act="saveImport"][data-value="${n}"]`);
         setTimeout(() => { justCleared = 0; }, 1000);
       });
     },
   });
   /* Clearing, seen: the masks break one by one from the right, as health is lost on the HUD,
      and the rest of the slot fades away as dust rising, the main menu's motes. Only then is
-     it cleared, and New Game fades in its place (css/app.css, .save.is-clearing). Without
+     it cleared, and its Import fades in its place (css/app.css, .save.is-clearing). Without
      motion, it's cleared at once. */
   function shatter(n, done) {
     const li = el.saves.querySelector(`.save[data-slot="${n}"]`);
@@ -768,16 +762,12 @@
     </div>`;
   };
   /* From Your game's invitation (js/app-home.js): into the first empty save, importing the game's
-     file or as a new game. With the four full, the Saves screen, to choose. */
+     file. With the four full, the Saves screen, to choose. */
   const firstEmpty = () => (store ? S.SLOT_IDS.find((n) => { const x = S.read(store); return n !== x.active && !x.slots[n]; }) : null);
   App.importFirstEmpty = () => {
     const n = firstEmpty();
     App.go('saves');
     if (n) actions.saveImport({ dataset: { value: String(n) } });
-  };
-  App.newInFirstEmpty = () => {
-    const n = firstEmpty();
-    if (n) actions.saveNew({ dataset: { value: String(n) } }); else App.go('saves');
   };
   App.isDesktop = isDesktop;
 

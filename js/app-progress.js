@@ -88,8 +88,10 @@
     if (where === 'game') {
       return `<button type="button" class="gplate is-far${st ? ' ' + st : ''}" data-act="view" data-value="game" title="${esc(t('pgInGameHint'))}">${body}</button>`;
     }
-    return `<button type="button" class="gplate${st ? ' ' + st : ''}" data-act="pgMark" data-key="${cat}" data-id="${it.id}" aria-pressed="${on}"
-        title="${esc(m.name + ' · ' + t(on ? 'pgUnmark' : 'pgMark'))}">${body}</button>`;
+    // In a save from the game (App.saveLock, js/app.js) the plate only says what it is: nothing marks it.
+    const held = !!App.saveLock();
+    return `<button type="button" class="gplate${st ? ' ' + st : ''}" data-act="pgMark" data-key="${cat}" data-id="${it.id}" aria-pressed="${on}" ${held ? 'disabled' : ''}
+        title="${esc(held ? m.name : m.name + ' · ' + t(on ? 'pgUnmark' : 'pgMark'))}">${body}</button>`;
   }
 
   function row(c) {
@@ -107,7 +109,7 @@
         <span class="pg-pips" aria-hidden="true">${pips}</span>
         <span class="pg-pts"><b>${num(c.got)}</b><i class="u">/${num(c.max)}</i></span>
       </button>
-      ${open ? `<div class="pg-open"><div class="pg-plates">${c.items.map((it) => plate(c.id, it)).join('')}</div></div>` : ''}
+      ${open ? `<div class="pg-open"><div class="pg-plates${App.saveLock() ? ' is-held' : ''}">${c.items.map((it) => plate(c.id, it)).join('')}</div></div>` : ''}
     </li>`;
   }
 
@@ -126,7 +128,7 @@
     const body = `<div class="pg-total">
           <span class="pg-total-k">${esc(t('pgCompletion'))}</span>
           <span class="pg-total-v">${num(r.total)}<span class="u">${esc(pctSpace())} / ${num(r.max)}</span></span>
-          <p class="pg-lead">${esc(t('pgLead'))}</p>
+          <p class="pg-lead">${esc(t(App.saveLock() ? 'pgLeadHeld' : 'pgLead'))}</p>
         </div>
         <ol class="pg-rows">${r.categories.map(row).join('')}</ol>`;
     el.pg.innerHTML = `<div class="gear-body pg-body">${head}${body}</div>`;
@@ -150,6 +152,8 @@
     const has = vs.some((v) => App.owned.includes(v));
     setOwned(has ? App.owned.filter((x) => !vs.includes(x)) : [...App.owned, vs[0]]);
   }
+  // What writes your game's record: refused in a save from the game (App.saveLock, js/app.js).
+  App.edits('pgFind', 'pgMark');
   Object.assign(actions, {
     pgFind(node) { setProgress(P.toggleFound(App.progress, node.dataset.id)); },
     pgRow(node) {

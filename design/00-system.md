@@ -373,11 +373,15 @@ bounce**. The game doesn't have a single transition with overshoot.
 
 **The Knight (decided on 26 September 2026): the one thing that moves across the page.** A
 small animated Knight (`js/app-knight.js`, the game's own six running frames at 10 a second)
-says where you are: sitting on the screen bar under the tab you're on, on his bench on Your game, on
-the footer's floor, by your bench on the Map. He **walks along a line and fades between lines**:
-along the bar, along the floor, from room to room on the map, always by `translate` at a steady
-pace, linear like the motes; from the bar to the bench or the floor, a fade of `--dur-slow`.
-Never a slide, nothing bounces. With `prefers-reduced-motion` he only stands or sits.
+says where you are: sitting on the screen bar under the tab you're on. **Since 27 September he
+is the bar's mark of the current tab and never leaves it**: on a computer the rule under it went,
+and he no longer climbs down to the bench on Your game or to the footer's floor (he used to have
+one line at a time); a phone, where he isn't on the bar, keeps the rule. The other Knights are
+pictures of him: sitting on the bench under the area's name on Your game (still), and his pin by
+your bench on the Map, which walks from room to room when a save moves the bench. He **walks
+along a line**: along the bar, and the pin along the map, always by `translate` at a steady
+pace, linear like the motes; he only fades in and out (`--dur-slow`). Never a slide, nothing
+bounces. With `prefers-reduced-motion` he only stands or sits.
 
 ## 5. The plan, by value-to-cost ratio
 

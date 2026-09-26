@@ -30,6 +30,9 @@
   if (fromUrl) prefs.langChosen = true;   // a link with a language counts as choosing it
   rebuildNF();
   App.state = withFixed(loadState());
+  // A link's build doesn't go into a save (App.saveLock): the save's rules, and it's said when the
+  // link's is another one (a reload carries the save's own build in the URL).
+  if (!C.isEmpty(urlHash.build) && App.saveLock() && !C.equal(withFixed(C.decode(urlHash.build)), App.state)) toast(t('saveLockUrl'));
   // The same when opening a link with a half-done pantheon: the saved charms rule.
   const storedBuild = load(KEY.build);
   if (charmLock() && storedBuild) {

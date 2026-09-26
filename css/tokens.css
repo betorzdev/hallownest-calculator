@@ -239,10 +239,8 @@
      and on that floor (the strips are 104 × 140). */
   --dur-step: 100ms;
   --dur-run: 500ms;
-  --dur-stride: 2400ms;
   --kn-bar: 26px;      /* sitting under a tab's title without touching its letters */
-  --kn-bench: 64px;
-  --kn-floor: 48px;
+  --kn-bench: 64px;    /* sitting on his bench on Your game (drawn 2.75 of this wide) */
 
   --page-max: 1216px;
   --page-pad: var(--sp-8);

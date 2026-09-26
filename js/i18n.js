@@ -50,7 +50,7 @@
     navGodhomeShort:{ es: 'Dioses', en: 'Godhome' },
     // Your game, the start screen (js/app-home.js)
     homeRestingAt:  { es: 'Descansas en', en: 'Resting at' },
-    homeByHand:     { es: 'Llevada a mano', en: 'Kept by hand' },
+    homeImported:   { es: 'Importada del juego, sin seguirlo', en: 'Imported from the game, not following it' },
     homeTime:       { es: 'Tiempo', en: 'Time' },
     homeSince:      { es: 'Desde la última vez', en: 'Since last time' },
     homeSinceNote:  { es: 'desde el guardado de {when}', en: 'since the save {when}' },
@@ -78,8 +78,6 @@
     homeFeatMap:    { es: 'Dónde está, en el mapa del juego', en: 'Where it is, on the game\'s map' },
     homeFeatShade:  { es: 'Dónde te espera', en: 'Where it is waiting for you' },
     homeFeatJournal:{ es: 'El Diario del Cazador, entrada a entrada', en: 'The Hunter\'s Journal, entry by entry' },
-    homeByHandTitle:{ es: 'Llevarla a mano', en: 'Keep it by hand' },
-    homeByHandText: { es: 'Marca lo que consigas a medida que juegas.', en: 'Mark what you get as you play.' },
     homeBuildsTitle:{ es: 'Solo probar builds', en: 'Just try builds' },
     homeBuildsText: { es: 'Todo desbloqueado: cómo cambia cada stat con cada amuleto.', en: 'Everything unlocked: how every stat changes with each charm.' },
     navFight:       { es: 'Combate', en: 'Combat' },
@@ -91,18 +89,18 @@
     saveSelect:     { es: 'Selecciona partida', en: 'Select save' },
     saveBtnHint:    { es: 'Elegir partida: cuatro, como en el juego, o el Modo libre', en: 'Choose a save: four, as in the game, or Free mode' },
     savesTitle:     { es: 'Partidas', en: 'Saves' },
-    savesNote:      { es: 'Cada partida guarda su build, los amuletos encontrados, el equipo y los objetos, el Diario, el Salón de los Dioses, la puerta de la saviavida y el panteón a medias. Mientras no eliges una, estás en el Modo libre.',
-                      en: 'Each save keeps its own build, charms found, equipment and items, Journal, Hall of Gods, Lifeblood door and pantheon in progress. Until you choose one, you\'re in Free mode.' },
+    savesNote:      { es: 'Cada partida viene del archivo del juego y guarda su build, los amuletos encontrados, el equipo y los objetos, el Diario, el Salón de los Dioses, la puerta de la saviavida y el panteón a medias. Se ve tal como la guardó: aquí no se cambia. Mientras no eliges una, estás en el Modo libre.',
+                      en: 'Each save comes from the game\'s file and keeps its own build, charms found, equipment and items, Journal, Hall of Gods, Lifeblood door and pantheon in progress. It is seen as the game saved it: nothing is changed here. Until you choose one, you\'re in Free mode.' },
     freeMode:       { es: 'Modo libre', en: 'Free mode' },
     freeModeNote:   { es: 'Todo desbloqueado, para probar builds: no es ninguna de tus partidas', en: 'Everything unlocked, to try builds: it isn\'t one of your saves' },
-    saveNew:        { es: 'Partida nueva', en: 'New Game' },             // PROFILE_NEW_GAME
     saveClear:      { es: 'Borrar partida', en: 'Clear Save' },          // PROFILE_CLEAR_BUTTON
     saveClearAsk:   { es: '¿Borrar la partida?', en: 'Clear Save?' },    // PROFILE_CLEAR_PROMPT
+    saveClearNote:  { es: 'Solo la copia de la web: el archivo del juego no se toca', en: 'Only the site\'s copy: the game\'s file isn\'t touched' },
     saveCurrent:    { es: 'Estás aquí', en: 'You\'re here' },
     saveContinue:   { es: 'Seguir con esta partida', en: 'Continue with this save' },
     saveLoad:       { es: 'Cargar esta partida', en: 'Load this save' },
     saveImport:     { es: 'Importar del juego', en: 'Import from the game' },
-    saveImportShort: { es: 'Importar', en: 'Import' },                   // the same, on a phone beside New Game
+    saveImportShort: { es: 'Importar', en: 'Import' },                   // the same, on a phone
     /* The notice for a first visit on a computer */
     importHintTag:  { es: 'Tu partida real', en: 'Your real game' },
     importHintOff:  { es: 'Cerrar el aviso', en: 'Dismiss' },
@@ -282,10 +280,13 @@
     pgNavHint:      { es: 'Progreso: {pct} de finalización', en: 'Progress: {pct} completion' },
     pgLead:         { es: 'Lo que el juego cuenta para el 112 %, categoría por categoría. Toca una fila para ver lo que tiene y marcar lo que ya consigas.',
                       en: 'What the game counts towards 112%, category by category. Tap a row to see what it holds and mark what you get.' },
+    pgLeadHeld:     { es: 'Lo que el juego cuenta para el 112 %, categoría por categoría. Toca una fila para ver lo que tiene.',
+                      en: 'What the game counts towards 112%, category by category. Tap a row to see what it holds.' },
     pgInGame:       { es: 'En el Inventario', en: 'On the Inventory' },
     pgInGameHint:   { es: 'Se marca en el Inventario, porque cambia tus números', en: 'Marked on the Inventory, because it changes your figures' },
     pgMark:         { es: 'Marcar como conseguido', en: 'Mark as done' },
     pgUnmark:       { es: 'Quitar la marca', en: 'Unmark' },
+    pgmGot:         { es: 'Conseguido en tu partida', en: 'Got in your game' },
     pgOpen:         { es: '{cat}: {got} de {max}', en: '{cat}: {got} of {max}' },
     pgCat_bosses:   { es: 'Jefes', en: 'Bosses' },
     pgCat_dreams:   { es: 'Guerreros de los sueños', en: 'Warrior Dreams' },
@@ -820,6 +821,14 @@
     runLockShort:   { es: 'bloqueados: estás en un panteón', en: 'locked: you are in a pantheon' },
     runLockGo:      { es: 'Ir al panteón', en: 'Go to the pantheon' },
     runLockUrl:     { es: 'El enlace traía otros amuletos; se quedan los del panteón', en: 'The link had other charms; the pantheon ones stay' },
+    /* A save is the game's: nothing is changed by hand (App.saveLock, js/app.js) */
+    saveLock:       { es: 'La partida {n} es tu juego: aquí se ve, no se cambia. Para probar cosas, el Modo libre, en Partidas',
+                      en: 'Save {n} is your game: it is seen here, not changed. To try things, Free mode, in Saves' },
+    saveLockShort:  { es: 'bloqueados: es tu partida real', en: 'locked: it is your real game' },
+    saveLockUrl:    { es: 'El enlace traía otra build; se queda la de tu partida', en: 'The link had another build; your game\'s stays' },
+    hallMarkHeld:   { es: 'Los símbolos son los de tu partida: se ganan en el juego.', en: 'The symbols are your game\'s: they are won in the game.' },
+    doorDoneHeld:   { es: 'debajo, los vínculos con que lo has terminado en tu partida', en: 'below each, the bindings you have completed it with in your game' },
+    hjHowToHeld:    { es: 'Cada entrada va como en tu partida.', en: 'Each entry stands as it does in your game.' },
     godseeker:      { es: 'Buscador de Dioses', en: 'Godseeker' },   // GODSEEKER_MAIN
     godseekerNote:  { es: 'Una sala sin pelea: solo se cruza.', en: 'A room without a fight: you just walk through.' },
     logEnter:       { es: 'Entras en el {name}: máscaras llenas.', en: 'You enter the {name}: masks full.' },
