@@ -236,12 +236,15 @@
   function roomsSvg() {
     const mapped = new Set(App.progress.mapped);
     const [aw, ah] = M.ATLAS.full, [rw, rh] = M.ATLAS.rough;
+    // A room's second drawing, once the world shows it (a lift, a wall broken…); with no save,
+    // the world finished: all of them.
+    const alts = mapped.size ? new Set(App.progress.alts) : new Set(Object.keys(M.ROOMS));
     return Object.entries(M.ROOMS).map(([name, r]) => {
-      const [area, x, y, w, h, rW, rH, full, rough] = r;
+      const [area, x, y, w, h, rW, rH, full, rough, alt] = r;
       const st = roomState(name, area, mapped);
       const useFull = st !== 'rough';
       const [bw, bh] = useFull ? [w, h] : [rW, rH];
-      const [sx, sy, sw, sh] = useFull ? full : rough;
+      const [sx, sy, sw, sh] = useFull ? (alt && alts.has(name) ? alt : full) : rough;
       const [iw, ih] = useFull ? [aw, ah] : [rw, rh];
       return `<svg class="pgm-room is-${st}" x="${(x - bw / 2).toFixed(3)}" y="${(-y - bh / 2).toFixed(3)}" width="${bw}" height="${bh}"
         viewBox="${sx} ${sy} ${sw} ${sh}" preserveAspectRatio="none"><image href="assets/map/rooms-${useFull ? 'full' : 'rough'}.png" width="${iw}" height="${ih}"/></svg>`;

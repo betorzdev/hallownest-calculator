@@ -217,6 +217,20 @@ def main():
                            'w': round(w, 3), 'h': round(h, 3), 'rw': round(rw, 3), 'rh': round(rh, 3)}
             full_imgs[name] = full_img
             rough_imgs[name] = rough_img
+            # A second drawing the game swaps in when something changes in the world (its FSM
+            # "map_altsprite": Dirtmouth's lift to Crystal Peak, a wall broken in Deepnest…).
+            # Kept when it's a real drawing of the same size (Abyss_03_c's is an empty dot).
+            for mb in of_type(g, 'MonoBehaviour'):
+                raw = mb.deref().get_raw_data()
+                if b'map_altsprite' not in raw:
+                    continue
+                for off in range(28, len(raw) - 11, 4):
+                    fid, pid = struct.unpack_from('<iq', raw, off)
+                    if fid == 0 and pid in sprites:
+                        alt = tinted(whole(sprites[pid].read()), sr.m_Color)
+                        if alt.size == full_img.size:
+                            full_imgs[name + '#alt'] = alt
+                        break
             room_count += 1
             for pin in children(g):
                 if pin.m_Name.startswith('Sub Area Name'):
@@ -253,6 +267,8 @@ def main():
     for name, r in rooms.items():
         r['full'] = list(full_rects[name])
         r['rough'] = list(rough_rects[name])
+        if name + '#alt' in full_rects:
+            r['alt'] = list(full_rects[name + '#alt'])
     # Where to place what's in a room the map doesn't draw (js/collectibles.js and the rest).
     scenes = set(re.findall(r"scene: '([^']+)'", open(os.path.join(ROOT, 'js', 'collectibles.js'), encoding='utf-8').read()))
     with urllib.request.urlopen(TRANSITIONS) as res:
@@ -301,7 +317,7 @@ def main():
 
     def js(o):
         return json.dumps(o, separators=(',', ':'), ensure_ascii=False)
-    room_lines = [f"    {json.dumps(n)}: {js([r['area'], r['x'], r['y'], r['w'], r['h'], r['rw'], r['rh'], r['full'], r['rough']])}," for n, r in rooms.items()]
+    room_lines = [f"    {json.dumps(n)}: {js([r['area'], r['x'], r['y'], r['w'], r['h'], r['rw'], r['rh'], r['full'], r['rough']] + ([r['alt']] if 'alt' in r else []))}," for n, r in rooms.items()]
     pin_lines = [f"    {js([p['kind'], p['scene'], p['x'], p['y']])}," for p in pins]
     with open(OUT_JS, 'w', encoding='utf-8') as f:
         f.write('\n'.join([
@@ -309,7 +325,9 @@ def main():
             "   The game's own map (its Game_Map object), in its own units, y upwards:",
             "     ROOMS   scene → [area, x, y, w, h, roughW, roughH, full, rough]: the room's centre and",
             "             size, and where its two drawings are in assets/map/rooms-full.png and",
-            "             rooms-rough.png ([x, y, w, h] in pixels), each already in its area's tint",
+            "             rooms-rough.png ([x, y, w, h] in pixels), each already in its area's tint;",
+            "             a tenth item, alt, is the full drawing the game swaps in once the world",
+            "             changes there (js/progress.js, ALTS, says when)",
             "     PINS    [kind, scene, x, y]: the game's own pins (bench, stag, root, cocoon, tram, spa,",
             "             vendor, grubfather, colosseum, blackegg, grub, flame, grave; dreamer, whose 'scene' is who)",
             "     PLACE_LABELS [scene, name]: the map's own titles of the places inside the areas",

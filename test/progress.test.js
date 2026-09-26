@@ -15,9 +15,9 @@ const BASE = { charmSlots: 3, maxHealthBase: 5, MPReserveMax: 0, nailSmithUpgrad
 test('it keeps only what it knows: ids once and in order, counts clamped, rooms by name', () => {
   assert.deepEqual(P.normalize({ ids: ['lurien', 'nope', 'monomon', 'lurien'],
     counts: { shards: 7, geo: -3, 'pale-ore': 2.4, nope: 5 }, bench: 'Town', shade: { scene: 'Fungus3_02', geo: 120 } }),
-  { ids: ['monomon', 'lurien'], counts: { shards: 3, 'pale-ore': 2 }, found: [], bench: 'Town', shade: { scene: 'Fungus3_02', geo: 120 }, gate: null, statues: null, mapped: [], markers: [] });
-  assert.deepEqual(P.normalize(null), { ids: [], counts: {}, found: [], bench: '', shade: null, gate: null, statues: null, mapped: [], markers: [] });
-  assert.deepEqual(P.normalize({ bench: '<b>', shade: { scene: 'None', geo: 5 } }), { ids: [], counts: {}, found: [], bench: '', shade: null, gate: null, statues: null, mapped: [], markers: [] });
+  { ids: ['monomon', 'lurien'], counts: { shards: 3, 'pale-ore': 2 }, found: [], bench: 'Town', shade: { scene: 'Fungus3_02', geo: 120 }, gate: null, statues: null, mapped: [], markers: [], alts: [] });
+  assert.deepEqual(P.normalize(null), { ids: [], counts: {}, found: [], bench: '', shade: null, gate: null, statues: null, mapped: [], markers: [], alts: [] });
+  assert.deepEqual(P.normalize({ bench: '<b>', shade: { scene: 'None', geo: 5 } }), { ids: [], counts: {}, found: [], bench: '', shade: null, gate: null, statues: null, mapped: [], markers: [], alts: [] });
   assert.deepEqual(P.normalize({ found: ['grub-crossroads-acid', 'nope', 'grub-crossroads-acid'] }).found, ['grub-crossroads-acid']);
 });
 
@@ -48,6 +48,12 @@ test('what you carry, your bench and your shade', () => {
   const m = P.fromSave({ ...pd, placedMarkers_r: [{ x: 1.5, y: -2, z: 0 }], placedMarkers_w: [{ x: 3, y: 4 }, { x: 'a' }] });
   assert.deepEqual(m.markers, [{ c: 'r', x: 1.5, y: -2 }, { c: 'w', x: 3, y: 4 }]);
   assert.deepEqual(P.normalize({ markers: [{ c: 'q', x: 1, y: 1 }] }).markers, []);
+  // The map's second drawings, as the world shows them: Dirtmouth's lift once in Mines_10, a
+  // Deepnest wall once broken (sceneData), the Hive's way once there.
+  const w = P.fromSave({ ...pd, visitedMines10: true, scenesVisited: ['Hive_03_c'] },
+    { persistentBoolItems: [{ sceneName: 'Deepnest_03', id: 'Breakable Wall', activated: true }] });
+  assert.deepEqual(w.alts, ['Town', 'Deepnest_East_01', 'Deepnest_03']);
+  assert.deepEqual(P.fromSave(pd).alts, []);
   assert.equal(R.areaOf(p.bench), 'godhome');
   assert.equal(R.areaOf(p.shade.scene), 'fog');
   // No shade: the game leaves "None" in its room.

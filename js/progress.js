@@ -13,6 +13,7 @@
              kingdom), or null when it isn't known (no save): then none is shown locked
      markers the markers you've placed on the game's map (placedMarkers_r/b/y/w: its Shell,
              Scarab, Token and Gleaming markers), each with its colour and x, y on the map
+     alts    the map's rooms whose second drawing the world already shows (ALTS)
      mapped  the rooms you know: the ones you've been to (scenesVisited) and the ones the Quill
              has drawn (scenesMapped). The map draws them whole; the game only would with the
              area's map bought, but the site's map is for seeing where you've been
@@ -84,7 +85,16 @@
   const SCENE = /^[A-Za-z0-9_]{1,64}$/;
   const scene = (s) => (typeof s === 'string' && SCENE.test(s) && s !== 'None' ? s : '');
 
-  const EMPTY = Object.freeze({ ids: [], counts: {}, found: [], bench: '', shade: null, gate: null, statues: null, mapped: [], markers: [] });
+  const EMPTY = Object.freeze({ ids: [], counts: {}, found: [], bench: '', shade: null, gate: null, statues: null, mapped: [], markers: [], alts: [] });
+  /* The map's rooms with a second drawing (js/map.js, a room's alt), and when the game swaps it
+     in (its FSM map_altsprite): Dirtmouth's lift to Crystal Peak once you've been there, and
+     three ways in Deepnest and Kingdom's Edge once they're open. (pd, sceneData's picked set) → yes. */
+  const ALTS = Object.freeze({
+    Town: (pd) => !!pd.visitedMines10,
+    Deepnest_East_01: (pd) => Array.isArray(pd.scenesVisited) && pd.scenesVisited.includes('Hive_03_c'),
+    Deepnest_01: (pd) => !!pd.deepnestBridgeCollapsed,
+    Deepnest_03: (pd, picked) => picked.has('Deepnest_03|Breakable Wall'),
+  });
   // The game's four markers, by the letter of their playerData list, six of each at most.
   const MARKERS = ['r', 'b', 'y', 'w'];
   // A point on the game's map, in its units (js/map.js), or null.
@@ -110,15 +120,21 @@
     const statues = Array.isArray(o.statues) ? [...new Set(o.statues.filter((x) => typeof x === 'string' && /^[a-z0-9-]{1,40}$/.test(x)))] : null;
     const markers = Array.isArray(o.markers)
       ? o.markers.map((m) => (m && MARKERS.includes(m.c) && point(m) ? { c: m.c, ...point(m) } : null)).filter(Boolean).slice(0, 24) : [];
-    return { ids, counts, found, bench: scene(o.bench), shade, gate, statues, mapped, markers };
+    const alts = Array.isArray(o.alts) ? Object.keys(ALTS).filter((k) => o.alts.includes(k)) : [];
+    return { ids, counts, found, bench: scene(o.bench), shade, gate, statues, mapped, markers, alts };
   }
 
   /* Which collectibles a save says you have (js/collectibles.js, `how`). sd is the save's
      sceneData: a thing picked up from the floor is its room's object, activated. */
-  function detect(pd, sd) {
+  // sceneData's objects taken or broken, as "scene|object".
+  function pickedOf(sd) {
     const picked = new Set();
     const items = sd && Array.isArray(sd.persistentBoolItems) ? sd.persistentBoolItems : [];
     for (const x of items) if (x && x.activated && typeof x.sceneName === 'string' && typeof x.id === 'string') picked.add(x.sceneName + '|' + x.id);
+    return picked;
+  }
+  function detect(pd, sd) {
+    const picked = pickedOf(sd);
     const list = (k) => (Array.isArray(pd[k]) ? pd[k] : []);
     const flames = list('scenesFlameCollected'), roots = list('scenesEncounteredDreamPlantC');
     // Once the Troupe's ritual is over, every flame was taken, whatever the lists say now.
@@ -147,7 +163,9 @@
     const mapped = [...list('scenesVisited'), ...list('scenesMapped')];
     // Placed in the map's own frame, as the shade's (MapMarkerMenu.PlaceMarker: the map's local position).
     const markers = MARKERS.flatMap((c) => list('placedMarkers_' + c).map((m) => ({ c, ...point(m) })));
-    return normalize({ ids, counts, found: detect(pd, sd), bench: pd.respawnScene, shade, gate, statues, mapped, markers });
+    const picked = pickedOf(sd);
+    const alts = Object.keys(ALTS).filter((k) => ALTS[k](pd, picked));
+    return normalize({ ids, counts, found: detect(pd, sd), bench: pd.respawnScene, shade, gate, statues, mapped, markers, alts });
   }
 
   const isEmpty = (p) => {
@@ -182,6 +200,6 @@
   const hasFound = (p, id) => normalize(p).found.includes(id);
   const count = (p, id) => normalize(p).counts[id] || 0;
 
-  HK.progress = { MARKERS, IDS, ID_LIST, COUNTS, COUNT_LIST, EMPTY, normalize, detect, fromSave, isEmpty, toggle, toggleFound, setCount, has, hasFound, count };
+  HK.progress = { MARKERS, ALTS, IDS, ID_LIST, COUNTS, COUNT_LIST, EMPTY, normalize, detect, fromSave, isEmpty, toggle, toggleFound, setCount, has, hasFound, count };
   if (typeof module !== 'undefined' && module.exports) module.exports = HK.progress;
 })();
