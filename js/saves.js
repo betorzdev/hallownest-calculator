@@ -1,7 +1,8 @@
 /* js/saves.js — the save slots: four, like the game's profile screen, and free mode.
    Pure over a Storage-like object (getItem, setItem, removeItem): no DOM and no language.
    A slot is everything that describes one game —the build, the charms found, the Hunter's
-   Journal, the Hall's marks, the lifeblood door, a half-done pantheon and the pinned build—;
+   Journal, the Hall's marks, the lifeblood door, the rest of the 112% (js/completion.js), a
+   half-done pantheon and the pinned build—;
    the preferences (language, screen, enemy) belong to whoever plays, not to the game, and
    aren't in it.
    Free mode (slot 0, FREE) is what shows while no save has been selected: the everything-unlocked
@@ -20,7 +21,7 @@
   const FREE = 0;
   const SAVES_KEY = 'hollow.saves';
   const KEYS = Object.freeze(['hollow.build', 'hollow.owned', 'hollow.journal', 'hollow.hall',
-    'hollow.bindings', 'hollow.run', 'hollow.baseline']);
+    'hollow.bindings', 'hollow.progress', 'hollow.run', 'hollow.baseline']);
   const SLOT_IDS = Array.from({ length: COUNT }, (_, i) => i + 1);
   const ALL_IDS = [FREE, ...SLOT_IDS];
 

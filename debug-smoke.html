@@ -48,13 +48,13 @@ f.addEventListener('load', async () => {
     ok('loads the state from the URL', txt('.hero-num') === '32', 'hero=' + txt('.hero-num'));
     ok('in English by default', txt('.title') === 'Hallownest Calculator' && d.documentElement.lang === 'en', txt('.title'));
     ok('the selector puts English first', [...d.querySelectorAll('[data-act="lang"]')].map((n) => n.dataset.value).join(',') === 'en,es');
-    ok('the screen labels follow the language', q('#gear').getAttribute('aria-label') === 'Your game'
-       && txt('#nav [data-value="game"]') === 'Your game', q('#gear').getAttribute('aria-label'));
+    ok('the screen labels follow the language', q('#gear').getAttribute('aria-label') === 'Inventory'
+       && txt('#nav [data-value="game"]') === 'Inventory', q('#gear').getAttribute('aria-label'));
     await click('[data-act="lang"][data-value="es"]');
     ok('title in Spanish', txt('.title').startsWith('Calculadora'));
     ok('Spanish goes into the URL', w.location.hash.includes('lang=es'), w.location.hash);
-    ok('and so do the labels', q('#gear').getAttribute('aria-label') === 'Tu partida'
-       && txt('#nav [data-value="game"]') === 'Tu partida', q('#gear').getAttribute('aria-label'));
+    ok('and so do the labels', q('#gear').getAttribute('aria-label') === 'Inventario'
+       && txt('#nav [data-value="game"]') === 'Inventario', q('#gear').getAttribute('aria-label'));
     ok('opens on Charms, with its tab marked and no "view=" in the URL', visible() === 'panel'
        && q('#nav [aria-current="page"]').dataset.value === 'charms' && w.location.hash.indexOf('view=') < 0, visible());
     ok('no top bar, floating button or collapsibles', !q('#topbar') && !q('#hj-fab') && !q('[data-act="gear"]') && !q('[data-act="fightOpen"]'));
@@ -220,7 +220,7 @@ f.addEventListener('load', async () => {
     ok('with no charms there is no Effects block', !q('#panel .inv-effects'));
     ok('with nothing learnt, the six plates as silhouettes', d.querySelectorAll('#panel .plate').length === 6 && !q('#panel .plate.is-on'));
     // The base Knight is a new game: no charms found, and the ones you don't have
-    // can be looked at but not equipped. They're all marked on Your game to keep testing.
+    // can be looked at but not equipped. They're all marked on the Inventory to keep testing.
     ok('the base Knight has no charms found', d.querySelectorAll('#gear .quick-owned .qc.is-missing').length === 40);
     await click('#panel .qc[data-id="fheart"]');
     ok("one not found can't be equipped", !isOn('fheart') && txt('#charm-detail .insp-state').indexOf('Sin conseguir') >= 0, txt('#charm-detail .insp-state'));
@@ -239,8 +239,8 @@ f.addEventListener('load', async () => {
     ok("and it can't be removed", isOn('voidheart') && txt('#charm-detail .insp-state').indexOf('No se puede quitar') >= 0, txt('#charm-detail .insp-state'));
     await click('[data-act="clear"]'); await wait(1000);   // the charms leave one by one first
     ok('not even with Clear', isOn('voidheart'), onIds());
-    // The double slots: one whole slot on Your game that switches none → first → second → none.
-    ok('Your game: five whole double slots', d.querySelectorAll('#gear .quick-owned .qc-dual').length === 5 && !q('#gear .qslot-pair'));
+    // The double slots: one whole slot on the Inventory that switches none → first → second → none.
+    ok('Inventory: five whole double slots', d.querySelectorAll('#gear .quick-owned .qc-dual').length === 5 && !q('#gear .qslot-pair'));
     ok('on Charms, the version you have shows alone', !q('#panel .qslot-pair') && !!q('#panel .qc[data-id="uheart"]') && !q('#panel .qc[data-id="fheart"]'));
     await click('#gear .quick-owned .qc-dual[data-value="king"]');
     ok('without it in the collection, it is removed', !isOn('voidheart'), onIds());

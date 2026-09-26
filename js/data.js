@@ -41,11 +41,81 @@
      (INV_NAME_DREAMNAIL_A, INV_NAME_DASH, INV_NAME_SHADOWDASH). */
   const ABILITIES = {
     dream: { es: 'Aguijón Onírico', en: 'Dream Nail', art: 'dream1' },
+    awoken: { es: 'Aguijón Onírico despierto', en: 'Awoken Dream Nail', art: 'awoken' },   // INV_NAME_DREAMNAIL_B
     cloaks: [null,
       { es: 'Capa de ala de polilla', en: 'Mothwing Cloak', art: 'cloak1' },
       { es: 'Capa sombría',           en: 'Shade Cloak',    art: 'cloak2' },
     ],
   };
+
+  /* ── What your game has beyond the numbers (js/progress.js) ─────────────
+     The equipment and key items of the game's Inventory, and what you carry: each with its
+     name as the game writes it (INV_NAME_*, the key alongside) and its artwork (ART.items).
+     None changes a figure: they're your game's record, and part of the 112%. */
+  const EQUIPMENT = [
+    { id: 'mantis-claw', es: 'Garra de mantis', en: 'Mantis Claw' },              // INV_NAME_WALLJUMP
+    { id: 'monarch-wings', es: 'Alas de monarca', en: 'Monarch Wings' },          // INV_NAME_DOUBLEJUMP
+    { id: 'crystal-heart', es: 'Corazón de cristal', en: 'Crystal Heart' },       // INV_NAME_SUPERDASH
+    { id: 'isma-tear', es: 'Lágrima de Isma', en: "Isma's Tear" },                // INV_NAME_ACIDARMOUR
+    { id: 'dreamgate', es: 'Portal Onírico', en: 'Dreamgate' },                   // INV_NAME_DREAMGATE
+  ];
+  const KEY_ITEMS = [
+    { id: 'kings-brand', es: 'Marca del rey', en: "King's Brand" },               // INV_NAME_KINGSBRAND
+    { id: 'lumafly-lantern', es: 'Linterna de lumélula', en: 'Lumafly Lantern' }, // INV_NAME_LANTERN
+    { id: 'city-crest', es: 'Emblema de la ciudad', en: 'City Crest' },           // INV_NAME_CITYKEY
+    { id: 'shopkeepers-key', es: 'Llave del comerciante', en: "Shopkeeper's Key" }, // INV_NAME_STOREKEY
+    { id: 'elegant-key', es: 'Llave elegante', en: 'Elegant Key' },               // INV_NAME_WHITEKEY
+    { id: 'love-key', es: 'Llave del amor', en: 'Love Key' },                     // INV_NAME_LOVEKEY
+    { id: 'tram-pass', es: 'Pase para el tranvía', en: 'Tram Pass' },             // INV_NAME_TRAM_PASS
+    { id: 'godtuner', es: 'Afinador de Dioses', en: 'Godtuner' },                 // INV_NAME_GODFINDER
+  ];
+  /* What you carry, in the Inventory's order: max is the most there can be (js/progress.js),
+     sell what Relic Seeker Lemm pays for one (wiki, each relic's page). */
+  const CARRIED = [
+    { id: 'geo', es: 'Geo', en: 'Geo' },                                          // INV_NAME_GEO
+    { id: 'essence', es: 'Esencia', en: 'Essence' },                              // INV_NAME_DREAMCORE
+    { id: 'pale-ore', es: 'Mineral Pálido', en: 'Pale Ore' },                     // INV_NAME_ORE
+    { id: 'simple-key', es: 'Llave simple', en: 'Simple Key' },                   // INV_NAME_SIMPLEKEY
+    { id: 'rancid-egg', es: 'Huevo podrido', en: 'Rancid Egg' },                  // INV_NAME_RANCIDEGG
+    { id: 'wanderers-journal', es: 'Diario del errante', en: "Wanderer's Journal", sell: 200 },  // INV_NAME_TRINKET1
+    { id: 'hallownest-seal', es: 'Sello de Hallownest', en: 'Hallownest Seal', sell: 450 },      // INV_NAME_TRINKET2
+    { id: 'kings-idol', es: 'Ídolo del rey', en: "King's Idol", sell: 800 },                     // INV_NAME_TRINKET3
+    { id: 'arcane-egg', es: 'Huevo arcano', en: 'Arcane Egg', sell: 1200 },                      // INV_NAME_TRINKET4
+  ];
+  /* The 112%'s things that have no name elsewhere on the site (js/completion.js, the Progress
+     screen): the Dreamers as the Resting Grounds' inscription names them, the Colosseum's trials
+     as its achievements do, and the Seer. */
+  const COMPLETION_NAMES = {
+    monomon: { es: 'Monomon, la Maestra', en: 'Monomon the Teacher' },          // DREAMERS_INSPECT_RG2
+    lurien: { es: 'Lurien, el Vigilante', en: 'Lurien the Watcher' },           // DREAMERS_INSPECT_RG3
+    herrah: { es: 'Herrah, la Bestia', en: 'Herrah the Beast' },                // DREAMERS_INSPECT_RG4
+    'trial-warrior': { es: 'Prueba del Guerrero', en: 'Trial of the Warrior' },        // COLOSSEUM_1_TEXT
+    'trial-conqueror': { es: 'Prueba del Conquistador', en: 'Trial of the Conqueror' }, // COLOSSEUM_2_TEXT
+    'trial-fool': { es: 'Prueba de los Insensatos', en: 'Trial of the Fool' },         // COLOSSEUM_3_TEXT
+    'seer-ascended': { es: 'Vidente', en: 'Seer' },                             // DREAM_MOTH_MAIN
+  };
+  /* The collectibles' kinds (js/collectibles.js), each with its name as the game writes it (the
+     Inventory's, or the map's legend, KEY_*) and its picture. The flames have no name of their
+     own in the game: "Grimmkin" is its name for their bearers (NAME_FLAMEBEARER_*). */
+  const COLLECTIBLE_KINDS = {
+    'grub': { es: 'Larva cautiva', en: 'Captive Grub', art: ['effects', 'grub'] },                    // KEY_GRUB
+    'mask-shard': { es: 'Fragmento de máscara', en: 'Mask Shard', art: ['hud', 'mask-shard'] },       // INV_NAME_HEARTPIECE_1
+    'vessel-fragment': { es: 'Fragmento de vasija', en: 'Vessel Fragment', art: ['hud', 'vessel-frag'] }, // INV_NAME_SOULORBS_1
+    'pale-ore': { es: 'Mineral Pálido', en: 'Pale Ore', art: ['items', 'pale-ore'] },                // INV_NAME_ORE
+    'charm-notch': { es: 'Muesca de amuletos', en: 'Charm Notch', art: ['hud', 'notch'] },            // INV_NAME_NOTCH
+    'simple-key': { es: 'Llave simple', en: 'Simple Key', art: ['items', 'simple-key'] },             // INV_NAME_SIMPLEKEY
+    'rancid-egg': { es: 'Huevo podrido', en: 'Rancid Egg', art: ['items', 'rancid-egg'] },            // INV_NAME_RANCIDEGG
+    'wanderers-journal': { es: 'Diario del errante', en: "Wanderer's Journal", art: ['items', 'wanderers-journal'] }, // INV_NAME_TRINKET1
+    'hallownest-seal': { es: 'Sello de Hallownest', en: 'Hallownest Seal', art: ['items', 'hallownest-seal'] },     // INV_NAME_TRINKET2
+    'kings-idol': { es: 'Ídolo del rey', en: "King's Idol", art: ['items', 'kings-idol'] },           // INV_NAME_TRINKET3
+    'arcane-egg': { es: 'Huevo arcano', en: 'Arcane Egg', art: ['items', 'arcane-egg'] },             // INV_NAME_TRINKET4
+    'whispering-root': { es: 'Raíz susurrante', en: 'Whispering Root', art: ['items', 'whispering-root'] }, // KEY_DREAMPLANT
+    'grimmkin-flame': { es: 'Llama de los Grimarios', en: 'Grimmkin Flame', art: ['items', 'grimmkin-flame'] },
+    'map': { es: 'Mapa', en: 'Map', art: ['effects', 'map'] },                                         // INV_NAME_MAP
+    'stag': { es: 'Estación de ciervos', en: 'Stag Station', art: ['items', 'stag'] },                // KEY_STAG
+  };
+  const SHARDS = { es: 'Fragmentos de máscara', en: 'Mask Shards' };             // INV_NAME_HEARTPIECE_0
+  const FRAGMENTS = { es: 'Fragmentos de vasija', en: 'Vessel Fragments' };     // INV_NAME_SOULORBS_0
 
   /* ── Spells ───────────────────────────────────────────────────────────── */
   const SPELL_COST = 33;
@@ -184,7 +254,37 @@
       cloak2: 'Icon_HK_Shade_Cloak_Art.png',
       dream1: 'Icon_HK_Dream_Nail_Art.png',
       dream2: 'Icon_HK_Dream_Nail_Art_2.png',
+      awoken: 'Icon_HK_Awoken_Dream_Nail.png',
       focus:  'Icon_HK_Focus_Art.png',
+    },
+    // The Inventory's equipment, key items and what you carry (EQUIPMENT, KEY_ITEMS, CARRIED).
+    items: {
+      'mantis-claw':       'Icon_HK_Mantis_Claw_Art.png',
+      'monarch-wings':     'Icon_HK_Monarch_Wings_Art.png',
+      'crystal-heart':     'Icon_HK_Crystal_Heart_Art.png',
+      'isma-tear':         "Icon_HK_Isma's_Tear_Art.png",
+      'dreamgate':         'Icon_HK_Dreamgate_Art.png',
+      'kings-brand':       "King's_Brand.png",
+      'lumafly-lantern':   'Lumafly_Lantern.png',
+      'city-crest':        'City_Crest.png',
+      'shopkeepers-key':   "Shopkeeper's_Key.png",
+      'elegant-key':       'Elegant_Key.png',
+      'love-key':          'Love_Key.png',
+      'tram-pass':         'Tram_Pass.png',
+      'godtuner':          'Godtuner.png',
+      'geo':               'Geo.png',
+      'essence':           'Essence.png',
+      'pale-ore':          'Pale_Ore.png',
+      'simple-key':        'Simple_Key.png',
+      'rancid-egg':        'Rancid_Egg.png',
+      'wanderers-journal': "Wanderer's_Journal.png",
+      'hallownest-seal':   'Hallownest_Seal.png',
+      'kings-idol':        "King's_Idol.png",
+      'arcane-egg':        'Arcane_Egg.png',
+      // The collectibles' kinds that have no inventory icon (COLLECTIBLE_KINDS).
+      'whispering-root':   'Whispering_Root.png',
+      'grimmkin-flame':    'FlameConsumed.png',
+      'stag':              'Stag_Circle.png',
     },
     hud: {
       'mask':        'HK_Mask.png',
@@ -718,7 +818,7 @@
   const STAT_BY_ID = Object.fromEntries(STAT_DEFS.map((d) => [d.id, d]));
 
   HK.data = {
-    NAILS, NAIL, ARTS, ABILITIES, SPELLS, SPELL_COST, SPELL_COST_TWISTER,
+    NAILS, NAIL, ARTS, ABILITIES, EQUIPMENT, KEY_ITEMS, CARRIED, SHARDS, FRAGMENTS, COMPLETION_NAMES, COLLECTIBLE_KINDS, SPELLS, SPELL_COST, SPELL_COST_TWISTER,
     SOUL, HEALTH, FOCUS, MOVE, PETS, CHARM_NOTCHES,
     CHARMS, CHARM_BY_ID, EFFECT_WHEN, CHARM_EFFECTS, GROUPS, STAT_DEFS, STAT_BY_ID, ART, art,
   };

@@ -13,6 +13,7 @@ Reference material for deciding how this site looks and behaves. It isn't part o
 | [`05-spell-variants.html`](05-spell-variants.html) | Five ways of choosing how many of a spell's impacts land, working with the real CSS and sprites (open it with a double click). **B, notches**, was chosen on 22 September 2026 |
 | [`06-sheet-variants.html`](06-sheet-variants.html) | The header and the sheet remade as the **game's Inventory screen**, with the real engine and sprites, at 1440 and 390 px side by side, and controls for variant, language, build and options (also via the URL: `?variant=a2&build=joni&lang=es`). **A1, one page**, was chosen, with the filigree in the header, the motes and the per-section tint, on 22 September 2026; the bench ghost was tried on the site and removed because it looked ugly |
 | [`08-live-sync.md`](08-live-sync.md) | Keeping a slot in step with the real game: the three ways researched (watching the save file, the HKTracker mod, a mod of our own), the plan for the first and where it stands |
+| [`09-progress.md`](09-progress.md) | The **Progress** screen: the game's 112% category by category, marked by hand or from the save, and later the collectibles and the map. Three variants in [`09-progress-variants.html`](09-progress-variants.html), over your own game or a sample one: A · the Journal (list and page), B · the Inventory (everything open), C · the tablet (a row per category). **C, the tablet**, was chosen on 26 September 2026 |
 
 ## The five things to know
 

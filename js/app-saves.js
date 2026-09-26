@@ -11,6 +11,7 @@
   'use strict';
   const HK = globalThis.HK;
   const D = HK.data, C = HK.codec, S = HK.saves, HJ = HK.hunter, HG = HK.hall, F = HK.savefile, PN = HK.pantheons, L = HK.live;
+  const P = HK.progress, R = HK.rooms;
   const App = HK.app;
   const { t, pick, el, NT, esc, FLEURS, prefs, savePrefs, brackets, screenHead, render, actions, here, PAGE_LANG, toast, track, pctSpace } = App;
 
@@ -64,12 +65,17 @@
     const owned = snap['hollow.owned'] != null ? C.ownNormalize(parse(snap['hollow.owned'], [])) : C.OWN_MAX;
     const book = HJ.normalize(parse(snap['hollow.journal'], {}));
     const marks = HG.normalizeMarks(parse(snap['hollow.hall'], {}));
+    const prog = P.normalize(parse(snap['hollow.progress'], {}));
     return {
       st, charms: owned.length,
       journal: HJ.counts(book),
       hall: HG.STATUES.filter((s) => (marks[s.id] || []).length).length,
+      where: R.areaOf(prog.bench), shade: prog.shade,
     };
   }
+  // An area's name and the light it takes (js/rooms.js), for a card or a notice.
+  const areaName = (id) => (R.AREAS[id] ? pick(R.AREAS[id]) : '');
+  const areaLight = (id) => (R.AREAS[id] && R.AREAS[id].light ? ` style="--where: var(--area-${R.AREAS[id].light}-deep)"` : '');
 
   const num = (n) => App.NF[0].format(n);
   function card(slot) {
@@ -104,7 +110,11 @@
           <span class="save-act-t">${esc(t('saveClear'))}</span></button>`;
     // You're here: at the head of the card, over the masks (beside the name, in free mode).
     const here = slot.active ? `<span class="save-tag">${esc(t('saveCurrent'))}</span>` : '';
-    return `<li class="save${slot.active ? ' is-active' : ''}${free ? ' is-free' : ''}" data-slot="${n}">
+    /* Where you'd wake up, as the game's profile screen says it: the area of your last bench,
+       whose light tints the card. And where your shade waits, if it does. */
+    const where = s.where ? `<span class="save-where"${NT}>${esc(areaName(s.where))}</span>` : '';
+    const shade = s.shade ? `<span class="save-shade">${esc(t('shadeCard', { area: areaName(R.areaOf(s.shade.scene)) || '?', geo: num(s.shade.geo) }))}</span>` : '';
+    return `<li class="save${slot.active ? ' is-active' : ''}${free ? ' is-free' : ''}${s.where ? ' is-where' : ''}" data-slot="${n}"${areaLight(s.where)}>
       <button type="button" class="save-main" data-act="savePick" data-value="${n}"${slot.active ? ' aria-current="true"' : ''}
         aria-label="${esc(label + (slot.active ? ', ' + t('saveCurrent') : ''))}" title="${esc(slot.active ? t('saveContinue') : t('saveLoad'))}">
         <span class="save-n">${free ? `<img src="${D.art('hud', 'knight')}" alt="">` : n}</span>
@@ -114,7 +124,7 @@
           ${vessels ? `<span class="save-vessels">${vessels}</span>` : ''}
         </span>
         <span class="save-nail"><img src="${D.art('nails', s.st.nail)}" alt="" width="80" height="360"><span${NT}>${esc(pick(D.NAILS[s.st.nail]))}</span></span>
-        <span class="save-facts">${facts}</span>
+        <span class="save-facts">${where}${facts}${shade}</span>
       </button>
       ${free ? `<span class="save-foot save-note">${esc(t('freeModeNote'))}</span>` : `<span class="save-foot">${linked}${confirm}</span>`}
     </li>`;
@@ -233,6 +243,10 @@
         `<span><span class="save-k">${esc(t('impCompletion'))}</span> <b>${num(Math.floor(m.completion))}${pctSpace()}</b></span>`,
         `<span><span class="save-k">${esc(t('impGeo'))}</span> <b>${num(m.geo)}</b></span>`,
       ].join('');
+      // The game's version and the mods it had, quiet at the end of the line: they explain a figure
+      // that counts differently (a save from before 1.5).
+      const verText = [m.version ? t('impVersion', { v: m.version }) : '', m.mods.length ? t('impMods', { mods: m.mods.join(', ') }) : ''].filter(Boolean).join(' · ');
+      const ver = verText ? `<span class="imp-ver" translate="no">${esc(verText)}</span>` : '';
       const facts = [
         [t('navCharms'), s.charms, C.OWN_MAX.length],
         [t('navJournal'), s.journal.completed, s.journal.total],
@@ -252,7 +266,7 @@
           <p class="imp-fname" translate="no">${FILE_ICON}${esc(f.name)}${m.steel ? `<span class="imp-steel"${NT}>${esc(t('impSteel'))}</span>` : ''}</p>
           <div class="imp-hud"><span class="save-masks">${masks}</span>${vessels ? `<span class="save-vessels">${vessels}</span>` : ''}</div>
           <div class="imp-nail"><img src="${D.art('nails', s.st.nail)}" alt="" width="80" height="360"><span${NT}>${esc(pick(D.NAILS[s.st.nail]))}</span></div>
-          <p class="imp-meta">${metaBits}</p>
+          <p class="imp-meta">${metaBits}${ver}</p>
           <p class="save-facts imp-facts">${facts}</p>
           ${pantheons}
           ${full ? `<p class="imp-warn">${esc(t('impReplace', { n: imp.n }))}</p>` : ''}
@@ -350,23 +364,52 @@
      in progress, the Journal's page) is left over in the one you enter. It lands on Charms
      (or on Saves, after clearing the game you were in), with no build in the link so the
      slot's one is read. */
-  function enter(view = 'charms') {
+  function enter(view = 'charms', swap = null) {
     prefs.view = view;
     savePrefs();
     const hash = [prefs.lang !== PAGE_LANG ? 'lang=' + prefs.lang : '', view !== 'charms' ? 'view=' + view : '']
       .filter(Boolean).map((x, i) => (i ? '&' : '#') + x).join('');
     try { history.replaceState(null, '', here(hash)); } catch (e) { location.hash = hash; }
-    location.reload();
+    if (!swap) { location.reload(); return; }
+    // In place: the game swapped under the veil, and the veil lifts once it's painted.
+    swap();
+    requestAnimationFrame(() => requestAnimationFrame(() => document.documentElement.classList.remove('is-leaving')));
+  }
+
+  /* Into the game without reloading the page, after an import that follows the file: the read
+     permission the picker has just given lasts as long as this page, and after a reload the
+     browser would ask for it again (the paused notice). So what the boot reads per game
+     (js/app-boot.js) is read again here. */
+  function enterHere() {
+    imp.n = 0;
+    stopLive();
+    App.run = App.loadRun();
+    App.runSheet = null;
+    const pinned = App.load(App.KEY.baseline);
+    App.baseline = pinned ? C.decode(pinned) : null;
+    if (prefs.compare === 'pinned' && !App.baseline) { prefs.compare = 'base'; savePrefs(); }
+    App.loadMarks();
+    App.loadDoor();
+    App.loadJournal();
+    App.loadOwned();
+    App.loadProgress();
+    App.state = App.withFixed(App.loadState());
+    App.persist();
+    App.recompute();
+    App.fightReset();
+    scrollTo(0, 0);
+    App.go('charms', true);
+    liveStart();
   }
 
   /* Going into a game, seen: a full slot's nail catches the light and its masks glow; an empty
      one (New Game) shows the base Knight's masks appearing one by one, as a new game's HUD does.
      Then the page fades to black and reloads (enter), and the next one fades in. Without motion, at once. */
-  function leave(n) {
+  function leave(n, swap = null) {
     let still = false;
     try { still = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { still = false; }
-    if (still) { enter(); return; }
-    try { sessionStorage.setItem(ENTERED_KEY, '1'); } catch (e) { /* it comes in without fading */ }
+    if (still) { enter('charms', swap); return; }
+    if (!swap) try { sessionStorage.setItem(ENTERED_KEY, '1'); } catch (e) { /* it comes in without fading */ }
     const li = n ? el.saves.querySelector(`.save[data-slot="${n}"]`) : null;
     let wait = 0;
     if (li && li.classList.contains('is-empty')) {
@@ -382,7 +425,7 @@
     if (li) li.setAttribute('aria-busy', 'true');
     setTimeout(() => {
       document.documentElement.classList.add('is-leaving');
-      setTimeout(() => enter(), 250);
+      setTimeout(() => enter('charms', swap), 250);
     }, wait);
   }
 
@@ -452,13 +495,15 @@
       if (!f || !store) return;
       S.importTo(store, n, f.snap);
       track('save-import');
-      // Linked or not, before the page reloads: the new page reads the link from IndexedDB.
+      // Linked, it's entered in place (enterHere); if not, the page reloads, and the link goes first.
+      let linked = false;
       if (f.handle && imp.sync) {
-        if (await L.links.put(n, { handle: f.handle, name: f.name, stamp: f.stamp })) track('save-link');
-      } else if (live.links[n] != null) await L.links.drop(n);
+        linked = await L.links.put(n, { handle: f.handle, name: f.name, stamp: f.stamp });
+        if (linked) { live.links[n] = f.name; track('save-link'); }
+      } else if (live.links[n] != null) { await L.links.drop(n); delete live.links[n]; }
       // It goes straight into the imported game, as picking the slot would.
       if (S.read(store).active !== n) S.select(store, n);
-      leave(0);
+      leave(0, linked ? enterHere : null);
     },
     /* Following a slot that follows nothing: the file is picked, the slot takes it in at once (the
        game wins, as on every save after) and from then on it follows it. */
@@ -469,7 +514,7 @@
       try { [h] = await pickSave(); } catch (e) { return; }
       try { file = await h.getFile(); r = F.read(new Uint8Array(await file.arrayBuffer())); } catch (e) { r = null; }
       if (!r || !r.ok) { toast(t('saveImportBad')); return; }
-      S.sync(store, n, F.toSnapshot(r.pd));
+      S.sync(store, n, F.toSnapshot(r.pd, r.sd));
       if (!(await L.links.put(n, { handle: h, name: file.name, stamp: L.stampOf(file) }))) { toast(t('liveFollowNo')); return; }
       live.links[n] = file.name;
       track('save-link');
@@ -597,7 +642,7 @@
     reader.onload = () => {
       const r = F.read(new Uint8Array(reader.result));
       if (!r.ok) { imp.state = 'error'; paintDrop(); return; }
-      imp.file = { name: file.name, snap: F.toSnapshot(r.pd), meta: F.meta(r.pd), handle, stamp: L.stampOf(file) };
+      imp.file = { name: file.name, snap: F.toSnapshot(r.pd, r.sd), meta: { ...F.meta(r.pd), mods: r.mods }, handle, stamp: L.stampOf(file) };
       imp.state = 'ready';
       paintDrop();
       focusIn('[data-act="importDo"]');
@@ -668,7 +713,7 @@
      file in (the game wins over what was changed here since) and every screen repaints. The
      stamp is kept with the link, so that a reload doesn't take in again a file already taken
      in, over what you've changed since. */
-  const parseSave = (bytes) => { const r = F.read(bytes); return r.ok ? r.pd : null; };
+  const parseSave = (bytes) => { const r = F.read(bytes); return r.ok ? r : null; };
   function stopLive() {
     if (live.watcher) live.watcher.stop();
     Object.assign(live, { n: 0, name: '', state: '', watcher: null });
@@ -685,9 +730,9 @@
     live.watcher = L.watch({
       source: L.fileSource(rec.handle, parseSave),
       since: stamp,
-      async onData(pd, next) {
+      async onData(r, next) {
         stamp = next;
-        const changed = S.sync(store, n, F.toSnapshot(pd));
+        const changed = S.sync(store, n, F.toSnapshot(r.pd, r.sd));
         await L.links.put(n, { ...rec, stamp });
         if (!changed || activeSlot() !== n) return;
         App.reloadGame();
@@ -697,16 +742,32 @@
       onState(s) { live.state = s; render(); },
     });
   }
-  // The notice above the screen when the link needs you: paused (a click to go on) or the file gone.
+  /* The notice above the screen when the link needs you: paused (a click to go on) or the file gone.
+     Nothing's wrong with the game, so it's drawn as the import notice's line, not as a warning box. */
   App.liveBanner = () => {
     if (live.state !== 'paused' && live.state !== 'lost') return '';
     const paused = live.state === 'paused';
-    return `<div class="banner is-run" role="status">
+    return `<div class="banner is-run is-hint" role="status">
       <span class="banner-tag">${esc(t('importHintTag'))}</span>
       <span class="banner-text">${esc(t(paused ? 'livePaused' : 'liveLost', { file: live.name }))}</span>
       <button type="button" class="btn btn-primary" data-act="${paused ? 'liveResume' : 'liveRelink'}">${esc(t(paused ? 'liveResume' : 'liveRelink'))}</button>
     </div>`;
   };
+  /* Your shade, above the screen, as long as it waits (only a save says so: js/progress.js):
+     where and with how much geo. The ✕ hides it until the shade is another one. */
+  const shadeKey = (sh) => sh.scene + ':' + sh.geo;
+  App.shadeBanner = () => {
+    const sh = App.progress.shade;
+    if (!sh || prefs.shadeOff === shadeKey(sh) || prefs.view === 'saves') return '';
+    const area = R.areaOf(sh.scene);
+    return `<div class="banner is-run is-hint">
+      <span class="banner-tag">${esc(t('shadeTag'))}</span>
+      <span class="banner-text">${esc(t('shadeBanner', { area: areaName(area) || '?', geo: num(sh.geo) }))}</span>
+      <button type="button" class="banner-close" data-act="shadeOff" aria-label="${esc(t('shadeOff'))}" title="${esc(t('shadeOff'))}">${CLOSE}</button>
+    </div>`;
+  };
+  actions.shadeOff = () => { if (App.progress.shade) { prefs.shadeOff = shadeKey(App.progress.shade); savePrefs(); render(); } };
+
   // The link of the save you're in, for the header: { state, name }, or null if it follows no file.
   App.liveInfo = () => (live.watcher && live.state ? { state: live.state, name: live.name } : null);
   Object.assign(App, { renderSaves, activeSlot, liveStart });

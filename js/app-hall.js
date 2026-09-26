@@ -14,8 +14,10 @@
      marked by hand on the plaque (HG.toggleMark), and saved apart from the build. The
      simulator doesn't touch them: it only shows how your build performs. */
   App.marks = {};
+  // Read again (the game saved, or another game came in): a bulk action's undo no longer applies.
   const loadMarks = () => {
     try { App.marks = HG.normalizeMarks(JSON.parse(load(KEY.hall) || '{}')); } catch (e) { App.marks = {}; }
+    hallUndo = null;
   };
   const saveMarks = () => save(KEY.hall, Object.keys(App.marks).length ? JSON.stringify(App.marks) : null);
 
@@ -43,6 +45,10 @@
   // The glyph for a double pedestal's lever (the wiki has no sprite): base, rod and knob.
   const LEVER_SVG = `<svg class="ped-lever" viewBox="0 0 18 18" width="18" height="18" aria-hidden="true"><path d="M3 15h12M9 15L5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="5" cy="5" r="1.9" fill="currentColor"/></svg>`;
   const hasMark = (id, d) => (App.marks[id] || []).includes(d);
+  /* Locked, as in the game: a statue whose boss you haven't beaten in the kingdom yet
+     (js/progress.js, statues; only known from a save). One with a symbol is unlocked anyway. */
+  const isLocked = (id) => Array.isArray(App.progress.statues) && !App.progress.statues.includes(id)
+    && !HG.DIFFS.some((d) => hasMark(id, d));
   /* Only on the repaint after a change, so what changed moves once and the next repaint is still:
      markFx { id, d, on, tier } after marking on the plaque; filterWas, the filter before the new
      one; tabletFx, 'open' or 'close'. */
@@ -124,7 +130,8 @@
     const tile = (s) => {
       const on = s.id === prefs.hallId;
       const got = HG.DIFFS.filter((d) => hasMark(s.id, d)).map((d) => t(DIFF_KEY[d]));
-      const title = statueName(s) + ' · ' + (got.length ? got.join(', ') : t('hallNoMarks'));
+      const locked = isLocked(s.id);
+      const title = statueName(s) + ' · ' + (locked ? t('hallLockedShort') : got.length ? got.join(', ') : t('hallNoMarks'));
       // With a filter, the one already beaten at that difficulty dims: the ones still to go stay lit.
       const dim = !!hallFilter && hasMark(s.id, hallFilter);
       // Changing the filter, the light fades out on the ones that dim and back on the ones that wake.
@@ -134,7 +141,7 @@
       // A double pedestal's second fight carries its glyph: the Dream Nail or the lever.
       const via = s.via === 'dream' ? '<img class="ped-dream" src="assets/abilities/dream1.png" alt="">' : s.via === 'lever' ? LEVER_SVG : '';
       // A single tab stop in the grid: the chosen one; the arrows move (hallMove).
-      return `<button type="button" class="ped-btn ${s.via === 'dream' ? 'is-dream' : ''} ${on ? 'is-on' : ''} ${dim ? 'is-dim' : ''} ${dimFx} ${marked}"
+      return `<button type="button" class="ped-btn ${s.via === 'dream' ? 'is-dream' : ''} ${on ? 'is-on' : ''} ${dim ? 'is-dim' : ''} ${locked ? 'is-locked' : ''} ${dimFx} ${marked}"
         data-act="hallPick" data-id="${s.id}" aria-pressed="${on}" tabindex="${on ? 0 : -1}" title="${esc(title)}">
         <span class="ped-niche"><img src="assets/hall/${HG.artOf(s)}.png" alt="" loading="lazy">${via}</span>
         <span class="ped-name"${NT}>${esc(s.short ? pick(s.short) : statueName(s))}</span>
@@ -188,6 +195,7 @@
     const phaseCount = x.pool ? 1 : phasesOf(x, 'at').length;
     const worstHitAt = perDiff.at.worstHit, worstHitAsra = perDiff.asra.worstHit;
     const hallNotes = [
+      isLocked(s.id) ? t('hallLocked') : '',
       phaseCount > 1 ? t('hallNotePhases', { n: phaseCount }) : '',
       t('hallNoteHits', { n: App.NF[0].format(nail) }),
       t(worstHitAt === 1 ? 'hallNoteSurviveOne' : 'hallNoteSurvive', { at: worstHitAt, asra: worstHitAsra }),
@@ -374,6 +382,11 @@
     hallMark(node) {
       const d = node.dataset.value;
       const tier = HG.idolTier(App.marks);
+      // A symbol won means the statue is unlocked in your game.
+      if (isLocked(prefs.hallId)) {
+        App.progress = HK.progress.normalize({ ...App.progress, statues: [...App.progress.statues, prefs.hallId] });
+        App.saveProgress();
+      }
       App.marks = HG.toggleMark(App.marks, prefs.hallId, d);
       hallUndo = null;
       saveMarks();

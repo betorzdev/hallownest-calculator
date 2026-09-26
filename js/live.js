@@ -7,7 +7,8 @@
                            a cross-origin iframe, which can't open the picker)
      links                 the handles, one per slot, in IndexedDB (a handle can't go in
                            localStorage), each with the file's stamp when it was last taken in
-     watch(opts)           a generic watcher: asks opts.read() every 2 s while the tab is visible
+     watch(opts)           a generic watcher: asks opts.read() every 2 s, also while the tab is hidden
+                           (playing full screen hides it: the site is up to date when you come back)
                            (and at once on coming back to it) and reports what it finds. The file
                            is the first source (fileSource); our own mod's socket will be a second
                            one with the same shape.
@@ -125,7 +126,6 @@
     };
     async function check() {
       if (stopped || busy || state !== 'live') return;
-      try { if (document.visibilityState === 'hidden') return; } catch (e) { /* no document: go on */ }
       busy = true;
       try {
         const r = await source.read(since);

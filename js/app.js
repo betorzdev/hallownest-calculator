@@ -14,13 +14,13 @@
 (() => {
   'use strict';
   const HK = globalThis.HK;
-  const D = HK.data, E = HK.engine, C = HK.codec, I = HK.i18n, F = HK.foes, PN = HK.pantheons, HG = HK.hall;
+  const D = HK.data, E = HK.engine, C = HK.codec, I = HK.i18n, F = HK.foes, PN = HK.pantheons, HG = HK.hall, P = HK.progress;
   const App = HK.app = {};
 
   const t = (k, v) => I.t(k, v);
   const pick = (v) => I.pick(v);
 
-  const KEY = { build: 'hollow.build', baseline: 'hollow.baseline', prefs: 'hollow.prefs', run: 'hollow.run', hall: 'hollow.hall', owned: 'hollow.owned', door: 'hollow.bindings' };
+  const KEY = { build: 'hollow.build', baseline: 'hollow.baseline', prefs: 'hollow.prefs', run: 'hollow.run', hall: 'hollow.hall', owned: 'hollow.owned', door: 'hollow.bindings', progress: 'hollow.progress' };
   // With no enemy, half of Combat comes out empty: whoever has none starts with the Journal's first entry.
   const DEFAULT_FOE = 'crawlid';
   /* The page's own language: es/index.html is the Spanish copy, with its own address so that
@@ -31,13 +31,13 @@
   const el = {
     page: $('.page'), masthead: $('#masthead'), colophon: $('#colophon'), nav: $('#nav'), panel: $('#panel'),
     mini: $('#minihud'), banner: $('#banner'), gear: $('#gear'), hj: $('#hj'),
-    toast: $('#toast'), fx: $('#overcharm-fx'), fight: $('#fight'), saves: $('#saves'),
+    toast: $('#toast'), fx: $('#overcharm-fx'), fight: $('#fight'), saves: $('#saves'), pg: $('#pg'),
   };
   const hoverable = matchMedia('(hover: hover) and (pointer: fine)');
 
   /* The screens, like the pages of the game's pause menu: Charms, Your game, Combat and the
      Journal. And the save slots (js/app-saves.js), which aren't in the bar: the header opens them. */
-  const VIEWS = ['charms', 'game', 'fight', 'journal', 'saves'];
+  const VIEWS = ['charms', 'game', 'fight', 'journal', 'progress', 'saves'];
   const SPELL_KEYS = ['vs', 'dd', 'hw'];
   const ART_KEYS = ['cyclone', 'dash', 'great'];
   const ART_STAT = { cyclone: 'nail.cyclone', dash: 'nail.dashSlash', great: 'nail.greatSlash' };
@@ -489,7 +489,7 @@
     return `<a class="mh-save${lv ? ' is-' + lv.state : ''}" href="${here(hashFor('saves'))}" data-act="view" data-value="saves"${prefs.view === 'saves' ? ' aria-current="page"' : ''}
           aria-label="${esc(label + (lv ? ', ' + st : ''))}" title="${esc(title)}"><span class="mh-save-fig"><span class="mh-save-light" aria-hidden="true"></span><img src="${D.art('hud', 'knight')}" alt=""></span><span class="mh-save-lbl">${FLEURS}${esc(label)}${live}</span>${n ? `<span class="mh-save-n">${n}</span>` : ''}</a>`;
   }
-  const VIEW_KEY = { charms: 'navCharms', game: 'navGame', fight: 'navFight', journal: 'navJournal', saves: 'savesTitle' };
+  const VIEW_KEY = { charms: 'navCharms', game: 'navGame', fight: 'navFight', journal: 'navJournal', progress: 'navProgress', saves: 'savesTitle' };
   function renderMasthead() {
     document.title = prefs.view === 'charms' ? t('docTitle') : t(VIEW_KEY[prefs.view]) + ' · ' + t('title');
     const meta = document.querySelector('meta[name="description"]');
@@ -534,18 +534,20 @@
         <a class="gh" href="https://github.com/betorzdev/hallownest-calculator" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">${GITHUB}</a></p>`;
   }
 
-  /* The screen bar: Charms, Your game, Combat and the Journal, with your completed ones. It lives
-     in index.html and here only its texts and which one is active change: repainted whole, the
-     focus would be lost when switching screens. The Journal's text is set by paintHjNav. */
+  /* The screen bar: Charms, Your game, Combat, the Journal with your completed ones and Progress
+     with your completion. It lives in index.html and here only its texts and which one is active
+     change: repainted whole, the focus would be lost when switching screens. The Journal's text
+     is set by paintHjNav and Progress's by paintPgNav. */
   function renderNav() {
     el.nav.setAttribute('aria-label', t('navLabel'));
     for (const a of el.nav.querySelectorAll('[data-act="view"]')) {
       const v = a.dataset.value;
-      if (v !== 'journal') a.textContent = t(VIEW_KEY[v]);
+      if (v !== 'journal' && v !== 'progress') a.textContent = t(VIEW_KEY[v]);
       a.setAttribute('href', here(hashFor(v)));
       if (v === prefs.view) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
     }
     App.paintHjNav();
+    App.paintPgNav();
   }
 
   /* Only the chosen screen shows. The others keep being painted, hidden: that way their animations
@@ -557,6 +559,7 @@
     el.gear.hidden = prefs.view !== 'game';
     el.fight.hidden = prefs.view !== 'fight';
     el.hj.hidden = prefs.view !== 'journal';
+    el.pg.hidden = prefs.view !== 'progress';
     el.saves.hidden = prefs.view !== 'saves';
   }
 
@@ -622,7 +625,7 @@
       : '';
     // On the Pantheons tab you're already there: the notice doesn't send you where you are.
     const lock = prefs.view === 'fight' && prefs.fightTab === 'pantheon' ? '' : runLockBanner();
-    el.banner.innerHTML = over + lock + App.liveBanner() + App.importHint();
+    el.banner.innerHTML = over + lock + App.liveBanner() + App.shadeBanner() + App.importHint();
   }
 
   /* The notice that you're in a pantheon, with the button that takes you to the room and the one
@@ -771,6 +774,7 @@
     App.renderGear();
     App.renderFight();
     App.renderSaves();
+    App.renderProgress();
     if (prefs.view === 'journal') { if (App.hjSec.querySelector('.hj-list')) App.paintHunter(); else App.renderHunter(); }
     showScreen();
     App.bandCheck();                       // the arena's band measures the stage once it's visible
@@ -817,7 +821,7 @@
   }
   /* The screen you arrive at fades in, like the game's fades between areas (css: .is-entering). */
   const fadeIn = (node) => { node.classList.remove('is-entering'); void node.offsetWidth; node.classList.add('is-entering'); };
-  const screenOf = (v) => (v === 'game' ? el.gear : v === 'fight' ? el.fight : v === 'journal' ? el.hj : v === 'saves' ? el.saves : el.panel);
+  const screenOf = (v) => (v === 'game' ? el.gear : v === 'fight' ? el.fight : v === 'journal' ? el.hj : v === 'progress' ? el.pg : v === 'saves' ? el.saves : el.panel);
   // Is the sticky bar covering it? Then you have to scroll up to it.
   const underNav = (node) => node.getBoundingClientRect().top < el.nav.getBoundingClientRect().bottom;
 
@@ -989,12 +993,40 @@
     } catch (e) { App.owned = C.OWN_MAX.slice(); }
   };
   const saveOwned = () => save(KEY.owned, isMaxOwned() ? null : JSON.stringify(App.owned));
-  const isOwned = (id) => C.ownEquippable(App.owned, id);
+  /* A fragile charm you have but can't wear: broken (Leg Eater repairs it) or with the Divine
+     (it comes back unbreakable). Its state in your game (js/progress.js), or ''. */
+  const AWAY = { fheart: ['broken-heart', 'divine-heart'], fgreed: ['broken-greed', 'divine-greed'], fstrength: ['broken-strength', 'divine-strength'] };
+  const fragileAway = (id) => (AWAY[id] || []).find((x) => P.has(App.progress, x)) || '';
+  const isOwned = (id) => C.ownEquippable(App.owned, id) && !fragileAway(id);
   /* Void Heart can't be removed (wiki, "Void Heart"): if you have it, it's always equipped. It
      costs 0 notches, and the Pantheons' Charms binding already removes it in the engine. */
-  const withFixed = (st) => (isOwned('voidheart') && !st.charms.includes('voidheart')
-    ? C.normalize({ ...st, charms: [...st.charms, 'voidheart'] }) : st);
+  const withFixed = (st) => {
+    // Nor is a fragile one worn while it's broken or with the Divine (a link or an older build may carry it).
+    const s = st.charms.some((id) => fragileAway(id)) ? C.normalize({ ...st, charms: st.charms.filter((id) => !fragileAway(id)) }) : st;
+    return isOwned('voidheart') && !s.charms.includes('voidheart') ? C.normalize({ ...s, charms: [...s.charms, 'voidheart'] }) : s;
+  };
   const isFixed = (id) => id === 'voidheart' && isOwned('voidheart');
+  /* What your game has beyond the Knight's numbers (js/progress.js): equipment and key items,
+     what you carry, the rest of the 112%, your bench and your shade. With nothing saved, none of
+     it: unlike the charms, none of it changes a figure. */
+  App.progress = P.normalize(null);
+  const loadProgress = () => {
+    try { App.progress = P.normalize(JSON.parse(load(KEY.progress) || 'null')); } catch (e) { App.progress = P.normalize(null); }
+  };
+  const saveProgress = () => save(KEY.progress, P.isEmpty(App.progress) ? null : JSON.stringify(App.progress));
+  // A change by hand: kept and repainted, with what changed lighting up (App.was).
+  function setProgress(next) {
+    const was = App.progress;
+    App.progress = P.normalize(next);
+    saveProgress();
+    App.was = { state: App.state, owned: App.owned, progress: was };
+    // A fragile charm that just broke (or went to the Divine) comes off.
+    const worn = App.state.charms.filter((id) => !fragileAway(id));
+    if (worn.length !== App.state.charms.length) { commit(C.normalize({ ...App.state, charms: worn })); App.was = null; return; }
+    render();
+    App.was = null;
+  }
+
   /* Changes the collection. You never wear something you don't have: whatever leaves is removed,
      and Void Heart goes in by itself. */
   function setOwned(list) {
@@ -1015,8 +1047,9 @@
     App.loadMarks();
     App.loadDoor();
     App.loadJournal();
-    const ownedWas = App.owned;
+    const ownedWas = App.owned, progressWas = App.progress;
     loadOwned();
+    loadProgress();
     const kept = App.state;
     // The stored build, not the link's: the link still carries the one that was on screen.
     const stored = load(KEY.build);
@@ -1026,7 +1059,7 @@
     persist();
     recompute();
     // What arrived lights up, as after any change (App.was): a charm found, one now worn.
-    App.was = { state: kept, owned: ownedWas };
+    App.was = { state: kept, owned: ownedWas, progress: progressWas };
     render();
     App.was = null;
   }
@@ -1036,5 +1069,5 @@
     masksText, notchText, spellArt, shortOf, badgeText, goodClass, deltaChip, changeChip, prefs, loadPrefs,
     savePrefs, justWorn, justFound, splitHash, here, loadState, persist, compareLabel, compute, impact, recompute, commit, bindAllFx,
     brackets, chevron, cross, FLEURS, rule, screenHead, hudHtml, restoreFocus, focusDescriptor, render, go, navTo, screenOf,
-    underNav, toast, track, actions, isMaxOwned, loadOwned, saveOwned, isOwned, withFixed, isFixed, setOwned, reloadGame });
+    underNav, toast, track, actions, isMaxOwned, loadOwned, saveOwned, isOwned, fragileAway, withFixed, isFixed, setOwned, loadProgress, saveProgress, setProgress, reloadGame });
 })();

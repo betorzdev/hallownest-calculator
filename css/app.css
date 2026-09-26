@@ -104,6 +104,7 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
    below. The figures and what responds to the finger don't change. */
 .panel, .gear { --tint: var(--tint-sheet); }
 .fight { --tint: var(--tint-combat); }
+.gear.pg { --tint: var(--tint-progress); }
 .fight.is-godhome { --tint: var(--tint-godhome); }
 /* The page's chrome (the screen bar's rule, what sits outside a section) takes the tint of the
    screen in view. */
@@ -111,6 +112,7 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 .page:has(.fight:not([hidden])) { --tint: var(--tint-combat); }
 .page:has(.fight.is-godhome:not([hidden])) { --tint: var(--tint-godhome); }
 .page:has(.hj-sec:not([hidden])) { --tint: var(--tint-journal); }
+.page:has(.pg:not([hidden])) { --tint: var(--tint-progress); }
 /* The pale tints are all close to bone: on the lights they're carried by the section's lamp, the
    tint's hue with a little more chroma (tokens.css). Declared again on every element that sets
    --tint, because a custom property is resolved where it's declared: the lamp, the brackets, the
@@ -834,6 +836,11 @@ button.plate.is-on:is(:hover, :focus-visible) .plate-art > img { filter: brightn
 .banner.is-hint .banner-tag::before {
   content: ''; width: 5px; height: 5px; border: 1px solid currentColor; transform: rotate(45deg); opacity: 0.75;
 }
+/* On a phone (where only the linked save's notice shows) the text takes its own row under the tag. */
+@media (max-width: 599px) {
+  .banner.is-hint { row-gap: var(--sp-2); }
+  .banner.is-hint .banner-text { flex-basis: 100%; }
+}
 .banner-close {
   flex-shrink: 0; display: inline-grid; place-items: center; width: var(--sp-8); height: var(--sp-8);
   color: var(--muted); transition: color var(--dur) var(--ease);
@@ -1012,7 +1019,8 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
 .lvlpick { display: flex; justify-content: center; gap: var(--sp-1); width: 100%; min-width: 0; margin-top: var(--sp-1); }
 .lvl {
   flex: 0 1 56px; min-width: 0;
-  display: grid; place-items: center; height: 40px; padding: var(--sp-1);
+  /* A row of definite height, so an upright picture (the Awoken Dream Nail) is held by max-height. */
+  display: grid; grid-template-rows: minmax(0, 1fr); place-items: center; height: 40px; padding: var(--sp-1);
   border-bottom: 2px solid transparent; color: var(--muted);
   transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease);
 }
@@ -1074,6 +1082,21 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
 .field-text { display: flex; flex-direction: column; flex-grow: 1; min-width: 0; }
 .field-name { font-size: var(--fs-sm); line-height: 1.3; color: var(--ink); }
 .field-note { font-size: var(--fs-xs); line-height: 1.3; color: var(--muted); }
+/* The loose mask shards and vessel fragments, under their row: the same pieces, smaller. */
+.field.is-shards { margin-top: var(--sp-2); }
+.pieces.is-shards, .pieces.is-fragments { grid-template-columns: repeat(var(--n), minmax(0, 30px)); }
+.piece.is-shard { height: 32px; }
+.field.is-shards .field-num { font-size: var(--fs-md); }
+
+/* Your game's items (js/app-game.js): the key items as plates, and under them what you carry,
+   each with its [− N +]. The geo plate carries Millibelle's bank in a note. */
+.gplates + .gplates { margin-top: var(--sp-6); }
+.gcount { display: flex; flex-direction: column; align-items: center; gap: var(--sp-1); }
+.gcount-note { font-size: var(--fs-xs); line-height: 1.25; color: var(--muted); }
+.step-count.is-wide { width: 8ch; }
+/* On a phone, two to a row: the [− N +] with touch-sized buttons doesn't fit in a third. */
+@media (max-width: 599px) { .gplates.is-counts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.gplate.is-count.is-lit .step-count { animation: num-flash var(--dur-flash) var(--ease); }
 @media (pointer: coarse) { .piece { min-height: 44px; } }
 
 /* ── Your game, right after a change (js/app-game.js, App.was) ─────────────
@@ -1201,7 +1224,9 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
   .gear-body section.block.is-arts { order: 3; }
   .gear-body section.block.is-spells { order: 4; }
   .gear-body section.block.is-abilities { order: 5; }
-  .gear-body section.block.is-owned { order: 6; }
+  .gear-body section.block.is-equipment { order: 6; }
+  .gear-body section.block.is-owned { order: 7; }
+  .gear-body section.block.is-items { order: 8; }
 }
 @media (max-width: 599px) {
   .panel, .gear-body { --inv-pad: var(--sp-4); }
@@ -1221,7 +1246,8 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
   /* The bar, on mobile: the four tabs spread out (the active one underlined: the diamond doesn't
      fit) and without the Journal's book, which leaves room for its name with your completed entries. */
   :root { --sticky-h: 100px; }
-  .nav-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; }
+  /* Each tab as wide as its word (a long one, «Inventario», doesn't break), the free space between them. */
+  .nav-tabs { display: grid; grid-template-columns: repeat(5, auto); justify-content: space-between; gap: 0 var(--sp-2); }
   .nav-tab { flex-direction: column; justify-content: center; gap: 0; min-height: 48px; font-size: var(--fs-md); text-align: center; }
 }
 /* The sheet arranges itself by its own width (container inv), not the window's. */
@@ -2683,6 +2709,11 @@ button.tl-go:focus-visible { outline-offset: 3px; }
    keeps its accent rule. */
 .ped-btn.is-dim .ped-niche::before { background: var(--godhome-light-off); }
 .ped-btn.is-dim .ped-niche > img:first-child { opacity: 0.55; }
+/* Locked in your game (the boss not beaten in the kingdom yet): the statue in shadow, as the
+   game draws a pedestal still covered, with no light in its niche. */
+.ped-btn.is-locked .ped-niche::before { background: var(--godhome-light-off); }
+.ped-btn.is-locked .ped-niche > img:first-child { filter: brightness(0.25) saturate(0); opacity: 0.8; }
+.ped-btn.is-locked .ped-name { color: var(--muted); }
 .ped-btn.is-dim .ped-name { color: var(--muted); }
 .ped-btn.is-dim .ped-marks { opacity: 0.5; }
 
@@ -3198,20 +3229,21 @@ button.tl-go:focus-visible { outline-offset: 3px; }
 /* "Defeat [−] N [+] more to decipher the Hunter's notes.": the game's sentence, and the
    number is the control. The number goes in --font-num, like every figure. */
 .hj-kills { font-size: var(--fs-md); color: var(--ink-2); line-height: 2.2; }
-.hj-stepper { display: inline-flex; align-items: center; vertical-align: middle; margin: 0 var(--sp-1); border: 1px solid var(--line-ctl); background: var(--card); line-height: 1; }
-.hj-step { width: 32px; min-height: 32px; font-family: var(--font-num); font-size: var(--fs-md); color: var(--ink-2); }
-.hj-step:hover:not(:disabled) { color: var(--accent); background: var(--card-idle); }
-.hj-step:disabled { color: var(--line-ctl); }
-.hj-count {
+.hj-stepper, .stepper { display: inline-flex; align-items: center; vertical-align: middle; margin: 0 var(--sp-1); border: 1px solid var(--line-ctl); background: var(--card); line-height: 1; }
+.hj-step, .step { width: 32px; min-height: 32px; font-family: var(--font-num); font-size: var(--fs-md); color: var(--ink-2); }
+.hj-step:hover:not(:disabled), .step:hover:not(:disabled) { color: var(--accent); background: var(--card-idle); }
+.hj-step:disabled, .step:disabled { color: var(--line-ctl); }
+.hj-count, .step-count {
   width: 4.5ch; min-height: 32px; padding: 0 var(--sp-1); text-align: center;
   font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-md); font-weight: 600; color: var(--ink-strong);
   background: var(--card); border: 0; border-left: 1px solid var(--line-ctl); border-right: 1px solid var(--line-ctl); border-radius: 0;
   -moz-appearance: textfield; appearance: textfield;
 }
-.hj-count::-webkit-outer-spin-button, .hj-count::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.hj-count::-webkit-outer-spin-button, .hj-count::-webkit-inner-spin-button,
+.step-count::-webkit-outer-spin-button, .step-count::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 @media (pointer: coarse) {
-  .hj-step { width: 44px; min-height: 44px; }
-  .hj-count { min-height: 44px; }
+  .hj-step, .step { width: 44px; min-height: 44px; }
+  .hj-count, .step-count { min-height: 44px; }
 }
 /* The entry's state, at the top of the page and in view on entering: the states as text,
    like the tabs, with the chosen one underlined. "In your game" is left only for the screen
@@ -3426,6 +3458,16 @@ button.tl-go:focus-visible { outline-offset: 3px; }
    (a flash and gone, as on the HUD), the vessels drain after them, and the rest of the slot fades
    while dust rises out of it. Then the slot is cleared and New Game fades in. */
 .save { position: relative; }
+/* Where you'd wake up (js/app-saves.js): the area of your last bench, as the game's profile
+   screen says it, and its light (--where, the area's deep tone) rising from the right, behind
+   the nail. Your shade, if it waits, closes the line. */
+.save.is-where { isolation: isolate; }
+.save.is-where::after {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(270deg, color-mix(in oklab, var(--where) 70%, transparent), transparent 65%);
+}
+.save-where { flex-basis: 100%; font-family: var(--font-display); font-size: var(--fs-sm); letter-spacing: 0.06em; color: var(--ink); }
+.save-shade { flex-basis: 100%; font-size: var(--fs-xs); color: var(--muted); }
 .save.is-clearing { pointer-events: none; }
 .save.is-clearing .save-foot { opacity: 0; transition: opacity var(--dur) var(--ease); }
 .save.is-clearing .save-masks img { animation: save-break 420ms var(--ease) both; animation-delay: calc(var(--r) * 70ms); }
@@ -3552,6 +3594,7 @@ kbd {
 .imp-nail img { height: calc(var(--sp-16) + var(--sp-8)); width: auto; }
 .imp-meta { grid-area: meta; margin: 0; display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-4); align-items: baseline; font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-sm); color: var(--ink); }
 .imp-meta b { font-weight: 600; color: var(--ink-strong); }
+.imp-ver { font-family: var(--font-body); font-size: var(--fs-xs); color: var(--muted); }
 .imp-meta .save-k { margin-right: var(--sp-1); }
 .imp-facts { grid-area: facts; justify-content: center; margin: var(--sp-2) 0 0; }
 /* The pantheons completed: five diamonds like the rule's, outlined, and filled in bone when done. */
@@ -3751,3 +3794,142 @@ kbd {
 @keyframes soul-slosh { 50% { clip-path: inset(calc(var(--cut) + 1.6%) 0 0 0); } }
 @keyframes lb-breathe { to { filter: brightness(1.18) drop-shadow(0 0 4px var(--lifeblood-line)); } }
 @keyframes orb-ready { to { opacity: 1; } }
+
+/* ── Progress (js/app-progress.js, design/09-progress.md: the tablet) ──────────
+   Another page of the Inventory, in the map's green. Under the title, the figure the game's
+   map shows, "Completion", large and in bone over 112; then one row per category of the
+   wiki's fifteen: its name, its things as small pips (lit, half-lit for a spell half learnt,
+   in shadow) and its points. A row opens to show its things as Your game's plates. The points
+   are data, in bone; a full category turns to --good. The accent, only on what's touched. */
+.pg-body { display: block; }
+.pg-total { display: flex; flex-direction: column; align-items: center; gap: var(--sp-1); margin: var(--sp-2) 0 var(--sp-8); text-align: center; }
+.pg-total-k { font-size: var(--fs-2xs); letter-spacing: 0.12em; text-transform: uppercase; color: var(--label); }
+.pg-total-v { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; line-height: 1; color: var(--ink-strong); font-size: calc(var(--fs-xl) * 2.2); }
+.pg-total-v .u { font-size: 0.38em; font-weight: 400; color: var(--muted); }
+.pg-lead { max-width: 52ch; margin: var(--sp-2) 0 0; font-size: var(--fs-sm); line-height: 1.5; color: var(--muted); text-wrap: balance; }
+.pg-rows { list-style: none; margin: 0 auto; padding: 0; max-width: 900px; border-top: 1px solid var(--inv-line); }
+.pg-row { border-bottom: 1px solid var(--inv-line); }
+.pg-head {
+  width: 100%; display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr) auto; gap: var(--sp-2) var(--sp-4);
+  align-items: center; padding: var(--sp-3) var(--sp-2); text-align: left; transition: background var(--dur) var(--ease);
+}
+.pg-head:hover { background: var(--veil); }
+.pg-head:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.pg-row.is-open > .pg-head { background: var(--picked); box-shadow: inset 2px 0 0 var(--accent-line); }
+.pg-name { font-size: var(--fs-md); color: var(--ink); }
+.pg-pts { font-family: var(--font-num); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pg-pts b { font-size: var(--fs-md); font-weight: 700; color: var(--ink-strong); }
+.pg-pts .u { font-size: var(--fs-xs); font-style: normal; color: var(--muted); }
+.pg-row.is-full .pg-pts b { color: var(--good); }
+/* The pips: each thing's picture, small; in shadow what's missing, dimmed what's half done. */
+.pg-pips { display: flex; flex-wrap: wrap; gap: var(--sp-1); }
+.pg-pip { width: 18px; height: 18px; display: grid; grid-template-rows: minmax(0, 1fr); place-items: center; }
+.pg-pip img { max-width: 100%; max-height: 100%; object-fit: contain; filter: brightness(0.3) saturate(0); opacity: 0.6; }
+.pg-pip.is-on img { filter: none; opacity: 1; }
+.pg-pip.is-part img { filter: brightness(0.6) saturate(0.6); opacity: 1; }
+/* Where there's no picture (the Dreamers, the trials, the pantheons): the rule's diamond. */
+.pg-glyph { display: block; width: 30px; height: 30px; border: 1px solid currentColor; transform: rotate(45deg) scale(0.7); color: var(--ink-2); }
+.pg-pip .pg-glyph { width: 10px; height: 10px; transform: rotate(45deg); color: var(--muted); }
+.pg-pip.is-on .pg-glyph { color: var(--ink); background: var(--ink-2); }
+.gplate:not(.is-on) .pg-glyph { color: var(--muted); opacity: 0.5; }
+.pg-open { padding: var(--sp-2) var(--sp-2) var(--sp-6); }
+.pg-plates { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: var(--sp-3) var(--sp-3); }
+.pg-plates .gplate-art { height: 56px; }
+.pg-plates .gplate-art img { max-height: 48px; }
+.pg-plates .gplate.is-part .gplate-art img { filter: brightness(0.6) saturate(0.6); }
+.pg-plates .gplate.is-part .gplate-art::before { background: var(--halo-plate-off); }
+/* The build's things are marked on Your game: they say so, and take you there. */
+.pg-plates .gplate.is-far .gplate-val { font-family: var(--font-body); }
+/* List · Map, under the title: text tabs, the chosen one with the accent's rule, like Combat's. */
+.pg-tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-1) var(--sp-6); margin: 0 0 var(--sp-6); }
+.pg-tab { padding: var(--sp-1) 0; font-family: var(--font-body); font-size: var(--fs-md); color: var(--muted); border-bottom: 2px solid transparent; transition: color var(--dur) var(--ease); }
+.pg-tab:hover { color: var(--accent); }
+.pg-tab.is-on { color: var(--ink-strong); border-bottom-color: var(--accent); }
+
+/* ── The Map (js/app-map.js): the game's own map, black like its map screen, each area in its
+   own tint (baked into the drawings). Whole what the Quill drew, rough what you only bought,
+   barely there what you don't know. The pins keep their size on screen (--k). ── */
+.pgm { display: flex; flex-direction: column; gap: var(--sp-3); }
+.pgm-kinds .pg-area img, .pgm-ico { width: 18px; height: 18px; object-fit: contain; flex: none; }
+/* The area names' layer has no picture: a letter in the titles' face stands for it. */
+.pgm-ico.is-name { display: inline-grid; place-items: center; font-family: var(--font-display); font-style: normal; font-size: var(--fs-sm); line-height: 1; color: var(--ink-2); }
+/* How many of each kind you have: the figures in the sans, in bone; a kind complete, in --good. */
+.pgm-kind-n { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-xs); color: var(--muted); }
+.pgm-kind-n b { font-weight: 700; color: var(--ink-strong); }
+.pgm-kind-n .u { font-style: normal; }
+.pgm-kind.is-full .pgm-kind-n b { color: var(--good); }
+/* The filter, under the map: a title with show all · hide all, the two choices, and the layers
+   in four groups (collectibles, the 112%, places, yours), each a row of chips that wraps. */
+.pgm-filter { display: flex; flex-direction: column; gap: var(--sp-3); padding-top: var(--sp-3); border-top: 1px solid var(--inv-line); }
+.pgm-filter-bar { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--sp-2) var(--sp-6); }
+.pgm-filter-t { margin: 0; font-family: var(--font-display); font-size: var(--fs-md); font-weight: 400; color: var(--ink-strong); }
+.pgm-all { display: inline-flex; gap: var(--sp-4); }
+.pgm-opts { display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-6); }
+.pgm-group { display: flex; flex-direction: column; gap: var(--sp-1); }
+.pgm-group-t { margin: 0; font-family: var(--font-body); font-size: var(--fs-xs); font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.pgm-filter .pg-areas { max-width: none; margin: 0; flex-wrap: wrap; overflow: visible; padding-bottom: 0; }
+.pgm-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-6); }
+.pgm-note { flex: 1 1 32ch; margin: 0; font-size: var(--fs-sm); color: var(--muted); }
+.pgm-found { display: inline-flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-sm); color: var(--ink-2); cursor: pointer; }
+.pgm-found input { accent-color: var(--accent); }
+.pgm-zoom { display: inline-flex; border: 1px solid var(--line-ctl); background: var(--card); }
+.pgm-box { position: relative; height: min(72vh, 720px, 62vw + 120px); background: var(--bg); border: 1px solid var(--inv-line); overflow: hidden; }
+.pgm-svg { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; user-select: none; }
+.pgm-svg:active { cursor: grabbing; }
+.pgm-room.is-rough { opacity: 0.8; }
+.pgm-room.is-ghost { opacity: 0.16; }
+.pgm-pin { transform: translate(var(--px), var(--py)) scale(var(--k, 0.5)) translate(var(--ox, 0px), var(--oy, 0px)); cursor: pointer; }
+.pgm-pin circle { fill: var(--bg); stroke: var(--line-ctl); stroke-width: 0.06; }
+.pgm-pin:hover circle, .pgm-pin:focus-visible circle, .pgm-pin.is-sel circle { stroke: var(--accent); stroke-width: 0.1; }
+.pgm-pin:focus { outline: none; }
+.pgm-pin.is-on { opacity: 0.4; }
+/* Close up (.is-near), each pin's name under it, in bone with the black of the map around its
+   letters, so it reads over the rooms' lines. */
+.pgm-lbl { display: none; font-family: var(--font-body); font-size: 0.46px; text-anchor: middle; fill: var(--ink-strong);
+  stroke: var(--bg); stroke-width: 0.12px; paint-order: stroke; pointer-events: none; }
+.pgm-svg.is-near .pgm-lbl { display: block; }
+/* A name that would cover another is hidden; its pin shows it when pointed at or chosen. */
+.pgm-svg.is-near .pgm-lbl.is-off { display: none; }
+.pgm-svg.is-near .pgm-pin:is(:hover, :focus-visible, .is-sel) .pgm-lbl.is-off { display: block; }
+.pgm-pin:is(:hover, :focus-visible, .is-sel) { isolation: isolate; }
+/* Yours sit where they are, on top, with no disc; your bench carries a bone ring. */
+.pgm-mark circle { fill: none; stroke: var(--ink-strong); stroke-width: 0.08; }
+/* The map's own titles, as its map screen writes them: the areas' in the titles' face, from
+   afar; the places' smaller, once you're closer (.is-mid), when the areas' step aside. They keep
+   their size on screen, as the pins do (--k). */
+.pgm-names { pointer-events: none; }
+.pgm-name { text-anchor: middle; dominant-baseline: middle; fill: var(--ink-2); stroke: var(--bg); paint-order: stroke; }
+.pgm-name.is-area { font-family: var(--font-display); font-size: calc(var(--k, 0.5) * 0.6px); letter-spacing: 0.04em; stroke-width: calc(var(--k, 0.5) * 0.14px); opacity: 0.9; }
+.pgm-name.is-place { display: none; font-family: var(--font-body); font-size: calc(var(--k, 0.5) * 0.46px); stroke-width: calc(var(--k, 0.5) * 0.12px); }
+.pgm-svg.is-mid .pgm-name.is-place { display: block; }
+.pgm-svg.is-mid .pgm-name.is-area { display: none; }
+/* The card of the pin chosen, over it (below it near the top edge). */
+.pgm-card-wrap { position: absolute; z-index: 2; transform: translate(-50%, calc(-100% - var(--sp-4))); pointer-events: none; }
+.pgm-card-wrap.is-below { transform: translate(-50%, var(--sp-6)); }
+.pgm-card {
+  pointer-events: auto; display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-2) var(--sp-3);
+  background: var(--card); border: 1px solid var(--line-panel); box-shadow: var(--shadow-md); white-space: nowrap;
+}
+.pgm-card-art { display: inline-grid; place-items: center; width: 32px; height: 32px; }
+.pgm-card-art img, .pgm-card-art svg { width: 32px; height: 32px; object-fit: contain; }
+.pgm-card-t { display: flex; flex-direction: column; font-size: var(--fs-sm); color: var(--ink-2); }
+.pgm-card-t b { color: var(--ink-strong); font-weight: 600; }
+.pgm-card-x { width: auto; height: auto; padding: 0 var(--sp-1); font-size: var(--fs-md); }
+
+/* The Map's filter by kind: chips in a row, the chosen ones with the accent's line. */
+.pg-areas { max-width: 900px; margin: 0 auto var(--sp-4); display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-2); }
+.pg-area {
+  display: inline-flex; align-items: center; gap: var(--sp-2); padding: var(--sp-1) var(--sp-2);
+  font-size: var(--fs-sm); color: var(--ink-2); border-bottom: 1px solid transparent; transition: color var(--dur) var(--ease);
+}
+.pg-area:hover { color: var(--accent); }
+.pg-area.is-on { color: var(--ink-strong); background: var(--picked); border-bottom-color: var(--accent-line); }
+@media (max-width: 599px) {
+  /* The kinds in one strip that slides sideways, inside its own box: fifteen would fill the screen. */
+  .pg-areas { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: var(--sp-1); }
+  .pg-areas::-webkit-scrollbar { display: none; }
+  .pg-area { flex: none; }
+  .pg-head { grid-template-columns: minmax(0, 1fr) auto; }
+  .pg-pips { grid-column: 1 / -1; grid-row: 2; }
+  .pg-plates { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}

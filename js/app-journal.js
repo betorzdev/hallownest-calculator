@@ -44,8 +44,10 @@
   let hjPickAnchor = '';            // the last checkbox touched: with Shift the range up to it is picked
   let hjShift = false;              // whether the last click inside the Journal had Shift held
 
+  // Read again (the game saved, or another game came in): the bulk undo and the picks go with the old book.
   const loadJournal = () => {
     try { book = HJ.normalize(JSON.parse(load(KEY_JOURNAL) || '{}')); } catch (e) { book = {}; }
+    hjUndo = null; hjPicked = new Set(); hjPickAnchor = '';
   };
   const saveJournal = () => save(KEY_JOURNAL, Object.keys(book).length ? JSON.stringify(book) : null);
 
@@ -386,6 +388,20 @@
     if (markLost) hjNotify(t('hjMarkDropped', { total: App.NF[0].format(HJ.REQUIRED) }), HJ.MARK);
     else if (kind) hjNotify(id === HJ.MARK ? t('hjMarkKept') : t(kind === 'full' ? 'hjUpdated' : 'hjNewEntry'), id);
   }
+
+  /* From another screen (Progress, js/app-progress.js): the book as it is, and an entry marked as
+     defeated once (the state of its first defeat, HJ.encounter) or cleared, saved and announced
+     as on the Journal. The caller repaints. */
+  App.hjBook = () => book;
+  App.hjMark = (id, on) => {
+    const prev = book;
+    book = on ? HJ.encounter(book, id) : HJ.clear(book, id);
+    hjUndo = null;
+    saveJournal();
+    paintHjNav();
+    const kind = HJ.change(prev, book, id);
+    if (kind) hjNotify(t(kind === 'full' ? 'hjUpdated' : 'hjNewEntry'), id);
+  };
 
   /* Moves the entry being read through the list, like the combat Journal. */
   function hjMove(step, origin) {

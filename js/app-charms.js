@@ -9,7 +9,7 @@
   const { t, pick, KEY, el, hoverable, SPELL_KEYS, ART_KEYS, ART_STAT, NEED_KEY, NT, namedSrc, esc, save,
     pctSpace, fmtValue, fmtStat, fmtStatRich, sign, masksText, notchText, spellArt, shortOf, goodClass,
     deltaChip, changeChip, justWorn, justFound, prefs, savePrefs, compareLabel, compute, impact, recompute, commit, brackets,
-    chevron, cross, screenHead, hudHtml, render, underNav, toast, actions, isOwned, isFixed, setOwned } = App;
+    chevron, cross, screenHead, hudHtml, render, underNav, toast, actions, isOwned, isFixed, setOwned, fragileAway } = App;
 
   /* ── Sheet panel: figures, meters, spells and arts ───────────────────── */
   // The flash class: only on the repaint that follows a change (flashIds, in commit()).
@@ -281,7 +281,9 @@
     // One you don't have in your game is shadowed: it can be looked at, but not equipped.
     const missing = !imp.equipped && !isOwned(c.id);
     if (!isOwned(c.id)) cls.push('is-missing');
-    const title = missing ? pick(c) + ' · ' + t('inspMissing')
+    const away = fragileAway(c.id);
+    const title = away ? pick(c) + ' · ' + t(away.startsWith('broken') ? 'fragBroken' : 'fragDivine')
+      : missing ? pick(c) + ' · ' + t('inspMissing')
       : a.action === 'blocked' ? pick(a.reason)
       : isFixed(c.id) ? pick(c) + ' · ' + t('inspFixed')
       : imp.equipped ? t('unequipTitle', { charm: pick(c) })
@@ -383,7 +385,15 @@
        switching one for the other: that stays on Your game. Equipping is still tapping the grid. */
     const missing = !imp.equipped && !isOwned(id);
     const pinned = missing && App.detailHover !== id;
-    const ownRow = !missing ? ''
+    /* A fragile one you have but can't wear says why, in the game's words, and is set right here:
+       repaired by Leg Eater, or back from the Divine unbreakable. One you can wear can be marked
+       broken (dying with it on breaks it). */
+    const away = fragileAway(id);
+    const breakable = !away && isOwned(id) && /^f(heart|greed|strength)$/.test(id);
+    const fragRow = away ? `<p class="insp-state bad">${esc(t(away.startsWith('broken') ? 'fragBroken' : 'fragDivine'))}</p>
+          <div class="insp-own"><button type="button" class="btn btn-primary" data-act="fragBack" data-id="${id}">${esc(t(away.startsWith('broken') ? 'fragRepaired' : 'fragUnbreakable'))}</button></div>`
+      : breakable ? `<div class="insp-own"><button type="button" class="text-btn" data-act="fragBreak" data-id="${id}">${esc(t('fragBreak'))}</button></div>` : '';
+    const ownRow = away ? '' : !missing ? ''
       : pinned ? `<p class="insp-state bad">${esc(t('notFound'))}</p>
           <div class="insp-own"><button type="button" class="btn btn-primary" data-act="ownHere" data-id="${id}" title="${esc(t('ownHereHint'))}">${esc(t('ownHere'))}</button></div>`
       : `<p class="insp-state bad">${esc(t('inspMissing'))}</p>`;
@@ -416,7 +426,7 @@
         </div>
       </div>
       <p class="insp-blurb" title="${esc(pick(c.blurb))}">${esc(pick(c.blurb))}</p>
-      ${lock ? `<p class="insp-state cond" title="${esc(lock)}">${esc(lock)}</p>` : ownRow || state}
+      ${lock ? `<p class="insp-state cond" title="${esc(lock)}">${esc(lock)}</p>` : fragRow && away ? fragRow : (ownRow || state) + fragRow}
       <h3>${esc(imp.equipped ? t('inspEffectIn') : t('inspEffectIf'))}${imp.cond ? ' (' + esc(imp.cond.toLowerCase()) + ')' : ''}</h3>
       ${imp.changes.length ? `<ul class="insp-list">${shown.map(row).join('')}${more}</ul>` : `<p class="insp-empty">${esc(t('inspEmpty'))}</p>`}`;
   }
@@ -825,6 +835,26 @@
       const first = imp.changes[DETAIL_ROWS - 1];
       const row = first && el.panel.querySelector(`.stat[data-id="${first.id}"]`);
       if (row) row.scrollIntoView({ behavior: calm.matches ? 'auto' : 'smooth', block: 'center' });
+    },
+    // A fragile charm broken (it comes off if worn), or set right: repaired, or back from the
+    // Divine unbreakable (the other version of its slot).
+    fragBreak(node) {
+      const base = node.dataset.id.slice(1);
+      App.detailSel = node.dataset.id;
+      App.setProgress(HK.progress.toggle(App.progress, 'broken-' + base, true));
+    },
+    fragBack(node) {
+      const id = node.dataset.id, base = id.slice(1);
+      App.detailSel = id;
+      const away = App.fragileAway(id);
+      let p = HK.progress.toggle(App.progress, away, false);
+      if (away.startsWith('divine')) {
+        App.progress = HK.progress.normalize(p);
+        setOwned(C.ownSet(App.owned, C.OWN_SLOT_OF[id], 'u' + base));
+        App.saveProgress();
+        return;
+      }
+      App.setProgress(p);
     },
     // "I have it" in the detail: marked found (in a two-version slot, as that slot's version) and still read there.
     ownHere(node) {

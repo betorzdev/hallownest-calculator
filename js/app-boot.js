@@ -16,6 +16,7 @@
   loadDoor();              // and the lifeblood door's completed bindings
   loadJournal();           // and your game's Hunter's Journal
   loadOwned();             // and the charms you have
+  App.loadProgress();      // and the rest of what your game has (js/progress.js)
   // The link's language; without one, the Spanish page speaks Spanish (and that counts as choosing it).
   const fromUrl = splitHash(location.hash).lang || (PAGE_LANG === 'en' ? null : PAGE_LANG);
   // The screen: the link's; without it, a link with a build opens Charms, and with no link, wherever you left it.
