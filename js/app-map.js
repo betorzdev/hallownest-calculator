@@ -36,7 +36,7 @@
   const NPC_OF = { Iselda: 'mapper', Leg_Eater: 'leg_eater', Seer: 'dream_moth', Lemm: 'relic_dealer' };
   const SPOT_ALIAS = { "Nailmaster's_Glory": 'Sly', Grubsong: 'Grubfather', Dream_Wielder: 'Seer', Awoken_Dream_Nail: 'Seer' };
   const npcPin = (who) => { const p = M.PINS.find((x) => x[0] === 'npc' && x[1] === who); return p ? [p[2], p[3]] : null; };
-  // The Grubfather's and the Seer's rewards are theirs: on their pin, one stack each.
+  // The Grubfather's and the Seer's rewards are theirs: around their pin.
   const aliasOf = (ic) => SPOT_ALIAS[ic] || (/-(5_)?Grubs$/.test(ic) ? 'Grubfather' : /-Seer$/.test(ic) ? 'Seer' : ic);
   function spotOf(ic) {
     const name = aliasOf(ic), sp = M.SPOTS[name];

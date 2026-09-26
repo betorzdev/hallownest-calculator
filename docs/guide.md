@@ -1259,15 +1259,14 @@ on Cornifer's map). It's the tablet chosen among three variants in
   Lemm, the Nailsmith, the Seer, Leg Eater) stand there, with what they sell; the Grubfather's
   and the Seer's rewards on them. The Grimmkin flames, which ItemChanger doesn't place, keep the
   game's pins; the bosses, their fight's room.
-- **Things on the very same spot are one pin, a stack**: its number in a bone disc, and its card
-  lists them, each with its button and what it asks (a shop's price in geo, the Seer's essence,
-  the Grubfather's grubs); with a character there, the stack takes their name and face (*Sly ·
-  Dirtmouth*).
+- **Everything is in view, nothing behind a tap**: things on the very same spot (within 0.15 map
+  units: a shop's stock, a house's door) are laid out around it in a small grid, in the pins' own
+  units, so it keeps its shape at any zoom. A card says what a thing asks when it has a price (a
+  shop's in geo, the Seer's essence, the Grubfather's grubs).
   A tap opens a thing's card, with its area and place (the game's titles) and its button.
   **Each pin sits on its own spot and keeps about its size on screen** (a quarter more at most
-  close up): zooming in makes room between them rather than making them bigger. Pins that would
-  overlap at the current zoom are nudged apart, only as much as they overlap and never more than a
-  pin and a half from their spot; as you zoom in they go back to it. **Close up, each carries its name**: one that would
+  close up): zooming in makes room between them rather than making them bigger. Nothing moves
+  with the zoom: each pin stays on its spot (or its place in its spot's grid). **Close up, each carries its name**: one that would
   cover another name or another pin is hidden, and shows when that pin is pointed at or chosen.
   Pointing at a pin also says its name and place. It's dragged, zoomed with
   the wheel or a pinch, and three buttons zoom in, out and back to the whole map (on a phone,
