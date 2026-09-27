@@ -6,8 +6,8 @@
    steady pace (design/00-system.md, Motion): never a slide; he only fades in on arriving, and out
    where the bar has no room for him (a phone). On the Map his pin stands by your bench
    (js/app-map.js draws that one) and, when a save moves the bench, the pin walks from the old
-   one to the new one room by room, through the game's doors (js/rooms.js, DOORS), while the map
-   is in view; and Your game's bench carries a still picture of him sitting (js/app-home.js,
+   one to the new one door to door, the shortest way through the game's doors (js/rooms.js,
+   DOORS), while the map is in view; and Your game's bench carries a still picture of him sitting (js/app-home.js,
    css .hmC-kn). With reduced motion he only stands or sits. Decorative for the page: hidden from screen
    readers and out of the tab order; the click (he focuses soul) is an easter egg.
    Shares HK.app (see js/app.js): App.knight.sync() after every render, App.knight.onSave()
@@ -153,28 +153,57 @@
     }
     svg.setAttribute('viewBox', `${run ? i * 104 : 0} 0 104 140`);
   }
-  // The fewest rooms from one to the other through the doors, both ends included; or null.
-  function doorsPath(from, to) {
-    const back = { [from]: null }, queue = [from];
-    while (queue.length) {
-      const sc = queue.shift();
-      if (sc === to) { const path = []; for (let c = to; c !== null; c = back[c]) path.unshift(c); return path; }
-      for (const n of R.DOORS[sc] || []) if (!(n in back)) { back[n] = sc; queue.push(n); }
+  /* The shortest way from one bench to the other, by the map's distance, through the doors
+     (js/rooms.js, DOORS; each on its room's edge, js/app-map.js): from the bench to a door of its
+     room, across it (its two sides are one point, or near enough), door to door inside each room,
+     and from a door of the other room to its bench. Dijkstra over the doors (under 900; a plain
+     scan for the nearest is enough). A door with no point on the map (the White Palace, which the
+     map doesn't draw) is never nearer than one with. → the way's points, both benches included,
+     the two sides of each door as one; or null (no way, or a bench with no point). */
+  function doorsRoute(from, to) {
+    const pa = App.pgmBenchPoint(from), pb = App.pgmBenchPoint(to);
+    if (!pa || !pb || !R.DOORS[from] || !R.DOORS[to]) return null;
+    const split = (n) => { const i = n.indexOf('['); return [n.slice(0, i), n.slice(i + 1, -1)]; };
+    const at = { S: pa, E: pb };                       // a node's point: 'S', 'E', or 'scene[door]'
+    const point = (n) => (n in at ? at[n] : (at[n] = (([sc, d]) => App.pgmDoorPoint(sc, d, R.DOORS[sc][d][0]))(split(n))));
+    const dist = (p, q) => (p && q ? Math.hypot(p[0] - q[0], p[1] - q[1]) : Infinity);
+    const next = (n) => {
+      if (n === 'S') return Object.keys(R.DOORS[from]).map((d) => `${from}[${d}]`);
+      if (n === 'E') return [];
+      const [sc, d] = split(n), [b, e] = R.DOORS[sc][d], out = [`${b}[${e}]`];
+      for (const x of Object.keys(R.DOORS[sc])) if (x !== d) out.push(`${sc}[${x}]`);
+      if (sc === to) out.push('E');
+      return out;
+    };
+    const cost = { S: 0 }, back = {}, seen = new Set(), open = ['S'];
+    while (open.length) {
+      let k = 0;
+      for (let i = 1; i < open.length; i++) if (cost[open[i]] < cost[open[k]]) k = i;
+      const n = open.splice(k, 1)[0];
+      if (seen.has(n)) continue;
+      seen.add(n);
+      if (n === 'E') break;
+      for (const m of next(n)) {
+        if (seen.has(m)) continue;
+        const c = cost[n] + dist(point(n), point(m));
+        if (!(m in cost) || c < cost[m]) { cost[m] = c; back[m] = n; open.push(m); }
+      }
     }
-    return null;
+    if (!('E' in back) || cost.E === Infinity) return null;
+    const pts = [];
+    for (let n = 'E'; n !== undefined; n = back[n]) { const p = point(n); if (p && !(pts.length && dist(p, pts[0]) < 0.02)) pts.unshift(p); }
+    return pts;
   }
-  /* From the old bench to the new one, room by room: the bench's point, the rooms' centres, the
-     other bench's point, at a steady pace (the whole way in 2 to 8 s), stepping his frames at
-     --dur-step and turning where the way turns. The view stays as you have it (never zoomed or
-     moved for him): out of it, he walks unseen. The pin is repainted with every render, so it's
-     looked up again at every step; it's already painted at the new bench, where the walk ends.
-     No path (Godhome, the White Palace: entered by dream), or reduced motion: he's simply there.
-     Seen once per bench (prefs.walked). */
+  /* From the old bench to the new one along doorsRoute, at a steady pace (the whole way in 2 to
+     8 s), stepping his frames at --dur-step and turning where the way turns. The view stays as
+     you have it (never zoomed or moved for him): out of it, he walks unseen. The pin is repainted
+     with every render, so it's looked up again at every step; it's already painted at the new
+     bench, where the walk ends. No way (Godhome, the White Palace: entered by dream), or reduced
+     motion: he's simply there. Seen once per bench (prefs.walked). */
   function mapWalk(from, to) {
-    walking = { from, to };
+    walking = { from, to, pts: null };
     const done = () => { walking = null; prefs.walked = to; savePrefs(); const pin = youPin(); if (pin) frame(pin, -1); };
-    const path = doorsPath(from, to);
-    const pts = path ? path.map((sc, i) => (i === 0 ? App.pgmBenchPoint(from) : i === path.length - 1 ? App.pgmBenchPoint(to) : App.pgmRoomPoint(sc))).filter(Boolean) : null;
+    const pts = walking.pts = doorsRoute(from, to);
     if (!pts || pts.length < 2 || still.matches) { done(); return; }
     const segs = []; let len = 0;
     for (let i = 1; i < pts.length; i++) { const d = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); segs.push(d); len += d; }

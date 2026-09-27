@@ -30,6 +30,30 @@
     const sc = ALIAS[scene] || scene, r = M.ROOMS[sc];
     return r ? [r[1], r[2]] : M.ANCHORS[sc] || M.HOSTS[sc] || null;
   };
+  /* A door's point, for the Knight's walk (js/app-knight.js): on its room's edge, on the side its
+     name says (js/rooms.js, DOORS: left1, right2, top1, bot1), halfway to the facing edge of the
+     room across (the map's rooms overlap a little, or leave a gap: both sides of a door meet at
+     one point), and at the middle of where the two rooms' boxes overlap the other way (or the end
+     nearest the room across, if they don't); a door in the background (door_sly, room_grimm) is
+     the box's point nearest the room across. A room the map doesn't draw: its point (an anchor,
+     a host's door), or null. → [x, y] or null */
+  function doorPoint(scene, door, other) {
+    const r = M.ROOMS[ALIAS[scene] || scene];
+    if (!r) return roomPoint(scene);
+    const [, x, y, w, h] = r, or = other && M.ROOMS[ALIAS[other] || other], op = or ? [or[1], or[2], or[3], or[4]] : other && roomPoint(other);
+    const o = op ? [op[0], op[1], op[2] || 0, op[3] || 0] : null;     // the room across: centre and size (a point: no size)
+    const clamp = (v, c, s) => Math.max(c - s / 2, Math.min(c + s / 2, v));
+    // Along the edge: the middle of the two ranges' overlap, or the end nearest the other.
+    const along = (c, s, oc, os) => { const lo = Math.max(c - s / 2, oc - os / 2), hi = Math.min(c + s / 2, oc + os / 2); return lo <= hi ? (lo + hi) / 2 : oc < c ? c - s / 2 : c + s / 2; };
+    // Across the edge: halfway from this edge (c ± s/2) to the facing one, inside this box.
+    const across = (edge, c, s, facing) => (facing === undefined ? edge : clamp((edge + facing) / 2, c, s));
+    const side = (/^(left|right|top|bot)/.exec(door) || [])[1];
+    if (side === 'left') return [across(x - w / 2, x, w, o && o[0] + o[2] / 2), o ? along(y, h, o[1], o[3]) : y];
+    if (side === 'right') return [across(x + w / 2, x, w, o && o[0] - o[2] / 2), o ? along(y, h, o[1], o[3]) : y];
+    if (side === 'top') return [o ? along(x, w, o[0], o[2]) : x, across(y + h / 2, y, h, o && o[1] - o[3] / 2)];
+    if (side === 'bot') return [o ? along(x, w, o[0], o[2]) : x, across(y - h / 2, y, h, o && o[1] + o[3] / 2)];
+    return o ? [clamp(o[0], x, w), clamp(o[1], y, h)] : [x, y];
+  }
   /* Where a place of ItemChanger's is (js/map.js's SPOTS, from the game's scenes): the characters
      with a pin of their own on the game's map stand there, and what they sell with them. The
      storeroom behind Sly's shop is Sly's. → { p: [x, y], scene } or null */
@@ -757,5 +781,5 @@
     },
   });
 
-  Object.assign(App, { renderPgMap, pgMapAfterPaint: afterPaint, pgmBenchPoint: benchPoint, pgmRoomPoint: roomPoint });
+  Object.assign(App, { renderPgMap, pgMapAfterPaint: afterPaint, pgmBenchPoint: benchPoint, pgmDoorPoint: doorPoint });
 })();
