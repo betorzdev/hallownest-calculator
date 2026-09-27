@@ -486,7 +486,8 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   with its questions and, below the home, its breadcrumb), `<base href>` back to the root so it
   loads the same files, `<html data-view>` with its screen, and its **About block** under the
   screens: the text search engines read (a heading with the query, two paragraphs, the questions
-  and links to the other pages), in the page's language, shown only on its own screen (Your game on the homes) and language.
+  and links to the other pages), in the page's language, shown only on its own screen (Your game on the homes) and language; the
+  language selector goes to the other language's page ("Languages" below).
   On its own screen and language a page keeps its title and description; elsewhere the site
   writes them as always. A bare hash there means that page's screen (Charms on the homes), and
   *Share* always links to the language's home, so a shared build still opens on Charms. They're
@@ -1630,6 +1631,13 @@ translator doesn't pop up. The language saved in `hollow.prefs` only counts if i
 (with the selector or with a link that carries it): Spanish used to be saved even when nobody
 had touched it. The Spanish page (`es/`) starts in Spanish unless its link says otherwise, and
 opening it counts as choosing Spanish.
+
+**The selector goes to the page in that language**: from `map/`, ES opens `es/mapa/` (and EN
+back), on the same screen and with the build in the link, so the title, the address and the
+About block are in the language you read, the one search engines index (`langPage` in
+`js/app.js`, from the page's `hreflang` links; over `file://` too). Inside a frame
+(`debug-smoke.html`, `debug.html`, an embedded copy) it changes the language in place, as it
+did before the pages existed, and there the About block, written in one language, steps aside.
 
 For whoever does translate the page (a browser in another language gets it in English), the
 game names carry `translate="no"` (`NT` in `js/app.js`): charms, the nail, spells, Nail Arts,

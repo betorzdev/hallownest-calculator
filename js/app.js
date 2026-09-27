@@ -585,6 +585,27 @@
     aboutLinks = true;
     for (const a of el.about.querySelectorAll('a[data-page]')) a.setAttribute('href', a.getAttribute('href').replace(/\.\/$/, '') + 'index.html');
   }
+  /* The same page in the other language (tools/pages.js writes each page in both, and its
+     hreflang links say where): choosing a language goes there, carrying the build and the
+     screen, so the About block, the title and the address are in that language, the one a
+     search engine indexes. The links are absolute; their path from the site's root (the
+     canonical's, taken up by <base>) is resolved against this copy, so it works the same over
+     file://, where a folder needs its index.html. Inside a frame (debug-smoke.html, debug.html,
+     an embedded copy) the language changes in place, as it always did. */
+  function langPage(lang) {
+    try {
+      if (window.top !== window.self) return null;
+      const alt = document.querySelector(`link[rel="alternate"][hreflang="${lang}"]`);
+      const canon = document.querySelector('link[rel="canonical"]');
+      if (!alt || !canon) return null;
+      const base = document.querySelector('base');
+      const root = new URL(base ? base.getAttribute('href') : './', canon.href).href;
+      if (alt.href.indexOf(root) !== 0) return null;
+      const path = alt.href.slice(root.length) + (location.protocol === 'file:' ? 'index.html' : '');
+      return new URL(path || './', document.baseURI).href + '#' + C.encode(App.state) + '&view=' + prefs.view;
+    } catch (e) { return null; }
+  }
+
   /* Share links to the language's home, not to the page you're on: a shared build opens on
      Charms, as it always has, wherever it was copied from. */
   function shareBase() {
@@ -969,10 +990,12 @@
     lang(node) {
       const next = node.dataset.value;
       if (next === prefs.lang) return;
+      const page = langPage(next);
       prefs.lang = I.setLang(next);
       prefs.langChosen = true;
       track('lang-' + prefs.lang);
       savePrefs();
+      if (page) { persist(); location.href = page; return; }
       rebuildNF();
       persist();
       recompute();
