@@ -441,9 +441,6 @@
     vb = { x: cx - (cx - vb.x) * (w / vb.w), y: cy - (cy - vb.y) * (h / vb.h), w, h };
     applyView();
   }
-  // Is a map point in view? And the whole map again (js/app-knight.js, before a walk that starts or ends out of view).
-  const sees = (p) => !!vb && p[0] >= vb.x && p[0] <= vb.x + vb.w && -p[1] >= vb.y && -p[1] <= vb.y + vb.h;
-  const fit = () => { vb = null; applyView(); };
   // A point on screen → the map's units.
   function toMap(clientX, clientY) {
     const r = svg().getBoundingClientRect();
@@ -760,5 +757,5 @@
     },
   });
 
-  Object.assign(App, { renderPgMap, pgMapAfterPaint: afterPaint, pgmBenchPoint: benchPoint, pgmRoomPoint: roomPoint, pgmSees: sees, pgmFit: fit });
+  Object.assign(App, { renderPgMap, pgMapAfterPaint: afterPaint, pgmBenchPoint: benchPoint, pgmRoomPoint: roomPoint });
 })();

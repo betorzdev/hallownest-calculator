@@ -165,17 +165,17 @@
   }
   /* From the old bench to the new one, room by room: the bench's point, the rooms' centres, the
      other bench's point, at a steady pace (the whole way in 2 to 8 s), stepping his frames at
-     --dur-step and turning where the way turns. The whole map first if either end is out of
-     view. The pin is repainted with every render, so it's looked up again at every step; it's
-     already painted at the new bench, where the walk ends. No path (Godhome, the White Palace:
-     entered by dream), or reduced motion: he's simply there. Seen once per bench (prefs.walked). */
+     --dur-step and turning where the way turns. The view stays as you have it (never zoomed or
+     moved for him): out of it, he walks unseen. The pin is repainted with every render, so it's
+     looked up again at every step; it's already painted at the new bench, where the walk ends.
+     No path (Godhome, the White Palace: entered by dream), or reduced motion: he's simply there.
+     Seen once per bench (prefs.walked). */
   function mapWalk(from, to) {
     walking = { from, to };
     const done = () => { walking = null; prefs.walked = to; savePrefs(); const pin = youPin(); if (pin) frame(pin, -1); };
     const path = doorsPath(from, to);
     const pts = path ? path.map((sc, i) => (i === 0 ? App.pgmBenchPoint(from) : i === path.length - 1 ? App.pgmBenchPoint(to) : App.pgmRoomPoint(sc))).filter(Boolean) : null;
     if (!pts || pts.length < 2 || still.matches) { done(); return; }
-    if (!App.pgmSees(pts[0]) || !App.pgmSees(pts[pts.length - 1])) App.pgmFit();
     const segs = []; let len = 0;
     for (let i = 1; i < pts.length; i++) { const d = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); segs.push(d); len += d; }
     const dur = Math.min(8000, Math.max(2000, (len / 4) * 1000)), t0 = performance.now();

@@ -78,7 +78,7 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   bench (drawn by `js/app-map.js`, with your bench's layer); when a save moves your bench the
   pin walks from the old one to the new one room by room, through the game's doors (`DOORS` in
   `js/rooms.js`, from the randomizer's `transitions.json`): the fewest rooms, at a steady pace,
-  the whole way in 2 to 8 s, the whole map first if either bench is out of view; it plays when
+  the whole way in 2 to 8 s, in the view you have (the map never zooms or moves for him); it plays when
   the save arrives with the Map in view (60% of it, and it lets go under 10%: no flicker at the
   edge), or the next time you open it (once per bench, `walked` in the preferences), and not at
   all where no door leads (Godhome and the White Palace are entered by dream).
