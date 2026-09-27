@@ -1,28 +1,28 @@
 <!DOCTYPE html>
 <!-- Generated from index.html by tools/pages.js (npm run pages): do not edit by hand. -->
-<html lang="es">
+<html lang="en" data-view="home">
 <head>
 <meta charset="utf-8">
 <base href="../">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Tu partida de Hollow Knight en vivo, el 112 % y los amuletos · Calculadora de Hallownest</title>
-<meta name="description" content="Importa tu partida de Hollow Knight y mira qué te falta para el 112 %, el mapa del juego con lo que queda y el Diario del Cazador, al día en cada banco. Y una calculadora de amuletos.">
+<title>Hollow Knight save analyzer: what's missing for 112% · Hallownest Calculator</title>
+<meta name="description" content="Drop your Hollow Knight save and see what's missing for 112%: every grub, mask, vessel, charm and boss, on the game's map. Where the save file is on Windows, macOS and Linux.">
 <meta name="google-site-verification" content="gMOOsULKOT9I0m85tW4NHufweIQ18ptFx7TnwCWC4AM">
-<link rel="canonical" href="https://betorzdev.github.io/hallownest-calculator/es/">
-<link rel="alternate" hreflang="en" href="https://betorzdev.github.io/hallownest-calculator/">
-<link rel="alternate" hreflang="es" href="https://betorzdev.github.io/hallownest-calculator/es/">
-<link rel="alternate" hreflang="x-default" href="https://betorzdev.github.io/hallownest-calculator/">
+<link rel="canonical" href="https://betorzdev.github.io/hallownest-calculator/save-analyzer/">
+<link rel="alternate" hreflang="en" href="https://betorzdev.github.io/hallownest-calculator/save-analyzer/">
+<link rel="alternate" hreflang="es" href="https://betorzdev.github.io/hallownest-calculator/es/analizador-de-partida/">
+<link rel="alternate" hreflang="x-default" href="https://betorzdev.github.io/hallownest-calculator/save-analyzer/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Hallownest Calculator">
-<meta property="og:title" content="Tu partida de Hollow Knight en vivo, el 112 % y los amuletos · Calculadora de Hallownest">
-<meta property="og:description" content="Importa tu partida de Hollow Knight y mira qué te falta para el 112 %, el mapa del juego con lo que queda y el Diario del Cazador, al día en cada banco. Y una calculadora de amuletos.">
-<meta property="og:url" content="https://betorzdev.github.io/hallownest-calculator/es/">
+<meta property="og:title" content="Hollow Knight save analyzer: what's missing for 112% · Hallownest Calculator">
+<meta property="og:description" content="Drop your Hollow Knight save and see what's missing for 112%: every grub, mask, vessel, charm and boss, on the game's map. Where the save file is on Windows, macOS and Linux.">
+<meta property="og:url" content="https://betorzdev.github.io/hallownest-calculator/save-analyzer/">
 <meta property="og:image" content="https://betorzdev.github.io/hallownest-calculator/assets/site/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="La pantalla Partida: descansas en Ciudad de Lágrimas, la finalización, el tiempo jugado y lo encontrado desde el último banco">
-<meta property="og:locale" content="es_ES">
-<meta property="og:locale:alternate" content="en_US">
+<meta property="og:image:alt" content="The Your game screen: resting at City of Tears, the completion, the time played, and what was found since the last bench">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="es_ES">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
 {
@@ -54,23 +54,51 @@
 {
   "@context": "https://schema.org",
   "@type": "FAQPage",
-  "inLanguage": "es",
+  "inLanguage": "en",
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "¿Es gratis? ¿Hace falta cuenta?",
+      "name": "Why am I stuck at 111%?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Es gratis, sin cuenta y sin anuncios. Tu partida no sale de tu navegador: se lee ahí y se guarda ahí."
+        "text": "It's almost always one thing: a fragile charm left with the Divine, a Vessel Fragment, a warrior dream or the last pantheon. The analyzer tells you which."
       }
     },
     {
       "@type": "Question",
-      "name": "¿Funciona con la versión de consola?",
+      "name": "Does it change my save?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Leer la partida necesita el archivo, y solo el juego de ordenador (Windows, macOS, Linux) lo deja a mano. En consola puedes marcar tu progreso a mano."
+        "text": "No. It only reads it: it never writes to the file and never uploads it anywhere."
       }
+    },
+    {
+      "@type": "Question",
+      "name": "What about consoles?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Consoles don't let you take the file out. You can tick your progress by hand on the 112% checklist."
+      }
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Hallownest Calculator",
+      "item": "https://betorzdev.github.io/hallownest-calculator/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Save analyzer",
+      "item": "https://betorzdev.github.io/hallownest-calculator/save-analyzer/"
     }
   ]
 }
@@ -128,27 +156,29 @@
       <section class="saves" id="saves" aria-label="Saves" hidden></section>
     </main>
     <!-- about -->
-    <section class="about" id="about" lang="es" aria-labelledby="about-h">
-      <h1 id="about-h">Tu partida de Hollow Knight, en vivo</h1>
-      <p>La Calculadora de Hallownest lee el archivo de tu partida de Hollow Knight y te enseña lo que el juego no te dice: qué te falta para el 112 % cosa por cosa, dónde está cada larva, fragmento de máscara y fragmento de vasija que no tienes, en el mapa del propio juego, y cuántas entradas del Diario del Cazador te quedan. En Chrome y Edge sigue el archivo mientras juegas y se pone al día cada vez que descansas en un banco.</p>
-      <p>Y sin partida también sirve: la calculadora de amuletos te dice cómo cambia cada estadística del Caballero con cada amuleto (daño del aguijón, golpes por jefe, alma, curación, hechizos), y el simulador de combate lleva tu build contra 180 enemigos y jefes, el Hogar de Dioses incluido. Todos los números salen de la wiki, con el redondeo del juego, y todos los nombres, de su traducción oficial.</p>
+    <section class="about" id="about" lang="en" aria-labelledby="about-h">
+      <h1 id="about-h">Hollow Knight save analyzer: what's missing for 112%</h1>
+      <p>Stuck at 111%? Drop your save file here (<code>user1.dat</code> to <code>user4.dat</code>, one per slot) and the analyzer tells you what counts and what doesn't: charms, bosses, warrior dreams, the Colosseum of Fools' trials, equipment, spells, masks, vessels, the nail, the Dreamers, the Grimm Troupe and the pantheons. And beyond the 112%, every grub, Mask Shard, Vessel Fragment, Pale Ore and charm notch you have left, on the game's map.</p>
+      <p>The file is on <strong>Windows</strong>: <code>%USERPROFILE%\AppData\LocalLow\Team Cherry\Hollow Knight</code>; on <strong>macOS</strong>: <code>~/Library/Application Support/unity.Team Cherry.Hollow Knight</code>; on <strong>Linux</strong>: <code>~/.config/unity3d/Team Cherry/Hollow Knight</code>. With Steam Cloud that folder already holds the synced copy. In Chrome and Edge the site can follow the file: every time the game saves (resting at a bench or quitting), the page catches up on its own.</p>
       <div class="about-faq">
-        <h2>Preguntas frecuentes</h2>
-        <h3>¿Es gratis? ¿Hace falta cuenta?</h3>
-        <p>Es gratis, sin cuenta y sin anuncios. Tu partida no sale de tu navegador: se lee ahí y se guarda ahí.</p>
-        <h3>¿Funciona con la versión de consola?</h3>
-        <p>Leer la partida necesita el archivo, y solo el juego de ordenador (Windows, macOS, Linux) lo deja a mano. En consola puedes marcar tu progreso a mano.</p>
+        <h2>Questions</h2>
+        <h3>Why am I stuck at 111%?</h3>
+        <p>It's almost always one thing: a fragile charm left with the Divine, a Vessel Fragment, a warrior dream or the last pantheon. The analyzer tells you which.</p>
+        <h3>Does it change my save?</h3>
+        <p>No. It only reads it: it never writes to the file and never uploads it anywhere.</p>
+        <h3>What about consoles?</h3>
+        <p>Consoles don't let you take the file out. You can tick your progress by hand on the 112% checklist.</p>
       </div>
-      <nav class="about-more" aria-label="Más en el sitio">
-        <h2>Más en el sitio</h2>
+      <nav class="about-more" aria-label="More on the site">
+        <h2>More on the site</h2>
         <ul>
-          <li><a href="es/analizador-de-partida/" data-page>Analizador de partida</a></li>
-          <li><a href="es/checklist-112/" data-page>Checklist del 112 %</a></li>
-          <li><a href="es/calculadora-de-amuletos/" data-page>Calculadora de amuletos</a></li>
-          <li><a href="es/mapa/" data-page>Mapa</a></li>
-          <li><a href="es/diario-del-cazador/" data-page>Diario del Cazador</a></li>
-          <li><a href="es/hogar-de-dioses/" data-page>Hogar de Dioses</a></li>
-          <li><a href="es/calculadora-de-danio/" data-page>Calculadora de daño</a></li>
+          <li><a href="./" data-page>Home</a></li>
+          <li><a href="112-checklist/" data-page>112% checklist</a></li>
+          <li><a href="charm-calculator/" data-page>Charm calculator</a></li>
+          <li><a href="map/" data-page>Map</a></li>
+          <li><a href="hunters-journal/" data-page>Hunter's Journal</a></li>
+          <li><a href="godhome/" data-page>Godhome</a></li>
+          <li><a href="boss-damage-calculator/" data-page>Boss damage calculator</a></li>
         </ul>
       </nav>
     </section>

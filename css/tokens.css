@@ -225,6 +225,28 @@
   --sp-12: 48px;
   --sp-16: 64px;
 
+  /* Tracking: one step per use, not per element (27-sep, design/11-components.html). The display
+     face at title size; the sans's small-caps labels (level 2); Cinzel in small capitals, on
+     buttons, tabs and section titles; and the wide super-title over an area's name. Figures go at 0. */
+  --track-title: 0.04em;
+  --track-label: 0.08em;
+  --track-caps: 0.12em;
+  --track-wide: 0.2em;
+
+  /* Control heights: two with a mouse, and both at 44 px with a finger (the touch minimum of
+     Apple's and Google's guides), so the page stays dense on a desk and every control can be hit
+     on a phone. The game's pieces (charms, notches, the spell dots) aren't controls: their size
+     comes from the sprite. */
+  --ctl-sm: 32px;
+  --ctl: 40px;
+
+  /* The drawn interface icons (chevron, ×, back, undo, tick): 12 px inside text, 16 px alone
+     in a button, and the same stroke on all of them whatever their viewBox (css: .ic). */
+  --icon-sm: 12px;
+  --icon: 16px;
+  --icon-stroke: 1.6px;
+  --diamond: 5px;           /* the game's small hollow diamond, in front of a tag or a notice's tag */
+
   /* Motion: ~250 ms to respond to the finger, ~400 ms for a fade, no bounce.
      The game doesn't have a single transition with overshoot. */
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
@@ -282,8 +304,10 @@
   --tint-progress: #d8ffcc;   /* Fog Canyon and Queen's Gardens: Progress, the whole kingdom's count */
 
   /* The sheet is the game's Inventory screen: almost pure black, like the arena's scene, and
-     its spells and arts as plates with their light behind. The light is white, because soul
-     is white; what you haven't learnt stays dark, like a Hall statue without its own. */
+     its spells and arts as plates. The light behind a plate is white, because soul is white, and
+     it goes only where you look (the plate under the pointer, and a moment on the one that just
+     changed; round 6): at rest, what you have shows in colour and what you don't in --missing-art.
+     --halo-plate-off is the dimmer light behind one you don't have, under the pointer. */
   --inv-bg: var(--scene-bg);
   --halo-plate: radial-gradient(closest-side, rgba(236, 236, 236, 0.2), rgba(236, 236, 236, 0.06) 58%, transparent);
   --halo-plate-off: radial-gradient(closest-side, rgba(150, 164, 196, 0.2), transparent 78%);
@@ -336,9 +360,9 @@
   --tablet-empty-ring-in: #262626;
   --tablet-empty-ring: #3a3a3a;
 
-  /* Your game's Hunter's Journal. What you haven't encountered is shadowed: the list's medallion,
-     grey and dim, and the page's portrait, a silhouette that barely separates from the black. */
-  --hj-unseen-medal: grayscale(1) brightness(0.42);
+  /* Your game's Hunter's Journal. What you haven't encountered is shadowed: the list's medallion
+     takes --missing-art (below), and the page's portrait is a silhouette that barely separates
+     from the black. */
   --hj-unseen-art: brightness(0) invert(0.2);
   /* The open book: the spine is a rule in the tint, and the light of the two pages rises towards it.
      The undeciphered notes, blurred ink. */
@@ -346,10 +370,11 @@
   --hj-leaf: color-mix(in oklab, var(--tint-journal) 7%, transparent);
   --hj-sealed: blur(2.5px);
 
-  /* The charms you haven't found in your game: colourless and half-lit, like the Journal
-     medallions you haven't seen. Each one's relief can still be read; a flat silhouette
-     made them all look the same. */
-  --charm-missing-art: grayscale(1) brightness(0.38);
+  /* What you don't have yet, everywhere (one value since round 5, 27-sep): the charm you haven't
+     found, the Journal entry you haven't encountered, the Hall symbol you haven't won, the map
+     layer that's off. Colourless and half-lit: each one's relief can still be read, where a flat
+     silhouette made them all look the same. */
+  --missing-art: grayscale(1) brightness(0.4);
 
   /* The charm screen (design/02-hollow-knight.md §5 and §7.7).
      The equipped charm, with a soft light behind it, like the game, and
@@ -358,4 +383,7 @@
   --halo-charm-hot: radial-gradient(closest-side, color-mix(in oklab, var(--accent) 42%, transparent), color-mix(in oklab, var(--accent) 14%, transparent) 62%, transparent);
 
   color-scheme: dark;
+}
+@media (pointer: coarse) {
+  :root { --ctl-sm: 44px; --ctl: 44px; }
 }

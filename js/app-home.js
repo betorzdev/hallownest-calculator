@@ -122,11 +122,11 @@
       const m = describe(c);
       return `<li class="hm-item"><span class="hm-item-art">${m.art ? `<img src="${m.art}" alt="" loading="lazy">` : ''}</span>
         <span class="hm-item-name"${NT}>${esc(m.name)}${m.sub ? `<small>${esc(m.sub)}</small>` : ''}</span>
-        ${m.value ? `<span class="hm-item-v">${esc(m.value)}</span>` : m.note ? `<span class="hm-item-k">${esc(m.note)}</span>` : ''}</li>`;
+        ${m.value ? `<span class="hm-item-v">${esc(m.value)}</span>` : m.note ? `<span class="tag hm-item-k">${esc(m.note)}</span>` : ''}</li>`;
     }).join('');
     const when = g.saved && g.list.length ? `<span class="block-note">${esc(t('homeSinceNote', { when: ago(g.saved) }))}</span>` : '';
     return `<section class="hm-block"><h3 class="block-head">${esc(t('homeSince'))}${when}</h3>
-      ${rows ? `<ul class="hm-list">${rows}</ul>` : `<p class="hm-empty">${esc(t('homeSinceNone'))}</p>`}</section>`;
+      ${rows ? `<ul class="hm-list">${rows}</ul>` : App.emptyHtml(esc(t('homeSinceNone')))}</section>`;
   }
 
   function shadeBlock() {
@@ -135,12 +135,12 @@
     return `<section class="hm-block"><h3 class="block-head">${esc(t('shadeTag'))}</h3>
       ${sh ? `<div class="hm-shade"><img src="${D.art('hud', 'knight')}" alt=""><p>${esc(t('shadeBanner', { area: area || '?', geo: num(sh.geo) }))}</p></div>
         <button type="button" class="text-btn" data-act="view" data-value="map">${esc(t('homeOnMap'))}</button>`
-        : `<p class="hm-empty">${esc(t(App.progress.bench ? 'homeNoShade' : 'homeShadeUnknown'))}</p>`}</section>`;
+        : App.emptyHtml(esc(t(App.progress.bench ? 'homeNoShade' : 'homeShadeUnknown')))}</section>`;
   }
 
   function nearBlock() {
     const area = R.areaOf(App.progress.bench);
-    if (!area) return `<section class="hm-block"><h3 class="block-head">${esc(t('homeNear'))}</h3><p class="hm-empty">${esc(t('homeNearUnknown'))}</p></section>`;
+    if (!area) return `<section class="hm-block"><h3 class="block-head">${esc(t('homeNear'))}</h3>${App.emptyHtml(esc(t('homeNearUnknown')))}</section>`;
     const found = new Set(App.progress.found);
     const left = CO.ITEMS.filter((it) => R.areaOf(it.scene) === area && !found.has(it.id));
     const cells = left.slice(0, 12).map((it) => {
@@ -148,7 +148,7 @@
       return `<span title="${esc(pick(k))}"><img src="${D.art(k.art[0], k.art[1])}" alt="${esc(pick(k))}" loading="lazy">${esc(placeName(it.scene))}</span>`;
     }).join('');
     return `<section class="hm-block"><h3 class="block-head">${esc(t('homeNear'))}<span class="block-note"${NT}>${esc(pick(R.AREAS[area]))} · ${num(left.length)}</span></h3>
-      ${left.length ? `<div class="hm-near">${cells}</div>` : `<p class="hm-empty">${esc(t('homeNearNone'))}</p>`}
+      ${left.length ? `<div class="hm-near">${cells}</div>` : App.emptyHtml(esc(t('homeNearNone')))}
       <button type="button" class="text-btn" data-act="view" data-value="map">${esc(t('homeOnMap'))}</button></section>`;
   }
 
@@ -196,14 +196,14 @@
     const gained = DEMO.gained.map((c) => {
       const m = describe(c);
       return `<li class="hm-item"><span class="hm-item-art"><img src="${m.art}" alt=""></span>
-        <span class="hm-item-name"${NT}>${esc(m.name)}</span>${m.note ? `<span class="hm-item-k">${esc(m.note)}</span>` : ''}</li>`;
+        <span class="hm-item-name"${NT}>${esc(m.name)}</span>${m.note ? `<span class="tag hm-item-k">${esc(m.note)}</span>` : ''}</li>`;
     }).join('');
     const feats = FEATS.map((f) => `<button type="button" class="hmI-feat" data-act="view" data-value="${f.view}">
         <img src="${f.art}" alt=""><b>${esc(t(f.title))}</b><span>${esc(t(f.text))}</span></button>`).join('');
     return `<div class="hmI">
       <div class="hmI-demo" aria-hidden="true" inert>
         <div class="hmC-hero" style="${areaVars(DEMO.area)}">
-          <span class="hmI-tag">${esc(t('homeExample'))}</span>
+          <span class="tag hmI-tag">${esc(t('homeExample'))}</span>
           <span class="hmC-sup">${esc(t('homeRestingAt'))}</span><h3 class="hmC-area"${NT}>${esc(pick(R.AREAS[DEMO.area]))}</h3>
           ${BENCH}
           <div class="hm-figs hmC-figs">

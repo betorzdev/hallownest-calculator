@@ -37,7 +37,8 @@ try {
   }
 } catch (e) { /* no storage */ }
 const f = document.createElement('iframe');
-f.src = 'index.html#v=1&nail=4&masks=9&vessels=3&notches=11&spells=222&arts=111&charms=ustrength,quickslash,fury'
+// &page=map/ or es/mapa/: one of the pages of tools/pages.js instead of the root.
+f.src = (q.get('page') || '') + 'index.html#v=1&nail=4&masks=9&vessels=3&notches=11&spells=222&arts=111&charms=ustrength,quickslash,fury'
   + (view !== 'charms' ? '&view=' + view : '');
 f.style.cssText = 'width:390px;height:700px;border:0';
 f.addEventListener('load', () => {

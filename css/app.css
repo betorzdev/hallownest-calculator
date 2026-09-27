@@ -36,6 +36,9 @@ img { display: block; max-width: 100%; }
 button { font-family: inherit; color: inherit; cursor: pointer; border: 0; background: none; }
 button:disabled { cursor: default; opacity: 0.45; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* A screen's title takes the focus on opening (for screen readers, tabindex="-1"): it isn't a
+   control, so it shows no ring. */
+:is(h1, h2, h3)[tabindex="-1"]:focus-visible { outline: none; }
 /* The screen bar, stuck at the top, mustn't cover what has just been focused. */
 html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 
@@ -74,7 +77,7 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 .sheet-title h2 {
   font-family: var(--font-display);
   text-transform: uppercase;
-  letter-spacing: 0.16em;
+  letter-spacing: var(--track-caps);
   color: var(--ink-2);
   font-weight: 600;
 }
@@ -82,7 +85,7 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 .stat-detail h4, .charm-detail h3, .banner-tag {
   font-family: var(--font-num);
   text-transform: uppercase;
-  letter-spacing: 0.09em;
+  letter-spacing: var(--track-label);
   font-size: var(--fs-2xs);
   font-weight: 600;
   color: var(--label);
@@ -134,68 +137,207 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
   }
 }
 .sec-title {
-  font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.14em;
+  font-family: var(--font-display); text-transform: uppercase; letter-spacing: var(--track-caps);
   font-weight: 600; font-size: var(--fs-lg); line-height: 1.2; color: var(--tint);
 }
 
+/* The interface icons (tokens.css): the width sets the size, the height follows the viewBox, and
+   the stroke is measured on the screen, not in the drawing's units. */
+.ic { flex: none; width: var(--icon-sm); height: auto; stroke-width: var(--icon-stroke); }
+.ic * { vector-effect: non-scaling-stroke; }
+.ic.is-lg { width: var(--icon); }
 .chev { transition: transform var(--dur) var(--ease); }
 .chev.up { transform: rotate(180deg); }
 
 /* ── Controls ────────────────────────────────────────────────────────── */
-/* The buttons are the game's menu items, like the save slots' (.save-act): the menu's capitals,
-   no box, and on hover or focus the menu's two pointers either side (the focus mark, so no
-   ring). The pointers are the fleur drawn in FLEUR (js/app.js), here as a mask: CSS can't reach
-   the markup, and a data: URI works over file:// (like --notch-sprite). The primary one, the
-   action the screen leads to, in bone with a soft light behind it; one that throws something
-   away (is-danger) turns red under the pointer, like Clear Save.
-   At rest a button still has to read as one, on a phone above all, where there's no hover to
-   show the pointers: a hairline above and below that fades out at both ends, like the rules the
-   game sets around its titles, in the accent because it's what responds to the finger. Faint on
-   the others, whole on the primary; under the pointer, whole on all of them. */
-@property --btn-rule { syntax: '<color>'; inherits: false; initial-value: transparent; }
-:root { --fleur: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 20'%3E%3Cpath d='M1 10 C4.5 9.4 7.2 7.2 8.6 2.4 C9 6.4 10 8.8 11.6 10 C10 11.2 9 13.6 8.6 17.6 C7.2 12.8 4.5 10.6 1 10 Z'/%3E%3Ccircle cx='2.4' cy='10' r='1.3'/%3E%3C/svg%3E"); }
+/* Four kinds of button, by job (design/11-components.md, round 2, chosen on 27-sep-2026). The
+   first rule for all four: it has to read as a button at rest, with no mouse over it, on a phone
+   and the first time. Accent, because it's what responds to the finger.
+   · Menu (.btn): a screen's or a dialog's actions. A thin frame with the panels' corner brackets
+     in the accent; the primary one (.btn-primary, what the screen leads to) with longer brackets
+     and a veil of the accent; one that throws something away (.is-danger), in red.
+   · Text (.text-btn): an action inside a line or a list. Underlined with the accent's line.
+   · Icon (.icon-btn): a glyph alone (close, help, − +), in a thin ring like the notches' and the
+     medals' wells.
+   · Disclosure (.disc-btn): opens something below. The label on the left and the chevron in the
+     same ring on the right.
+   The screens copied from the game (the Hall's tablet, the save slots, the header's save
+   selector) keep the game's own unboxed controls in their ink: there a box looked pasted on. */
 .btn {
   position: relative; display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-2);
-  min-height: 40px; padding: var(--sp-1) var(--sp-4); border: 0;
-  font-family: var(--font-display); font-weight: 600; font-size: var(--fs-xs); letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--label); transition: color var(--dur) var(--ease), --btn-rule var(--dur) var(--ease);
-  --btn-rule: color-mix(in oklab, var(--accent-line) 55%, transparent);
-  --btn-fade: linear-gradient(90deg, transparent, var(--btn-rule) 18%, var(--btn-rule) 82%, transparent);
-  background: var(--btn-fade) top / 100% 1px no-repeat, var(--btn-fade) bottom / 100% 1px no-repeat;
+  min-height: var(--ctl); padding: var(--sp-1) var(--sp-4); border: 1px solid var(--line-ctl); background: none;
+  font-family: var(--font-display); font-weight: 600; font-size: var(--fs-xs); letter-spacing: var(--track-caps); text-transform: uppercase;
+  color: var(--ink);
+  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+  --bk: var(--accent-line); --bk-len: var(--sp-2);
 }
-.btn:is(:hover, :focus-visible):not(:disabled) { --btn-rule: var(--accent-line); }
-.btn:disabled { --btn-rule: var(--line-ctl); }
-.btn::before, .btn::after {
-  content: ''; position: absolute; top: 50%; width: var(--sp-3); height: calc(var(--sp-4) + var(--sp-1));
-  background: currentColor; -webkit-mask: var(--fleur) center / contain no-repeat; mask: var(--fleur) center / contain no-repeat;
-  opacity: 0; transform: translateY(-50%) scaleX(0.3); pointer-events: none;
-  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+/* The corner brackets, drawn over the frame's four corners. */
+.btn::before {
+  content: ''; position: absolute; inset: -1px; pointer-events: none;
+  --bk-h: linear-gradient(var(--bk), var(--bk));
+  background:
+    var(--bk-h) top left / var(--bk-len) 1px no-repeat, var(--bk-h) top left / 1px var(--bk-len) no-repeat,
+    var(--bk-h) top right / var(--bk-len) 1px no-repeat, var(--bk-h) top right / 1px var(--bk-len) no-repeat,
+    var(--bk-h) bottom left / var(--bk-len) 1px no-repeat, var(--bk-h) bottom left / 1px var(--bk-len) no-repeat,
+    var(--bk-h) bottom right / var(--bk-len) 1px no-repeat, var(--bk-h) bottom right / 1px var(--bk-len) no-repeat;
 }
-.btn::before { left: calc(var(--sp-1) * -1); }
-.btn::after { right: calc(var(--sp-1) * -1); transform: translateY(-50%) scaleX(-0.3); }
-.btn:is(:hover, :focus-visible):not(:disabled) { color: var(--ink-strong); }
-.btn:is(:hover, :focus-visible):not(:disabled)::before { opacity: 1; transform: translateY(-50%) scaleX(1); }
-.btn:is(:hover, :focus-visible):not(:disabled)::after { opacity: 1; transform: translateY(-50%) scaleX(-1); }
-.btn:focus-visible { outline: none; }
-.btn-primary {
-  color: var(--ink-strong); --btn-rule: var(--accent-line);
-  background: var(--btn-fade) top / 100% 1px no-repeat, var(--btn-fade) bottom / 100% 1px no-repeat,
-    radial-gradient(closest-side, color-mix(in oklab, var(--accent) 12%, transparent), transparent);
+.btn:is(:hover, :focus-visible):not(:disabled) { color: var(--ink-strong); border-color: var(--accent-line); background-color: var(--accent-soft); }
+.btn-primary { color: var(--ink-strong); border-color: var(--accent-line); background-color: color-mix(in oklab, var(--accent) 10%, transparent); --bk: var(--accent); --bk-len: var(--sp-3); }
+.btn-primary:is(:hover, :focus-visible):not(:disabled) { background-color: color-mix(in oklab, var(--accent) 18%, transparent); }
+.btn.is-danger { color: var(--bad); --bk: var(--bad); }
+.btn.is-danger:is(:hover, :focus-visible):not(:disabled) { color: var(--bad); border-color: var(--bad); background-color: var(--bad-soft); }
+.btn:disabled { color: var(--muted); background-color: transparent; --bk: var(--line-ctl); cursor: default; }
+/* Text: underlined with the accent's line at rest, whole accent under the pointer. The underline
+   is the text's own decoration, so an icon in front (✕, ↶, ←) isn't underlined. */
+.text-btn {
+  display: inline-flex; align-items: center; gap: var(--sp-1); min-height: var(--ctl-sm); padding: 0;
+  font-family: var(--font-body); font-size: var(--fs-md); color: var(--ink-2);
+  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px;
+  text-decoration-color: color-mix(in oklab, var(--accent-line) 75%, transparent);
+  transition: color var(--dur) var(--ease), text-decoration-color var(--dur) var(--ease);
 }
-.btn.is-danger:is(:hover, :focus-visible):not(:disabled) { color: var(--bad); }
+.text-btn:is(:hover, :focus-visible):not(:disabled) { color: var(--accent); text-decoration-color: var(--accent); }
+.text-btn:disabled { color: var(--muted); text-decoration-color: transparent; cursor: default; }
+/* "Mark in bulk", in the Hall and in the Journal: a list's secondary tool, so a text button, with
+   the chevron that says it opens below; open, in bone on the accent's whole line. */
+.bulk-toggle { gap: var(--sp-2); font-size: var(--fs-sm); }
+.bulk-toggle[aria-expanded="true"] { color: var(--ink-strong); text-decoration-color: var(--accent); }
+/* Icon: the button takes the control's height, so it's easy to hit; the ring inside it is what
+   shows, as the notches' and the medals' wells. Under the pointer it fills with the accent. */
+.icon-btn {
+  position: relative; display: inline-grid; place-items: center; flex: none; width: var(--ctl-sm); height: var(--ctl-sm); padding: 0;
+  font-family: var(--font-num); font-size: var(--fs-md); line-height: 1; color: var(--ink-2);
+  transition: color var(--dur) var(--ease);
+}
+.icon-btn::before {
+  content: ''; position: absolute; top: 50%; left: 50%; width: var(--ring); height: var(--ring); transform: translate(-50%, -50%);
+  border: 1px solid color-mix(in oklab, var(--accent-line) 70%, transparent); border-radius: 50%; pointer-events: none;
+  transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+  --ring: calc(var(--sp-6) + var(--sp-half));
+}
+.icon-btn:is(:hover, :focus-visible):not(:disabled) { color: var(--ink-strong); }
+.icon-btn:is(:hover, :focus-visible):not(:disabled)::before { border-color: var(--accent); background-color: var(--accent-soft); }
+.icon-btn:disabled { color: var(--line-ctl); cursor: default; }
+.icon-btn:disabled::before { border-color: var(--line-ctl); }
+/* Disclosure: a row between two rules, the label on the left and the chevron in the icons' ring on
+   the right. Open, the ring stays lit. .is-pick is the picker's form: what's chosen, in the body
+   face, and what the button does next to the ring. */
+.disc-btn {
+  display: flex; align-items: center; gap: var(--sp-3); width: 100%; min-height: var(--ctl); padding: var(--sp-1) 0; text-align: left;
+  border-top: 1px solid var(--line-ctl); border-bottom: 1px solid var(--line-ctl);
+  font-family: var(--font-display); font-weight: 600; font-size: var(--fs-xs); letter-spacing: var(--track-caps); text-transform: uppercase;
+  color: var(--ink); transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.disc-ring {
+  display: inline-grid; place-items: center; flex: none; margin-left: auto;
+  width: calc(var(--sp-6) + var(--sp-half)); height: calc(var(--sp-6) + var(--sp-half));
+  border: 1px solid var(--accent-line); border-radius: 50%; color: var(--accent-ink);
+  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+.disc-btn:is(:hover, :focus-visible) { color: var(--ink-strong); }
+.disc-btn:is(:hover, :focus-visible, [aria-expanded="true"]) .disc-ring { color: var(--ink-strong); border-color: var(--accent); background-color: var(--accent-soft); }
+.disc-btn.is-pick { border-top: 0; font-family: var(--font-body); font-weight: 400; font-size: var(--fs-md); letter-spacing: 0; text-transform: none; }
+.disc-btn.is-pick .disc-ring { margin-left: 0; }
+/* On/off (.check): a square box on the accent's line; on, filled with the accent and a dark tick.
+   Two forms, one look: a <label class="check"> round a native checkbox (the tick is its
+   background), or a button with role="checkbox"/"switch" carrying a .check-box (the tick is the
+   .ic inside; the Journal's row picks are this, with no label). */
+.check {
+  display: inline-flex; align-items: center; gap: var(--sp-2); min-height: var(--ctl-sm); padding: 0;
+  font-family: var(--font-body); font-size: var(--fs-sm); color: var(--ink-2); cursor: pointer;
+  transition: color var(--dur) var(--ease);
+}
+.check:hover { color: var(--ink-strong); }
+.check-box, .check input[type="checkbox"] {
+  flex: none; display: grid; place-items: center; width: var(--icon); height: var(--icon); margin: 0;
+  border: 1px solid color-mix(in oklab, var(--accent-line) 80%, transparent); border-radius: 0; background: var(--card) center / 10px no-repeat;
+  color: var(--scene-bg); -webkit-appearance: none; appearance: none; cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease);
+}
+:is(.check, .hj-pick):hover :is(.check-box, input[type="checkbox"]) { border-color: var(--accent); }
+:is([aria-checked="true"], [aria-pressed="true"]) > .check-box, .check input:checked { background-color: var(--accent); border-color: var(--accent); }
+.check input:checked { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 10' fill='none' stroke='%2304060b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1.5 5.2 L4.6 8.2 L10.5 1.8'/%3E%3C/svg%3E"); }
+.check input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.check-box > svg { opacity: 0; }
+:is([aria-checked="true"], [aria-pressed="true"]) > .check-box > svg { opacity: 1; }
+/* Search (.search): a sunken well with its rule and the lens in front, the well of the steppers'
+   number, so it's plain that it takes typing. The rule takes the accent under the pointer and,
+   doubled, while typing (the focus mark: the input itself draws no ring). */
+.search {
+  display: flex; align-items: center; gap: var(--sp-2); min-height: var(--ctl); padding: 0 var(--sp-3);
+  background: var(--card); border-bottom: 1px solid var(--line-ctl); color: var(--muted); cursor: text;
+  transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.search:hover { border-bottom-color: var(--accent-line); color: var(--accent-ink); }
+.search:focus-within { border-bottom-color: var(--accent); color: var(--accent-ink); box-shadow: inset 0 -1px 0 var(--accent); }
+.search input {
+  flex: 1 1 auto; min-width: 0; min-height: var(--ctl); padding: 0; margin: 0;
+  font-family: var(--font-body); font-size: var(--fs-md); color: var(--ink);
+  background: none; border: 0; border-radius: 0; -webkit-appearance: none; appearance: none;
+}
+.search input::placeholder { color: var(--muted); }
+.search input:focus-visible { outline: none; }
 
-/* The segmented choices (the import's systems, the Journal picker's kinds): words in a row, the
-   chosen one in bone over the accent's rule, like the Journal's states; no box. */
+/* ── Showing (round 4, 27-sep) ─────────────────────────────────────────────
+   Since round 2 a frame says "press me", so what only informs carries none. */
+/* Tag (.tag): small capitals in the secondary ink after the game's hollow diamond. The full
+   sheet's chips (.chip) are the same without the capitals: they carry charm names and values. */
+.tag {
+  display: inline-flex; align-items: center; gap: var(--sp-2);
+  font-family: var(--font-num); font-size: var(--fs-2xs); font-weight: 600; letter-spacing: var(--track-label); text-transform: uppercase; line-height: 1.4;
+  color: var(--ink-2);
+}
+.tag::before, .chip::before {
+  content: ''; flex: none; width: var(--diamond); height: var(--diamond); border: 1px solid currentColor; transform: rotate(45deg); opacity: 0.8;
+}
+/* Notice (.banner): the level's rule on the left and a breath of its colour behind; the tag and
+   the text in the level's inks. Three levels: danger (overcharm, the game's magenta, the
+   default), a condition (.is-run: in a pantheon, the conditions' ochre) and information
+   (.is-hint: your real game, bone). */
+.banner {
+  --lv: var(--over-ink); --lv-ink: var(--over-ink-2);
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-4); padding: var(--sp-3) var(--sp-4);
+  border-left: 2px solid var(--lv); background: color-mix(in oklab, var(--lv) 7%, transparent);
+}
+.banner-tag { flex-shrink: 0; color: var(--lv); }
+.banner-text { flex: 1 1 24ch; font-size: var(--fs-sm); color: var(--lv-ink); }
+.banner .btn { flex-shrink: 0; }
+.banner.is-run { --lv: var(--cond); --lv-ink: var(--ink-2); }
+.banner.is-hint { --lv: var(--ink-strong); --lv-ink: var(--ink-2); }
+#banner:not(:empty) { display: flex; flex-direction: column; gap: var(--sp-2); }
+
+/* ── Patterns (round 5, 27-sep) ────────────────────────────────────────────
+   The row you're reading, in a list (.jr-row, .hj-row, .pg-row's head): the accent's bar on the
+   left over the chosen veil, the one gesture for "this is what's open". The chosen enemy's card
+   and row carry the same bar without the veil. */
+/* Empty (App.emptyHtml): centred under a short rule with its diamond, in the secondary ink, with
+   the action that solves it when there is one. .is-inline, for a slot that has to keep its
+   height (the enemy's attacks) or a dropdown: the text and the action on one line, no rule. */
+.empty {
+  display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); margin: 0; padding: var(--sp-4) var(--sp-3);
+  text-align: center; font-size: var(--fs-sm); line-height: 1.5; color: var(--ink-2); text-wrap: balance; list-style: none;
+}
+.empty > .rule { width: calc(var(--sp-16) * 2); height: auto; color: var(--bracket); }
+.empty .text-btn { font-size: var(--fs-sm); }
+.empty.is-inline { flex-direction: row; flex-wrap: wrap; justify-content: flex-start; gap: var(--sp-1) var(--sp-3); padding: 0 var(--sp-3); text-align: left; }
+.empty.is-inline > .rule { display: none; }
+
+/* Choose one (.seg, round 3, 27-sep): a group where one is always chosen — compare with, the
+   import's systems, the Journal's filters and an entry's state, the language, a spell's side.
+   Words in a row, each on a faint line of the accent so it reads as something to pick; the
+   chosen one in bone on the accent's whole line, doubled (a shadow, so nothing moves). */
 .seg { display: inline-flex; align-items: center; gap: var(--sp-4); flex-wrap: wrap; }
 .seg button {
-  padding: var(--sp-1) 0; min-height: 36px;
-  font-size: var(--fs-sm); color: var(--muted); border-bottom: 1px solid transparent;
-  text-align: center; transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+  padding: var(--sp-1) 0; min-height: var(--ctl);
+  font-size: var(--fs-sm); color: var(--ink-2); text-align: center;
+  border-bottom: 1px solid color-mix(in oklab, var(--accent-line) 40%, transparent);
+  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
 }
-.seg button[aria-pressed="true"] { color: var(--ink-strong); border-bottom-color: var(--accent-line); }
-.seg button:hover:not(:disabled):not([aria-pressed="true"]) { color: var(--accent); }
+.seg button:is(:hover, :focus-visible):not(:disabled):not([aria-pressed="true"]) { color: var(--accent); border-bottom-color: var(--accent-line); }
+.seg button[aria-pressed="true"] { color: var(--ink-strong); border-bottom-color: var(--accent); box-shadow: 0 1px 0 var(--accent); }
+.seg button:disabled { color: var(--muted); border-bottom-color: transparent; cursor: default; }
 .seg.sm { gap: var(--sp-3); }
-.seg.sm button { min-height: 28px; font-size: var(--fs-xs); }
+.seg.sm button { min-height: var(--ctl-sm); font-size: var(--fs-xs); }
 
 /* ── Header ──────────────────────────────────────────────────────────────
    One row: the title, centred, under the filigree from the Hall's screen (tablet-hdr, the game's
@@ -220,26 +362,23 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 .mh-hdr { width: 200px; height: auto; opacity: 0.88; }
 .title {
   font-family: var(--font-display); font-weight: 900; font-size: var(--fs-brand);
-  line-height: 1.05; letter-spacing: 0.02em; color: var(--ink-strong); text-align: center;
+  line-height: 1.05; letter-spacing: var(--track-title); color: var(--ink-strong); text-align: center;
   text-wrap: balance;
 }
 /* The language and Share, as loose text like a game menu: small, unboxed, so the title
    rules. The chosen language in bone; what can be touched lights up in the accent. */
 .mh-tools { --tools-gap: var(--sp-6); display: flex; align-items: center; gap: var(--tools-gap); flex-wrap: wrap; }
-.langsel { position: relative; display: flex; align-items: center; gap: var(--sp-1); }
+.langsel { position: relative; display: flex; align-items: center; gap: var(--sp-2); }
 /* Between the language and Share, a thin upright rule centred in the gap, like Combat's tabs' (.tab-sep). */
 .mh-tools > .langsel:not(:last-child)::after {
   content: ''; position: absolute; top: 50%; right: calc(var(--tools-gap) / -2 - 0.5px);
   width: 1px; height: var(--sp-4); transform: translateY(-50%); background: var(--line-ctl);
 }
-.langsel button + button::before { content: '·'; margin-right: var(--sp-1); color: var(--muted); }
 .langsel button, .mh-link {
-  display: inline-flex; align-items: center; min-height: 32px; padding: 0;
-  font-size: var(--fs-sm); letter-spacing: 0.08em; color: var(--muted);
-  transition: color var(--dur) var(--ease);
+  display: inline-flex; align-items: center; min-height: var(--ctl-sm); padding: 0;
+  font-size: var(--fs-sm); letter-spacing: var(--track-label);
 }
-.langsel button[aria-pressed="true"] { color: var(--ink-strong); }
-.langsel button:not([aria-pressed="true"]):hover, .mh-link:hover { color: var(--accent); }
+
 
 /* ── The screen bar ──────────────────────────────────────────────────────
    The pages of the game's pause menu: their names in the serif, in lowercase, and an accent
@@ -268,6 +407,27 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 .colophon a:hover { color: var(--accent-ink); }
 /* The GitHub mark after the contact line: just the icon, so no underline. */
 .colophon .gh { display: inline-flex; vertical-align: -3px; margin-left: var(--sp-1); text-decoration: none; }
+/* The About block (tools/pages.js): the page's text for search engines and for whoever lands
+   from one, under the screens and above the footer. As wide as the screens above it, in the
+   secondary ink, so it's there to read without competing with them; only its links take the
+   accent, as in the footer. */
+.about {
+  display: flex; flex-direction: column; gap: var(--sp-3);
+  padding-top: var(--sp-8); border-top: 1px solid var(--line);
+  font-size: var(--fs-sm); line-height: 1.6; color: var(--ink-2);
+}
+.about h1 { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-xl); line-height: 1.2; letter-spacing: var(--track-title); color: var(--ink-strong); text-wrap: balance; }
+.about h2 { margin-top: var(--sp-4); font-family: var(--font-display); font-size: var(--fs-2xs); letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--muted); }
+.about h3 { margin-top: var(--sp-2); font-size: var(--fs-sm); font-weight: 600; color: var(--ink); }
+.about-faq { display: flex; flex-direction: column; gap: var(--sp-1); }
+.about code { font-family: var(--font-num); font-size: var(--fs-xs); color: var(--ink); overflow-wrap: anywhere; }
+.about strong { color: var(--ink); font-weight: 600; }
+.about-more ul { display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-6); margin-top: var(--sp-2); padding: 0; list-style: none; }
+.about a {
+  color: var(--accent); text-decoration: underline; text-underline-offset: 3px;
+  text-decoration-color: var(--accent-line); transition: color var(--dur) var(--ease);
+}
+.about a:hover { color: var(--accent-ink); }
 /* One row: the tabs and, at the right, the mini-bar. The tabs never shrink (they'd overlap the
    figures); if the figures ever don't fit beside them, they wrap under, as a net: the widths
    below are measured so that they do fit from 1240 px in both languages. */
@@ -394,8 +554,8 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 .panel .hud-side { padding-top: var(--sp-2); }
 .panel .hud-masks { gap: var(--sp-1); }
 .panel .hud-vessels { gap: var(--sp-2); padding-top: var(--sp-half); }
-/* Health and soul, as figures only: the HUD already draws the rest. With health lost or soul
-   spent, the maximum goes after it, in grey. */
+/* Health and soul, as figures only: the HUD already draws the rest. With health lost, the
+   maximum goes after it, in grey. */
 .inv-read { display: flex; gap: var(--sp-8); }
 .rd { display: flex; flex-direction: column; gap: var(--sp-half); min-width: 0; }
 .rd .v { font-size: var(--fs-xl); font-weight: 700; line-height: 1.05; color: var(--ink-strong); display: flex; align-items: baseline; gap: var(--sp-2); }
@@ -421,24 +581,12 @@ button.hud-mask { padding: 0; border: 0; background: none; cursor: pointer; }
 .pip-mask:hover { filter: brightness(1.25); }
 /* With a mouse, the HUD previews what the click would do, like Your game's pieces: the empty masks
    it would fill (up to the one under the pointer) come up to half light, the lit ones after it go
-   dim; the last one brings back full health, so it only fills. A full vessel empties with those
-   to its right and an empty one fills with those before it (and the orb). The orb shows the level a
-   spell would leave: the orb first, then the vessels (--cut-cast, set by hudHtml). */
+   dim; the last one brings back full health, so it only fills. The soul is only drawn: spending it
+   by hand changed no figure, so it went (27-sep); it's spent in Combat. */
 @media (hover: hover) {
   .pip-mask.is-empty:is(:hover, :has(~ .pip-mask:hover)) img { filter: brightness(0.7) saturate(0.4); opacity: 1; }
   .pip-mask:hover ~ .pip-mask:not(.is-empty) img { opacity: 0.35; }
-  .hud-vessel[aria-pressed="true"]:hover img, .hud-vessel[aria-pressed="true"]:hover ~ .hud-vessel img { opacity: 0.35; }
-  .hud-vessel[aria-pressed="false"]:is(:hover, :has(~ .hud-vessel[aria-pressed="false"]:hover)) img { clip-path: inset(0); opacity: 0.55; animation: none; }
-  .hud:has(.hud-vessel[aria-pressed="false"]:hover) .hud-soul { clip-path: inset(0); animation: none; }
-  button.hud-orb:hover .hud-soul { clip-path: inset(var(--cut-cast, var(--cut)) 0 0 0); animation: none; }
-  .hud:has(button.hud-orb:hover) .hud-vessel img { clip-path: inset(var(--cut-cast, var(--cut)) 0 0 0); animation: none; }
 }
-/* The sheet's orb and vessels can be pressed too: soul is spent by hand, to see it.
-   They keep their dark container (.hud-vessel's background beats button's). */
-button.hud-orb, button.hud-vessel { padding: 0; border: 0; cursor: pointer; }
-button.hud-orb:hover .hud-soul, button.hud-orb:hover .orb-well, button.hud-vessel:hover { filter: brightness(1.2); }
-button.hud-orb:focus-visible { outline-offset: 6px; border-radius: 50%; }
-button.hud-vessel:focus-visible { outline-offset: 3px; }
 /* The empty container of the orb and the vessels, under the soul. */
 .orb-well {
   position: absolute; inset: 0; border-radius: 50%;
@@ -630,12 +778,7 @@ button.hud-vessel:focus-visible { outline-offset: 3px; }
 /* The notches in their column: 11 fit in one row. */
 .inv-band .notches { gap: var(--sp-2); }
 /* "Clear", in Equipped's header: text in the screen's ink, unboxed. */
-.eq-clear {
-  margin-left: auto; display: inline-flex; align-items: center; gap: var(--sp-1); padding: var(--sp-1) 0;
-  font-family: var(--font-body); font-size: var(--fs-sm); letter-spacing: 0; text-transform: none; color: var(--muted);
-  transition: color var(--dur) var(--ease);
-}
-.eq-clear:hover:not(:disabled) { color: var(--accent); }
+.eq-clear { margin-left: auto; font-size: var(--fs-sm); font-weight: 400; letter-spacing: 0; text-transform: none; }
 .eq-clear:disabled { opacity: 0; pointer-events: none; }
 /* The overcharm notice, inside the band and below the notches: unboxed, in the game's magenta. */
 .inv-band .banner.is-band { background: none; border: 0; padding: 0; margin-top: var(--sp-3); gap: var(--sp-1); flex-direction: column; }
@@ -698,10 +841,10 @@ button.hud-vessel:focus-visible { outline-offset: 3px; }
    those rules gave it its colour back and it looked found. That's why it comes after all of
    them. It only lightens a little, and the one that would overcharm you keeps its magenta halo.
    Equipped (is-on) looks like any equipped one: you're wearing it. */
-.qc.is-missing:not(.is-on) img { filter: var(--charm-missing-art); }
+.qc.is-missing:not(.is-on) img { filter: var(--missing-art); }
 .qc.is-missing:not(.is-on):not(.is-locked) img { opacity: 1; }
-.qc.is-missing:not(.is-on):is(:hover, :focus-visible, .is-sel, .is-hot) img { filter: var(--charm-missing-art) brightness(1.6); }
-.qc.is-missing.is-over:not(.is-on):is(:hover, :focus-visible) img { filter: var(--charm-missing-art) brightness(1.6) drop-shadow(0 0 8px var(--over-line)); }
+.qc.is-missing:not(.is-on):is(:hover, :focus-visible, .is-sel, .is-hot) img { filter: var(--missing-art) brightness(1.6); }
+.qc.is-missing.is-over:not(.is-on):is(:hover, :focus-visible) img { filter: var(--missing-art) brightness(1.6) drop-shadow(0 0 8px var(--over-line)); }
 /* The locked grid —halfway through a pantheon outside its benches, or with the Charms
    binding—: all grey and with no hover reaction, so it doesn't look touchable. The click
    does get through, and brings up the notice saying why not. */
@@ -733,22 +876,25 @@ button.hud-vessel:focus-visible { outline-offset: 3px; }
 .plates { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-4); }
 .plate { display: flex; flex-direction: column; align-items: center; gap: var(--sp-half); text-align: center; padding: 0 0 var(--sp-2); min-width: 0; }
 .plate-art { position: relative; isolation: isolate; width: 100%; height: 92px; display: grid; place-items: center; margin-bottom: var(--sp-2); }
-.plate-art::before { content: ''; position: absolute; z-index: -1; inset: -8% 2%; background: var(--halo-plate); }
+/* The light behind a plate goes only where you look (round 6, 27-sep), as the game's Inventory
+   puts it behind the item under its cursor: under the pointer or the focus, and a moment on what
+   just changed. At rest, what you have shows in colour and what you don't in --missing-art. */
+.plate-art::before { content: ''; position: absolute; z-index: -1; inset: -8% 2%; background: var(--halo-plate); opacity: 0; }
 /* Never stretching the sprite: the 192 px ones are scaled down and the fluke, at 88, stays at its size. */
 /* The width is capped too, not only the height: Shade Soul's artwork is three times as wide as it
    is tall (192 × 60) and, fitted by height alone, it came out twice the size of Descending Dark's. */
 .plate-art img { width: auto; height: auto; max-width: min(120px, 90%); max-height: 76px; object-fit: contain; }
 .plate:not(.is-on) .plate-art::before { background: var(--halo-plate-off); }
-.plate:not(.is-on) .plate-art img { filter: brightness(0); }
+.plate:not(.is-on) .plate-art img { filter: var(--missing-art); }
 .plate-name { font-size: var(--fs-sm); line-height: 1.25; color: var(--ink); }
 .plate-val { font-size: var(--fs-xl); font-weight: 700; line-height: 1.1; color: var(--ink-strong); }
 .plate-note { font-size: var(--fs-xs); line-height: 1.3; color: var(--muted); }
 .plate:not(.is-on) .plate-name { color: var(--muted); }
 button.plate:hover .plate-name, button.plate:focus-visible .plate-name { color: var(--accent); }
 /* And the artwork takes the light, while its halo swells a little: a lamp brightening. */
-.plate-art::before { transition: filter var(--dur) var(--ease), transform var(--dur) var(--ease); }
+.plate-art::before { transition: opacity var(--dur) var(--ease), filter var(--dur) var(--ease), transform var(--dur) var(--ease); }
 .plate-art img { transition: filter var(--dur) var(--ease); }
-button.plate:is(:hover, :focus-visible) .plate-art::before { filter: brightness(1.5); transform: scale(1.08); }
+button.plate:is(:hover, :focus-visible) .plate-art::before { opacity: 1; filter: brightness(1.5); transform: scale(1.08); }
 button.plate.is-on:is(:hover, :focus-visible) .plate-art > img { filter: brightness(1.15) drop-shadow(0 0 8px color-mix(in oklab, var(--focus-glow) 45%, transparent)); }
 
 /* Effects: what charms do that doesn't show in the figures, below the spell and art plates. The
@@ -764,7 +910,7 @@ button.plate.is-on:is(:hover, :focus-visible) .plate-art > img { filter: brightn
 .plate-art .plate-src img { width: 28px; height: 28px; max-width: none; max-height: none; object-fit: contain; }
 .plate-art .plate-src img + img { margin-left: -10px; }
 .plate-when {
-  margin-top: var(--sp-1); font-family: var(--font-num); text-transform: uppercase; letter-spacing: 0.09em;
+  margin-top: var(--sp-1); font-family: var(--font-num); text-transform: uppercase; letter-spacing: var(--track-label);
   font-size: var(--fs-2xs); font-weight: 600; line-height: 1.3; color: var(--label);
 }
 .plate-note.is-na { font-style: italic; }
@@ -798,15 +944,7 @@ button.plate.is-on:is(:hover, :focus-visible) .plate-art > img { filter: brightn
 /* The "See every stat" button: it stays in place and the full sheet opens below it; when open,
    an identical one closes it from the end. Right under the top one, the sheet doesn't repeat the rule. */
 .toggle-all + .detail { border-top: 0; margin-top: 0; padding-top: var(--sp-2); }
-.toggle-all {
-  width: 100%; margin-top: var(--sp-6);
-  display: flex; align-items: center; justify-content: center; gap: var(--sp-3);
-  padding: var(--sp-4) var(--sp-4); border-top: 1px solid var(--inv-line, var(--line));
-  color: var(--ink-2); font-family: var(--font-display);
-  font-size: var(--fs-xs); letter-spacing: 0.16em; text-transform: uppercase;
-  transition: color var(--dur) var(--ease);
-}
-.toggle-all:hover { color: var(--accent); }
+.toggle-all { margin-top: var(--sp-6); }
 
 /* ── Full sheet ──────────────────────────────────────────────────────── */
 .sheet-head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--sp-6); flex-wrap: wrap; margin-bottom: var(--sp-6); }
@@ -835,17 +973,18 @@ button.plate.is-on:is(:hover, :focus-visible) .plate-art > img { filter: brightn
 .delta.good { color: var(--good); border-color: var(--good); background: var(--good-soft); }
 .delta.bad { color: var(--bad); border-color: var(--bad); background: var(--bad-soft); }
 
-.chips { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: var(--sp-1); margin-top: var(--sp-half); }
-.chip { font-size: var(--fs-2xs); padding: 1px var(--sp-2); border: 1px solid var(--line); color: var(--muted); background: var(--card); }
+.chips { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-3); margin-top: var(--sp-half); }
+.chip { display: inline-flex; align-items: center; gap: var(--sp-1); font-size: var(--fs-2xs); color: var(--muted); }
 .chip b { color: var(--ink-2); font-weight: 600; }
 /* The charm chip is data: in ink, like the rest. Only on hover (it lights up on the grid the
    charm that moves it) does it take the accent. */
-.chip.chip-charm { border-color: var(--line-ctl); color: var(--ink-2); }
+.chip.chip-charm { color: var(--ink-2); }
 .chip.chip-charm b { color: var(--ink-strong); }
-.chip.chip-charm:hover { border-color: var(--accent-line); color: var(--accent); }
-.chip.syn { border-color: var(--cond); color: var(--cond); }
+.chip.chip-charm:hover { color: var(--accent); }
+.chip.syn { color: var(--cond); }
 .chip.off { opacity: 0.55; font-style: italic; }
 .chip.more { font-style: italic; }
+.chip.more::before { content: none; }
 .chip i { font-style: italic; }
 
 .stat-detail { display: none; padding: var(--sp-3) 0 var(--sp-1); }
@@ -865,43 +1004,8 @@ button.plate.is-on:is(:hover, :focus-visible) .plate-art > img { filter: brightn
 .fx-item > span:last-child { display: flex; flex-direction: column; gap: var(--sp-half); min-width: 0; }
 .fx-name { font-size: var(--fs-sm); line-height: 1.25; color: var(--ink); }
 .fx-note { font-size: var(--fs-xs); line-height: 1.3; color: var(--muted); }
-.muted-p { font-size: var(--fs-md); color: var(--muted); }
 
-/* ── Overcharm notice ────────────────────────────────────────────────── */
-.banner { background: var(--over-bg); border: 1px solid var(--over-line); padding: var(--sp-4) var(--sp-6); display: flex; gap: var(--sp-4); align-items: baseline; flex-wrap: wrap; }
-.banner-tag { color: var(--over-ink); flex-shrink: 0; }
-.banner-text { font-size: var(--fs-md); color: var(--over-ink-2); }
-#banner:not(:empty) { display: flex; flex-direction: column; gap: var(--sp-2); }
 
-/* ── Pantheon notice: charms aren't touched outside its benches ──────── */
-.banner.is-run { background: var(--notice-bg); border-color: var(--notice-line); align-items: center; }
-.banner.is-run .banner-tag { color: var(--cond); }
-.banner.is-run .banner-text { color: var(--ink-2); flex: 1 1 24ch; }
-.banner.is-run .btn { flex-shrink: 0; }
-
-/* ── Import notice: for whoever's new on a computer. Nothing's wrong, so it isn't a box like the
-   pantheon's warning: one line between the screen bar and the screen, like the game's prompts,
-   with the bar's hairline underneath (fading at the ends, so it doesn't read as an edge), the tag
-   in bone after a small diamond, and the ✕ that closes it for good at the end of the row. ── */
-.banner.is-hint {
-  --hint-rule: color-mix(in oklab, var(--tint-sheet) 22%, transparent);
-  border: 0; padding: var(--sp-2) var(--sp-3) var(--sp-3);
-  background: linear-gradient(90deg, transparent, var(--hint-rule) 10%, var(--hint-rule) 90%, transparent) bottom / 100% 1px no-repeat;
-}
-.banner.is-hint .banner-tag { color: var(--ink-strong); display: inline-flex; align-items: center; gap: var(--sp-3); }
-.banner.is-hint .banner-tag::before {
-  content: ''; width: 5px; height: 5px; border: 1px solid currentColor; transform: rotate(45deg); opacity: 0.75;
-}
-/* On a phone (where only the linked save's notice shows) the text takes its own row under the tag. */
-@media (max-width: 599px) {
-  .banner.is-hint { row-gap: var(--sp-2); }
-  .banner.is-hint .banner-text { flex-basis: 100%; }
-}
-.banner-close {
-  flex-shrink: 0; display: inline-grid; place-items: center; width: var(--sp-8); height: var(--sp-8);
-  color: var(--muted); transition: color var(--dur) var(--ease);
-}
-.banner-close:hover { color: var(--accent); }
 
 /* When you overcharm, the screen is tinted purple at the edges and it goes: it jumps in with
    the flash and fades, instead of staying the whole time, which was tiring. That you're still
@@ -989,7 +1093,7 @@ button.plate.is-on:is(:hover, :focus-visible) .plate-art > img { filter: brightn
 .mini-nail { height: 28px; width: auto; }
 .mini-mask { height: 22px; width: auto; }
 .mini-soul { width: 20px; height: 20px; }
-.mini-lbl { font-family: var(--font-num); font-style: normal; font-size: var(--fs-2xs); font-weight: 600; letter-spacing: 0.06em; color: var(--label); }
+.mini-lbl { font-family: var(--font-num); font-style: normal; font-size: var(--fs-2xs); font-weight: 600; letter-spacing: var(--track-label); color: var(--label); }
 .minihud .notch { width: 16px; height: 16px; }
 /* The fight's scoreboard (.is-fight): your masks and your soul, and the name, bar and health of
    whoever you're hitting. The bar is the one from their card (.fbar); here it stretches over what
@@ -1011,11 +1115,6 @@ button.plate.is-on:is(:hover, :focus-visible) .plate-art > img { filter: brightn
 .presets { display: flex; justify-content: center; align-items: baseline; flex-wrap: wrap; gap: var(--sp-1) var(--sp-3); margin-top: var(--sp-2); }
 .presets .lbl { color: var(--muted); }
 .presets-sep { color: var(--muted); }
-.text-btn {
-  padding: var(--sp-1) 0; font-family: var(--font-body); font-size: var(--fs-md); color: var(--ink-2);
-  border-bottom: 1px solid var(--line-ctl); transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
-}
-.text-btn:hover { color: var(--accent); border-bottom-color: var(--accent-line); }
 .gear-body > .inv-head { grid-column: 1 / -1; margin-bottom: 0; }
 .gear-body {
   --inv-pad: var(--sp-8);
@@ -1064,16 +1163,16 @@ button.plate.is-on:is(:hover, :focus-visible) .plate-art > img { filter: brightn
 .gplate { display: grid; grid-row: span 3; grid-template-rows: subgrid; row-gap: var(--sp-1); justify-items: center; align-items: start; text-align: center; min-width: 0; padding: 0; }
 .gplate:has(.lvlpick) { grid-row: span 4; }
 .gplate-art { position: relative; isolation: isolate; width: 100%; height: 60px; display: grid; place-items: center; }
-.gplate-art::before { content: ''; position: absolute; z-index: -1; inset: -8% 2%; background: var(--halo-plate); transition: filter var(--dur) var(--ease); }
+.gplate-art::before { content: ''; position: absolute; z-index: -1; inset: -8% 2%; background: var(--halo-plate); opacity: 0; transition: opacity var(--dur) var(--ease), filter var(--dur) var(--ease); }
 .gplate-art img { width: auto; height: auto; max-width: min(100px, 92%); max-height: 50px; object-fit: contain; }
 .gplate:not(.is-on) .gplate-art::before { background: var(--halo-plate-off); }
-.gplate:not(.is-on) .gplate-art img { filter: brightness(0); }
+.gplate:not(.is-on) .gplate-art img { filter: var(--missing-art); }
 .gplate-name { font-size: var(--fs-xs); line-height: 1.25; color: var(--ink-2); }
 .gplate.is-on .gplate-name { color: var(--ink); }
 .gplate-val { font-size: var(--fs-md); font-weight: 700; line-height: 1.25; color: var(--ink-strong); }
 .gplate-val.is-none { font-family: var(--font-body); font-size: var(--fs-xs); font-weight: 400; color: var(--muted); }
 button.gplate:hover .gplate-name, button.gplate:focus-visible .gplate-name { color: var(--accent); }
-button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
+button.gplate:is(:hover, :focus-visible) .gplate-art::before, .gplate:has(.lvlpick button:is(:hover, :focus-visible)) .gplate-art::before { opacity: 1; }
 /* The level under a plate: each level's own artwork, small, and the dimmed "not learnt" first.
    The chosen one with the accent's veil and rule, like the nail picks; the rest in half-light. */
 .lvlpick { display: flex; justify-content: center; gap: var(--sp-1); width: 100%; min-width: 0; margin-top: var(--sp-1); }
@@ -1081,13 +1180,14 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
   flex: 0 1 56px; min-width: 0;
   /* A row of definite height, so an upright picture (the Awoken Dream Nail) is held by max-height. */
   display: grid; grid-template-rows: minmax(0, 1fr); place-items: center; height: 40px; padding: var(--sp-1);
-  border-bottom: 2px solid transparent; color: var(--muted);
-  transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+  border-bottom: 1px solid color-mix(in oklab, var(--accent-line) 40%, transparent); color: var(--muted);
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
 }
 .lvl img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; filter: grayscale(1) brightness(0.55); transition: filter var(--dur) var(--ease); }
 .lvl:hover img, .lvl:focus-visible img { filter: grayscale(0.4) brightness(0.9); }
-.lvl:hover, .lvl:focus-visible { color: var(--accent); }
-.lvl.is-on { background: var(--picked); border-bottom-color: var(--accent-line); color: var(--ink-2); }
+/* A level is a choose-one (.seg, round 6): each on its faint line, the chosen one on the accent's line, doubled. */
+.lvl:hover, .lvl:focus-visible { color: var(--accent); border-bottom-color: var(--accent-line); }
+.lvl.is-on { border-bottom-color: var(--accent); box-shadow: 0 1px 0 var(--accent); color: var(--ink-strong); }
 .lvl.is-on img { filter: none; }
 .lvl.is-none { flex: 0 0 24px; font-size: var(--fs-md); }
 .lvlpick.is-dots { gap: 0; }
@@ -1097,7 +1197,6 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
    what you don't, shadowed (.qc.is-missing, further up). */
 .own-all { margin-left: auto; display: flex; align-items: baseline; gap: var(--sp-2); }
 .own-all .text-btn { font-size: var(--fs-sm); }
-.own-all .text-btn:disabled { color: var(--muted); border-bottom-color: transparent; cursor: default; }
 .quick-owned .qc:not(.is-missing) img { opacity: 1; filter: none; }
 /* The double slots: one whole slot that switches version on each tap, and two dots under it,
    the marked one filled in bone. With none, two empty rings. */
@@ -1175,7 +1274,8 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
 .nailpick.is-lit .nailpick-art img { animation: lit-in var(--dur-flash) var(--ease); }
 .nailpick.is-out::before { animation: glow-out var(--dur-slow) var(--ease-fade); }
 .nailpick.is-out .nailpick-art img { animation: lit-out var(--dur-slow) var(--ease); }
-.gplate.is-lit .gplate-art::before { animation: title-in var(--dur-slow) var(--ease-fade); }
+:is(.gplate.is-lit .gplate-art, .plate.is-flash .plate-art)::before { animation: halo-flash var(--dur-flash) var(--ease-fade); }
+@keyframes halo-flash { 0% { opacity: 0; } 25% { opacity: 1; } 100% { opacity: 0; } }
 .gplate.is-lit .gplate-art img { animation: lit-in var(--dur-flash) var(--ease); }
 .gplate.is-out .gplate-art img { animation: lit-out var(--dur-slow) var(--ease); }
 .sd-dot.is-lit .notch { animation: notch-fill var(--dur-slow) var(--ease) both; animation-delay: calc(var(--i) * 70ms); }
@@ -1196,7 +1296,7 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
 /* Another charm in the detail (paintDetail): it fades into it, short, so crossing the grid doesn't lag. */
 .charm-detail.is-swap > * { animation: detail-in var(--dur) var(--ease); }
 @keyframes detail-in { from { opacity: 0.35; } }
-.detail-hint { font-size: var(--fs-sm); line-height: 1.5; color: var(--muted); font-style: italic; max-width: 40ch; }
+.detail-hint:not(.empty) { font-size: var(--fs-sm); line-height: 1.5; color: var(--muted); font-style: italic; max-width: 40ch; }
 .detail-sum + .detail-hint { margin-top: var(--sp-3); font-size: var(--fs-xs); }
 .insp-head { display: flex; align-items: center; gap: var(--sp-3); }
 .insp-id { flex: 1 1 auto; min-width: 0; }
@@ -1225,7 +1325,6 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
 .insp-list .to { color: var(--ink); font-weight: 600; }
 .insp-more button { padding: 0; font: inherit; font-style: italic; color: var(--accent); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--accent-line); }
 .insp-more button:hover { color: var(--ink-strong); }
-.insp-empty { font-size: var(--fs-xs); color: var(--muted); }
 
 /* ── Floating notice ─────────────────────────────────────────────────── */
 /* The notices (toast in js/app.js), like the game's on-screen messages, just under the screen bar
@@ -1236,7 +1335,7 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
   position: fixed; left: 50%; top: calc(var(--sticky-h) + var(--sp-3)); transform: translateX(-50%); z-index: 80; isolation: isolate;
   display: flex; align-items: center; justify-content: center; gap: var(--sp-3);
   width: max-content; max-width: min(640px, calc(100vw - var(--sp-8))); padding: var(--sp-3) var(--sp-6);
-  font-family: var(--font-display); font-size: var(--fs-lg); font-weight: 600; letter-spacing: 0.04em; line-height: 1.3;
+  font-family: var(--font-display); font-size: var(--fs-lg); font-weight: 600; letter-spacing: var(--track-title); line-height: 1.3;
   color: var(--ink-strong); text-align: center; pointer-events: none;
   opacity: 0; transition: opacity var(--dur-slow) var(--ease-fade);
 }
@@ -1294,13 +1393,12 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
   /* The header in a single row, so what matters starts sooner on every screen: the title on the
      left, smaller and without its filigree, and on the right the Knight, the language and Share
      (the title goes first and the site's two after the selector: order). */
-  .masthead { display: flex; flex-wrap: nowrap; justify-content: space-between; align-items: center; gap: var(--sp-3); padding-top: var(--sp-3); }
+  .masthead { display: flex; flex-wrap: nowrap; justify-content: space-between; align-items: center; gap: var(--sp-2); padding-top: var(--sp-3); }
   .brand, .masthead .brand { display: flex; flex: 1 1 auto; align-items: flex-start; order: -1; }
   .masthead .mh-tools { order: 1; }
   .brand .mh-hdr { display: none; }
-  .title { font-size: var(--fs-lg); text-align: left; letter-spacing: 0.04em; }
-  .masthead .mh-tools { flex: none; flex-wrap: nowrap; --tools-gap: var(--sp-4); }
-  .langsel button { min-height: 44px; }
+  .title { font-size: var(--fs-lg); text-align: left; letter-spacing: var(--track-title); }
+  .masthead .mh-tools { flex: none; flex-wrap: nowrap; --tools-gap: var(--sp-3); }
   /* The two starting points: the label above, and both on one line. */
   .presets .lbl { flex: 1 1 100%; text-align: center; }
   /* The bar, on mobile: the four tabs spread out (the active one underlined: the diamond doesn't
@@ -1336,7 +1434,7 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
   .nav-tab[aria-current="page"], .nav-home.is-parent { color: var(--ink-strong); box-shadow: inset 0 -2px 0 var(--accent); }
   .nav-tools { display: inline-flex; }
   .nav-sub:not([hidden]) { display: flex; justify-content: center; gap: var(--sp-8); border-top: 1px solid var(--line-row); }
-  .nav-sub .nav-tab { min-height: 40px; font-size: var(--fs-md); }
+  .nav-sub .nav-tab { min-height: var(--ctl); font-size: var(--fs-md); }
   /* The bar's height follows its rows: the tabs alone on your game's screens, and the tools'
      second row and the mini-bar with the tools. */
   :root:has(#minihud[hidden]) { --sticky-h: 60px; }
@@ -1443,7 +1541,7 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
 @media (max-width: 899px) { .fight-body { --inv-pad: var(--sp-6); } }
 @media (max-width: 599px) { .fight-body { --inv-pad: var(--sp-4); } }
 .fight-tools { display: flex; align-items: flex-end; gap: var(--sp-4) var(--sp-6); flex-wrap: wrap; }
-.fight-reset { display: inline-flex; align-items: center; gap: var(--sp-2); min-height: 44px; font-size: var(--fs-sm); }
+.fight-reset { display: inline-flex; align-items: center; gap: var(--sp-2); min-height: var(--ctl); font-size: var(--fs-sm); }
 .fight-reset svg { flex: none; transition: transform var(--dur) var(--ease); }
 .fight-reset:hover svg { transform: rotate(-60deg); }
 .fight-pick { display: flex; flex-direction: column; gap: var(--sp-1); min-width: 0; flex: 1 1 300px; }
@@ -1453,19 +1551,11 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
    in small caps and the corner brackets.
    It isn't a dropdown but a panel of the combat screen itself: it pushes the arena down
    and closes with its button, with Esc or when picking. */
-.jr-toggle {
-  display: flex; align-items: center; gap: var(--sp-3);
-  width: 100%; min-height: 48px; text-align: left;
-  font-family: var(--font-body); font-size: var(--fs-md); color: var(--ink);
-  background: none; border: 0; border-bottom: 1px solid var(--line-ctl);
-  padding: var(--sp-1) 0;
-  transition: border-color var(--dur) var(--ease);
-}
-.jr-toggle:hover, .jr-toggle[aria-expanded="true"] { border-color: var(--accent-line); }
+.jr-toggle:hover, .jr-toggle[aria-expanded="true"] { border-bottom-color: var(--accent-line); }
 .jr-val { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-lg); color: var(--ink-strong); }
 .jr-val.is-empty { color: var(--muted); }
-.jr-toggle-act { font-size: var(--fs-xs); color: var(--muted); white-space: nowrap; }
-.jr-toggle:hover .jr-toggle-act, .jr-toggle:hover .chev { color: var(--accent); }
+.jr-toggle-act { font-size: var(--fs-sm); color: var(--ink-2); white-space: nowrap; }
+.jr-toggle:hover .jr-toggle-act { color: var(--ink-strong); }
 
 /* The Journal medallion (84 × 96: the ring and its two finials). Those without an entry carry
    their portrait in a round well of the same size. */
@@ -1484,14 +1574,9 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
 }
 
 .jr-index { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--inv-line); }
-.jr-search {
-  font-family: var(--font-body); font-size: var(--fs-sm); color: var(--ink);
-  background: none; border: 0; border-bottom: 1px solid var(--inv-line);
-  padding: var(--sp-3); width: 100%; min-height: 44px;
-  -webkit-appearance: none; appearance: none; border-radius: 0;
-}
-.jr-search::placeholder { color: var(--muted); }
-.jr-search:focus-visible { outline-offset: -2px; }
+.jr-index > .search { border-bottom-color: var(--inv-line); }
+.jr-index > .search:hover { border-bottom-color: var(--accent-line); }
+.jr-index > .search:focus-within { border-bottom-color: var(--accent); }
 .jr-kinds { margin: var(--sp-2); }
 /* Each filter's count, inside its own button. */
 .jr-kinds i {
@@ -1501,7 +1586,7 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
 .jr-kinds button[aria-pressed="true"] i { color: var(--ink-2); }
 .jr-head {
   display: flex; justify-content: space-between; padding: 0 var(--sp-4) var(--sp-1);
-  font-family: var(--font-num); text-transform: uppercase; letter-spacing: 0.09em;
+  font-family: var(--font-num); text-transform: uppercase; letter-spacing: var(--track-label);
   font-size: var(--fs-2xs); font-weight: 600; color: var(--label);
 }
 
@@ -1514,13 +1599,12 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
   transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
 }
 .jr-row:hover { background: var(--veil); color: var(--ink); }
-.jr-row.is-cur { background: var(--picked); color: var(--ink-strong); border-color: var(--accent-line); }
+.jr-row.is-cur { background: var(--picked); color: var(--ink-strong); box-shadow: inset 2px 0 0 var(--accent); }
 /* Who you're fighting, even while reading another entry: the chosen card's rule. */
-.jr-row.is-on { box-shadow: inset 3px 0 0 var(--accent); }
+.jr-row.is-on { box-shadow: inset 2px 0 0 var(--accent); }
 .jr-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .jr-hits { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-xs); color: var(--muted); }
 .jr-row.is-cur .jr-hits { color: var(--ink-2); }
-.jr-empty { font-size: var(--fs-sm); color: var(--muted); font-style: italic; padding: var(--sp-3); }
 /* "No enemy" weighs little: removing the enemy is an option, not the way forward. */
 .jr-none {
   margin: 0 var(--sp-2) var(--sp-2); padding: var(--sp-2) var(--sp-3); text-align: left;
@@ -1536,12 +1620,12 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
 .jr-num {
   position: absolute; top: var(--sp-2); right: var(--sp-3);
   font-family: var(--font-num); font-variant-numeric: tabular-nums;
-  font-size: var(--fs-2xs); letter-spacing: 0.09em; color: var(--muted);
+  font-size: var(--fs-2xs); letter-spacing: var(--track-label); color: var(--muted);
 }
 .jr-art { flex: none; height: 170px; width: 100%; display: flex; align-items: flex-end; justify-content: center; }
 .jr-art img { max-height: 100%; max-width: 100%; object-fit: contain; }
 .jr-art img.is-missing { visibility: hidden; }
-.jr-title { font-family: var(--font-display); font-size: var(--fs-xl); font-weight: 600; letter-spacing: 0.06em; color: var(--ink-strong); margin-top: var(--sp-2); }
+.jr-title { font-family: var(--font-display); font-size: var(--fs-xl); font-weight: 600; letter-spacing: var(--track-title); color: var(--ink-strong); margin-top: var(--sp-2); }
 .jr-page .rule { flex: none; color: var(--bracket); }
 .jr-kind { font-size: var(--fs-xs); color: var(--muted); }
 .jr-text {
@@ -1564,7 +1648,7 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
 .jr-facts { display: flex; gap: var(--sp-6); flex-wrap: wrap; }
 .jr-fact { display: flex; flex-direction: column; gap: var(--sp-half); }
 .jr-fact dt {
-  font-family: var(--font-num); text-transform: uppercase; letter-spacing: 0.09em;
+  font-family: var(--font-num); text-transform: uppercase; letter-spacing: var(--track-label);
   font-size: var(--fs-2xs); font-weight: 600; color: var(--label);
 }
 .jr-fact dd { margin: 0; font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-xl); font-weight: 600; color: var(--ink-strong); line-height: 1.1; }
@@ -1723,7 +1807,7 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
 /* On the stage, the Knight's header answers the enemy's title card: his name in the same
    capitals, centred, and his figures below. */
 .stage .kside-head { flex-direction: column; align-items: center; gap: var(--sp-2); text-align: center; }
-.stage .kside-head h3 { font-family: var(--font-display); font-size: var(--fs-2xl); font-weight: 600; letter-spacing: 0.06em; line-height: 1.1; }
+.stage .kside-head h3 { font-family: var(--font-display); font-size: var(--fs-2xl); font-weight: 600; letter-spacing: var(--track-title); line-height: 1.1; }
 
 .foecard { border-top: 1px solid var(--inv-line); min-width: 0;
   transition: box-shadow var(--dur) var(--ease), background-color var(--dur-fast) var(--ease); }
@@ -1785,7 +1869,7 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
 }
 .fight-end-title {
   font-family: var(--font-display); font-weight: 600; font-size: var(--fs-xl);
-  text-transform: uppercase; letter-spacing: 0.14em; line-height: 1.2;
+  text-transform: uppercase; letter-spacing: var(--track-caps); line-height: 1.2;
   padding-left: 0.14em;              /* the letter-spacing hangs after the last letter: it's offset to centre */
   color: var(--ink-strong); text-wrap: balance;
 }
@@ -1851,10 +1935,7 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
 /* It takes the place of the buttons that aren't there yet, so the column doesn't shrink: it
    measures exactly one .move, so choosing an enemy with a single attack doesn't move
    anything below. */
-.moveset-empty {
-  display: flex; align-items: center; min-height: 44px; padding: 0 var(--sp-3);
-  font-size: var(--fs-sm); color: var(--muted); font-style: italic;
-}
+.moveset-empty.is-inline { align-items: center; align-content: center; min-height: var(--ctl); }
 
 .fight-log { border-top: 1px solid var(--inv-line); padding-top: var(--sp-4); }
 .side-foes > .fight-log { margin-top: var(--sp-4); }
@@ -1910,9 +1991,8 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
 .sd-count, .sd-side { font-size: var(--fs-2xs); color: var(--muted); align-self: center; margin-left: var(--sp-1); font-variant-numeric: tabular-nums; }
 .sd-count { color: var(--ink-2); }
 .sd-side i { font-style: normal; }
-.sd-side button { color: var(--muted); padding: var(--sp-1); min-height: 28px; }
-.sd-side button[aria-pressed="true"] { color: var(--ink); text-decoration: underline; text-decoration-color: var(--accent-line); text-underline-offset: 3px; }
-.sd-side button:hover { color: var(--ink); }
+.sd-side { gap: var(--sp-2); }
+.sd-side button { font-size: var(--fs-2xs); }
 /* "land", in front of the notches: the legend that says what lit means without opening the "?". It
    sits in the space below the artwork, next to the first notch, so as not to move the notches or
    push "left · right" onto another line; in that text's ink, and at the notch's height (17 px
@@ -1942,15 +2022,14 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
 /* The "?": a small grey ring, in the body serif. It responds to the finger, so on hover,
    focused or open it takes the accent (design/00 §3); open, also the chosen veil. The area
    you can tap is the row's full height, not just the ring. */
-.help-q { display: grid; place-items: center; align-self: stretch; width: var(--help-w, 32px); min-height: 32px; padding: 0; color: var(--muted); }
+.help-q { display: grid; place-items: center; align-self: stretch; width: var(--help-w, 32px); min-height: var(--ctl-sm); padding: 0; color: var(--muted); }
 .help-q span {
   display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%;
-  border: 1px solid var(--line-ctl);
+  border: 1px solid color-mix(in oklab, var(--accent-line) 70%, transparent); color: var(--ink-2);
   font-family: var(--font-body); font-size: var(--fs-2xs); font-weight: 600; line-height: 1;
   transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease);
 }
-.help-q:hover span, .help-q:focus-visible span, .help-q[aria-expanded="true"] span { color: var(--accent); border-color: var(--accent-line); }
-.help-q[aria-expanded="true"] span { background: var(--picked); }
+.help-q:hover span, .help-q:focus-visible span, .help-q[aria-expanded="true"] span { color: var(--ink-strong); border-color: var(--accent); background: var(--accent-soft); }
 /* What it opens: short prose in the serif, in secondary ink; in bone, the figures and the term
    as it appears on screen, so the sum reads at a glance. Under an attack it takes its card's
    width (aligned with the name, in the column's 330 px, it was 37 letters per line and
@@ -2011,8 +2090,8 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
   display: flex; flex-direction: column; align-items: center; gap: var(--sp-half);
   font-family: var(--font-display); color: var(--ink-strong); line-height: 1.1; text-wrap: balance;
 }
-.ftitle-main { font-size: var(--fs-2xl); font-weight: 600; letter-spacing: 0.06em; }
-.ftitle-sup, .ftitle-sub { font-size: var(--fs-lg); letter-spacing: 0.14em; color: var(--ink-2); }
+.ftitle-main { font-size: var(--fs-2xl); font-weight: 600; letter-spacing: var(--track-title); }
+.ftitle-sup, .ftitle-sub { font-size: var(--fs-lg); letter-spacing: var(--track-caps); color: var(--ink-2); }
 .fstage.is-fresh .ftitle { animation: title-in 1.6s var(--ease-fade) both; }
 .fstage .foes-head { justify-content: center; }
 .fstage .foecard-note { text-align: center; }
@@ -2109,7 +2188,7 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
 }
 .fscene-phase {
   position: absolute; left: 0; right: 0; top: 38%; z-index: 2; pointer-events: none;
-  font-family: var(--font-body); font-variant: small-caps; font-size: var(--fs-xl); letter-spacing: 0.08em;
+  font-family: var(--font-body); font-variant: small-caps; font-size: var(--fs-xl); letter-spacing: var(--track-label);
   color: var(--ink-strong); text-shadow: 0 0 var(--sp-4) var(--scene-bg);
   opacity: 0; animation: phase-title 2.4s var(--ease-fade) forwards;
 }
@@ -2168,7 +2247,6 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
 .vs-mark svg { fill: none; stroke: currentColor; stroke-width: 1; }
 .fight-undo { display: inline-flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-sm); }
 .fight-undo:disabled { opacity: 0.4; cursor: default; }
-.fight-undo:disabled:hover { color: var(--ink-2); border-bottom-color: var(--line-ctl); }
 
 /* ── Your attacks, in their four groups ──────────────────────────────────
    Each one is a plate, like the spells and arts on the Charms screen: the game's artwork on its
@@ -2204,8 +2282,8 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
   grid-row: 1; grid-column: 1; justify-self: center; width: 96px; height: 64px; grid-template-rows: 64px;
   margin-bottom: var(--sp-1);
 }
-.moveset .move-art::before { content: ''; position: absolute; z-index: -1; inset: -8% 2%; background: var(--halo-plate); }
-.moveset .move-card:has(.move:not(:disabled):hover) .move-art::before { filter: brightness(1.5); }
+.moveset .move-art::before { content: ''; position: absolute; z-index: -1; inset: -8% 2%; background: var(--halo-plate); opacity: 0; transition: opacity var(--dur) var(--ease), filter var(--dur) var(--ease); }
+.moveset .move-card:has(.move:not(:disabled):is(:hover, :focus-visible)) .move-art::before { opacity: 1; filter: brightness(1.5); }
 .moveset .move-art.is-nail img { height: 72px; }
 .moveset .move-art.is-charm img { height: 48px; }
 .moveset .move-name { grid-row: 2; grid-column: 1; font-size: var(--fs-sm); line-height: 1.25; transition: color var(--dur-fast) var(--ease); }
@@ -2220,7 +2298,7 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
 .mc-soul { width: 14px; height: 14px; }
 .move-why { grid-column: 1 / -1; font-size: var(--fs-2xs); font-style: italic; color: var(--cond); }
 /* The "?" in the plate's top corner, clear of the artwork, the name and the figure. */
-.moveset .move-card > .help-q { position: absolute; top: var(--sp-1); right: var(--sp-1); min-height: 32px; height: 32px; }
+.moveset .move-card > .help-q { position: absolute; top: var(--sp-1); right: var(--sp-1); min-height: var(--ctl-sm); height: 32px; }
 .moveset .move-card > .arena-help { padding: 0 var(--sp-3) var(--sp-3); }
 /* The spell's notches, under the whole plate and centred, with "land" in front as a word. */
 .moveset .spell-dots { gap: var(--sp-1); justify-content: center; padding: 0 var(--sp-3) var(--sp-3); }
@@ -2348,7 +2426,7 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
    the finger still belongs to the accent: the underline and the hover. */
 .tabs { display: flex; justify-content: center; align-items: center; gap: var(--sp-4); flex-wrap: wrap; }
 .tab {
-  font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.14em;
+  font-family: var(--font-display); text-transform: uppercase; letter-spacing: var(--track-caps);
   font-weight: 600; font-size: var(--fs-lg); color: var(--muted); padding: var(--sp-1) 0;
   border-bottom: 1px solid transparent;
   transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
@@ -2374,7 +2452,7 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
   /* Equal columns need twice the widest («Panteones»): with less air between letters and
      between tabs, they fit at 390 px in both languages. */
   .fight-head .tabs { align-self: stretch; column-gap: var(--sp-1); }
-  .tab { min-width: 0; letter-spacing: 0.06em; padding-inline-start: 0.06em; text-align: center; font-size: var(--fs-md); }
+  .tab { min-width: 0; letter-spacing: var(--track-title); padding-inline-start: 0.06em; text-align: center; font-size: var(--fs-md); }
   .tab-long { display: none; }
   .tab-short { display: inline; }
 }
@@ -2395,8 +2473,10 @@ button.gplate:hover .gplate-art::before { filter: brightness(1.5); }
   text-align: center; padding: 0 0 var(--sp-3); border: 1px solid transparent;
   transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease);
 }
-.pcard:hover { background: var(--veil); border-color: var(--line); }
-.pcard.is-on { background: var(--picked); border-color: var(--accent-line); }
+.pcard:hover { background: var(--veil); }
+/* The chosen pantheon, like the Hall's statue: its door lit and its threshold in the accent, no frame. */
+.pcard.is-on { background: var(--picked); }
+.pcard.is-on .pcard-art { border-bottom-color: var(--accent); }
 .pcard-art {
   display: block; width: 76%; height: 124px; margin: var(--sp-3) auto 0; padding: var(--sp-6) var(--sp-3) var(--sp-1);
   object-fit: contain; object-position: 50% 100%;
@@ -2642,7 +2722,7 @@ button.tl-go:focus-visible { outline-offset: 3px; }
   .fband-vs { grid-area: vs; flex-direction: row; gap: var(--sp-3); }
   .fband-foe { grid-area: foe; gap: var(--sp-2); }
   .fband-knight, .fband .fight-undo span { display: none; }
-  .fband .fight-undo { min-width: 32px; min-height: 32px; justify-content: center; border-bottom: 0; }
+  .fband .fight-undo { min-width: 32px; min-height: var(--ctl-sm); justify-content: center; text-decoration: none; }
   .fband-art { width: 40px; height: 36px; }
   .fband-score b { font-size: var(--fs-lg); }
   .fband-num { font-size: var(--fs-md); }
@@ -2683,7 +2763,7 @@ button.tl-go:focus-visible { outline-offset: 3px; }
 /* The figure, its name and when it appears. */
 .hall-idol-id { display: flex; align-items: center; gap: var(--sp-3); min-width: 0; max-width: 20rem; }
 .hall-idol-id > div { display: flex; flex-direction: column; gap: var(--sp-half); min-width: 0; }
-.hall-idol-id h3 { font-family: var(--font-display); font-size: var(--fs-lg); font-weight: 600; letter-spacing: 0.08em; color: var(--ink-strong); line-height: 1.2; }
+.hall-idol-id h3 { font-family: var(--font-display); font-size: var(--fs-lg); font-weight: 600; letter-spacing: var(--track-title); color: var(--ink-strong); line-height: 1.2; }
 .hall-idol-note { font-size: var(--fs-xs); color: var(--ink-2); line-height: 1.4; }
 .hall-counts { display: flex; gap: var(--sp-2) var(--sp-6); flex-wrap: wrap; }
 /* On a wide screen the counts never break: they're one row with the name and the actions. */
@@ -2695,7 +2775,7 @@ button.tl-go:focus-visible { outline-offset: 3px; }
 .hall-count-btn {
   display: grid; grid-template-columns: auto auto; grid-template-rows: auto auto; align-items: center;
   column-gap: var(--sp-2); text-align: left;
-  min-height: 44px; padding: var(--sp-1) var(--sp-2); margin: 0 calc(-1 * var(--sp-2));
+  min-height: var(--ctl); padding: var(--sp-1) var(--sp-2); margin: 0 calc(-1 * var(--sp-2));
   border: 1px solid transparent;
   transition: border-color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease);
 }
@@ -2709,7 +2789,7 @@ button.tl-go:focus-visible { outline-offset: 3px; }
 .hall-count-num b { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-xl); font-weight: 600; color: var(--ink-strong); }
 .hall-count-num .u { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-xs); color: var(--muted); }
 .hall-count-lbl {
-  font-family: var(--font-num); text-transform: uppercase; letter-spacing: 0.09em;
+  font-family: var(--font-num); text-transform: uppercase; letter-spacing: var(--track-label);
   font-size: var(--fs-2xs); font-weight: 600; color: var(--label); line-height: 1.3;
 }
 .hall-idol-acts { margin-left: auto; display: flex; align-items: center; gap: var(--sp-2) var(--sp-4); flex-wrap: wrap; }
@@ -2718,15 +2798,15 @@ button.tl-go:focus-visible { outline-offset: 3px; }
 /* Mark in bulk: its button in the Idol's row; open, the panel goes under the row, on the right,
    below its button: two rows of three badges (label, then the badges), and after an action the
    line that undoes it. */
-.hall-bulk-toggle, .hall-undo { min-height: 36px; padding: var(--sp-1) var(--sp-4); font-size: var(--fs-2xs); }
+.hall-undo { min-height: var(--ctl); padding: var(--sp-1) var(--sp-4); font-size: var(--fs-2xs); }
 .hall-bulk { align-self: flex-end; display: grid; grid-template-columns: auto repeat(3, 40px); align-items: center; justify-content: start; gap: 0 var(--sp-2); }
 .hall-bulk-row { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: center; }
 .hall-bulk-row .lbl { padding-right: var(--sp-2); white-space: nowrap; }
-.hall-bulk-btn { min-height: 36px; padding: 0; }
+.hall-bulk-btn { min-height: var(--ctl); padding: 0; }
 .hall-bulk-done { grid-column: 1 / -1; display: flex; align-items: center; gap: var(--sp-2) var(--sp-3); flex-wrap: wrap; font-size: var(--fs-xs); color: var(--ink-2); }
 
 /* The bronze, silver and radiant symbols are the game's badges; not won, in grey. */
-.hall-badge { flex: none; width: 20px; height: 20px; object-fit: contain; filter: grayscale(1) brightness(0.5); opacity: 0.75; }
+.hall-badge { flex: none; width: 20px; height: 20px; object-fit: contain; filter: var(--missing-art); }
 .hall-badge.is-on { filter: none; opacity: 1; }
 /* On the tile, at 12 px: the same language as the Idol and the plaque. */
 .ped-marks .hall-badge { width: 12px; height: 12px; }
@@ -2791,7 +2871,10 @@ button.tl-go:focus-visible { outline-offset: 3px; }
 }
 .ped-btn:hover .ped-niche::after, .ped-btn:focus-visible .ped-niche::after, .ped-btn.is-on .ped-niche::after { opacity: 1; }
 .ped-btn:hover { background: var(--veil); }
-.ped-btn.is-on { background: var(--picked); box-shadow: inset 0 0 0 1px var(--accent-line); z-index: 1; }
+/* The chosen statue (round 6): no frame (a frame says "press me"), its light on and its pedestal
+   in the accent, like a statue lit in the game. */
+.ped-btn.is-on { background: var(--picked); z-index: 1; }
+.ped-btn.is-on .ped-niche { border-bottom-color: var(--accent); }
 /* The dream version of a dreamcatcher pedestal: the same statue, with the Dream Nail. */
 .ped-dream { position: absolute; z-index: 1; top: var(--sp-1); right: var(--sp-1); width: 18px; height: 18px; object-fit: contain; filter: drop-shadow(0 0 2px var(--godhome-ink)); }
 /* The second fight of a lever pedestal carries the lever's glyph, in the same place. */
@@ -2800,7 +2883,7 @@ button.tl-go:focus-visible { outline-offset: 3px; }
 .ped-name {
   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
   min-height: 2.6em; padding: 0 var(--sp-1);
-  font-family: var(--font-num); font-size: var(--fs-2xs); line-height: 1.3; letter-spacing: 0.01em; color: var(--ink-2);
+  font-family: var(--font-num); font-size: var(--fs-2xs); line-height: 1.3; color: var(--ink-2);
 }
 .ped-btn.is-on .ped-name { color: var(--ink-strong); }
 .ped-marks { display: flex; justify-content: center; gap: var(--sp-1); }
@@ -2836,13 +2919,13 @@ button.tl-go:focus-visible { outline-offset: 3px; }
 .hall-art img { max-width: 100%; max-height: 100%; object-fit: contain; }
 .hall-plaque .jr-title { font-size: var(--fs-2xl); line-height: 1.15; margin-top: var(--sp-3); }
 .hall-title { font-size: var(--fs-md); color: var(--ink-2); font-style: italic; }
-.hall-other { font-size: var(--fs-xs); min-height: 36px; }
+.hall-other { font-size: var(--fs-xs); min-height: var(--ctl); }
 /* The table of the three difficulties: one row each, with its button to fight. */
 .hall-table { width: 100%; border-collapse: collapse; text-align: left; table-layout: auto; }
 .hall-table th, .hall-table td { padding: var(--sp-2) var(--sp-1); border-top: 1px solid var(--inv-line); vertical-align: middle; }
 .hall-table thead th {
   border-top: 0; padding-top: 0;
-  font-family: var(--font-num); text-transform: uppercase; letter-spacing: 0.09em;
+  font-family: var(--font-num); text-transform: uppercase; letter-spacing: var(--track-label);
   font-size: var(--fs-2xs); font-weight: 600; color: var(--label); line-height: 1.2;
 }
 .hall-table td { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-md); font-weight: 600; color: var(--ink-strong); }
@@ -2858,8 +2941,8 @@ button.tl-go:focus-visible { outline-offset: 3px; }
    lights up in --accent. */
 .hall-mark {
   display: inline-flex; align-items: center; gap: var(--sp-2);
-  min-height: 36px; padding: 0;
-  font-family: var(--font-display); font-weight: 600; letter-spacing: 0.04em; font-size: var(--fs-xs); color: var(--label);
+  min-height: var(--ctl); padding: 0;
+  font-family: var(--font-display); font-weight: 600; letter-spacing: var(--track-title); font-size: var(--fs-xs); color: var(--label);
   transition: color var(--dur-fast) var(--ease);
 }
 .hall-mark[aria-pressed="true"] { color: var(--ink-strong); }
@@ -2892,21 +2975,21 @@ button.tl-go:focus-visible { outline-offset: 3px; }
 /* The three difficulties to fight at: the label above and the three sharing the row below. */
 .hall-go-row:has(.hall-go) .lbl { flex: 1 1 100%; }
 .hall-go-row .hall-go { flex: 1 1 0; min-width: 0; padding-inline: var(--sp-2); }
-@media (max-width: 599px) { .hall-go-row .hall-go { font-size: var(--fs-2xs); letter-spacing: 0.04em; } }
+@media (max-width: 599px) { .hall-go-row .hall-go { font-size: var(--fs-2xs); letter-spacing: var(--track-title); } }
 /* Three primaries in a row can't all glow at once: the halo, only under the finger. */
 /* Three equals in a row: bone, without the primary's light, which three times over was a smudge. */
-.hall-go { min-height: 40px; padding: var(--sp-1) var(--sp-3); font-size: var(--fs-xs); letter-spacing: 0.06em; }
+.hall-go { min-height: var(--ctl); padding: var(--sp-1) var(--sp-3); font-size: var(--fs-xs); letter-spacing: var(--track-title); }
 .hall-notes { width: 100%; text-align: left; font-size: var(--fs-xs); color: var(--muted); line-height: 1.5; }
 .hall-arena { width: 100%; text-align: left; font-size: var(--fs-sm); color: var(--ink-2); line-height: 1.5; padding-top: var(--sp-3); border-top: 1px solid var(--inv-line); }
 .hall-arena b {
-  font-family: var(--font-num); text-transform: uppercase; letter-spacing: 0.09em;
+  font-family: var(--font-num); text-transform: uppercase; letter-spacing: var(--track-label);
   font-size: var(--fs-2xs); font-weight: 600; color: var(--label); margin-right: var(--sp-1);
 }
 
 /* In front of the statue. */
 .hall-diff {
   display: inline-flex; align-items: center; gap: var(--sp-1);
-  font-family: var(--font-num); text-transform: uppercase; letter-spacing: 0.09em;
+  font-family: var(--font-num); text-transform: uppercase; letter-spacing: var(--track-label);
   font-size: var(--fs-2xs); font-weight: 600; color: var(--ink-2);
 }
 .hall-head-acts { margin-left: auto; display: flex; gap: var(--sp-2); flex-wrap: wrap; }
@@ -2924,7 +3007,7 @@ button.tl-go:focus-visible { outline-offset: 3px; }
 .mini-orn { width: 132px; height: auto; }
 .mini-orn.is-ftr { width: 72px; }
 .mini-lbl {
-  font-family: var(--font-display); font-weight: 600; font-size: var(--fs-2xs); letter-spacing: 0.1em; text-transform: uppercase;
+  font-family: var(--font-display); font-weight: 600; font-size: var(--fs-2xs); letter-spacing: var(--track-caps); text-transform: uppercase;
   color: var(--label); transition: color var(--dur) var(--ease);
 }
 .hall-mini:is(:hover, :focus-visible, [aria-pressed="true"]) { opacity: 1; background: var(--veil); }
@@ -2955,7 +3038,7 @@ button.tl-go:focus-visible { outline-offset: 3px; }
 .tablet-hdr { width: min(100%, calc(var(--tu) * 28.8)); height: auto; }
 .tablet-title {
   margin-top: calc(var(--tu) * 0.4); font-family: var(--font-display); font-size: calc(var(--tu) * 1.7);
-  font-weight: 400; letter-spacing: 0.02em; line-height: 1.1; color: var(--ink-strong); text-align: center;
+  font-weight: 400; letter-spacing: var(--track-title); line-height: 1.1; color: var(--ink-strong); text-align: center;
 }
 /* Eleven rows, filled by columns, as in the game: top to bottom and then to the right. */
 .tablet-list {
@@ -3047,7 +3130,7 @@ button.tl-go:focus-visible { outline-offset: 3px; }
   .hall-counts { flex: 1 1 100%; justify-content: space-between; gap: var(--sp-2); }
   .hall-idol-acts { flex: 1 1 100%; margin-left: 0; flex-wrap: nowrap; justify-content: space-between; }
   .hall-bulk { align-self: flex-start; }
-  .hall-bulk-toggle { white-space: nowrap; padding: var(--sp-1) var(--sp-2); }
+  .hall-bulk-toggle { white-space: nowrap; }
 }
 
 /* ── The Hunter's Journal: your game ───────────────────────────────────
@@ -3081,8 +3164,8 @@ button.tl-go:focus-visible { outline-offset: 3px; }
 .hj-hunter-art { width: 110px; height: auto; align-self: end; }
 .hj-hunter-body { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; }
 /* The game's title when talking to him: a small "The" above "Hunter". */
-.hj-hunter-name { display: flex; flex-direction: column; font-family: var(--font-display); font-size: var(--fs-lg); font-weight: 600; letter-spacing: 0.1em; color: var(--ink-strong); line-height: 1.1; }
-.hj-hunter-name small { font-size: var(--fs-2xs); letter-spacing: 0.2em; color: var(--ink-2); }
+.hj-hunter-name { display: flex; flex-direction: column; font-family: var(--font-display); font-size: var(--fs-lg); font-weight: 600; letter-spacing: var(--track-caps); color: var(--ink-strong); line-height: 1.1; }
+.hj-hunter-name small { font-size: var(--fs-2xs); letter-spacing: var(--track-wide); color: var(--ink-2); }
 .hj-says { margin: 0; display: flex; flex-direction: column; gap: var(--sp-1); max-width: 60ch; font-size: var(--fs-sm); line-height: 1.5; color: var(--ink-2); }
 .hj-hunter-side {
   display: flex; flex-direction: column; gap: var(--sp-2); align-items: flex-start;
@@ -3095,7 +3178,7 @@ button.tl-go:focus-visible { outline-offset: 3px; }
 .hj-count-num b { font-size: var(--fs-xl); line-height: 1; }
 .hj-count-num .u, .hj-feat-num .u { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-style: normal; font-size: var(--fs-xs); color: var(--muted); }
 .hj-count-lbl, .hj-feat-lbl {
-  font-family: var(--font-num); text-transform: uppercase; letter-spacing: 0.09em;
+  font-family: var(--font-num); text-transform: uppercase; letter-spacing: var(--track-label);
   font-size: var(--fs-2xs); font-weight: 600; color: var(--label);
 }
 .hj-feat { display: flex; align-items: baseline; gap: var(--sp-2); }
@@ -3112,8 +3195,7 @@ button.tl-go:focus-visible { outline-offset: 3px; }
   margin-left: var(--sp-3); padding: var(--sp-2) var(--sp-4) 0 0; border-top: 1px solid var(--inv-line);
 }
 .hj-bulk-head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); }
-.hj-bulk-toggle { display: inline-flex; align-items: center; gap: var(--sp-2); min-height: 36px; font-size: var(--fs-sm); }
-.hj-bulk-toggle[aria-expanded="true"] { color: var(--ink-strong); border-bottom-color: var(--accent-line); }
+.hj-bulk-toggle { min-height: var(--ctl); }
 .hj-bulk-picks { display: inline-flex; align-items: center; gap: var(--sp-2); }
 .hj-bulk-sep { color: var(--line-ctl); }
 .hj-bulk { display: flex; flex-direction: column; gap: var(--sp-1); }
@@ -3122,33 +3204,19 @@ button.tl-go:focus-visible { outline-offset: 3px; }
 .hj-bulk-acts { display: flex; align-items: center; gap: 0 var(--sp-4); flex-wrap: wrap; }
 /* The actions and All · None, as text like the entry's state; dimmed if they wouldn't
    change anything. */
-.hj-bulk-btn, .hj-pick-btn {
-  min-height: 32px; padding: var(--sp-1) 0; font-family: var(--font-body); color: var(--ink-2);
-  border-bottom: 1px solid transparent;
-  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
-}
 .hj-bulk-btn { font-size: var(--fs-sm); }
 .hj-pick-btn { font-size: var(--fs-xs); }
-.hj-bulk-btn:hover:not(:disabled), .hj-pick-btn:hover:not(:disabled) { color: var(--accent); border-bottom-color: var(--accent-line); }
-.hj-bulk-btn:disabled, .hj-pick-btn:disabled { color: var(--muted); opacity: 0.55; cursor: default; }
+.hj-bulk-btn:disabled, .hj-pick-btn:disabled { opacity: 0.55; }
 .hj-bulk-btn i { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-style: normal; font-size: var(--fs-xs); color: var(--muted); }
 .hj-bulk-btn:hover:not(:disabled) i { color: var(--ink-2); }
 .hj-bulk-done { display: flex; align-items: baseline; gap: var(--sp-1) var(--sp-3); flex-wrap: wrap; font-size: var(--fs-xs); color: var(--ink-2); }
 .hj-undo { font-size: var(--fs-xs); }
-@media (pointer: coarse) { .hj-bulk-btn, .hj-pick-btn { min-height: 44px; } }
 /* Each row's checkbox, in front of the medallion. Picked, it fills with the accent: it's a state
    of what responds to the finger. The ones that never change keep the space, so the column
    doesn't go out of line. With Shift a range is picked: with no text selection in between. */
 .hj-list li.is-picking { display: flex; align-items: stretch; -webkit-user-select: none; user-select: none; }
 .hj-list li.is-picking .hj-row { flex: 1 1 auto; min-width: 0; }
 .hj-pick { flex: none; width: 32px; display: grid; place-items: center; }
-.hj-box {
-  width: 18px; height: 18px; display: grid; place-items: center;
-  border: 1px solid var(--line-ctl); background: var(--card); color: var(--bg);
-  transition: border-color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease);
-}
-.hj-pick:hover .hj-box { border-color: var(--accent-line); }
-.hj-pick[aria-checked="true"] .hj-box { background: var(--accent); border-color: var(--accent); }
 .hj-row.is-picked:not(.is-cur) { background: var(--accent-soft); }
 @media (pointer: coarse) { .hj-pick { width: 44px; } }
 
@@ -3164,6 +3232,7 @@ button.tl-go:focus-visible { outline-offset: 3px; }
   margin-bottom: var(--sp-2);
   container-type: size;   /* the page's portrait is sized in proportion to the book */
 }
+.hj-index > .search { flex: none; margin: 0 var(--sp-4) 0 var(--sp-3); }
 .hj-index {
   position: relative; display: flex; flex-direction: column; min-height: 0; padding: var(--sp-4) 0 0 var(--sp-1);
 }
@@ -3180,33 +3249,19 @@ button.tl-go:focus-visible { outline-offset: 3px; }
 /* As on the Arena's page: at the top right, level with the portrait. */
 .hj-folio {
   position: absolute; top: var(--sp-2); right: 0;
-  font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-2xs); letter-spacing: 0.09em; color: var(--muted);
+  font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-2xs); letter-spacing: var(--track-label); color: var(--muted);
 }
-.hj-search {
-  flex: none; font-family: var(--font-body); font-size: var(--fs-md); color: var(--ink);
-  background: transparent; border: 0; border-bottom: 1px solid var(--line-ctl);
-  padding: var(--sp-2) 0; margin: 0 var(--sp-4) 0 var(--sp-3); min-height: 44px;
-  -webkit-appearance: none; appearance: none; border-radius: 0;
-  transition: border-color var(--dur) var(--ease);
-}
-.hj-search:hover { border-bottom-color: var(--accent-line); }
-.hj-search::placeholder { color: var(--muted); }
 /* The state tabs, under the search box: text with its count below and the chosen one underlined,
    like the Combat tabs. Four in the column: the label goes small and on one line, and the
    spare space is shared out. */
 .hj-show { flex: none; padding: var(--sp-3) var(--sp-4) var(--sp-2) var(--sp-3); }
 .hj-tabs { display: flex; justify-content: space-between; gap: var(--sp-2); width: 100%; }
 .hj-tabs button {
-  display: flex; flex-direction: column; align-items: center; gap: 1px; min-height: 40px; padding: var(--sp-1) 0;
-  font-family: var(--font-body); font-size: var(--fs-xs); line-height: 1.2; white-space: nowrap; color: var(--muted);
-  border-bottom: 1px solid transparent;
-  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+  display: flex; flex-direction: column; align-items: center; gap: 1px; padding: var(--sp-1) 0;
+  font-family: var(--font-body); font-size: var(--fs-xs); line-height: 1.2; white-space: nowrap;
 }
-.hj-tabs button:hover { color: var(--accent); }
-.hj-tabs button[aria-pressed="true"] { color: var(--ink-strong); border-bottom-color: var(--accent-line); }
 .hj-tabs i { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-style: normal; font-size: var(--fs-2xs); color: var(--muted); }
 .hj-tabs button[aria-pressed="true"] i { color: var(--ink-2); }
-.hj-search:focus-visible { outline-offset: 2px; }
 .hj-list { position: relative; flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: var(--sp-2) var(--sp-3) var(--sp-2) var(--sp-3); }
 /* The rows, like the Arena picker's: on hover, a veil; the one you're reading, in its rectangle
    (--picked with the accent's rule). */
@@ -3218,13 +3273,12 @@ button.tl-go:focus-visible { outline-offset: 3px; }
   transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
 }
 .hj-row:hover { background: var(--veil); color: var(--ink); }
-.hj-row.is-cur { background: var(--picked); color: var(--ink-strong); border-color: var(--accent-line); }
+.hj-row.is-cur { background: var(--picked); color: var(--ink-strong); box-shadow: inset 2px 0 0 var(--accent); }
 .hj-row.is-unseen { color: var(--muted); }
 .hj-row.is-unseen.is-cur { color: var(--ink-2); }
 .hj-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hj-left { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-xs); color: var(--muted); }
 .hj-row.is-cur .hj-left { color: var(--ink-2); }
-.hj-empty { font-size: var(--fs-sm); color: var(--muted); font-style: italic; padding: var(--sp-3) 0; }
 
 /* The Journal medallion (84 × 96: the ring and its two finials). Complete, it carries the game's
    frame on top (Bestiary frame upgrade.png, 102 × 105), centred on the ring. Not encountered,
@@ -3235,7 +3289,7 @@ button.tl-go:focus-visible { outline-offset: 3px; }
 /* With the frame, the medallion's white ring would peek out between its points: it's clipped inside
    the ring (radius 38 of 84, measured on the sprites), and the frame acts as the border. */
 .hj-row.is-done .hj-medal img:first-child { clip-path: circle(42% at 50% 50%); }
-.hj-row.is-unseen .hj-medal img { filter: var(--hj-unseen-medal); }
+.hj-row.is-unseen .hj-medal img { filter: var(--missing-art); }
 /* Right after marking (hjWas): the entry just encountered lights its medallion up from the shadow;
    the one just completed, its frame. The number of defeats and the counts that moved flash, and a
    feat reached lights up. Changing the list's tabs, the list fades in. */
@@ -3301,7 +3355,7 @@ button.tl-go:focus-visible { outline-offset: 3px; }
 .hj-art.is-medal img { height: 168px; }
 .hj-art.is-shadow img { filter: var(--hj-unseen-art); }
 .hj-art img.is-missing { visibility: hidden; }
-.hj-page-name { font-family: var(--font-display); font-size: var(--fs-2xl); font-weight: 600; letter-spacing: 0.06em; line-height: 1.15; text-wrap: balance; color: var(--ink-strong); margin-top: var(--sp-3); }
+.hj-page-name { font-family: var(--font-display); font-size: var(--fs-2xl); font-weight: 600; letter-spacing: var(--track-title); line-height: 1.15; text-wrap: balance; color: var(--ink-strong); margin-top: var(--sp-3); }
 /* Where it's found, under the name: a quiet line in the body serif, as the game sets a place. */
 .hj-zone { margin: 0; font-style: italic; font-size: var(--fs-sm); color: var(--muted); }
 /* The Journal's flourish: the screen's only ornament. */
@@ -3315,7 +3369,7 @@ button.tl-go:focus-visible { outline-offset: 3px; }
 /* The book's two voices: the description in the serif, and the Hunter's notes handwritten, in
    capitals. Undeciphered, their ink is there but blurred; on completing the entry it settles. */
 .hj-notes, .hj-sealed {
-  font-family: var(--font-hand); font-size: var(--fs-lg); text-transform: uppercase; letter-spacing: 0.03em;
+  font-family: var(--font-hand); font-size: var(--fs-lg); text-transform: uppercase; letter-spacing: var(--track-title);
   line-height: 1.7; color: var(--ink-2); white-space: pre-line;
 }
 .hj-sealed { filter: var(--hj-sealed); opacity: 0.8; -webkit-user-select: none; user-select: none; pointer-events: none; }
@@ -3329,22 +3383,20 @@ button.tl-go:focus-visible { outline-offset: 3px; }
 /* "Defeat [−] N [+] more to decipher the Hunter's notes.": the game's sentence, and the
    number is the control. The number goes in --font-num, like every figure. */
 .hj-kills { font-size: var(--fs-md); color: var(--ink-2); line-height: 2.2; }
-.hj-stepper, .stepper { display: inline-flex; align-items: center; vertical-align: middle; margin: 0 var(--sp-1); border: 1px solid var(--line-ctl); background: var(--card); line-height: 1; }
-.hj-step, .step { width: 32px; min-height: 32px; font-family: var(--font-num); font-size: var(--fs-md); color: var(--ink-2); }
-.hj-step:hover:not(:disabled), .step:hover:not(:disabled) { color: var(--accent); background: var(--card-idle); }
+/* The − and + are icon buttons (their own ring), so the group carries no box: the number sits
+   between them in a sunken well with its rule, like the other fields. */
+.hj-stepper, .stepper { display: inline-flex; align-items: center; gap: var(--sp-half); vertical-align: middle; margin: 0 var(--sp-1); line-height: 1; }
+.hj-step, .step { width: var(--ctl-sm); min-height: var(--ctl-sm); font-family: var(--font-num); font-size: var(--fs-md); color: var(--ink-2); }
+.pgm-zoom .step:hover:not(:disabled) { color: var(--accent); background: var(--card-idle); }
 .hj-step:disabled, .step:disabled { color: var(--line-ctl); }
 .hj-count, .step-count {
-  width: 4.5ch; min-height: 32px; padding: 0 var(--sp-1); text-align: center;
+  width: 4.5ch; min-height: var(--ctl-sm); padding: 0 var(--sp-1); text-align: center;
   font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-md); font-weight: 600; color: var(--ink-strong);
-  background: var(--card); border: 0; border-left: 1px solid var(--line-ctl); border-right: 1px solid var(--line-ctl); border-radius: 0;
+  background: var(--card); border: 0; border-bottom: 1px solid var(--line-ctl); border-radius: 0;
   -moz-appearance: textfield; appearance: textfield;
 }
 .hj-count::-webkit-outer-spin-button, .hj-count::-webkit-inner-spin-button,
 .step-count::-webkit-outer-spin-button, .step-count::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-@media (pointer: coarse) {
-  .hj-step, .step { width: 44px; min-height: 44px; }
-  .hj-count, .step-count { min-height: 44px; }
-}
 /* The entry's state, at the top of the page and in view on entering: the states as text,
    like the tabs, with the chosen one underlined. "In your game" is left only for the screen
    reader (the group's aria-label). */
@@ -3353,14 +3405,7 @@ button.tl-go:focus-visible { outline-offset: 3px; }
   padding-bottom: var(--sp-3); border-bottom: 1px solid var(--inv-line);
 }
 .hj-state { display: inline-flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; justify-content: center; }
-.hj-state button {
-  min-height: 36px; padding: var(--sp-1) 0; font-family: var(--font-body); font-size: var(--fs-md); color: var(--muted);
-  border-bottom: 1px solid transparent;
-  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
-}
-.hj-state button:hover { color: var(--accent); }
-.hj-state button[aria-pressed="true"] { color: var(--ink-strong); border-bottom-color: var(--accent-line); }
-.hj-state-sep { color: var(--line-ctl); }
+.hj-state button { font-family: var(--font-body); font-size: var(--fs-md); }
 .hj-state-lbl { font-size: var(--fs-xs); color: var(--muted); }
 .hj-state-lbl::after { content: ':'; }
 
@@ -3451,7 +3496,7 @@ button.tl-go:focus-visible { outline-offset: 3px; }
 .save.is-active:not(.is-free) .save-main { grid-template-areas: "n tag nail" "n hud nail" "n facts nail"; }
 .save-tag {
   grid-area: tag; justify-self: start; display: inline-flex; align-items: center; gap: var(--sp-2);
-  font-size: var(--fs-2xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2);
+  font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ink-2);
 }
 .save-tag::before {
   content: ''; width: var(--sp-2); height: var(--sp-2); transform: rotate(45deg);
@@ -3462,7 +3507,7 @@ button.tl-go:focus-visible { outline-offset: 3px; }
 .save:has(> .save-main:hover) .save-nail img { filter: drop-shadow(0 0 10px color-mix(in oklab, var(--tint) 45%, transparent)); }
 .save-facts { grid-area: facts; display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-6); }
 .save-fact { display: inline-flex; align-items: baseline; gap: var(--sp-2); }
-.save-k { font-size: var(--fs-2xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--label); }
+.save-k { font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); }
 .save-fact b { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-md); color: var(--ink-strong); }
 .save-fact .u { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-xs); }
 /* The slot's buttons: a menu in the second column, behind a rule, one under the other. */
@@ -3474,7 +3519,7 @@ button.tl-go:focus-visible { outline-offset: 3px; }
 /* The file the slot follows, above its buttons; on the one you're in, how the link is. */
 .save-link { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-1); padding: 0 var(--sp-4) var(--sp-2); font-size: var(--fs-xs); color: var(--ink-2); }
 .save-link-t { font-family: var(--font-num); overflow-wrap: anywhere; }
-.save-link b { font-family: var(--font-body); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; font-size: var(--fs-2xs); color: var(--ink-strong); }
+.save-link b { font-family: var(--font-body); font-weight: 600; letter-spacing: var(--track-label); text-transform: uppercase; font-size: var(--fs-2xs); color: var(--ink-strong); }
 .save-link.is-live b { color: var(--good); }
 .save-link.is-paused b, .save-link.is-lost b { color: var(--cond); }
 .save-link .text-btn { font-size: var(--fs-xs); }
@@ -3488,8 +3533,8 @@ button.tl-go:focus-visible { outline-offset: 3px; }
    Quieter than the slot itself: they're what you do to it, not what it holds. */
 .save-act {
   position: relative; display: inline-flex; align-items: center; gap: var(--sp-2);
-  min-height: 40px; padding: var(--sp-1) var(--sp-4);
-  font-family: var(--font-display); font-weight: 600; font-size: var(--fs-xs); letter-spacing: 0.1em; text-transform: uppercase;
+  min-height: var(--ctl); padding: var(--sp-1) var(--sp-4);
+  font-family: var(--font-display); font-weight: 600; font-size: var(--fs-xs); letter-spacing: var(--track-caps); text-transform: uppercase;
   color: var(--label); transition: color var(--dur) var(--ease);
 }
 .save-act:hover, .save-act:focus-visible { color: var(--ink-strong); }
@@ -3534,7 +3579,7 @@ button.tl-go:focus-visible { outline-offset: 3px; }
 }
 .save.is-free .save-n img { height: var(--sp-12); width: auto; }
 .save-name { grid-area: name; display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-1) var(--sp-4); }
-.save-name b { font-family: var(--font-display); font-weight: 600; text-transform: uppercase; letter-spacing: 0.14em; font-size: var(--fs-md); color: var(--ink-strong); }
+.save-name b { font-family: var(--font-display); font-weight: 600; text-transform: uppercase; letter-spacing: var(--track-caps); font-size: var(--fs-md); color: var(--ink-strong); }
 /* An empty slot is its one way in, where the game's says New Game: the number unlit and «Import
    from the game», with its tray, between the menu's pointers (a save only comes from the file). */
 .save.is-empty .save-main { grid-template-areas: "n new new"; min-height: calc(var(--sp-16) + var(--sp-6)); }
@@ -3542,7 +3587,7 @@ button.tl-go:focus-visible { outline-offset: 3px; }
 .save-new {
   grid-area: new; justify-self: start; position: relative; display: inline-flex; align-items: center; gap: var(--sp-2);
   margin-inline-start: calc(var(--sp-4) * -1); padding-inline: var(--sp-4);
-  font-family: var(--font-display); font-weight: 600; text-transform: uppercase; letter-spacing: 0.14em; font-size: var(--fs-md);
+  font-family: var(--font-display); font-weight: 600; text-transform: uppercase; letter-spacing: var(--track-caps); font-size: var(--fs-md);
   color: var(--ink-2); transition: color var(--dur) var(--ease);
 }
 .save.is-empty .save-main:hover .save-new, .save.is-empty .save-main:focus-visible .save-new,
@@ -3566,7 +3611,7 @@ button.tl-go:focus-visible { outline-offset: 3px; }
   content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
   background: linear-gradient(270deg, color-mix(in oklab, var(--where) 70%, transparent), transparent 65%);
 }
-.save-where { flex-basis: 100%; font-family: var(--font-display); font-size: var(--fs-sm); letter-spacing: 0.06em; color: var(--ink); }
+.save-where { flex-basis: 100%; font-family: var(--font-display); font-size: var(--fs-sm); letter-spacing: var(--track-title); color: var(--ink); }
 .save-shade { flex-basis: 100%; font-size: var(--fs-xs); color: var(--muted); }
 .save.is-clearing { pointer-events: none; }
 .save.is-clearing .save-foot { opacity: 0; transition: opacity var(--dur) var(--ease); }
@@ -3600,11 +3645,7 @@ button.tl-go:focus-visible { outline-offset: 3px; }
    game's profile screen would (masks appearing one by one, the nail, the time and the %) before
    anything is written. Only fades, and the Knight floats (design/02 §5: no slides, no bounce). */
 .imp-bar { display: flex; margin-bottom: calc(var(--sp-4) * -1); }
-.imp-back {
-  display: inline-flex; align-items: center; gap: var(--sp-2); min-height: 40px;
-  font-size: var(--fs-sm); color: var(--ink-2); transition: color var(--dur) var(--ease);
-}
-.imp-back:hover { color: var(--accent); }
+.imp-back { gap: var(--sp-2); min-height: var(--ctl); font-size: var(--fs-sm); }
 .imp .saves-note { margin-inline: auto; }
 .imp-mobile {
   max-width: var(--measure); margin: var(--sp-6) auto 0; padding: var(--sp-3) var(--sp-4);
@@ -3630,7 +3671,7 @@ button.tl-go:focus-visible { outline-offset: 3px; }
   font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-lg); color: var(--ink-strong);
 }
 .imp-step-body { min-width: 0; padding-top: var(--sp-2); display: flex; flex-direction: column; gap: var(--sp-3); }
-.imp-step-title { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: var(--fs-lg); letter-spacing: 0.04em; line-height: 1.25; color: var(--ink-strong); }
+.imp-step-title { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: var(--fs-lg); letter-spacing: var(--track-title); line-height: 1.25; color: var(--ink-strong); }
 .imp-text { margin: 0; max-width: var(--measure); font-size: var(--fs-sm); line-height: 1.6; color: var(--ink-2); text-wrap: pretty; }
 .imp-os { align-self: flex-start; }
 .imp-path {
@@ -3639,7 +3680,7 @@ button.tl-go:focus-visible { outline-offset: 3px; }
 }
 .imp-path code { flex: 1; min-width: 0; font-family: var(--font-num); font-size: var(--fs-sm); color: var(--ink); overflow-wrap: anywhere; user-select: all; }
 .imp-copy { flex-shrink: 0; font-size: var(--fs-sm); }
-.imp-copy.is-done { color: var(--ink-strong); border-bottom-color: transparent; }
+.imp-copy.is-done { color: var(--ink-strong); text-decoration-color: transparent; }
 .imp-copy.is-done::before { content: '✓ '; }
 kbd {
   display: inline-block; padding: 0 var(--sp-1); border: 1px solid var(--line-ctl); border-bottom-width: 2px;
@@ -3672,7 +3713,7 @@ kbd {
 .imp-figure.is-shade { height: calc(var(--sp-16) * 1.75); }
 .imp-drop.is-drag .imp-figure { filter: drop-shadow(0 0 18px color-mix(in oklab, var(--tint) 45%, transparent)); }
 .imp-drop[data-state="reading"] .imp-figure { opacity: 0.45; }
-.imp-drop-title, .imp-drop-drag { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: var(--fs-xl); letter-spacing: 0.04em; color: var(--ink-strong); }
+.imp-drop-title, .imp-drop-drag { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: var(--fs-xl); letter-spacing: var(--track-title); color: var(--ink-strong); }
 .imp-drop-drag, .imp-drop.is-drag .imp-drop-title { display: none; }
 .imp-drop.is-drag .imp-drop-drag { display: block; }
 .imp-drop.is-drag .imp-or, .imp-drop.is-drag .imp-still .btn { visibility: hidden; }
@@ -3686,7 +3727,7 @@ kbd {
   gap: var(--sp-3) var(--sp-6); text-align: center;
 }
 .imp-fname { grid-area: fname; margin: 0 0 var(--sp-2); display: inline-flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: var(--sp-2); font-family: var(--font-num); font-size: var(--fs-sm); color: var(--ink-2); }
-.imp-steel { margin-left: var(--sp-2); padding: var(--sp-half) var(--sp-2); border: 1px solid var(--line-ctl); font-family: var(--font-body); font-size: var(--fs-2xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-strong); }
+.imp-steel { margin-left: var(--sp-2); color: var(--ink-strong); }
 .imp-hud { grid-area: hud; display: flex; align-items: center; flex-wrap: wrap; gap: var(--sp-2) var(--sp-4); justify-content: flex-start; }
 .imp-hud .save-masks img { height: var(--sp-8); }
 .imp-hud .save-vessels img { height: var(--sp-6); }
@@ -3706,17 +3747,12 @@ kbd {
 .imp-pan.is-done { background: var(--ink-strong); border-color: var(--ink-strong); box-shadow: 0 0 8px color-mix(in oklab, var(--ink-strong) 45%, transparent); }
 .imp-warn { grid-area: warn; margin: 0; font-size: var(--fs-sm); color: var(--bad); }
 /* Following the game (js/live.js): a row of the game's options menu. What it is in the text's
-   ink, and its value on a button (.btn, its hairlines say it can be pressed) with the rule's
+   ink, and its value on a button (.btn, its frame says it can be pressed) with the rule's
    diamond: lit in bone when it's on, hollow and dimmer when it's off. */
 .imp-sync { grid-area: sync; justify-self: center; display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); max-width: 44ch; margin-top: var(--sp-3); }
 .imp-sync-k { font-size: var(--fs-md); color: var(--ink-strong); }
-.imp-sync-v { min-width: calc(var(--sp-16) * 2.5); gap: var(--sp-3); color: var(--ink-strong); }
-.imp-sync-dot {
-  width: var(--sp-2); height: var(--sp-2); transform: rotate(45deg); border: 1px solid currentColor;
-  transition: background-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
-}
-.imp-sync-v[aria-checked="true"] .imp-sync-dot { background: var(--ink-strong); box-shadow: 0 0 8px color-mix(in oklab, var(--ink-strong) 55%, transparent); }
-.imp-sync-v[aria-checked="false"] { color: var(--label); }
+.imp-sync-v { font-size: var(--fs-md); }
+.imp-sync-v[aria-checked="true"] { color: var(--ink-strong); }
 .imp-sync-note { margin: 0; font-size: var(--fs-sm); line-height: 1.45; color: var(--muted); text-wrap: pretty; }
 .imp-actions { grid-area: actions; display: flex; flex-direction: column; align-items: center; gap: var(--sp-3); margin-top: var(--sp-3); }
 
@@ -3737,36 +3773,39 @@ kbd {
 @keyframes imp-float { 50% { transform: translateY(-6px); } }
 /* In the header, the Knight and the slot you're playing; on mobile, only the number beside him. */
 /* The save selector (saveLink): the Knight at a bench, under a lamp's light that breathes, and
-   the label in the game's menu capitals, like the slots' buttons (.save-act). On hover or focus,
-   the Knight at full light and the menu's pointers either side of the label (the focus mark). */
+   the label in the game's menu capitals, like the slots' buttons (.save-act). It's the way into
+   your saves, so it reads as pressable at rest (27-sep): the Knight at full light and the menu's
+   pointers already either side of the label, small; on hover or focus they open whole, the lamp
+   swells and the Knight glows (the focus mark). */
 .mh-save {
-  display: inline-flex; align-items: center; gap: 0; min-height: 44px; white-space: nowrap; text-decoration: none;
-  font-family: var(--font-display); font-weight: 600; font-size: var(--fs-xs); letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--ink-2); transition: color var(--dur) var(--ease);
+  display: inline-flex; align-items: center; gap: 0; min-height: var(--ctl); white-space: nowrap; text-decoration: none;
+  font-family: var(--font-display); font-weight: 600; font-size: var(--fs-xs); letter-spacing: var(--track-caps); text-transform: uppercase;
+  color: var(--ink); transition: color var(--dur) var(--ease);
 }
 .mh-save:focus-visible { outline: none; }
 .mh-save-fig { position: relative; isolation: isolate; display: grid; place-items: center; width: var(--sp-12); height: var(--sp-12); }
-.mh-save-fig img { height: var(--sp-12); width: auto; opacity: 0.85; transition: opacity var(--dur) var(--ease), filter var(--dur) var(--ease); }
+.mh-save-fig img { height: var(--sp-12); width: auto; transition: filter var(--dur) var(--ease); }
 .mh-save-light {
   position: absolute; inset: -25%; z-index: -1; pointer-events: none; opacity: 0.7;
   background: radial-gradient(closest-side, color-mix(in oklab, var(--tint-sheet) 22%, transparent), transparent);
   transition: opacity var(--dur-slow) var(--ease), transform var(--dur-slow) var(--ease);
 }
 .mh-save-lbl { position: relative; padding-inline: var(--sp-4); }
+.mh-save .save-fleur { opacity: 0.5; transform: translateY(-50%) scaleX(0.6); }
 .mh-save:is(:hover, :focus-visible, [aria-current="page"]) { color: var(--ink-strong); }
-.mh-save:is(:hover, :focus-visible, [aria-current="page"]) .mh-save-fig img { opacity: 1; filter: drop-shadow(0 0 6px var(--mote)); }
+.mh-save:is(:hover, :focus-visible, [aria-current="page"]) .mh-save-fig img { filter: drop-shadow(0 0 6px var(--mote)); }
 .mh-save:is(:hover, :focus-visible) .mh-save-light { opacity: 1; transform: scale(1.15); }
 .mh-save:is(:hover, :focus-visible) .save-fleur { opacity: 1; transform: translateY(-50%) scaleX(1); }
 @media (prefers-reduced-motion: no-preference) {
   .mh-save-light { animation: imp-breathe 5s var(--ease-fade) infinite alternate; }
   .mh-save:is(:hover, :focus-visible) .mh-save-light { animation: none; }
 }
-.mh-save-n { display: none; font-family: var(--font-num); font-variant-numeric: tabular-nums; }
+.mh-save-short { display: none; }
 /* Following the game (js/live.js): under the label, the rule's diamond and the state in small
    capitals. Live, the diamond lit in bone, breathing like the lamp; paused or with the file
    missing, hollow, in the notice's tint. On mobile, only the diamond, over the save's number. */
 .mh-save-lbl:has(.mh-live) { display: inline-flex; flex-direction: column; align-items: flex-start; gap: var(--sp-half); }
-.mh-live { display: inline-flex; align-items: center; gap: var(--sp-2); font-family: var(--font-body); font-weight: 600; font-size: var(--fs-2xs); letter-spacing: 0.08em; color: var(--ink-2); }
+.mh-live { display: inline-flex; align-items: center; gap: var(--sp-2); font-family: var(--font-body); font-weight: 600; font-size: var(--fs-2xs); letter-spacing: var(--track-label); color: var(--ink-2); }
 .mh-live-dot { width: var(--sp-2); height: var(--sp-2); transform: rotate(45deg); border: 1px solid currentColor; }
 .mh-save.is-live .mh-live-dot { background: var(--ink-strong); border-color: var(--ink-strong); box-shadow: 0 0 8px color-mix(in oklab, var(--ink-strong) 55%, transparent); }
 .mh-save.is-paused .mh-live, .mh-save.is-lost .mh-live { color: var(--cond); }
@@ -3797,8 +3836,8 @@ kbd {
   .save.is-empty .save-main { min-height: calc(var(--sp-16) + var(--sp-2)); }
   .save-act-long { display: none; }
   .save-act-short { display: inline; }
-  .save-act { padding-inline: var(--sp-3); letter-spacing: 0.06em; }
-  .save-new { font-size: var(--fs-sm); letter-spacing: 0.1em; }
+  .save-act { padding-inline: var(--sp-3); letter-spacing: var(--track-title); }
+  .save-new { font-size: var(--fs-sm); letter-spacing: var(--track-caps); }
   .imp-hud .save-masks img { height: var(--sp-6); }
   .imp-hud .save-vessels img { height: var(--sp-4); }
   .save-main { grid-template-columns: var(--sp-8) minmax(0, 1fr) var(--sp-8); gap: var(--sp-2) var(--sp-3); padding: var(--sp-3) var(--sp-2); }
@@ -3815,18 +3854,20 @@ kbd {
   .save-vessels img { height: var(--sp-3); }
   .save-nail img { height: var(--sp-12); }
   .save-nail span { display: none; }
+  /* On a phone the Knight alone didn't say "your saves": larger, with a short word under him
+     (Saves, or Save 1 after the state's diamond when it follows the game), in a 44 px target. */
   .mh-save-lbl, .mh-save-lbl:has(.mh-live) { display: none; }
-  .mh-save-n { display: inline; }
-  /* Out of the flow: the selector keeps its width and the Knight his place. */
-  .mh-save-n { position: relative; }
-  .mh-save:is(.is-live, .is-paused, .is-lost) .mh-save-n::after {
-    content: ''; position: absolute; left: 50%; bottom: calc(100% + var(--sp-1)); width: 6px; height: 6px;
-    transform: translateX(-50%) rotate(45deg); border: 1px solid var(--cond);
-  }
-  .mh-save.is-live .mh-save-n::after { border-color: var(--ink-strong); background: var(--ink-strong); box-shadow: 0 0 8px color-mix(in oklab, var(--ink-strong) 55%, transparent); }
-  .mh-save { gap: 0; min-width: var(--sp-6); justify-content: center; }  /* 24 px: the minimum target (WCAG 2.5.8) */
+  .mh-save { flex-direction: column; justify-content: center; gap: var(--sp-half); min-width: var(--ctl); min-height: var(--ctl); }
   .mh-save-fig { width: var(--sp-8); height: var(--sp-8); }
-  .mh-save-fig img { height: var(--sp-6); }
+  .mh-save-fig img { height: var(--sp-8); }
+  .mh-save-short {
+    display: inline-flex; align-items: center; gap: var(--sp-1);
+    font-family: var(--font-body); font-size: var(--fs-2xs); letter-spacing: 0; text-transform: none; line-height: 1.2;
+  }
+  .mh-save:is(.is-live, .is-paused, .is-lost) .mh-save-short::before {
+    content: ''; flex: none; width: var(--diamond); height: var(--diamond); transform: rotate(45deg); border: 1px solid var(--cond);
+  }
+  .mh-save.is-live .mh-save-short::before { border-color: var(--ink-strong); background: var(--ink-strong); box-shadow: 0 0 8px color-mix(in oklab, var(--ink-strong) 55%, transparent); }
 }
 
 /* ── Hover and ambient, across the site ─────────────────────────────────────
@@ -3840,7 +3881,7 @@ kbd {
   /* Your game: the nail under the pointer takes a faint spotlight; the plates light their artwork
      and their halo swells, like Charms' (a spell's plate, while you point at one of its levels). */
   .nailpick:not(.is-on):hover::before { opacity: 0.45; }
-  .gplate-art::before { transition: filter var(--dur) var(--ease), transform var(--dur) var(--ease); }
+  .gplate-art::before { transition: opacity var(--dur) var(--ease), filter var(--dur) var(--ease), transform var(--dur) var(--ease); }
   .gplate-art img { transition: filter var(--dur) var(--ease); }
   :is(button.gplate:hover, .gplate:has(.lvlpick button:hover)) .gplate-art::before { filter: brightness(1.5); transform: scale(1.08); }
   :is(button.gplate:hover, .gplate:has(.lvlpick button:hover)).is-on .gplate-art img { filter: brightness(1.15) drop-shadow(0 0 8px color-mix(in oklab, var(--focus-glow) 45%, transparent)); }
@@ -3859,7 +3900,7 @@ kbd {
   /* The Journal: the row's medallion lights up. */
   .hj-medal img:first-child { transition: filter var(--dur) var(--ease); }
   .hj-row:not(.is-unseen):hover .hj-medal img:first-child { filter: brightness(1.2); }
-  .hj-row.is-unseen:hover .hj-medal img:first-child { filter: var(--hj-unseen-medal) brightness(1.6); }
+  .hj-row.is-unseen:hover .hj-medal img:first-child { filter: var(--missing-art) brightness(1.6); }
 }
 @media (prefers-reduced-motion: no-preference) {
   /* The Hunter's light and the Void Idol's breathe, very slowly, like a bench's lamp. */
@@ -3904,19 +3945,22 @@ kbd {
    are data, in bone; a full category turns to --good. The accent, only on what's touched. */
 .pg-body { display: block; }
 .pg-total { display: flex; flex-direction: column; align-items: center; gap: var(--sp-1); margin: var(--sp-2) 0 var(--sp-8); text-align: center; }
-.pg-total-k { font-size: var(--fs-2xs); letter-spacing: 0.12em; text-transform: uppercase; color: var(--label); }
+.pg-total-k { font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); }
 .pg-total-v { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; line-height: 1; color: var(--ink-strong); font-size: calc(var(--fs-xl) * 2.2); }
 .pg-total-v .u { font-size: 0.38em; font-weight: 400; color: var(--muted); }
 .pg-lead { max-width: 52ch; margin: var(--sp-2) 0 0; font-size: var(--fs-sm); line-height: 1.5; color: var(--muted); text-wrap: balance; }
 .pg-rows { list-style: none; margin: 0 auto; padding: 0; max-width: 900px; border-top: 1px solid var(--inv-line); }
 .pg-row { border-bottom: 1px solid var(--inv-line); }
 .pg-head {
-  width: 100%; display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr) auto; gap: var(--sp-2) var(--sp-4);
+  width: 100%; display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr) auto auto; gap: var(--sp-2) var(--sp-4);
   align-items: center; padding: var(--sp-3) var(--sp-2); text-align: left; transition: background var(--dur) var(--ease);
 }
 .pg-head:hover { background: var(--veil); }
 .pg-head:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
-.pg-row.is-open > .pg-head { background: var(--picked); box-shadow: inset 2px 0 0 var(--accent-line); }
+.pg-row.is-open > .pg-head { background: var(--picked); box-shadow: inset 2px 0 0 var(--accent); }
+/* It opens below, so it ends in the disclosure's ring (round 6), lit while open. */
+.pg-head .disc-ring { margin-left: 0; }
+.pg-head:is(:hover, :focus-visible, [aria-expanded="true"]) .disc-ring { color: var(--ink-strong); border-color: var(--accent); background-color: var(--accent-soft); }
 .pg-name { font-size: var(--fs-md); color: var(--ink); }
 .pg-pts { font-family: var(--font-num); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .pg-pts b { font-size: var(--fs-md); font-weight: 700; color: var(--ink-strong); }
@@ -3959,6 +4003,12 @@ kbd {
 .pgm-kind-n b { font-weight: 700; color: var(--ink-strong); }
 .pgm-kind-n .u { font-style: normal; }
 .pgm-kind.is-full .pgm-kind-n b { color: var(--good); }
+/* A layer is an on/off: the box in front (.check-box); off, its icon in grey. */
+.pg-area.pgm-kind { border-bottom: 0; }
+.pg-area.pgm-kind.is-on { color: var(--ink); background: none; }
+.pg-area.pgm-kind:hover { color: var(--ink-strong); }
+.pgm-kind:hover .check-box { border-color: var(--accent); }
+.pgm-kind:not(.is-on) :is(img, .pgm-ico) { filter: var(--missing-art); }
 /* The filter, under the map: a title with show all · hide all, the two choices, and the layers
    in four groups (collectibles, the 112%, places, yours), each a row of chips that wraps. */
 .pgm-filter { display: flex; flex-direction: column; gap: var(--sp-3); padding-top: var(--sp-3); border-top: 1px solid var(--inv-line); }
@@ -3967,25 +4017,15 @@ kbd {
 .pgm-all { display: inline-flex; gap: var(--sp-4); }
 .pgm-opts { display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-6); }
 .pgm-group { display: flex; flex-direction: column; gap: var(--sp-1); }
-.pgm-group-t { margin: 0; font-family: var(--font-body); font-size: var(--fs-xs); font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.pgm-group-t { margin: 0; font-family: var(--font-body); font-size: var(--fs-xs); font-weight: 400; letter-spacing: var(--track-label); text-transform: uppercase; color: var(--muted); }
 .pgm-filter .pg-areas { max-width: none; margin: 0; flex-wrap: wrap; overflow: visible; padding-bottom: 0; }
 .pgm-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-6); }
 .pgm-note { flex: 1 1 32ch; margin: 0; font-size: var(--fs-sm); color: var(--muted); }
-.pgm-found { display: inline-flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-sm); color: var(--ink-2); cursor: pointer; }
-.pgm-found input { accent-color: var(--accent); }
 /* The zoom, over the map's top right corner, as maps have it: always in sight, the large map too. */
 .pgm-zoom { position: absolute; z-index: 3; top: var(--sp-3); right: var(--sp-3); display: inline-flex; border: 1px solid var(--line-ctl); background: var(--card); box-shadow: var(--shadow-md); }
 /* The search, beside the zoom: a line to type on, as the Journal's, and its results under it,
    over the map, each with its picture, its name and where it is; the one chosen by the keys lit. */
 .pgm-search { position: relative; flex: 1 1 14rem; max-width: 22rem; }
-.pgm-q {
-  width: 100%; min-height: 40px; padding: var(--sp-1) 0; font-family: var(--font-body); font-size: var(--fs-md); color: var(--ink);
-  background: transparent; border: 0; border-bottom: 1px solid var(--line-ctl); border-radius: 0;
-  -webkit-appearance: none; appearance: none; transition: border-color var(--dur) var(--ease);
-}
-.pgm-q:hover { border-bottom-color: var(--accent-line); }
-.pgm-q::placeholder { color: var(--muted); }
-.pgm-q:focus-visible { outline-offset: 2px; }
 .pgm-results {
   position: absolute; z-index: 3; top: calc(100% + var(--sp-1)); left: 0; right: 0; min-width: 16rem;
   list-style: none; margin: 0; padding: var(--sp-1) 0; max-height: 22rem; overflow-y: auto;
@@ -3993,8 +4033,9 @@ kbd {
 }
 .pgm-result { display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-1) var(--sp-3); cursor: pointer; }
 .pgm-result:hover, .pgm-result.is-cur { background: var(--picked); }
+.pgm-result.empty { cursor: default; padding-block: var(--sp-2); }
+.pgm-result.empty:hover { background: none; }
 .pgm-result.is-cur .pgm-card-t b { color: var(--accent); }
-.pgm-result.is-none { cursor: default; font-size: var(--fs-sm); color: var(--muted); }
 .pgm-result .pgm-card-art, .pgm-result .pgm-card-art img, .pgm-result .pgm-card-art svg { width: 24px; height: 24px; }
 .pgm-box { position: relative; height: min(72vh, 720px, 62vw + 120px); background: var(--bg); border: 1px solid var(--inv-line); overflow: hidden; }
 /* The large map, a choice (the zoom's third button, ⤢ / ⤡): on a computer it takes the window's whole
@@ -4036,7 +4077,7 @@ kbd {
    their size on screen, as the pins do (--k). */
 .pgm-names { pointer-events: none; }
 .pgm-name { text-anchor: middle; dominant-baseline: middle; fill: var(--ink-2); stroke: var(--bg); paint-order: stroke; }
-.pgm-name.is-area { font-family: var(--font-display); font-size: calc(var(--k, 0.5) * 0.6px); letter-spacing: 0.04em; stroke-width: calc(var(--k, 0.5) * 0.14px); opacity: 0.9; }
+.pgm-name.is-area { font-family: var(--font-display); font-size: calc(var(--k, 0.5) * 0.6px); letter-spacing: var(--track-title); stroke-width: calc(var(--k, 0.5) * 0.14px); opacity: 0.9; }
 .pgm-name.is-place { display: none; font-family: var(--font-body); font-size: calc(var(--k, 0.5) * 0.46px); stroke-width: calc(var(--k, 0.5) * 0.12px); }
 .pgm-svg.is-mid .pgm-name.is-place { display: block; }
 .pgm-svg.is-mid .pgm-name.is-area { display: none; }
@@ -4051,7 +4092,7 @@ kbd {
 .pgm-card-art img, .pgm-card-art svg { width: 32px; height: 32px; object-fit: contain; }
 .pgm-card-t { display: flex; flex-direction: column; font-size: var(--fs-sm); color: var(--ink-2); }
 .pgm-card-t b { color: var(--ink-strong); font-weight: 600; }
-.pgm-card-x { width: auto; height: auto; padding: 0 var(--sp-1); font-size: var(--fs-md); }
+
 
 /* The Map's filter by kind: chips in a row, the chosen ones with the accent's line. */
 .pg-areas { max-width: 900px; margin: 0 auto var(--sp-4); display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-2); }
@@ -4066,7 +4107,7 @@ kbd {
   .pg-areas { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: var(--sp-1); }
   .pg-areas::-webkit-scrollbar { display: none; }
   .pg-area { flex: none; }
-  .pg-head { grid-template-columns: minmax(0, 1fr) auto; }
+  .pg-head { grid-template-columns: minmax(0, 1fr) auto auto; }
   .pg-pips { grid-column: 1 / -1; grid-row: 2; }
   .pg-plates { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
@@ -4075,13 +4116,13 @@ kbd {
    The area's title card over its own light, the figures, then three columns: since last time,
    your shade and what's missing nearby. The figures in bone, as on the sheet. */
 .hm { display: block; }
-.hm-live { display: inline-flex; align-items: center; gap: var(--sp-2); font-weight: 600; font-size: var(--fs-2xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
+.hm-live { display: inline-flex; align-items: center; gap: var(--sp-2); font-weight: 600; font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ink-2); }
 .hm-live.is-paused, .hm-live.is-lost { color: var(--cond); }
 .hm-link-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--sp-2) var(--sp-4); }
 .hm-when { font-size: var(--fs-sm); color: var(--muted); }
 .hm-figs { display: flex; flex-wrap: wrap; gap: var(--sp-4) var(--sp-12); }
 .hm-fig { display: flex; flex-direction: column; gap: var(--sp-half); }
-.hm-fig-k { font-size: var(--fs-2xs); letter-spacing: 0.12em; text-transform: uppercase; color: var(--label); }
+.hm-fig-k { font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); }
 .hm-fig-v { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; font-size: var(--fs-xl); line-height: 1.1; color: var(--ink-strong); }
 .hm-fig-v .u { font-size: 0.55em; font-weight: 400; color: var(--muted); margin-left: 0.15em; }
 .hm-fig.is-big .hm-fig-v { font-size: calc(var(--fs-xl) * 2); }
@@ -4094,9 +4135,8 @@ kbd {
 .hm-item-art img { max-width: 100%; max-height: 100%; object-fit: contain; }
 .hm-item-name { font-size: var(--fs-sm); color: var(--ink); min-width: 0; }
 .hm-item-name small { display: block; font-size: var(--fs-xs); color: var(--muted); }
-.hm-item-k { font-size: var(--fs-2xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); text-align: right; }
+.hm-item-k { font-weight: 400; color: var(--muted); justify-content: flex-end; text-align: right; }
 .hm-item-v { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-sm); color: var(--ink-2); white-space: nowrap; }
-.hm-empty { font-size: var(--fs-sm); color: var(--muted); margin: 0; line-height: 1.5; }
 /* What's missing near your bench: small pictures, grey until found, each with its place. */
 .hm-near { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: var(--sp-2); align-self: stretch; }
 .hm-near span { display: flex; flex-direction: column; align-items: center; gap: var(--sp-1); font-size: var(--fs-2xs); color: var(--muted); text-align: center; line-height: 1.2; }
@@ -4109,8 +4149,8 @@ kbd {
   padding: var(--sp-8) var(--sp-4); margin: var(--sp-4) calc(-1 * var(--inv-pad)) 0; }
 .hmC-hero::before { content: ''; position: absolute; inset: 0; z-index: -1; opacity: 0.7;
   background: radial-gradient(ellipse 55% 80% at 50% 38%, var(--area-m), var(--area-d) 55%, transparent 80%); }
-.hmC-sup { font-family: var(--font-display); font-size: var(--fs-sm); letter-spacing: 0.3em; text-transform: uppercase; color: var(--ink-2); }
-.hmC-area { font-family: var(--font-display); font-size: clamp(1.8rem, 5vw, 3.2rem); font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-strong); line-height: 1.1; margin: 0; }
+.hmC-sup { font-family: var(--font-display); font-size: var(--fs-sm); letter-spacing: var(--track-wide); text-transform: uppercase; color: var(--ink-2); }
+.hmC-area { font-family: var(--font-display); font-size: clamp(1.8rem, 5vw, 3.2rem); font-weight: 400; letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--ink-strong); line-height: 1.1; margin: 0; }
 /* The bench under the name (js/app-home.js, a silhouette in the page's black with the area's light
    as its edge), with the Knight sitting on it: a picture of him (the sit strip, --kn-bench tall,
    the bench 2.75 of that wide), feet hanging in front of the seat, which lies at half the
@@ -4134,12 +4174,11 @@ kbd {
 .hmI-demo { pointer-events: none; user-select: none; opacity: 0.8;
   -webkit-mask: linear-gradient(to bottom, var(--bg) 50%, transparent 90%); mask: linear-gradient(to bottom, var(--bg) 50%, transparent 90%); }
 .hmI-demo .hmC-hero { margin-top: 0; padding-bottom: var(--sp-12); }
-.hmI-tag { font-size: var(--fs-2xs); font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted);
-  padding: var(--sp-half) var(--sp-3); border: 1px solid var(--inv-line); margin-bottom: var(--sp-4); }
+.hmI-tag { margin-bottom: var(--sp-4); }
 .hmI-since { display: none; width: min(100%, 420px); margin-top: var(--sp-6); text-align: left; flex-direction: column; gap: var(--sp-2); }
 .hmI-since .hm-list { align-self: stretch; }
 .hmI-cta { position: relative; margin-top: calc(-1 * var(--sp-16)); text-align: center; display: flex; flex-direction: column; align-items: center; gap: var(--sp-3); }
-.hmI-cta h3 { font-family: var(--font-display); font-size: var(--fs-xl); font-weight: 400; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-strong); margin: 0; }
+.hmI-cta h3 { font-family: var(--font-display); font-size: var(--fs-xl); font-weight: 400; letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--ink-strong); margin: 0; }
 .hmI-cta p { margin: 0 0 var(--sp-2); max-width: 46ch; color: var(--ink-2); font-size: var(--fs-md); line-height: 1.45; }
 .hmI-cta .btn { min-height: 48px; padding-inline: var(--sp-8); font-size: var(--fs-sm); }
 .hmI-drop { font-size: var(--fs-xs); color: var(--muted); }
@@ -4156,6 +4195,13 @@ kbd {
 .hmI-feat:is(:hover, :focus-visible), .hmI-way:is(:hover, :focus-visible) { border-top-color: var(--accent-line); }
 .hmI-feat:is(:hover, :focus-visible) b, .hmI-way:is(:hover, :focus-visible) b { color: var(--accent); }
 .hmI-feat:hover img { transform: translateY(calc(-1 * var(--sp-1))); }
+/* They lead to another screen (round 6): an arrow in the accent after the title says so at rest,
+   and steps forward under the pointer. */
+.hmI-feat b::after, .hmI-way b::after {
+  content: '→'; display: inline-block; margin-left: var(--sp-2); font-family: var(--font-num); font-weight: 400; color: var(--accent-ink);
+  transition: transform var(--dur) var(--ease);
+}
+.hmI-feat:is(:hover, :focus-visible) b::after, .hmI-way:is(:hover, :focus-visible) b::after { transform: translateX(var(--sp-1)); }
 /* The other way in, just trying builds: one row (a save isn't made by hand, so there's no second). */
 .hmI-or { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--sp-4); }
 .hmI-way { grid-template-columns: 40px minmax(0, 1fr); justify-items: start; text-align: left; column-gap: var(--sp-3); }

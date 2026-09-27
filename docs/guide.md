@@ -24,8 +24,10 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   site follows the browser's language, English if it's neither) and *Share*. On its right,
   what's yours: the save selector (the Knight and the save you're playing, or *Select save* in
   free mode; it opens [its screen](#saves)). It isn't a footnote link: the Knight stands under a
-  lamp's light that breathes, the label goes in the game's menu capitals, and on hover or focus
-  the Knight lights up and the menu's pointers appear either side. Behind
+  lamp's light that breathes, the label goes in the game's menu capitals, and it reads as
+  pressable at rest: the Knight at full light and the menu's two pointers already either side,
+  small; on hover or focus they open whole, the lamp swells and the Knight glows. On a phone, the
+  Knight larger, with *Saves* (or *Save n*) under him. Behind
   it, as behind the whole page, the main menu's atmosphere (`.atmos`, fixed to the window): a
   vignette that sinks the four edges to the menu's measured `#04060C`, **22 dust motes** rising
   slowly from the bottom of the window to the top (with `prefers-reduced-motion` they don't
@@ -157,17 +159,8 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
     game's sprite (`assets/hud/soul-meter.png`, the wiki's `Soul_Meter.png`), with the two eyes
     peeking out of the white, which is exactly how the wiki describes it: *"a circular meter
     that fills with white liquid, revealing two eye holes that give it the look of a face"*.
-    **Soul can also be spent by hand**, even though no figure changes, just to see it, and it
-    works as in the game: it's a single number, the orb fills first and the rest goes to the
-    vessels, in order, so there's never a full vessel with the orb half-full nor the second one
-    full with the first empty. Each tap on the orb casts a spell from your build (33, or 24
-    with Spell Twister): the orb drops and, if the vessels hold soul, **they refill it right
-    away** (half a second; the wiki says "after a short delay" without giving the figure, and
-    with `prefers-reduced-motion` it's instant). When there's not enough for another, the next
-    tap fills everything. A full vessel, when tapped, empties along with the ones to its right;
-    an empty one (or a half-full one, which happens with Spell Twister) fills, and with it
-    everything before it: the orb and the earlier vessels. The figure says how much you have
-    left ("165/198"). It isn't saved: on reload, soul is full. The reserve vessels
+    The soul is only drawn, always full: spending it by hand here changed no figure, so it's
+    spent in Combat. The reserve vessels
     are the HUD's circles, with the interface's soul inside (`assets/hud/soul.png`, a white
     disc). **Only the ones you have are drawn**: the one you're missing doesn't show as an
     empty ring, because an empty vessel reads as spent soul, not as a vessel that isn't yours —
@@ -210,7 +203,7 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
       the charms you wear —a click or a tap on one removes it, and the detail shows it; the
       grid puts it back— with a dark dot marking the next slot (with none equipped, the row is
       just that slot, with no text) and, in its
-      header, *Clear*, as text and unboxed; below, the
+      header, *Clear*, a text button; below, the
       row of notches — a lit white dot per notch used, a dark ring per free notch. They all
       take the same slot, so the row is the same length full as empty and filling one doesn't
       shift the others. The dots use the HUD sprite (`assets/hud/notch-ui.png`) as a CSS mask,
@@ -254,8 +247,9 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
       redoing the grid under the pointer, and each impact is computed on demand (`impact`);
 
   - the three **spells** and the three **Nail Arts**, **as plates**: the game's artwork on
-    black, frameless, with a white light behind it (soul is white) and the figure below. What
-    you haven't learnt comes out **as a silhouette and unlit**, like a dimmed Hall statue,
+    black, frameless, and the figure below; the white light (soul is white) goes only behind the
+    one under the pointer and, for a moment, the one that just changed, as the game's Inventory
+    lights the item under its cursor. What you haven't learnt comes out **greyed and half-lit**,
     instead of a box with a dash. The sprites are never stretched: the 192 px ones are scaled
     down and the fluke's, at 88, stays at its size;
   - **Effects**: what your charms do that doesn't show in the figures above —seeing your
@@ -298,9 +292,8 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
 - **With a mouse, what can be pressed says what it will do.** The nail damage and the six figures
   open the full sheet at their row: on hover the label takes the accent and the figure a soft
   white glow. The HUD previews the click, like the Inventory's pieces: the masks it
-  would fill come up to half light and the ones it would empty go dim; a vessel shows whether it
-  would fill or empty; and the orb shows the level a spell would leave, orb first and then the
-  vessels. The spell, art and effect plates light their artwork and their halo swells a little.
+  would fill come up to half light and the ones it would empty go dim (the soul is only drawn).
+  The spell, art and effect plates light their artwork, and their light comes up behind them.
   What can't be pressed (health, soul, the nail) doesn't react.
   Across the site the same rule holds: the screen bar lights the name of the tab you point at
   (on a phone, with the current tab's rule, faint, under it); on the Inventory the nail you point at takes a faint spotlight and the plates
@@ -314,14 +307,28 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   screen's rule glints now and then. On the HUD the soul's surface rises and falls a hair, a
   lifeblood mask breathes its blue, and the orb's rim glints while there's enough for a spell or a
   Focus.
-- **The buttons are the game's menu items** (`.btn`), like the save slots': the menu's capitals, no
-  box, and on hover or focus the menu's two pointers either side, which are also the focus mark.
-  So that they read as buttons at rest too (on a phone there's no hover), each one sits between
-  two hairlines in the accent that fade out at both ends; faint, they light up under the pointer.
-  The one the screen leads to (*Enter the pantheon*, *Again*, *Import from the game*…) goes in bone
-  with its hairlines whole and a soft light behind it; *Give up* turns red under the pointer, like *Clear Save*. The
-  segmented choices (the import's systems, the Journal picker's kinds, what to compare the sheet
-  with) are words in a row with the chosen one over the accent's rule.
+- **One set of controls across the site** (design/11-components.md, chosen on 27 September 2026;
+  `design/11-components.html` shows them all). Everything that can be touched reads as such at
+  rest, on a phone too, and **a frame means "press me"**, so what only informs carries none.
+  - **Buttons**, four kinds: the **menu** one (`.btn`: the menu's capitals in a thin frame with the
+    panels' corner brackets in the accent; the one the screen leads to, *Enter the pantheon*,
+    *Import from the game*…, with longer brackets and a veil of the accent; *Give up* and the like
+    in red), the **text** one (`.text-btn`: *Clear*, *Undo*, *All · None*, *← Saves*, underlined
+    with the accent's line), the **icon** one (`.icon-btn`: ✕, − and +, in a thin accent ring) and
+    the **disclosure** (`.disc-btn`: *See every stat*, the enemy picker, Progress's rows: the
+    chevron in that same ring, lit while open). The screens copied from the game (the Hall's
+    tablet, the save slots, the header's save selector) keep the game's unboxed controls.
+  - **Choosing**: one of a group (`.seg`: what to compare with, the import's systems, the
+    Journal's filters and an entry's state, the language, the spell and ability levels) are
+    words or pictures each on a faint accent line, the chosen one on the whole line; an on/off
+    (`.check`: the map's layers, the Journal's row picks, following the game) is a square box
+    filled with the accent when on; a search (`.search`) is a sunken well with the lens in front.
+  - **Showing**: a tag (`.tag`: *Example*, *Charm*…) is small capitals after the game's hollow
+    diamond, with no box; a notice above the screen (`.banner`) carries its level's rule on the
+    left (overcharm in magenta, a pantheon in the conditions' ochre, your real game in bone); an
+    empty list says so under a short rule with its diamond, with the action that solves it.
+  - **The open row** of a list (the Journal, the enemy picker, Progress) carries the accent's bar
+    on the left; the chosen statue or pantheon, its light on and its pedestal in the accent.
 - **The notices** (*Link copied*, a charm you can't touch in a pantheon, no soul for a spell…) are
   the game's on-screen messages, not a web card: the text in the game's face just under the
   screen bar —where the Journal's notice goes, and under the arena's band when it's out—, between two short rules with their diamond, over a soft dark veil so it reads on
@@ -335,7 +342,7 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   has a **lamp**, its tint's hue with a fixed lightness and more chroma (`--lamp`, derived in
   `css/app.css` with relative colour; without it, the tint itself). The rule and diamond under
   the title, the corner brackets, the cold spotlight behind the Knight, the nail and the
-  portraits (`--scene-glow`) and the halo behind the spell and art plates (`--halo-plate`) take
+  portraits (`--scene-glow`) and the light behind a plate under the pointer (`--halo-plate`) take
   it: blue-lavender on the sheet, pink-violet in combat, gold in Godhome, cyan in the Journal.
   The spotlight is as bright as the old cold one, so what's written over it keeps its AA. The
   screen bar's bottom rule takes the lamp of the screen in view. The figures and what responds
@@ -376,7 +383,7 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   be removed. **Lowering the notches keeps a state the game allows**: a charm only goes on with at
   least one notch free (the last one may overcharm you), so the last ones you equipped come off
   until the order you wore them in could have happened, and a notice says which (`normalize`
-  in `js/codec.js`, which applies it to links too). Next, the arts and the spells as small plates you tap (as a silhouette what you
+  in `js/codec.js`, which applies it to links too). Next, the arts and the spells as small plates you tap (greyed what you
   haven't learnt, with its figure what you have), and under each spell **its two levels as
   their own artwork** (Vengeful Spirit and Shade Soul…) after a dimmed "—" for not learnt; the
   chosen one carries the accent's veil. Below, the **abilities** that change some number, with
@@ -417,7 +424,7 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   **Equipment and items**, the rest of the game's Inventory, which changes no figure but is your
   game: the **equipment** (Mantis Claw, Monarch Wings, Crystal Heart, Isma's Tear, Dreamgate) and
   the **key items** (King's Brand, Lumafly Lantern, the City Crest and the three keys, the Tram
-  Pass, the Godtuner) as plates you tap, a silhouette until you have them; and **what you carry**
+  Pass, the Godtuner) as plates you tap, greyed until you have them; and **what you carry**
   (geo, essence, Pale Ore, Simple Keys, Rancid Eggs and the four relics), each with the Journal's
   [− N +], where the number can also be typed. The geo plate says what's in Millibelle's bank,
   and the head of the block what Lemm would pay for your relics (200, 450, 800 and 1200 geo each).
@@ -467,12 +474,26 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   (`save-sync`, once per visit). The hash with the build is never sent, and it
   counts nothing over `file://`, on `localhost` or in an iframe. Without it the site works the
   same (`track()` in `js/app.js`).
-- `es/index.html` — the same page in Spanish, at its own address (`/es/`) so that search
-  engines index the Spanish too: they ignore the hash, and with it `lang=es`. It's `index.html`
-  with a Spanish `<head>` (title, description, `canonical`, Open Graph) and `<base href="../">`,
-  so it loads the same files. It's generated with `npm run es` (`tools/es-page.js`) and never
-  edited by hand; `test/es-page.test.js` fails if it falls behind `index.html`. Both pages carry
-  the `hreflang` links to each other, and so does `sitemap.xml`.
+- The other pages — the same page again at the addresses people search for, since search
+  engines ignore the hash (and with it `view=` and `lang=`) and the History API can't replace it
+  over `file://` (`design/12-seo.md`). `es/index.html` is the home in Spanish, and each search
+  intent has a page in each language, opened on its screen: `save-analyzer/` ·
+  `es/analizador-de-partida/` (Your game), `112-checklist/` · `es/checklist-112/` (Progress),
+  `charm-calculator/` · `es/calculadora-de-amuletos/` (Charms), `map/` · `es/mapa/`,
+  `hunters-journal/` · `es/diario-del-cazador/`, `godhome/` · `es/hogar-de-dioses/` and
+  `boss-damage-calculator/` · `es/calculadora-de-danio/` (Combat). Each is `index.html` with its
+  own `<head>` (title, description, `canonical`, `hreflang` both ways, Open Graph, and JSON-LD
+  with its questions and, below the home, its breadcrumb), `<base href>` back to the root so it
+  loads the same files, `<html data-view>` with its screen, and its **About block** under the
+  screens: the text search engines read (a heading with the query, two paragraphs, the questions
+  and links to the other pages), in the page's language, shown only on its own screen (Your game on the homes) and language.
+  On its own screen and language a page keeps its title and description; elsewhere the site
+  writes them as always. A bare hash there means that page's screen (Charms on the homes), and
+  *Share* always links to the language's home, so a shared build still opens on Charms. They're
+  generated with `npm run pages` (`tools/pages.js`, the texts in `tools/pages-text.js`), which
+  also writes `index.html`'s own head fields, its About block and `sitemap.xml`; never edited by
+  hand, and `test/pages.test.js` fails if one falls behind. `debug.html` and
+  `debug-overflow.html` open one of them with `&page=map/`.
 - `css/tokens.css` — the tokens of the dark theme, the only one.
 - `css/app.css` — layout and components.
 - `js/i18n.js` — the interface language: `t(key)`, `pick({es, en})` and the number formats.
@@ -845,7 +866,7 @@ scoreboard in a row, the enemy, their attacks before yours, and the log.
 - In the commands, **your attacks**, in four groups: **Nail** (the nail and its arts),
   **Spells**, **Soul** (Focus and the Dream Nail) and **Charms** (Sharp Shadow, the Weaverlings,
   Dreamshield and *Wait*); only the ones you have show. Each is a plate, like the spells and arts
-  on the Charms screen: its artwork from the game on a soft white halo (soul is white), the name,
+  on the Charms screen: its artwork from the game (a soft white light behind it under the pointer), the name,
   the figure large in bone and, below, the soul it costs or gives with the game's soul. The "?"
   sits in the plate's top corner. When it can't be done right now, it says why ("Not enough soul",
   "Already at full health"). They come from your sheet, so they change with you.
@@ -1533,10 +1554,10 @@ masks, the nails and the buttons line up from one slot to the next.
   The slot's card says *Follows user1.dat* and, on the one you're in, **live**, **paused** or
   **file missing**, with *Stop following*. The header's save selector says it on every screen:
   under *Save n*, the rule's diamond and the state, lit in bone and breathing while live,
-  hollow in the notice's tint when paused or missing (on a phone, the diamond alone, over the
-  save's number); its tooltip names the file. The browser's permission doesn't outlive the page:
+  hollow in the notice's tint when paused or missing (on a phone, the diamond before *Save n*,
+  under the Knight); its tooltip names the file. The browser's permission doesn't outlive the page:
   after a reload (or a new visit) the link is **paused**, and a notice above the screen says so
-  —drawn like the import notice, one line over the bar's hairline, since nothing's wrong— with
+  —with the rule of the information level on its left, in bone, since nothing's wrong— with
   *Resume*, which asks the browser again (it needs the click). If the file is gone, the
   notice says the save keeps what it had and offers *Pick it again* (the import view for that
   slot). Clearing the slot, or importing into it with the option off, ends the link.
@@ -1545,18 +1566,6 @@ masks, the nails and the buttons line up from one slot to the next.
   the game*, its icon two arrows chasing each other that turn on hover: it opens the picker,
   the slot takes that file in at once (the game wins) and follows it from then on; on the save
   you're in, the browser asks for the file on that click too, and the link starts live.
-- **The notice for whoever's new**: on a computer (not a phone, nor an iPad asking for the
-  desktop site), while nobody has chosen a save (free mode, the four empty), a notice above
-  every screen but Saves (*Your real game*) says the game's save can be imported. It isn't a
-  box: one line under the screen bar with the bar's hairline beneath it, since nothing's wrong
-  (the pantheon's warning, which does cost something, keeps its box). Its button,
-  *Import from the game*, opens the import view for Save 1; its ✕ closes it. Either of the two,
-  or opening the import view from Saves, puts it away for good (`importHintOff` in
-  `hollow.prefs`), and choosing a save hides it as well.
-- **Your shade**: when the save you're in comes from the game and your shade waits somewhere, a
-  notice above every screen but Saves (*Your shade*) says where and with how much geo, drawn
-  like the import notice. Its ✕ hides it until the shade is another one (`shadeOff` in
-  `hollow.prefs`); a save without a shade takes it away.
 - **The import's preview** also says, quietly at the end of its line, the game's version that
   wrote the save and the mods it had (a save from before 1.5 counts some things otherwise:
   Oblobbles needed three defeats).

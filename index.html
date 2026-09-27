@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Hallownest Calculator: your Hollow Knight save live, 112% tracker and charms</title>
-<meta name="description" content="Follow your real Hollow Knight game: import your save and see your 112% item by item, the game's own map with what you're missing, your shade and the Hunter's Journal, up to date at every bench. Plus a charm calculator and a combat simulator against every boss.">
+<title>Hollow Knight save tracker, 112% checklist and charms · Hallownest Calculator</title>
+<meta name="description" content="Import your Hollow Knight save and see what's missing for 112%, the game's map with what's left and the Hunter's Journal, up to date at every bench. Plus a charm calculator.">
 <meta name="google-site-verification" content="gMOOsULKOT9I0m85tW4NHufweIQ18ptFx7TnwCWC4AM">
 <link rel="canonical" href="https://betorzdev.github.io/hallownest-calculator/">
 <link rel="alternate" hreflang="en" href="https://betorzdev.github.io/hallownest-calculator/">
@@ -12,8 +12,8 @@
 <link rel="alternate" hreflang="x-default" href="https://betorzdev.github.io/hallownest-calculator/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Hallownest Calculator">
-<meta property="og:title" content="Hallownest Calculator: your Hollow Knight save live, 112% tracker and charms">
-<meta property="og:description" content="Your real Hollow Knight game, followed live: the 112% item by item, the game's map with what you're missing, and what you got at every bench. Plus the charm calculator. In English and Spanish.">
+<meta property="og:title" content="Hollow Knight save tracker, 112% checklist and charms · Hallownest Calculator">
+<meta property="og:description" content="Import your Hollow Knight save and see what's missing for 112%, the game's map with what's left and the Hunter's Journal, up to date at every bench. Plus a charm calculator.">
 <meta property="og:url" content="https://betorzdev.github.io/hallownest-calculator/">
 <meta property="og:image" content="https://betorzdev.github.io/hallownest-calculator/assets/site/og.jpg">
 <meta property="og:image:width" content="1200">
@@ -47,6 +47,33 @@
   "url": "https://betorzdev.github.io/hallownest-calculator/"
 }
 </script>
+<!-- page-ld -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "en",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is it free? Do I need an account?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Free, no account and no ads. Your save never leaves your browser: it's read there and kept there."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does it work with the console version?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Reading the save needs the file, and only the computer version (Windows, macOS, Linux) keeps it where you can reach it. On console you can tick your progress by hand."
+      }
+    }
+  ]
+}
+</script>
+<!-- /page-ld -->
 <!-- Visit counts (GoatCounter: no cookies, doesn't count file://, localhost or iframes). Explicit
      https: a protocol-relative src would become file:// when opened locally. -->
 <script data-goatcounter="https://betorzdev.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
@@ -98,6 +125,32 @@
       <section class="gear pg" id="pg" aria-label="Progress" hidden></section>
       <section class="saves" id="saves" aria-label="Saves" hidden></section>
     </main>
+    <!-- about -->
+    <section class="about" id="about" lang="en" aria-labelledby="about-h">
+      <h1 id="about-h">Your Hollow Knight game, live</h1>
+      <p>Hallownest Calculator reads your Hollow Knight save file and shows what the game doesn't tell you: what's missing for 112%, item by item, where every grub, Mask Shard and Vessel Fragment you don't have yet is, on the game's own map, and how many Hunter's Journal entries are left. In Chrome and Edge it follows the file while you play, and catches up every time you rest at a bench.</p>
+      <p>It works without a save too: the charm calculator tells you how each of the Knight's stats changes with each charm (nail damage, hits per boss, soul, healing, spells), and the combat simulator takes your build against 180 enemies and bosses, Godhome included. Every number comes from the wiki, with the game's rounding, and every name from its official translation.</p>
+      <div class="about-faq">
+        <h2>Questions</h2>
+        <h3>Is it free? Do I need an account?</h3>
+        <p>Free, no account and no ads. Your save never leaves your browser: it's read there and kept there.</p>
+        <h3>Does it work with the console version?</h3>
+        <p>Reading the save needs the file, and only the computer version (Windows, macOS, Linux) keeps it where you can reach it. On console you can tick your progress by hand.</p>
+      </div>
+      <nav class="about-more" aria-label="More on the site">
+        <h2>More on the site</h2>
+        <ul>
+          <li><a href="save-analyzer/" data-page>Save analyzer</a></li>
+          <li><a href="112-checklist/" data-page>112% checklist</a></li>
+          <li><a href="charm-calculator/" data-page>Charm calculator</a></li>
+          <li><a href="map/" data-page>Map</a></li>
+          <li><a href="hunters-journal/" data-page>Hunter's Journal</a></li>
+          <li><a href="godhome/" data-page>Godhome</a></li>
+          <li><a href="boss-damage-calculator/" data-page>Boss damage calculator</a></li>
+        </ul>
+      </nav>
+    </section>
+    <!-- /about -->
     <footer class="colophon" id="colophon"></footer>
   </div>
 </div>

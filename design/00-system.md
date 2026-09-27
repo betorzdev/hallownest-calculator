@@ -174,6 +174,13 @@ aimed at making the site feel like the game without breaking §6:
 What's left from §5: the whole product, §5.11–14. (The fonts were self-hosted on 23 September;
 the WebP images were dropped on 25 September, see §6.)
 
+**27 September 2026: the component system.** With the content complete, the pass moved one level
+up, to the components that had been re-invented screen by screen. It goes round by round in
+[`11-components.md`](11-components.md), on the living catalogue [`11-components.html`](11-components.html).
+Round 1 added three token families: tracking (`--track-*`, four steps instead of 13 values),
+control heights (`--ctl-sm` / `--ctl`, 44 px with a finger) and interface icons (`.ic`, 12 or 16 px,
+1.6 px stroke).
+
 ## 1. What's right and mustn't be touched
 
 It's worth starting here, because it's more than it seems and it's the first thing that breaks

@@ -174,7 +174,7 @@
 
   const kbd = (k) => `<kbd translate="no">${esc(k)}</kbd>`;
   const FILE_ICON = '<svg class="imp-ficon" width="14" height="18" viewBox="0 0 14 18" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" aria-hidden="true"><path d="M1 1 H9 L13 5 V17 H1 Z"/><path d="M9 1 V5 H13"/></svg>';
-  const BACK = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.5 L3.5 6 L8 10.5"/></svg>';
+  const BACK = '<svg class="ic" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.5 L3.5 6 L8 10.5"/></svg>';
 
   function steps() {
     const sys = SYSTEMS[imp.os];
@@ -249,7 +249,7 @@
           <b>${num(m.pantheons.length)}</b><i class="u">/${num(PN.PANTHEONS.length)}</i></div>`;
       const full = store && S.list(store)[imp.n].snap;
       return `<div class="imp-found" role="status">
-          <p class="imp-fname" translate="no">${FILE_ICON}${esc(f.name)}${m.steel ? `<span class="imp-steel"${NT}>${esc(t('impSteel'))}</span>` : ''}</p>
+          <p class="imp-fname" translate="no">${FILE_ICON}${esc(f.name)}${m.steel ? `<span class="tag imp-steel"${NT}>${esc(t('impSteel'))}</span>` : ''}</p>
           <div class="imp-hud"><span class="save-masks">${masks}</span>${vessels ? `<span class="save-vessels">${vessels}</span>` : ''}</div>
           <div class="imp-nail"><img src="${D.art('nails', s.st.nail)}" alt="" width="80" height="360"><span${NT}>${esc(pick(D.NAILS[s.st.nail]))}</span></div>
           <p class="imp-meta">${metaBits}${ver}</p>
@@ -277,13 +277,12 @@
         ${imp.state === 'reading' ? '' : `<p class="imp-or">${esc(t('impOr'))}</p>${choose('impChoose', true)}`}
       </div>`;
   }
-  /* Following the game, as a row of the game's options menu: what it is, and its value
-     (Activado / Desactivado) on one of the site's buttons, so that it reads as something to
-     press, with the rule's diamond lit or hollow for the state. A press switches it. */
+  /* Following the game: what it is, and its value (Activado / Desactivado) on the site's on/off
+     box (.check), which reads as something to press. A press switches it. */
   const syncOpt = () => `<div class="imp-sync">
       <span class="imp-sync-k" id="imp-sync-k">${esc(t('impSync'))}</span>
-      <button type="button" class="btn imp-sync-v" role="switch" aria-checked="${imp.sync}" aria-labelledby="imp-sync-k"
-        data-act="importSync"><span class="imp-sync-dot" aria-hidden="true"></span><span class="imp-sync-t">${esc(t(imp.sync ? 'impSyncOn' : 'impSyncOff'))}</span></button>
+      <button type="button" class="check imp-sync-v" role="switch" aria-checked="${imp.sync}" aria-labelledby="imp-sync-k"
+        data-act="importSync"><span class="check-box" aria-hidden="true">${App.tick}</span><span class="imp-sync-t">${esc(t(imp.sync ? 'impSyncOn' : 'impSyncOff'))}</span></button>
       <p class="imp-sync-note">${esc(t('impSyncNote'))}</p>
     </div>`;
   const drop = () => `<div class="imp-drop" data-state="${imp.state}">
@@ -303,7 +302,7 @@
     const fresh = imp.fresh;
     imp.fresh = false;
     return `<div class="saves-body imp${fresh ? ' is-fresh' : ''}">${brackets}
-      <div class="imp-bar"><button type="button" class="imp-back" data-act="importClose">${BACK}${esc(t('savesTitle'))}</button></div>
+      <div class="imp-bar"><button type="button" class="text-btn imp-back" data-act="importClose">${BACK}${esc(t('savesTitle'))}</button></div>
       ${screenHead(esc(t('impTitle', { n: imp.n })), `<p class="saves-note">${esc(t('impLead'))}</p>`)}
       ${isMobile() ? `<p class="imp-mobile">${esc(t('impMobile'))}</p>` : ''}
       <div class="imp-grid">${steps()}${drop()}</div>

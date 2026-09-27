@@ -468,7 +468,7 @@
       <span class="pgm-card-art">${artHtml(th.art)}</span>
       <span class="pgm-card-t"><b${NT}>${esc(th.name)}</b>${th.where ? `<span${NT}>${esc(th.where)}</span>` : ''}${th.note ? `<span>${esc(th.note)}</span>` : ''}</span>
       ${btn}
-      <button type="button" class="banner-close pgm-card-x" data-act="pgmPick" data-id="" aria-label="${esc(t('importHintOff'))}">×</button>
+      <button type="button" class="icon-btn pgm-card-x" data-act="pgmPick" data-id="" aria-label="${esc(t('importHintOff'))}">${App.cross}</button>
     </div>`;
   }
   function paintCard() {
@@ -499,7 +499,7 @@
       const n = of.length ? `<span class="pgm-kind-n"><b>${App.NF[0].format(got)}</b><i class="u">/${App.NF[0].format(of.length)}</i></span>` : '';
       const art = D.COLLECTIBLE_KINDS[l] ? kindArt(l) : LAYER_ART[l];
       return `<button type="button" class="pg-area pgm-kind${layers.has(l) ? ' is-on' : ''}${of.length && got === of.length ? ' is-full' : ''}" data-act="pgmLayer" data-value="${l}" aria-pressed="${layers.has(l)}">
-        ${art ? artHtml(art) : '<i class="pgm-ico is-name" aria-hidden="true">A</i>'}<span${NT}>${esc(layerName(l))}</span>${n}</button>`;
+        <span class="check-box" aria-hidden="true">${App.tick}</span>${art ? artHtml(art) : '<i class="pgm-ico is-name" aria-hidden="true">A</i>'}<span${NT}>${esc(layerName(l))}</span>${n}</button>`;
     };
     const title = (g) => (g === 'c112' ? t('pgmG_c112', { pct: pctSpace() }) : t('pgmG_' + g));
     return `<section class="pgm-filter" aria-label="${esc(t('pgMapKinds'))}">
@@ -511,9 +511,9 @@
         </span>
       </div>
       <div class="pgm-opts">
-        <label class="pgm-found"><input type="checkbox" data-change="pgmWhole" ${prefs.pgMapWhole ? 'checked' : ''}> ${esc(t('pgMapWhole'))}</label>
-        <label class="pgm-found"><input type="checkbox" data-change="pgmFound" ${prefs.pgMapFound ? 'checked' : ''}> ${esc(t('pgMapShowFound'))}</label>
-        <label class="pgm-found"><input type="checkbox" data-change="pgmNames" ${layers.has('names') ? 'checked' : ''}> ${esc(t('pgMapNames'))}</label>
+        <label class="check"><input type="checkbox" data-change="pgmWhole" ${prefs.pgMapWhole ? 'checked' : ''}> ${esc(t('pgMapWhole'))}</label>
+        <label class="check"><input type="checkbox" data-change="pgmFound" ${prefs.pgMapFound ? 'checked' : ''}> ${esc(t('pgMapShowFound'))}</label>
+        <label class="check"><input type="checkbox" data-change="pgmNames" ${layers.has('names') ? 'checked' : ''}> ${esc(t('pgMapNames'))}</label>
       </div>
       ${GROUPS.map((g) => `<div class="pgm-group"><h4 class="pgm-group-t">${esc(title(g.id))}</h4>
         <div class="pg-areas pgm-kinds" role="group" aria-label="${esc(title(g.id))}">${g.layers.map(chip).join('')}</div></div>`).join('')}
@@ -558,8 +558,8 @@
   const fold = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
   function searchHtml() {
     return `<div class="pgm-search" role="search">
-      <input type="search" class="pgm-q" value="${esc(query)}" placeholder="${esc(t('pgmSearch'))}" aria-label="${esc(t('pgmSearch'))}"
-        autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="pgm-results" aria-autocomplete="list">
+      <label class="search">${App.lens}<input type="search" class="pgm-q" value="${esc(query)}" placeholder="${esc(t('pgmSearch'))}" aria-label="${esc(t('pgmSearch'))}"
+        autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="pgm-results" aria-autocomplete="list"></label>
       <ul class="pgm-results" id="pgm-results" role="listbox" hidden></ul>
     </div>`;
   }
@@ -594,7 +594,7 @@
     list.innerHTML = found.length ? found.map((r, i) => `<li id="pgm-r${i}" class="pgm-result${i === cursor ? ' is-cur' : ''}" role="option" aria-selected="${i === cursor}"
         data-act="pgmGo" data-i="${i}"><span class="pgm-card-art">${r.art ? artHtml(r.art) : '<i class="pgm-ico is-name" aria-hidden="true">A</i>'}</span>
         <span class="pgm-card-t"><b${NT}>${esc(r.name)}</b>${r.where ? `<span${NT}>${esc(r.where)}</span>` : ''}</span></li>`).join('')
-      : `<li class="pgm-result is-none" role="presentation">${esc(t('pgmSearchNone'))}</li>`;
+      : App.emptyHtml(esc(t('pgmSearchNone')), '', { tag: 'li', cls: 'pgm-result is-inline' });
     if (found.length) input.setAttribute('aria-activedescendant', 'pgm-r' + cursor); else input.removeAttribute('aria-activedescendant');
   }
   // The map centred on a point, about six units across (a room or two around it).

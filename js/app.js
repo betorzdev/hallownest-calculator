@@ -27,9 +27,16 @@
      search engines index the Spanish too (the hash's lang= never reaches them). Read before
      setLang() rewrites <html lang>. */
   const PAGE_LANG = document.documentElement.lang === 'es' ? 'es' : 'en';
+  /* The page's own screen: each search intent has a page of its own (tools/pages.js), the whole
+     site opened on one screen, and <html data-view> says which. The root pages have none. A
+     bare hash means that screen there, and Charms on the roots. And the page's own <title> and
+     description, written for what people search, before render() rewrites them. */
+  const PAGE_VIEW = document.documentElement.dataset.view || null;
+  const BARE_VIEW = PAGE_VIEW || 'charms';
+  const PAGE_HEAD = { title: document.title, description: (document.querySelector('meta[name="description"]') || {}).content || '' };
   const $ = (sel) => document.querySelector(sel);
   const el = {
-    page: $('.page'), masthead: $('#masthead'), colophon: $('#colophon'), nav: $('#nav'), panel: $('#panel'),
+    page: $('.page'), masthead: $('#masthead'), colophon: $('#colophon'), about: $('#about'), nav: $('#nav'), panel: $('#panel'),
     mini: $('#minihud'), banner: $('#banner'), gear: $('#gear'), hj: $('#hj'), home: $('#home'), navSub: $('#nav-sub'), navSubGame: $('#nav-sub-game'),
     toast: $('#toast'), fx: $('#overcharm-fx'), fight: $('#fight'), saves: $('#saves'), pg: $('#pg'),
   };
@@ -259,10 +266,10 @@
   }
 
   /* A screen's URL: the build, the language if it isn't the page's (English, or Spanish in es/)
-     and the screen if it isn't Charms (the start screen). Share leaves it out: the fight doesn't
+     and the screen if it isn't the one a bare hash means (BARE_VIEW). Share leaves it out: the fight doesn't
      travel in the link, so opening it on Combat would show the recipient's own fight. */
   const hashFor = (view = prefs.view) => '#' + C.encode(App.state) + (prefs.lang !== PAGE_LANG ? '&lang=' + prefs.lang : '')
-    + (view && view !== 'charms' ? '&view=' + view : '');
+    + (view && view !== BARE_VIEW ? '&view=' + view : '');
   /* The same, as a path to this page. es/index.html carries <base href="../">, and against it a
      bare "#…" would point at the English page. */
   const here = (hash) => location.pathname + location.search + hash;
@@ -469,8 +476,11 @@
 
   /* ── Mockup ornaments ────────────────────────────────────────────────── */
   const brackets = '<span class="bk tl"></span><span class="bk tr"></span><span class="bk bl"></span><span class="bk br"></span>';
-  const chevron = (up) => `<svg class="chev ${up ? 'up' : ''}" width="12" height="8" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1.5 L6 6 L11 1.5"/></svg>`;
-  const cross = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M2 2 L10 10 M10 2 L2 10"/></svg>';
+  const chevron = (up) => `<svg class="ic chev ${up ? 'up' : ''}" width="12" height="8" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1.5 L6 6 L11 1.5"/></svg>`;
+  // The search fields' lens and the on/off box's tick (css: .search, .check).
+  const lens = '<svg class="ic" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="5" cy="5" r="3.6"/><path d="M7.8 7.8 L10.8 10.8"/></svg>';
+  const tick = '<svg class="ic" width="12" height="10" viewBox="0 0 12 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 5.2 L4.6 8.2 L10.5 1.8"/></svg>';
+  const cross = '<svg class="ic" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M2 2 L10 10 M10 2 L2 10"/></svg>';
   /* The pointers of the game's menus, either side of the item you're on (drawn: the wiki doesn't
      have the sprite). The slots' buttons on Saves and the header's save selector carry them. */
   const FLEUR = '<svg viewBox="0 0 12 20" fill="currentColor" aria-hidden="true"><path d="M1 10 C4.5 9.4 7.2 7.2 8.6 2.4 C9 6.4 10 8.8 11.6 10 C10 11.2 9 13.6 8.6 17.6 C7.2 12.8 4.5 10.6 1 10 Z"/><circle cx="2.4" cy="10" r="1.3"/></svg>';
@@ -479,6 +489,9 @@
   /* Each screen's header, the same on all three: the title in Cinzel, centred, with its rule
      and the diamond, inside the black. Whatever goes below it (the presets, the combat
      tabs) arrives in "after". The title gets focus when arriving from another screen. */
+  // An empty state (css: .empty): the rule, the text and, if there is one, the action that solves it.
+  const emptyHtml = (text, act = '', { tag = 'p', cls = '' } = {}) =>
+    `<${tag} class="empty${cls ? ' ' + cls : ''}"${tag === 'li' ? ' role="presentation"' : ''}>${rule}<span>${text}</span>${act}</${tag}>`;
   const screenHead = (title, after = '') => `<header class="inv-head"><h2 class="sec-title screen-title" tabindex="-1">${title}</h2>${rule}${after}</header>`;
 
   /* ── The soul orb and the vessels, traced from the HUD ─────────────────
@@ -528,14 +541,16 @@
     const live = lv ? `<span class="mh-live" aria-hidden="true"><i class="mh-live-dot"></i><span class="mh-live-t">${esc(st)}</span></span>` : '';
     const title = lv ? t('liveFollows', { file: lv.name }) + ' · ' + st : t('saveBtnHint');
     return `<a class="mh-save${lv ? ' is-' + lv.state : ''}" href="${here(hashFor('saves'))}" data-act="view" data-value="saves"${prefs.view === 'saves' ? ' aria-current="page"' : ''}
-          aria-label="${esc(label + (lv ? ', ' + st : ''))}" title="${esc(title)}"><span class="mh-save-fig"><span class="mh-save-light" aria-hidden="true"></span><img src="${D.art('hud', 'knight')}" alt=""></span><span class="mh-save-lbl">${FLEURS}${esc(label)}${live}</span>${n ? `<span class="mh-save-n">${n}</span>` : ''}</a>`;
+          aria-label="${esc(label + (lv ? ', ' + st : ''))}" title="${esc(title)}"><span class="mh-save-fig"><span class="mh-save-light" aria-hidden="true"></span><img src="${D.art('hud', 'knight')}" alt=""></span><span class="mh-save-lbl">${FLEURS}${esc(label)}${live}</span><span class="mh-save-short" aria-hidden="true">${esc(n ? label : t('savesTitle'))}</span></a>`;
   }
   const VIEW_KEY = { home: 'navHome', game: 'navGame', charms: 'navCharms', fight: 'navFight', journal: 'navJournal', progress: 'navProgress',
     map: 'navMap', godhome: 'navGodhome', saves: 'savesTitle' };
   function renderMasthead() {
-    document.title = prefs.view === 'home' ? t('docTitle') : t(VIEW_KEY[prefs.view]) + ' · ' + t('title');
+    // On the page's own screen and language, the head it was served with (tools/pages.js).
+    const own = prefs.lang === PAGE_LANG && prefs.view === (PAGE_VIEW || 'home');
+    document.title = own ? PAGE_HEAD.title : prefs.view === 'home' ? t('docTitle') : t(VIEW_KEY[prefs.view]) + ' · ' + t('title');
     const meta = document.querySelector('meta[name="description"]');
-    if (meta) meta.setAttribute('content', t('metaDescription'));
+    if (meta) meta.setAttribute('content', own ? PAGE_HEAD.description : t('metaDescription'));
     // The screen labels are fixed in index.html: they change with the language.
     el.home.setAttribute('aria-label', t('navHome'));
     el.panel.setAttribute('aria-label', t('navCharms'));
@@ -547,14 +562,34 @@
     const langBtn = (code, label) => `<button type="button" lang="${code}" data-act="lang" data-value="${code}" aria-pressed="${prefs.lang === code}" aria-label="${label}" title="${label}">${code.toUpperCase()}</button>`;
     el.masthead.innerHTML = `
       <div class="mh-tools">
-        <div class="langsel" role="group" aria-label="${esc(t('langGroup'))}">${langBtn('en', 'English')}${langBtn('es', 'Español')}</div>
-        <button type="button" class="mh-link" data-act="share" title="${esc(t('shareHint'))}">${esc(t('share'))}</button>
+        <div class="seg langsel" role="group" aria-label="${esc(t('langGroup'))}">${langBtn('en', 'English')}${langBtn('es', 'Español')}</div>
+        <button type="button" class="text-btn mh-link" data-act="share" title="${esc(t('shareHint'))}">${esc(t('share'))}</button>
       </div>
       <a class="brand" href="${here(hashFor('home'))}" data-act="view" data-value="home" title="${esc(t('goHome'))}">
         <img class="mh-hdr" src="assets/hall/tablet-hdr.png" alt="" width="862" height="111">
-        <h1 class="title">${esc(t('title'))}</h1>
+        <p class="title">${esc(t('title'))}</p>
       </a>
       ${saveLink()}`;
+  }
+
+  /* The About block (tools/pages.js writes it into each page): the page's text for search
+     engines and for whoever lands on it. It's about the page's own screen and in the page's
+     language, so it only shows there: on another tab, or in the other language, it steps aside
+     (a search engine reads the page as served, on its own screen). Its links go to the other pages' folders; over file:// a folder
+     doesn't open its index.html, so there they carry it. */
+  let aboutLinks = false;
+  function renderAbout() {
+    if (!el.about) return;
+    el.about.hidden = prefs.lang !== PAGE_LANG || prefs.view !== (PAGE_VIEW || 'home');
+    if (aboutLinks || location.protocol !== 'file:') return;
+    aboutLinks = true;
+    for (const a of el.about.querySelectorAll('a[data-page]')) a.setAttribute('href', a.getAttribute('href').replace(/\.\/$/, '') + 'index.html');
+  }
+  /* Share links to the language's home, not to the page you're on: a shared build opens on
+     Charms, as it always has, wherever it was copied from. */
+  function shareBase() {
+    const home = (PAGE_LANG === 'es' ? 'es/' : '') + (location.protocol === 'file:' ? 'index.html' : '');
+    try { return new URL(home || './', document.baseURI).href; } catch (e) { return location.href.split('#')[0]; }
   }
 
   // GitHub's mark (Octicons mark-github), in currentColor so it takes the links' accent.
@@ -747,17 +782,12 @@
       ? `<button type="button" class="${cls}" style="${style}"${attrs}>${inner}</button>`
       : `<span class="${cls}" style="${style}"${attrs}>${inner}</span>`);
     const lo = level(main, mainWas, o.mainMax, 6.2, 86);
-    /* With castSoul (the sheet), the level a tap on the orb would leave, for the hover preview
-       (css: --cut-cast): the orb first, then the vessels in order, as soul always fills. */
-    const castMain = o.castSoul != null ? Math.min(o.castSoul, o.mainMax) : null;
-    if (castMain != null) lo.style += `;--cut-cast:${cut(castMain, o.mainMax, 6.2, 86)}`;
-    // Enough in the orb for a spell (o.ready, the sheet) or a Focus, which always costs 33: its rim glints (css: .is-ready).
+    // Enough in the orb for a spell (o.ready) or a Focus, which always costs 33: its rim glints (css: .is-ready).
     const ready = (o.ready != null ? o.ready : main >= D.SOUL.vesselSize) ? ' is-ready' : '';
     const orb = piece(!!o.orbAttrs, o.orbAttrs || (o.orbTitle ? ` title="${esc(o.orbTitle)}"` : ''), `hud-orb${lo.moving}${ready}`, lo.style,
       `<span class="orb-well"></span><img class="hud-soul" src="${D.art('hud', 'soul-meter')}" alt="">${hudRing}`);
     const vessels = Array.from({ length: o.vessels }, (_, i) => {
       const lv = level(o.soul - main - size * i, soulWas - mainWas - size * i, size, 8.9, 82.2);
-      if (castMain != null) lv.style += `;--cut-cast:${cut(o.castSoul - castMain - size * i, size, 8.9, 82.2)}`;
       const attrs = o.vesselAttrs ? o.vesselAttrs(i, o.soul - main - size * i >= size) : '';
       return piece(!!attrs, attrs, `hud-vessel${lv.moving}`, lv.style, `<img src="${D.art('hud', 'soul')}" alt="">`);
     }).join('');
@@ -833,6 +863,7 @@
   function render() {
     const focus = focusDescriptor();
     renderMasthead();
+    renderAbout();
     renderColophon();
     renderNav();                           // with your game's Journal button
     renderBanner();
@@ -951,7 +982,7 @@
     share() {
       persist();
       track('share');
-      const url = location.href.split('#')[0] + hashFor('');
+      const url = shareBase() + hashFor('');
       const done = () => toast(t('linkCopied'));
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, () => prompt(t('copyThis'), url));
       else prompt(t('copyThis'), url);
@@ -1051,7 +1082,7 @@
   function onHistory() {
     const h = splitHash(location.hash);
     if (history.state && history.state.hk) {
-      const { viewChanged, changed } = applyNav(history.state.nav || { view: h.view || 'charms' });
+      const { viewChanged, changed } = applyNav(history.state.nav || { view: h.view || BARE_VIEW });
       writeUrl(false);
       if (!changed) return;
       render();
@@ -1059,7 +1090,7 @@
       return;
     }
     if (h.lang && h.lang !== prefs.lang) { prefs.lang = I.setLang(h.lang); prefs.langChosen = true; savePrefs(); rebuildNF(); }
-    setView(h.view || 'charms');
+    setView(h.view || BARE_VIEW);
     let kept = false, held = false;
     // Not into a save: it's said if the link's build is another one (a reload carries the save's own).
     if (!C.isEmpty(h.build) && saveLock()) held = !C.equal(withFixed(C.decode(h.build)), App.state);
@@ -1165,11 +1196,11 @@
     App.was = null;
   }
 
-  Object.assign(App, { t, pick, KEY, PAGE_LANG, $, el, hoverable, VIEWS, TOOLS, SPELL_KEYS, ART_KEYS, ART_STAT, POSITIONAL,
+  Object.assign(App, { t, pick, KEY, PAGE_LANG, PAGE_VIEW, $, el, hoverable, VIEWS, TOOLS, SPELL_KEYS, ART_KEYS, ART_STAT, POSITIONAL,
     NEED_KEY, NT, namedSrc, esc, load, save, rebuildNF, pctSpace, fmtValue, fmtStat, fmtStatRich, sign,
     masksText, notchText, spellArt, shortOf, badgeText, goodClass, deltaChip, changeChip, prefs, loadPrefs,
     savePrefs, justWorn, justFound, splitHash, here, loadState, persist, compareLabel, compute, impact, recompute, commit, bindAllFx,
-    brackets, chevron, cross, FLEURS, rule, screenHead, hudHtml, restoreFocus, focusDescriptor, render, go, navTo, screenOf,
+    brackets, chevron, cross, lens, tick, FLEURS, rule, emptyHtml, screenHead, hudHtml, restoreFocus, focusDescriptor, render, go, navTo, screenOf,
     underNav, toast, track, actions, isMaxOwned, loadOwned, saveOwned, isOwned, fragileAway, withFixed, isFixed, setOwned, loadProgress, saveProgress, setProgress, reloadGame,
     saveLock, edits });
 })();

@@ -413,7 +413,7 @@
         dots.push(dot(`${im.id}:toggle`, n > 0, (im.approx ? '~' : '') + App.NF[0].format(v), `${im.label} ${v}`));
         if (im.alt) {
           // "left" on its own doesn't say of what: the title and the group say it's where you have the enemy.
-          side = `<span class="sd-side" role="group" aria-label="${esc(t('selSideGroup'))}">${['left', 'right'].map((k) => {
+          side = `<span class="seg sd-side" role="group" aria-label="${esc(t('selSideGroup'))}">${['left', 'right'].map((k) => {
             const hint = esc(t(k === 'right' ? 'selRightHint' : 'selLeftHint', { n: App.NF[0].format(k === 'right' ? im.alt : im.v) }));
             return `<button type="button" data-act="spellSel" data-id="${key}:${im.id}:${k}" title="${hint}" aria-label="${hint}"
             aria-pressed="${(sel.side === 'right') === (k === 'right')}">${esc(t(k === 'right' ? 'selRight' : 'selLeft'))}</button>`;
@@ -698,7 +698,7 @@
     if (!matches.length) {
       const otherKind = prefs.foeKind === 'all' ? null : prefs.foeKind === 'boss' ? 'enemy' : 'boss';
       const anyOther = otherKind && foeMatches(otherKind).length;
-      return `<li class="jr-empty" role="presentation">${esc(anyOther ? t('jrOtherKind', { kind: t(otherKind === 'boss' ? 'fightBosses' : 'fightEnemies') }) : t('fightNoMatch'))}</li>`;
+      return App.emptyHtml(esc(anyOther ? t('jrOtherKind', { kind: t(otherKind === 'boss' ? 'fightBosses' : 'fightEnemies') }) : t('fightNoMatch')), '', { tag: 'li', cls: 'jr-empty' });
     }
     return matches.map((x) => {
       const n = jrHits(x), cur = x.id === App.jrCursor;
@@ -1223,7 +1223,7 @@
   }
 
   /* Undo, under the scoreboard: with the circled arrow going back, like Reset's but mirrored. */
-  const UNDO_ICON = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h7a3.5 3.5 0 0 1 0 7H6"/><path d="M6 3L3 6l3 3"/></svg>';
+  const UNDO_ICON = '<svg class="ic" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h7a3.5 3.5 0 0 1 0 7H6"/><path d="M6 3L3 6l3 3"/></svg>';
   const undoBtn = () => `<button type="button" class="text-btn fight-undo" data-act="undo" ${undoStack.length ? '' : 'disabled'}
       title="${esc(t('fightUndoHint'))}" aria-keyshortcuts="Control+Z">${UNDO_ICON}${esc(t('fightUndo'))}</button>`;
 
@@ -1345,7 +1345,7 @@
             <span class="foecard-note">${esc(t('fightNone'))}</span></span>
           <span class="foecard-num"><i class="na">—</i></span>
         </div>
-        <div class="foecard-moves"><p class="moveset-empty">${esc(t('fightNoFoe'))}</p></div>
+        <div class="foecard-moves">${App.emptyHtml(esc(t('fightNoFoe')), `<button type="button" class="text-btn" data-act="picker">${esc(t('jrOpen'))}</button>`, { cls: 'moveset-empty is-inline' })}</div>
       </div>`;
     } else if (total === null) {
       foeSide = `<div class="foecard is-solo">
@@ -1432,7 +1432,7 @@
 
   /* Reset, in the arena: text with its circled arrow, like the screen's other text buttons,
      level with the enemy's line. */
-  const RESET_ICON = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.5 8a5.5 5.5 0 1 1-1.8-4.1"/><path d="M12.2 1.2v3.2H9"/></svg>';
+  const RESET_ICON = '<svg class="ic" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.5 8a5.5 5.5 0 1 1-1.8-4.1"/><path d="M12.2 1.2v3.2H9"/></svg>';
   function paintFight() {
     const head = fightHead();
     // The Hall and the Pantheons are in Godhome: the section takes its tint (css: .fight.is-godhome).
@@ -1443,18 +1443,18 @@
     const f = foe();
     const picker = `<div class="fight-pick">
       <span class="lbl" id="foe-lbl">${esc(t('fightPickLabel'))}</span>
-      <button type="button" class="jr-toggle" data-act="picker" aria-expanded="${App.pickerOpen}" aria-controls="journal"
+      <button type="button" class="disc-btn is-pick jr-toggle" data-act="picker" aria-expanded="${App.pickerOpen}" aria-controls="journal"
               aria-labelledby="foe-lbl jr-val">
         ${f ? jrMedal(f) : ''}
         <span class="jr-val ${f ? '' : 'is-empty'}" id="jr-val"${f ? NT : ''}>${esc(f ? foeName(f) : t('fightPick'))}</span>
-        <span class="jr-toggle-act">${esc(t(App.pickerOpen ? 'jrClose' : 'jrOpen'))}</span>${chevron(App.pickerOpen)}
+        <span class="jr-toggle-act">${esc(t(App.pickerOpen ? 'jrClose' : 'jrOpen'))}</span><span class="disc-ring">${chevron(App.pickerOpen)}</span>
       </button></div>`;
     const journal = App.pickerOpen ? `<div class="journal" id="journal">
         <div class="jr-index">
-          <input type="search" class="jr-search" data-act="foeSearch" value="${esc(App.pickerQuery)}"
+          <label class="search">${App.lens}<input type="search" class="jr-search" data-act="foeSearch" value="${esc(App.pickerQuery)}"
                  placeholder="${esc(t('jrSearch'))}" aria-label="${esc(t('jrSearch'))}"
                  role="combobox" aria-expanded="true" aria-controls="jr-list" aria-autocomplete="list"
-                 aria-activedescendant="${App.jrCursor ? 'jr-' + App.jrCursor : ''}" autocomplete="off" spellcheck="false">
+                 aria-activedescendant="${App.jrCursor ? 'jr-' + App.jrCursor : ''}" autocomplete="off" spellcheck="false"></label>
           <span class="seg sm jr-kinds">${JR_KINDS.map(([k, key]) => `<button type="button" data-act="foeKind" data-value="${k}" aria-pressed="${prefs.foeKind === k}">${esc(t(key))} <i data-count="${k}">${foeMatches(k).length}</i></button>`).join('')}</span>
           <div class="jr-head" aria-hidden="true"><span>${esc(t('jrEntry'))}</span><span>${esc(t('jrHitsHead'))}</span></div>
           <ul class="jr-list" id="jr-list" role="listbox" aria-label="${esc(t('jrTitle'))}">${jrRows()}</ul>

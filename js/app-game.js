@@ -205,9 +205,9 @@
         <span class="gplate-name"${NT}>${esc(name)}</span>
         <span class="gcount">
           <span class="stepper">
-            ${held ? '' : `<button type="button" class="step" data-act="progStep" data-id="${it.id}" data-value="-1" ${v ? '' : 'disabled'} aria-label="${esc(t('countLess', { what: name }))}" title="${esc(t('countLess', { what: name }))}">−</button>`}
+            ${held ? '' : `<button type="button" class="icon-btn step" data-act="progStep" data-id="${it.id}" data-value="-1" ${v ? '' : 'disabled'} aria-label="${esc(t('countLess', { what: name }))}" title="${esc(t('countLess', { what: name }))}">−</button>`}
             <input type="number" class="step-count${String(max).length > 3 ? ' is-wide' : ''}" data-change="progInput" data-id="${it.id}" value="${v}" min="0" max="${max}" step="1" inputmode="numeric" aria-label="${esc(name)}">
-            ${held ? '' : `<button type="button" class="step" data-act="progStep" data-id="${it.id}" data-value="1" ${v < max ? '' : 'disabled'} aria-label="${esc(t('countMore', { what: name }))}" title="${esc(t('countMore', { what: name }))}">+</button>`}
+            ${held ? '' : `<button type="button" class="icon-btn step" data-act="progStep" data-id="${it.id}" data-value="1" ${v < max ? '' : 'disabled'} aria-label="${esc(t('countMore', { what: name }))}" title="${esc(t('countMore', { what: name }))}">+</button>`}
           </span>${bank}
         </span>
       </div>`;

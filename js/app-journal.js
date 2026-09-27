@@ -87,7 +87,7 @@
     // They count like the header: without the 4 the game doesn't count (the Hunter's Mark, the Seal, the Idol and
     // the Weathered Mask), which are still listed. That way "Completed" says the same up there and here.
     for (const r of base) if (!r.uncounted) n[hjStateKey(hjState(r.id))]++;
-    return `<span class="hj-tabs" role="group" aria-label="${esc(t('hjShowLbl'))}">${HJ_TABS.map(([v, key]) => {
+    return `<span class="seg hj-tabs" role="group" aria-label="${esc(t('hjShowLbl'))}">${HJ_TABS.map(([v, key]) => {
       const on = v === 'all' ? hjShowAll() : !hjShowAll() && hjShow.has(v);
       return `<button type="button" data-act="hjShowState" data-value="${v}" aria-pressed="${on}" ${v === 'all' ? '' : `title="${esc(t('hjShowTip'))}"`}>
         <span>${esc(t(key))}</span>${v === 'all' ? '' : `<i>${App.NF[0].format(n[v])}</i>`}</button>`;
@@ -98,10 +98,10 @@
      checkbox isn't a tab stop (there would be 168): from the keyboard, Space on the row
      being read ticks it. The ones that never change (Crawlid, the Shade, the Idol) have none. */
   const hjPickable = (id) => !['start', 'idol'].includes(HJ.kindOf(id));
-  const HJ_CHECK = '<svg width="12" height="10" viewBox="0 0 12 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 5.2 L4.6 8.2 L10.5 1.8"/></svg>';
+  const HJ_CHECK = '<svg class="ic" width="12" height="10" viewBox="0 0 12 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 5.2 L4.6 8.2 L10.5 1.8"/></svg>';
   function hjRowsHtml() {
     const visibleRows = hjVisible();
-    if (!visibleRows.length) return `<li class="hj-empty" role="presentation">${esc(t('fightNoMatch'))}</li>`;
+    if (!visibleRows.length) return App.emptyHtml(esc(t('fightNoMatch')), '', { tag: 'li', cls: 'hj-empty' });
     return visibleRows.map((r) => {
       const s = hjState(r.id), cur = r.id === App.hjCursor, entryName = pick(hjNameOf(r));
       // Just encountered, its medallion lights up from the shadow; just completed, its frame.
@@ -112,7 +112,7 @@
         ? `<span class="hj-left" title="${esc(t('hjLeftShort', { n: App.NF[0].format(s.left) }))}">${App.NF[0].format(s.left)}</span>` : '';
       const pickBox = !hjBulkOpen ? '' : hjPickable(r.id)
         ? `<button type="button" class="hj-pick" role="checkbox" aria-checked="${isPicked}" tabindex="-1" data-act="hjPick" data-id="${r.id}"
-            aria-label="${esc(t('hjPick', { name: entryName }))}"><span class="hj-box">${isPicked ? HJ_CHECK : ''}</span></button>`
+            aria-label="${esc(t('hjPick', { name: entryName }))}"><span class="check-box">${isPicked ? HJ_CHECK : ''}</span></button>`
         : '<span class="hj-pick is-fixed" aria-hidden="true"></span>';
       return `<li role="presentation" class="${hjBulkOpen ? 'is-picking' : ''}">${pickBox}<button type="button" role="option" id="hj-e-${r.id}"
         class="hj-row ${cur ? 'is-cur' : ''} ${s.seen ? '' : 'is-unseen'} ${s.done ? 'is-done' : ''} ${isPicked ? 'is-picked' : ''}${fx}"
@@ -139,9 +139,9 @@
     const lbl = { none: 'hjUnseen', seen: 'hjSeen', done: 'hjDone' };
     // With its label in view: the list's tabs use the same words, but they filter;
     // this marks your game.
-    return `<span class="hj-state${held ? ' is-held' : ''}" role="group" aria-labelledby="hj-state-lbl"><span class="hj-state-lbl" id="hj-state-lbl">${esc(t('hjStateLbl'))}</span>${opts.map((v) =>
+    return `<span class="seg hj-state${held ? ' is-held' : ''}" role="group" aria-labelledby="hj-state-lbl"><span class="hj-state-lbl" id="hj-state-lbl">${esc(t('hjStateLbl'))}</span>${opts.map((v) =>
       `<button type="button" data-act="hjSet" data-id="${r.id}" data-value="${v}" aria-pressed="${on === v}" ${held ? 'disabled' : ''}>${esc(t(lbl[v]))}</button>`)
-      .join('<span class="hj-state-sep" aria-hidden="true">·</span>')}</span>`;
+      .join('')}</span>`;
   }
 
   /* "Defeat [−] N [+] more to decipher the Hunter's notes.": the game's sentence, and the
@@ -152,9 +152,9 @@
     if (App.saveLock()) return `<p class="hj-kills">${esc(t('hjKill1'))} <span class="hj-stepper"><span class="hj-count">${s.left}</span></span> ${esc(t('hjKill2'))}</p>`;
     return `<p class="hj-kills">${esc(t('hjKill1'))}
       <span class="hj-stepper">
-        <button type="button" class="hj-step" data-act="hjStep" data-id="${r.id}" data-value="-1" title="${esc(t('hjStepDown'))}" aria-label="${esc(t('hjStepDown'))}">−</button>
+        <button type="button" class="icon-btn hj-step" data-act="hjStep" data-id="${r.id}" data-value="-1" title="${esc(t('hjStepDown'))}" aria-label="${esc(t('hjStepDown'))}">−</button>
         <input type="number" class="hj-count${hjWas && HJ.stateOf(hjWas, r.id, App.marks).left !== s.left ? ' is-flash' : ''}" data-id="${r.id}" value="${s.left}" min="0" max="${max}" step="1" inputmode="numeric" aria-label="${esc(t('hjLeftLbl'))}">
-        <button type="button" class="hj-step" data-act="hjStep" data-id="${r.id}" data-value="1" title="${esc(t('hjStepUp'))}" aria-label="${esc(t('hjStepUp'))}" ${s.left >= max ? 'disabled' : ''}>+</button>
+        <button type="button" class="icon-btn hj-step" data-act="hjStep" data-id="${r.id}" data-value="1" title="${esc(t('hjStepUp'))}" aria-label="${esc(t('hjStepUp'))}" ${s.left >= max ? 'disabled' : ''}>+</button>
       </span>
       ${esc(t('hjKill2'))}</p>`;
   }
@@ -253,7 +253,7 @@
   };
   function hjBulkHtml() {
     if (App.saveLock()) return '';           // a save from the game: nothing is marked, in bulk either
-    const toggle = `<button type="button" class="text-btn hj-bulk-toggle" data-act="hjBulk" aria-expanded="${hjBulkOpen}"
+    const toggle = `<button type="button" class="text-btn bulk-toggle hj-bulk-toggle" data-act="hjBulk" aria-expanded="${hjBulkOpen}"
       title="${esc(t('hjBulkHint'))}">${esc(t('hjBulk'))}${chevron(hjBulkOpen)}</button>`;
     if (!hjBulkOpen) return `<div class="hj-bulk-head">${toggle}</div>`;
     const { ids, picked } = hjBulkIds();
@@ -263,7 +263,7 @@
     const sep = '<span class="hj-bulk-sep" aria-hidden="true">·</span>';
     const bulkBtns = HJ_BULK.map(([v, key]) => {
       const n = HJ.changed(book, HJ.bulk(book, ids, v));
-      return `<button type="button" class="hj-bulk-btn" data-act="hjBulkDo" data-value="${v}" ${n ? '' : 'disabled'}
+      return `<button type="button" class="text-btn hj-bulk-btn" data-act="hjBulkDo" data-value="${v}" ${n ? '' : 'disabled'}
         title="${esc(t('hjBulkCount', { n: App.NF[0].format(n) }))}">${esc(t(key))} <i>${App.NF[0].format(n)}</i></button>`;
     }).join('');
     const undoNote = hjUndo ? `<p class="hj-bulk-done"><span role="status">${esc(t(
@@ -271,8 +271,8 @@
       <button type="button" class="text-btn hj-undo" data-act="hjUndo">${esc(t('hallUndo'))}</button></p>` : '';
     const pickable = hjVisible(true).filter((r) => hjPickable(r.id));
     const pickBtns = `<span class="hj-bulk-picks">
-        <button type="button" class="hj-pick-btn" data-act="hjPickAll" ${pickable.every((r) => hjPicked.has(r.id)) ? 'disabled' : ''}>${esc(t('hjPickAll'))}</button>${sep}<button
-          type="button" class="hj-pick-btn" data-act="hjPickNone" ${hjPicked.size ? '' : 'disabled'}>${esc(t('hjPickNone'))}</button>
+        <button type="button" class="text-btn hj-pick-btn" data-act="hjPickAll" ${pickable.every((r) => hjPicked.has(r.id)) ? 'disabled' : ''}>${esc(t('hjPickAll'))}</button>${sep}<button
+          type="button" class="text-btn hj-pick-btn" data-act="hjPickNone" ${hjPicked.size ? '' : 'disabled'}>${esc(t('hjPickNone'))}</button>
       </span>`;
     // In the DOM, the button that opens it comes first; on screen, at the very bottom (column-reverse), so
     // it doesn't move on opening and the panel grows upwards, eating as little of the list as possible.
@@ -298,7 +298,7 @@
         <section class="hj-top"></section>
         <div class="hj-pane">
           <div class="hj-index">
-            <input type="search" class="hj-search" autocomplete="off" spellcheck="false" aria-controls="hj-list">
+            <label class="search">${App.lens}<input type="search" class="hj-search" autocomplete="off" spellcheck="false" aria-controls="hj-list"></label>
             <div class="hj-show"></div>
             <ul class="hj-list" id="hj-list" role="listbox"></ul>
             <div class="hj-bulkbar"></div>
