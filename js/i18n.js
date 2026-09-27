@@ -15,11 +15,12 @@
     title:          { es: 'Calculadora de Hallownest', en: 'Hallownest Calculator' },
     goHome:         { es: 'Ir a Partida, la pantalla de inicio', en: 'Go to Your game, the home screen' },
     langGroup:      { es: 'Idioma', en: 'Language' },
-    // The tab and search-result title: carries the game's name and what the site is.
-    docTitle:       { es: 'Calculadora de Hallownest: tu partida de Hollow Knight en vivo, el 112 % y los amuletos',
-                      en: 'Hallownest Calculator: your Hollow Knight save live, 112% tracker and charms' },
-    metaDescription:{ es: 'Sigue tu partida real de Hollow Knight: importa tu archivo y mira tu 112 % cosa por cosa, el mapa del juego con lo que te falta, tu sombra y el Diario del Cazador, al día en cada banco. Y una calculadora de amuletos y un simulador de combate contra cada jefe.',
-                      en: 'Follow your real Hollow Knight game: import your save and see your 112% item by item, the game\'s own map with what you\'re missing, your shade and the Hunter\'s Journal, up to date at every bench. Plus a charm calculator and a combat simulator against every boss.' },
+    // The tab and search-result title of the home, when you're in the other language: the same
+    // as the page's own (tools/pages-text.js; test/pages.test.js keeps them together).
+    docTitle:       { es: 'Tu partida de Hollow Knight en vivo, el 112 % y los amuletos · Calculadora de Hallownest',
+                      en: 'Hollow Knight save tracker, 112% checklist and charms · Hallownest Calculator' },
+    metaDescription:{ es: 'Importa tu partida de Hollow Knight y mira qué te falta para el 112 %, el mapa del juego con lo que queda y el Diario del Cazador, al día en cada banco. Y una calculadora de amuletos.',
+                      en: 'Import your Hollow Knight save and see what\'s missing for 112%, the game\'s map with what\'s left and the Hunter\'s Journal, up to date at every bench. Plus a charm calculator.' },
     presetBase:     { es: 'Caballero base', en: 'Base Knight' },
     presetBaseHint: { es: 'Como al empezar la partida: Aguijón antiguo, 5 máscaras, 3 muescas, ningún amuleto conseguido, sin capa ni Aguijón Onírico, sin equipo, objetos ni geo',
                       en: 'As at the start of the game: Old Nail, 5 masks, 3 notches, no charms found, no cloak, no Dream Nail, no equipment, no items and no geo' },
@@ -207,11 +208,6 @@
     soulNote:       { es: '{n} de alma', en: '{n} soul' },
     /* What the HUD's orb says on hover. The sheet's soul is spent by hand, like the masks;
        it's only for show, it changes no figure. */
-    soulCastTitle:  { es: 'Lanzar un hechizo: −{n} de alma', en: 'Cast a spell: −{n} soul' },
-    soulRefillTitle:{ es: 'Volver a llenar el alma', en: 'Refill your soul' },
-    vesselEmptyTitle: { es: 'Vaciar esta vasija', en: 'Empty this vessel' },
-    vesselFillTitle:  { es: 'Llenar hasta esta vasija', en: 'Fill up to this vessel' },
-    vesselFillAllTitle: { es: 'Llenar el orbe y hasta esta vasija', en: 'Fill the orb and up to this vessel' },
     notchesFree:    { es: '{n} libres', en: '{n} free' },
     notchesFreeOne: { es: '1 libre', en: '1 free' },
     overcharmed:    { es: 'Sobrecarga', en: 'Overcharmed' },   // CHARM_TXT_OVERCHARMED

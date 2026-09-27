@@ -104,7 +104,7 @@
       <button type="button" class="btn hall-undo" data-act="hallUndo">${esc(t('hallUndo'))}</button></p>` : '';
     // In a save from the game (App.saveLock, js/app.js) the symbols are read, not marked: no bulk marking either.
     const held = !!App.saveLock();
-    const bulkBtn = held ? '' : `<button type="button" class="btn hall-bulk-toggle" data-act="hallBulk" aria-expanded="${hallBulk}"
+    const bulkBtn = held ? '' : `<button type="button" class="text-btn bulk-toggle hall-bulk-toggle" data-act="hallBulk" aria-expanded="${hallBulk}"
         aria-controls="hall-bulk" title="${esc(t('hallBulkHint', { n: total }))}">${esc(t('hallBulk'))}${chevron(hallBulk)}</button>`;
     const bulkPanel = hallBulk && !held ? `<div class="hall-bulk" id="hall-bulk">${rowEl(true)}${rowEl(false)}${undoNote}</div>` : '';
     // The Idol changing tier (all 44 at a difficulty) lights up like what you get on Your game.

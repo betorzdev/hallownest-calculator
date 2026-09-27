@@ -94,8 +94,10 @@ what the game says.
   `npm run text -- --audit`.
 - If you've touched `js/savefile.js` or `js/completion.js` and have a folder of real saves,
   `npm run check-pack -- <folder>`: the site's 112% must equal the game's in every one.
-- If you've touched `index.html`, `npm run es`: `es/index.html` (the Spanish page, at its own
-  address for search engines) is generated from it, and `test/es-page.test.js` fails if it's behind.
+- If you've touched `index.html` or `tools/pages-text.js`, `npm run pages`: the site's other
+  pages (`es/`, one per search intent in each language: `map/`, `es/mapa/`… see
+  `design/12-seo.md`) and `sitemap.xml` are generated from it, and `test/pages.test.js` fails if
+  one is behind.
 - To look at the page: `debug-smoke.html` drives the site and writes the result; `debug.html`
   sets the preferences for screenshots; `debug-overflow.html` lists what spills past the width;
   `debug-hover.html` tests the mouse behaviour, and has to be run with

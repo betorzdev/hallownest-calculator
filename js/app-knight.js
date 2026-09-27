@@ -38,22 +38,33 @@
 
   const clip = (c) => { kn.classList.toggle('is-run', c === 'run'); kn.classList.toggle('is-sit', c === 'sit'); };
   const face = (dx) => { if (dx) kn.classList.toggle('is-left', dx < 0); };
-  const at = () => parseFloat(kn.style.translate) || 0;
+  // Where he is: mid-run the style already holds the destination, so the run's own frame.
+  const at = () => parseFloat(walk ? getComputedStyle(kn).translate : kn.style.translate) || 0;
   const place = (x) => { kn.style.translate = `${Math.round(x)}px 0`; };
-  function stopWalk() { if (walk) { walk.cancel(); walk = null; } clip(''); }
+  let pending = 0;       // a run waiting for its frame (runTo)
+  function stopWalk() { cancelAnimationFrame(pending); if (walk) { walk.cancel(); walk = null; } clip(''); }
   const after = (t) => new Promise((r) => setTimeout(r, t));
 
   /* Along the bar, from where he is to x: the run at its steady pace (--dur-run per 100 px),
-     never shorter than a response. The style holds the destination and the animation covers the
-     way there, so nothing jumps when it ends. */
+     never shorter than a response from a standstill. The style holds the destination and the
+     animation covers the way there, so nothing jumps when it ends. A new tab mid-run turns him
+     from where he is, at the same pace. It starts on the next frame, pinned to that frame's time:
+     the render a tab click sets off keeps the main thread busy while the old run goes on in the
+     compositor, and a run measured before it would start behind him (he'd step back). */
   function runTo(x) {
-    const from = at(), dx = x - from;
-    if (!dx || still.matches) { place(x); return Promise.resolve(); }
-    stopWalk();
-    face(dx); clip('run'); place(x);
-    const dur = Math.max(ms('--dur'), Math.abs(dx) * ms('--dur-run') / 100);
-    walk = kn.animate([{ translate: `${from}px 0` }, { translate: `${x}px 0` }], { duration: dur, easing: 'linear' });
-    return new Promise((r) => { walk.onfinish = () => { walk = null; clip(''); r(); }; walk.oncancel = r; });
+    x = Math.round(x);                         // as place() leaves it: no sub-pixel run on the spot
+    if (still.matches) { stopWalk(); place(x); return Promise.resolve(); }
+    cancelAnimationFrame(pending);
+    return new Promise((r) => { pending = requestAnimationFrame(() => {
+      const running = !!walk, from = at(), dx = x - from;
+      stopWalk(); place(x);
+      if (!dx) { r(); return; }
+      face(dx); clip('run');
+      const pace = Math.abs(dx) * ms('--dur-run') / 100;
+      walk = kn.animate([{ translate: `${from}px 0` }, { translate: `${x}px 0` }], { duration: running ? pace : Math.max(ms('--dur'), pace), easing: 'linear' });
+      walk.startTime = document.timeline.currentTime;
+      walk.onfinish = () => { walk = null; clip(''); r(); }; walk.oncancel = r;
+    }); });
   }
 
   /* Onto the bar, at the spot the callback sets. Already there: just the spot (and a fade-out

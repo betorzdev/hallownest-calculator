@@ -1,28 +1,28 @@
 <!DOCTYPE html>
 <!-- Generated from index.html by tools/pages.js (npm run pages): do not edit by hand. -->
-<html lang="es">
+<html lang="en" data-view="journal">
 <head>
 <meta charset="utf-8">
 <base href="../">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Tu partida de Hollow Knight en vivo, el 112 % y los amuletos · Calculadora de Hallownest</title>
-<meta name="description" content="Importa tu partida de Hollow Knight y mira qué te falta para el 112 %, el mapa del juego con lo que queda y el Diario del Cazador, al día en cada banco. Y una calculadora de amuletos.">
+<title>Hollow Knight Hunter's Journal tracker · Hallownest Calculator</title>
+<meta name="description" content="Every entry of Hollow Knight's Hunter's Journal, with the kills left to decipher it and what's missing for the Hunter's Mark, read from your save.">
 <meta name="google-site-verification" content="gMOOsULKOT9I0m85tW4NHufweIQ18ptFx7TnwCWC4AM">
-<link rel="canonical" href="https://betorzdev.github.io/hallownest-calculator/es/">
-<link rel="alternate" hreflang="en" href="https://betorzdev.github.io/hallownest-calculator/">
-<link rel="alternate" hreflang="es" href="https://betorzdev.github.io/hallownest-calculator/es/">
-<link rel="alternate" hreflang="x-default" href="https://betorzdev.github.io/hallownest-calculator/">
+<link rel="canonical" href="https://betorzdev.github.io/hallownest-calculator/hunters-journal/">
+<link rel="alternate" hreflang="en" href="https://betorzdev.github.io/hallownest-calculator/hunters-journal/">
+<link rel="alternate" hreflang="es" href="https://betorzdev.github.io/hallownest-calculator/es/diario-del-cazador/">
+<link rel="alternate" hreflang="x-default" href="https://betorzdev.github.io/hallownest-calculator/hunters-journal/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Hallownest Calculator">
-<meta property="og:title" content="Tu partida de Hollow Knight en vivo, el 112 % y los amuletos · Calculadora de Hallownest">
-<meta property="og:description" content="Importa tu partida de Hollow Knight y mira qué te falta para el 112 %, el mapa del juego con lo que queda y el Diario del Cazador, al día en cada banco. Y una calculadora de amuletos.">
-<meta property="og:url" content="https://betorzdev.github.io/hallownest-calculator/es/">
+<meta property="og:title" content="Hollow Knight Hunter's Journal tracker · Hallownest Calculator">
+<meta property="og:description" content="Every entry of Hollow Knight's Hunter's Journal, with the kills left to decipher it and what's missing for the Hunter's Mark, read from your save.">
+<meta property="og:url" content="https://betorzdev.github.io/hallownest-calculator/hunters-journal/">
 <meta property="og:image" content="https://betorzdev.github.io/hallownest-calculator/assets/site/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="La pantalla Partida: descansas en Ciudad de Lágrimas, la finalización, el tiempo jugado y lo encontrado desde el último banco">
-<meta property="og:locale" content="es_ES">
-<meta property="og:locale:alternate" content="en_US">
+<meta property="og:image:alt" content="The Your game screen: resting at City of Tears, the completion, the time played, and what was found since the last bench">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="es_ES">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
 {
@@ -54,23 +54,43 @@
 {
   "@context": "https://schema.org",
   "@type": "FAQPage",
-  "inLanguage": "es",
+  "inLanguage": "en",
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "¿Es gratis? ¿Hace falta cuenta?",
+      "name": "How many entries does the Hunter's Mark need?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Es gratis, sin cuenta y sin anuncios. Tu partida no sale de tu navegador: se lee ahí y se guarda ahí."
+        "text": "146 completed. The other 18 are optional."
       }
     },
     {
       "@type": "Question",
-      "name": "¿Funciona con la versión de consola?",
+      "name": "When does an entry appear?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Leer la partida necesita el archivo, y solo el juego de ordenador (Windows, macOS, Linux) lo deja a mano. En consola puedes marcar tu progreso a mano."
+        "text": "With the first kill, not on seeing the enemy."
       }
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Hallownest Calculator",
+      "item": "https://betorzdev.github.io/hallownest-calculator/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Hunter's Journal",
+      "item": "https://betorzdev.github.io/hallownest-calculator/hunters-journal/"
     }
   ]
 }
@@ -128,27 +148,27 @@
       <section class="saves" id="saves" aria-label="Saves" hidden></section>
     </main>
     <!-- about -->
-    <section class="about" id="about" lang="es" aria-labelledby="about-h">
-      <h1 id="about-h">Tu partida de Hollow Knight, en vivo</h1>
-      <p>La Calculadora de Hallownest lee el archivo de tu partida de Hollow Knight y te enseña lo que el juego no te dice: qué te falta para el 112 % cosa por cosa, dónde está cada larva, fragmento de máscara y fragmento de vasija que no tienes, en el mapa del propio juego, y cuántas entradas del Diario del Cazador te quedan. En Chrome y Edge sigue el archivo mientras juegas y se pone al día cada vez que descansas en un banco.</p>
-      <p>Y sin partida también sirve: la calculadora de amuletos te dice cómo cambia cada estadística del Caballero con cada amuleto (daño del aguijón, golpes por jefe, alma, curación, hechizos), y el simulador de combate lleva tu build contra 180 enemigos y jefes, el Hogar de Dioses incluido. Todos los números salen de la wiki, con el redondeo del juego, y todos los nombres, de su traducción oficial.</p>
+    <section class="about" id="about" lang="en" aria-labelledby="about-h">
+      <h1 id="about-h">Hollow Knight Hunter's Journal tracker</h1>
+      <p>The Hunter's Journal doesn't count for 112%, but it has its own achievement. Here it is entry by entry, from "not encountered" to "completed", with the kills you have left to decipher each one, just as the game counts them.</p>
+      <p>The game's total isn't 164: it starts at the 146 the Hunter's Mark requires and goes up with each optional entry you find. Import your save and the Journal fills itself in.</p>
       <div class="about-faq">
-        <h2>Preguntas frecuentes</h2>
-        <h3>¿Es gratis? ¿Hace falta cuenta?</h3>
-        <p>Es gratis, sin cuenta y sin anuncios. Tu partida no sale de tu navegador: se lee ahí y se guarda ahí.</p>
-        <h3>¿Funciona con la versión de consola?</h3>
-        <p>Leer la partida necesita el archivo, y solo el juego de ordenador (Windows, macOS, Linux) lo deja a mano. En consola puedes marcar tu progreso a mano.</p>
+        <h2>Questions</h2>
+        <h3>How many entries does the Hunter's Mark need?</h3>
+        <p>146 completed. The other 18 are optional.</p>
+        <h3>When does an entry appear?</h3>
+        <p>With the first kill, not on seeing the enemy.</p>
       </div>
-      <nav class="about-more" aria-label="Más en el sitio">
-        <h2>Más en el sitio</h2>
+      <nav class="about-more" aria-label="More on the site">
+        <h2>More on the site</h2>
         <ul>
-          <li><a href="es/analizador-de-partida/" data-page>Analizador de partida</a></li>
-          <li><a href="es/checklist-112/" data-page>Checklist del 112 %</a></li>
-          <li><a href="es/calculadora-de-amuletos/" data-page>Calculadora de amuletos</a></li>
-          <li><a href="es/mapa/" data-page>Mapa</a></li>
-          <li><a href="es/diario-del-cazador/" data-page>Diario del Cazador</a></li>
-          <li><a href="es/hogar-de-dioses/" data-page>Hogar de Dioses</a></li>
-          <li><a href="es/calculadora-de-danio/" data-page>Calculadora de daño</a></li>
+          <li><a href="./" data-page>Home</a></li>
+          <li><a href="save-analyzer/" data-page>Save analyzer</a></li>
+          <li><a href="112-checklist/" data-page>112% checklist</a></li>
+          <li><a href="charm-calculator/" data-page>Charm calculator</a></li>
+          <li><a href="map/" data-page>Map</a></li>
+          <li><a href="godhome/" data-page>Godhome</a></li>
+          <li><a href="boss-damage-calculator/" data-page>Boss damage calculator</a></li>
         </ul>
       </nav>
     </section>

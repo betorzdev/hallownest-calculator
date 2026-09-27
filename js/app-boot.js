@@ -6,7 +6,7 @@
   const HK = globalThis.HK;
   const C = HK.codec, I = HK.i18n;
   const App = HK.app;
-  const { t, KEY, PAGE_LANG, load, rebuildNF, prefs, loadPrefs, splitHash, loadState, persist, recompute,
+  const { t, KEY, PAGE_LANG, PAGE_VIEW, load, rebuildNF, prefs, loadPrefs, splitHash, loadState, persist, recompute,
     charmLock, touchesCharms, loadMarks, loadDoor, loadRun, render, toast, loadOwned, withFixed, loadJournal } = App;
 
   /* ── Startup ─────────────────────────────────────────────────────────── */
@@ -19,9 +19,10 @@
   App.loadProgress();      // and the rest of what your game has (js/progress.js)
   // The link's language; without one, the Spanish page speaks Spanish (and that counts as choosing it).
   const fromUrl = splitHash(location.hash).lang || (PAGE_LANG === 'en' ? null : PAGE_LANG);
-  // The screen: the link's; without it, a link with a build opens Charms, and with no link, wherever you left it.
+  // The screen: the link's; without it, the page's own (a search landed you on the map, say:
+  // tools/pages.js), a link with a build opens Charms, and with no link, wherever you left it.
   const urlHash = splitHash(location.hash);
-  prefs.view = urlHash.view || (C.isEmpty(urlHash.build) ? prefs.view : 'charms');
+  prefs.view = urlHash.view || PAGE_VIEW || (C.isEmpty(urlHash.build) ? prefs.view : 'charms');
   if (App.TOOLS.includes(prefs.view)) prefs.tool = prefs.view;
   // Godhome is Combat's tabs 'hall' and 'pantheon' shown as their own screen: the tab follows the screen.
   if ((prefs.view === 'godhome') !== (prefs.fightTab !== 'combat')) prefs.fightTab = prefs.view === 'godhome' ? (prefs.godTab === 'pantheon' ? 'pantheon' : 'hall') : 'combat';

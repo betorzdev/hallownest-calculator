@@ -119,7 +119,8 @@ if (q.get('ls')) for (const [k, v] of Object.entries(JSON.parse(q.get('ls')))) l
    plays the Knight's walk from it to the bench of hollow.progress (js/app-knight.js). */
 if (q.get('walk')) localStorage.setItem('hollow.prev', JSON.stringify({ snap: { 'hollow.progress': JSON.stringify({ bench: q.get('walk') }) }, saved: null }));
 const f = document.createElement('iframe');
-f.src = 'index.html' + (q.get('hash') ? q.get('hash') + (view !== 'charms' ? '&view=' + view : '') : '');
+/* &page=map/ or es/mapa/ opens one of the pages of tools/pages.js instead of the root. */
+f.src = (q.get('page') || '') + 'index.html' + (q.get('hash') ? q.get('hash') + (view !== 'charms' ? '&view=' + view : '') : '');
 f.style.width = w + 'px';
 f.style.height = h + 'px';
 /* Scrolling with scrollTo doesn't repaint in headless mode: the document is moved up with a

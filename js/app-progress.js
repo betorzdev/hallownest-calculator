@@ -108,6 +108,7 @@
         <span class="pg-name">${esc(name)}</span>
         <span class="pg-pips" aria-hidden="true">${pips}</span>
         <span class="pg-pts"><b>${num(c.got)}</b><i class="u">/${num(c.max)}</i></span>
+        <span class="disc-ring" aria-hidden="true">${App.chevron(open)}</span>
       </button>
       ${open ? `<div class="pg-open"><div class="pg-plates${App.saveLock() ? ' is-held' : ''}">${c.items.map((it) => plate(c.id, it)).join('')}</div></div>` : ''}
     </li>`;

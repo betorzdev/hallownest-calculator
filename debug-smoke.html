@@ -92,17 +92,8 @@ f.addEventListener('load', async () => {
        q('#panel .hud-orb') ? q('#panel .hud-orb').getAttribute('style') : 'no orb');
     ok('with no reserve vessels none is drawn', !q('#panel .hud-vessel') && !q('#panel .hud-vessels'));
     ok("the sheet isn't a scene: only the arena carries .kscene", !q('#panel .kscene'));
-    // The sheet's soul is spent by hand, only to see it: each tap on the orb casts a spell
-    // (33) and, when there's not enough for another, the next one fills it. No figure changes.
-    const cutOrb = () => q('#panel .hud-orb').style.getPropertyValue('--cut');
-    await click('#panel [data-act="soulOrb"]');
-    ok('the orb empties by one spell', cutOrb() !== '0.0%' && soulTxt() === '66/99', cutOrb() + ' · ' + soulTxt());
-    ok("spending soul doesn't change any figure", txt('.hero-num') === '32' && !q('#panel .is-flash'));
-    await click('#panel [data-act="soulOrb"]');
-    await click('#panel [data-act="soulOrb"]');
-    ok('it can be left empty', cutOrb() === '100%' || cutOrb() === '100.0%', cutOrb());
-    await click('#panel [data-act="soulOrb"]');
-    ok('empty, the next tap fills it', cutOrb() === '0.0%' && soulTxt() === '99', cutOrb() + ' · ' + soulTxt());
+    // The sheet's soul is only drawn: spending it by hand changed no figure (27-sep), it's spent in Combat.
+    ok('the soul is drawn, not pressed', !q('#panel button.hud-orb, #panel button.hud-vessel, #panel [data-act^="soul"]'));
 
     await click('[data-act="detail"]');
     ok('the full sheet opens', d.querySelectorAll('.stat').length > 45, d.querySelectorAll('.stat').length + ' rows');
@@ -301,7 +292,7 @@ f.addEventListener('load', async () => {
     await click('[data-act="clear"]'); await wait(1000);   // the charms leave one by one first
     ok('clearing removes all charms', onCount() === 0, onIds());
     ok('with no charms, Equipped is just the empty slot, with no text in view', !q('#panel .is-eq .eq') && !!q('#panel .is-eq .eq-slot')
-       && !q('#panel .is-eq .muted-p') && !!q('#panel .is-eq .sr-only'));
+       && !q('#panel .is-eq .empty') && !!q('#panel .is-eq .sr-only'));
 
     // Opening a link that's already overcharmed mustn't fire the flash: it isn't a change of yours.
     w.location.hash = '#v=1&notches=3&charms=uheart,joni';
@@ -364,7 +355,7 @@ f.addEventListener('load', async () => {
     ok('Combat is the arena alone: its title, no tabs (the Hall and the Pantheons are Godhome)', !!q('#fight .fight-body > .fight-head .screen-title') && !q('#fight [data-act="fightTab"]'));
     await click('.masthead a.brand');
     ok("the site's title leads to Your game, the start screen", visible() === 'home' && w.location.hash.indexOf('view=home') >= 0
-       && q('.masthead a.brand h1.title') !== null, visible() + ' · ' + w.location.hash);
+       && q('.masthead a.brand .title') !== null, visible() + ' · ' + w.location.hash);
     await goto('charms');
     ok('on Charms the mini-bar stays', visible() === 'panel' && !q('#minihud').hidden);
     // The Knight (js/app-knight.js): sitting on the bar under the title of the tab you're on, and he runs to the next one.
@@ -754,28 +745,11 @@ f.addEventListener('load', async () => {
     w.location.hash = '#v=1&nail=4&masks=9&vessels=3&notches=11&spells=222&arts=111&view=fight';
     await wait(140);
 
-    // The sheet's soul with vessels works as in the game: the orb fills first and the vessels
-    // after, in order; on casting, the orb drops and the vessels refill it right away.
+    // The sheet's soul with vessels: the orb and the three drawn full.
     const cutDe = (n) => n.style.getPropertyValue('--cut');
     const vessels = () => [...d.querySelectorAll('#panel .hud-vessel')].map((n) => (cutDe(n) === '0.0%' ? 'O' : cutDe(n) === '100.0%' ? '.' : '~')).join('');
-    const orbCut = () => cutDe(q('#panel .hud-orb'));
-    ok('with 198 soul, the orb and the three vessels full', orbCut() === '0.0%' && vessels() === 'OOO', orbCut() + ' ' + vessels());
-    await click('#panel [data-act="soulOrb"]');
-    ok("on casting, the orb drops and the vessels haven't passed on their soul yet", orbCut() !== '0.0%' && vessels() === 'OOO'
-       && soulTxt() === '165/198', orbCut() + ' ' + vessels() + ' · ' + soulTxt());
-    await wait(700);
-    ok('right away the last vessel refills the orb', orbCut() === '0.0%' && vessels() === 'OO.', orbCut() + ' ' + vessels());
-    await click('#panel .hud-vessel[data-value="0"]');
-    ok('tapping a full vessel empties it along with the ones to its right', orbCut() === '0.0%' && vessels() === '...'
-       && soulTxt() === '99/198', orbCut() + ' ' + vessels());
-    await click('#panel [data-act="soulOrb"]');
-    await click('#panel [data-act="soulOrb"]');
-    ok('with no full vessels, the orb drops and nobody refills it', orbCut() !== '0.0%' && vessels() === '...', orbCut() + ' ' + vessels());
-    await click('#panel .hud-vessel[data-value="1"]');
-    ok("an empty vessel doesn't fill by itself: soul goes in in order, orb and the earlier ones", orbCut() === '0.0%' && vessels() === 'OO.',
-       orbCut() + ' ' + vessels() + ' · ' + soulTxt());
-    await click('#panel .hud-vessel[data-value="2"]');
-    ok('and filling the last one leaves soul full', vessels() === 'OOO' && soulTxt() === '198', soulTxt());
+    ok('with 198 soul, the orb and the three vessels full', cutDe(q('#panel .hud-orb')) === '0.0%' && vessels() === 'OOO' && soulTxt() === '198',
+       cutDe(q('#panel .hud-orb')) + ' ' + vessels() + ' · ' + soulTxt());
     await pick('soul-master');
     await click('[data-act="fightReset"]');
     ok("Soul Master's card counts the stagger: 9 hits, or 7 in a row", txt('.foecard-stagger').indexOf('0/9') >= 0

@@ -67,6 +67,19 @@ test('the interface English leaves no stray Spanish', () => {
   }
 });
 
+/* The pages' own text (tools/pages-text.js): both languages everywhere, and no Spanish in the English. */
+test('the pages text is in both languages, with no stray Spanish in the English', () => {
+  const T = require('../tools/pages-text.js');
+  const found = pairs({ BRAND: T.BRAND, LABELS: T.LABELS, PAGES: T.PAGES, OG_ALT: T.OG_ALT });
+  assert.ok(found.length > 80, `expected many pairs, there are ${found.length}`);
+  for (const { path, value } of found) {
+    assert.equal(typeof value.en, 'string', `${path} has no English`);
+    if (/\.slug$/.test(path)) continue;
+    assert.ok(!SPANISH_CHARS.test(value.en), `${path}: Spanish accent in the English "${value.en}"`);
+    assert.ok(!SPANISH_WORDS.test(value.en), `${path}: Spanish word in the English "${value.en}"`);
+  }
+});
+
 test('the codec.js reasons are in both languages', () => {
   for (const [key, value] of Object.entries(codec.REASON)) {
     assert.equal(typeof value.es, 'string', `REASON.${key} has no Spanish`);

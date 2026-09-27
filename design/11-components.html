@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Component catalogue</title>
+<!-- Design material, not part of the site (design/11-components.md). The living catalogue of the
+     design system: it loads the site's real tokens and CSS and shows every scale and component
+     in every state. While the design pass is on, each round adds its proposal here (the blocks
+     marked "Round"), Albert picks, and the chosen one stays as the reference.
+     The <base> points at the root so that the site's "assets/…" paths work as they are. -->
+<base href="../">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+/* ════ The catalogue's own layout: none of this goes into the site ═══════════════════════ */
+body { background: var(--scene-bg); }
+.cat { max-width: var(--page-max); margin: 0 auto; padding: var(--sp-8) var(--sp-4) var(--sp-16); }
+.cat-h1 { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-2xl); letter-spacing: var(--track-title); color: var(--ink-strong); margin: 0 0 var(--sp-2); }
+.cat-lead { max-width: var(--measure); color: var(--ink-2); font-size: var(--fs-md); margin: 0 0 var(--sp-8); }
+.cat-sec { margin: 0 0 var(--sp-16); }
+.cat-sec > h2 { font-family: var(--font-display); text-transform: uppercase; letter-spacing: var(--track-caps); font-weight: 600;
+  font-size: var(--fs-lg); color: var(--tint-sheet); margin: 0 0 var(--sp-2); padding-bottom: var(--sp-2); border-bottom: 1px solid var(--line-panel); }
+.cat-sec > p, .cat-note { max-width: var(--measure); color: var(--ink-2); margin: var(--sp-3) 0; }
+.cat-note { font-size: var(--fs-sm); color: var(--muted); }
+.cat-done { display: inline-block; margin-left: var(--sp-2); font-family: var(--font-num); font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--good); vertical-align: middle; }
+.cat-round { display: inline-block; margin-right: var(--sp-2); padding: 0 var(--sp-2); border: 1px solid var(--accent-line);
+  font-family: var(--font-num); font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--accent); vertical-align: middle; }
+.cat-h3 { font-family: var(--font-num); font-size: var(--fs-2xs); font-weight: 600; letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); margin: var(--sp-8) 0 var(--sp-3); }
+.cat-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: var(--sp-6); }
+.cat-box { padding: var(--sp-4); border: 1px solid var(--line); background: var(--card); }
+.cat-box.is-pick { border-color: var(--accent-line); }
+.cat-box > h4 { margin: 0 0 var(--sp-1); font-family: var(--font-display); font-size: var(--fs-md); letter-spacing: var(--track-title); color: var(--ink-strong); font-weight: 600; }
+.cat-box > h4 small { font-family: var(--font-num); font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--accent); margin-left: var(--sp-2); font-weight: 600; }
+.cat-box > p { margin: 0 0 var(--sp-3); font-size: var(--fs-sm); color: var(--muted); }
+/* A table of values: the value, what it looks like, where it's used. */
+.cat-t { width: 100%; border-collapse: collapse; }
+.cat-t td, .cat-t th { padding: var(--sp-2) var(--sp-3) var(--sp-2) 0; border-bottom: 1px solid var(--line-row); vertical-align: middle; text-align: left; }
+.cat-t th { font-family: var(--font-num); font-size: var(--fs-2xs); font-weight: 600; letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); }
+.cat-t .v { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-xs); color: var(--ink-2); white-space: nowrap; }
+.cat-t .w { font-size: var(--fs-xs); color: var(--muted); }
+.cat-t .to { font-family: var(--font-num); font-size: var(--fs-xs); color: var(--accent); white-space: nowrap; }
+.cat-t tr.is-group td { padding-top: var(--sp-4); border-bottom: 0; font-family: var(--font-num); font-size: var(--fs-2xs); font-weight: 600; letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ink-strong); }
+/* The four kinds of spaced text, as the site sets them. */
+.s-title { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-xl); color: var(--ink-strong); }
+.s-label { font-family: var(--font-num); font-weight: 600; font-size: var(--fs-2xs); text-transform: uppercase; color: var(--label); }
+.s-caps  { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-xs); text-transform: uppercase; color: var(--ink-2); }
+.s-wide  { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-2xs); text-transform: uppercase; color: var(--muted); }
+/* Before / after, one over the other so the difference reads. */
+.ba { display: grid; grid-template-columns: auto 1fr; gap: var(--sp-1) var(--sp-3); align-items: baseline; }
+.ba > i { font-style: normal; font-family: var(--font-num); font-size: var(--fs-2xs); color: var(--muted); letter-spacing: var(--track-label); text-transform: uppercase; }
+/* Heights: a strip of bare controls drawn at each height, with its measure beside it. */
+.hrow { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--sp-3); }
+.hctl { display: flex; flex-direction: column; align-items: center; gap: var(--sp-1); }
+.hctl > span { display: inline-flex; align-items: center; padding: 0 var(--sp-3); border: 1px dashed var(--accent-line); color: var(--ink-2); font-size: var(--fs-xs); background: var(--picked); }
+.hctl > small { font-family: var(--font-num); font-size: var(--fs-2xs); color: var(--muted); }
+.hctl.is-touch > span { border-style: solid; }
+.ic-row { display: flex; flex-wrap: wrap; gap: var(--sp-6); align-items: flex-end; color: var(--ink-2); }
+.ic-row figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); }
+.ic-row figcaption { font-family: var(--font-num); font-size: var(--fs-2xs); color: var(--muted); text-align: center; }
+/* Reference scales. */
+.sw-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--sp-2); }
+.sw { display: flex; gap: var(--sp-2); align-items: center; font-family: var(--font-num); font-size: var(--fs-2xs); color: var(--ink-2); }
+.sw b { flex: none; width: 28px; height: 28px; border: 1px solid var(--line-ctl); }
+.sw span { display: flex; flex-direction: column; min-width: 0; }
+.sw em { font-style: normal; color: var(--muted); overflow: hidden; text-overflow: ellipsis; }
+.sp-bar { height: var(--sp-2); background: var(--accent-line); }
+
+/* ════ Round 2 · Buttons: the catalogue's layout around the real components ═════════════════ */
+.st { display: grid; grid-template-columns: 5.5em 1fr; gap: var(--sp-3); align-items: center; padding: var(--sp-2) 0; border-top: 1px solid var(--line-row); }
+.st > i { font-style: normal; font-family: var(--font-num); font-size: var(--fs-2xs); color: var(--muted); letter-spacing: var(--track-label); text-transform: uppercase; }
+.st > div { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-3) var(--sp-4); }
+.st > div.is-col { flex-direction: column; align-items: stretch; }
+.cat-box.is-now { background: var(--scene-bg); }
+.kind-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr)); gap: var(--sp-4); }
+.kind-grid .cat-box > p code { font-size: var(--fs-xs); }
+
+#r3 .st > div.is-col { align-items: flex-start; }
+
+#r4 .st > div.is-col { align-items: stretch; }
+
+.w-list { display: flex; flex-direction: column; gap: 1px; width: 100%; max-width: 340px; list-style: none; margin: 0; padding: 0; }
+.w-miss { display: flex; flex-wrap: wrap; gap: var(--sp-6); align-items: flex-end; }
+.w-miss figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); }
+.w-miss img { width: 48px; height: 48px; object-fit: contain; }
+.w-miss figcaption { font-family: var(--font-num); font-size: var(--fs-2xs); color: var(--muted); text-align: center; line-height: 1.4; }
+#r5 .st > div.is-col { align-items: stretch; }
+</style>
+</head>
+<body>
+<main class="cat">
+  <h1 class="cat-h1">Sistema de diseño</h1>
+  <p class="cat-lead">El catálogo vivo de la web: carga <code>tokens.css</code> y <code>app.css</code> reales. Cada ronda del repaso añade aquí su propuesta; lo que elijas se queda como referencia.</p>
+
+  <!-- ═══ Round 1 · Foundations ═════════════════════════════════════════════════════════ -->
+  <section class="cat-sec" id="tracking">
+    <h2><span class="cat-round">Ronda 1</span>Espaciado entre letras<span class="cat-done">decidido 27-sep</span></h2>
+    <p>Hoy hay <b>13 valores</b> distintos, de 0.01 a 0.3em. Casi todos caen en cuatro usos: títulos grandes en Cinzel, etiquetas pequeñas en la sans, mayúsculas pequeñas en Cinzel (botones, pestañas, títulos de sección) y el sobretítulo muy abierto. La propuesta: <b>un token por uso</b>.</p>
+    <table class="cat-t" id="track-table"><thead><tr><th>Hoy</th><th>Cómo se ve</th><th>Dónde</th><th>Pasa a</th></tr></thead><tbody></tbody></table>
+
+    <h3 class="cat-h3">Antes y después, en lo que más cambia</h3>
+    <div class="cat-cols" id="track-ba"></div>
+  </section>
+
+  <section class="cat-sec" id="heights">
+    <h2><span class="cat-round">Ronda 1</span>Altura de los controles<span class="cat-done">decidido 27-sep</span></h2>
+    <p>Hoy hay <b>9 alturas</b> (22, 24, 28, 32, 36, 40, 44, 48 y 54 px). Las de 22 a 28 no llegan al mínimo cómodo para un dedo, y 32/36 y 40/44 no se distinguen a simple vista. Quedan en dos tokens:</p>
+    <div class="cat-cols">
+      <div class="cat-box is-pick">
+        <h4>Dos tamaños + dedo</h4>
+        <p><code>--ctl-sm</code> 32 y <code>--ctl</code> 40. Con pantalla táctil (<code>pointer: coarse</code>) los dos suben solos a 44, el mínimo de Apple y Google. Con ratón la web sigue igual de densa.</p>
+        <div class="hrow">
+          <div class="hctl"><span style="height:32px">sm</span><small>32</small></div>
+          <div class="hctl"><span style="height:40px">md</span><small>40</small></div>
+          <div class="hctl is-touch"><span style="height:44px">táctil</span><small>44 (ambos)</small></div>
+        </div>
+      </div>
+    </div>
+    </div>
+    <h3 class="cat-h3">Hoy, cada altura con quién la usa</h3>
+    <table class="cat-t" id="height-table"><thead><tr><th>Hoy</th><th>Dónde</th><th>Pasa a</th></tr></thead><tbody></tbody></table>
+    <p class="cat-note">Con dedo, todo lo de 32 y 40 pasa a 44. Las piezas del juego (amuletos 54, muescas 23, fragmentos 38, los puntos de hechizo) no son controles: su tamaño sale del sprite y se quedan como están.</p>
+  </section>
+
+  <section class="cat-sec" id="icons">
+    <h2><span class="cat-round">Ronda 1</span>Iconos de interfaz<span class="cat-done">decidido 27-sep</span></h2>
+    <p>Clase <code>.ic</code> (y <code>.ic.is-lg</code> para 16): el ancho da el tamaño y el trazo se mide en pantalla. Los iconos dibujados (chevron, ×, ←, deshacer, ✓) usan 12, 14, 16 y 18 px, con trazo de 1 a 2. Propuesta: <b>dos tamaños</b>, <code>--icon-sm</code> 12 (dentro de texto pequeño) y <code>--icon</code> 16 (solos en un botón de icono), con <b>trazo 1.6</b> en todos, que es el que ya llevan casi todos.</p>
+    <div class="cat-cols">
+      <div class="cat-box"><h4>Hoy</h4><div class="ic-row" id="ic-now"></div></div>
+      <div class="cat-box is-pick"><h4>Propuesta</h4><div class="ic-row" id="ic-new"></div></div>
+    </div>
+  </section>
+
+
+  <!-- ═══ Round 2 · Buttons ═════════════════════════════════════════════════════════════ -->
+  <section class="cat-sec" id="buttons">
+    <h2><span class="cat-round">Ronda 2</span>Botones<span class="cat-done">decidido 27-sep</span></h2>
+    <p>Cuatro tipos por función, y los cuatro se leen como botón en reposo, sin ratón encima. Lo que se ve aquí son las clases reales de <code>app.css</code>: pasa el ratón para ver el hover. Elegidos: menú B (marco con esquinas), texto A (subrayado de acento), icono B (anillo) y desplegable B (fila con anillo).</p>
+    <div class="kind-grid" id="kinds"></div>
+    <p class="cat-note">Excepción: las pantallas que copian una del juego (la tablilla del Salón, las ranuras de Partidas y el selector de partida de la cabecera) mantienen sus controles de juego, texto sin caja en su tinta, porque ahí una caja parecía pegada encima. El zoom del mapa sigue siendo una barra de herramientas con caja sobre el mapa.</p>
+  </section>
+
+  <!-- ═══ Round 3 · Choosing and typing ══════════════════════════════════════════════════ -->
+  <section class="cat-sec" id="choose">
+    <h2><span class="cat-round">Ronda 3</span>Elegir y escribir<span class="cat-done">decidido 27-sep</span></h2>
+    <p>Las clases reales. Elegidos: elegir una opción A (palabras con su línea), sí/no A (cuadro) y buscar B (pozo con lupa). «Marcar en bloque» es un botón de texto con chevron en el Salón y en el Diario.</p>
+    <div class="kind-grid" id="r3"></div>
+  </section>
+
+  <!-- ═══ Round 4 · Showing ═══════════════════════════════════════════════════════════════ -->
+  <section class="cat-sec" id="show">
+    <h2><span class="cat-round">Ronda 4</span>Mostrar<span class="cat-done">decidido 27-sep</span></h2>
+    <p>Las clases reales. Regla desde la ronda 2: <b>el marco dice «púlsame»</b>, así que lo que solo informa no lleva caja. Elegidos: etiqueta A (sin caja, con rombo), filtro A (con su casilla) y aviso B (regla lateral). El título de sección y el panel se quedan como están.</p>
+    <div id="r4"></div>
+    <h3 class="cat-h3">Título de sección y panel · <code>screenHead()</code>, <code>.panel</code> + <code>.bk</code></h3>
+    <div class="panel" style="position:relative;padding:var(--sp-8) var(--sp-6);background:var(--inv-bg)"><span class="bk tl"></span><span class="bk tr"></span><span class="bk bl"></span><span class="bk br"></span>
+      <div id="r4-head"></div>
+      <p class="cat-note" style="text-align:center;margin-inline:auto">El título en Cinzel, en el tinte de la sección; la regla con su rombo en la lámpara de la sección, y las esquinas del panel (2 px) también. Las esquinas de los botones (1 px, en el acento) son las mismas, en pequeño y en el color de lo que se toca.</p>
+    </div>
+  </section>
+
+  <!-- ═══ Round 5 · Patterns ══════════════════════════════════════════════════════════════ -->
+  <section class="cat-sec" id="patterns">
+    <h2><span class="cat-round">Ronda 5</span>Patrones<span class="cat-done">decidido 27-sep</span></h2>
+    <p>Las clases reales. La cabecera de pantalla es una sola (<code>screenHead()</code>) y su título ya no enseña el anillo de foco al abrir la pantalla. Elegidos: la fila abierta con la barra a la izquierda, el vacío con rombo y regla, y un solo gris para lo que te falta.</p>
+    <div id="r5"></div>
+  </section>
+
+  <!-- ═══ Round 6 · Screen by screen ════════════════════════════════════════════════════════ -->
+  <section class="cat-sec" id="screens">
+    <h2><span class="cat-round">Ronda 6</span>Pantalla a pantalla<span class="cat-done">decidido 27-sep</span></h2>
+    <p>Las diez pantallas, contra las rondas 1 a 5. Lo que no encajaba, y cómo quedó: la estatua y el panteón elegidos, sin marco, con su luz y el pedestal en el acento; las tarjetas de Partida, con una flecha tras el título; las filas de Progreso, con el anillo y su chevron; los niveles de hechizos y habilidades, como «elegir una opción»; y <b>la luz detrás de las placas, solo donde miras</b> (bajo el ratón o el foco, y un momento en la que acaba de cambiar), con lo que te falta en el gris de «no lo tienes». El detalle está en <code>design/11-components.md</code>.</p>
+  </section>
+
+  <!-- ═══ Reference: the scales already in tokens.css ═══════════════════════════════════ -->
+  <section class="cat-sec" id="ref">
+    <h2>Referencia · lo que ya está decidido</h2>
+    <p class="cat-note">Leído en vivo de <code>tokens.css</code>: si cambia un token, cambia aquí.</p>
+    <h3 class="cat-h3">Tinta</h3><div class="sw-grid" data-sw="--ink-strong --ink --ink-2 --label --muted --accent --accent-line --good --bad --cond --over-ink --godhome"></div>
+    <h3 class="cat-h3">Superficies y líneas</h3><div class="sw-grid" data-sw="--scene-bg --bg --well --card --block --card-idle --card-on --ctl --line-row --line --line-card --line-ctl --line-panel --bracket"></div>
+    <h3 class="cat-h3">Tinte de cada sección (el mapa del juego)</h3><div class="sw-grid" data-sw="--tint-sheet --tint-combat --tint-godhome --tint-journal --tint-progress"></div>
+    <h3 class="cat-h3">Tamaños de letra</h3><table class="cat-t" id="fs-table"><tbody></tbody></table>
+    <h3 class="cat-h3">Espaciado</h3><table class="cat-t" id="sp-table"><tbody></tbody></table>
+  </section>
+</main>
+
+<script>
+/* Round 1's data, measured on css/app.css on 27-sep-2026. `to` is the proposed token. */
+const TRACK = [
+  { to: '--track-title · 0.04em', kind: 's-title', sample: 'Salón de los Dioses', rows: [
+    ['0.01em', 'nombre en el pedestal del Salón'], ['0.02em', 'título de la web, título de la tablilla'],
+    ['0.04em', 'avisos flotantes, marca del Salón, títulos de la importación, nombre de área en el mapa'],
+    ['0.06em', 'título del Diario en Combate, cabecera del Caballero, nombre de la página del Diario, título del combate'] ] },
+  { to: '--track-label · 0.08em', kind: 's-label', sample: 'Muescas · Equipado', rows: [
+    ['0.06em', 'etiqueta del mini-HUD, «Dónde» de la partida'],
+    ['0.08em', 'idioma, estado en vivo, grupos del mapa, etiquetas de la partida y de Tu partida'],
+    ['0.09em', 'las etiquetas de nivel 2 (.lbl), cabeceras de tabla del Salón, datos del Diario'],
+    ['0.12em', 'total del Progreso, etiqueta de cifra en Tu partida'] ] },
+  { to: '--track-caps · 0.12em', kind: 's-caps', sample: 'Ver todas las estadísticas', rows: [
+    ['0.1em', 'botones (.btn), acciones de las partidas, nombre del Cazador, invitación de Tu partida'],
+    ['0.12em', 'área en Tu partida'],
+    ['0.14em', 'título de sección, pestañas, nombre de la partida, «Nueva partida», fin del combate'],
+    ['0.16em', 'título de la hoja, «Ver todas las estadísticas»'] ] },
+  { to: '--track-wide · 0.2em', kind: 's-wide', sample: 'Ciudad de Lágrimas', rows: [
+    ['0.2em', 'nota bajo el nombre del Cazador, etiqueta de la invitación'],
+    ['0.3em', 'sobretítulo del área en Tu partida'] ] },
+];
+const HEIGHTS = [
+  ['22', 'puntos de hechizo pequeños (pieza)', '—', '—'], ['24', 'fila de muescas (pieza)', '—', '—'],
+  ['28', 'segmentado pequeño, lado del hechizo', '32', '32'],
+  ['32', 'ayuda (?), idioma, deshacer, Todo · Nada del Diario, − +, número', '32', '32'],
+  ['36', 'segmentado, acciones masivas del Salón y el Diario, estado del Diario', '40', '40'],
+  ['40', 'botones (.btn), pestañas del Diario, acciones de las partidas, volver', '40', '40'],
+  ['44', 'buscadores, reiniciar, contador del Salón, guardar partida', '40', '48'], ['48', 'selector de enemigo', '40', '48'],
+];
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+$('#track-table tbody').innerHTML = TRACK.map((g) =>
+  `<tr class="is-group"><td colspan="4">${esc(g.to.split(' · ')[0].replace('--track-', ''))}</td></tr>` +
+  g.rows.map(([v, where], i) => `<tr><td class="v">${v}</td><td><span class="${g.kind}" style="letter-spacing:${v}">${esc(g.sample)}</span></td>
+    <td class="w">${esc(where)}</td><td class="to">${i === 0 ? esc(g.to) : ''}</td></tr>`).join('')).join('');
+
+$('#track-ba').innerHTML = TRACK.map((g) => {
+  const target = g.to.split(' · ')[1];
+  const worst = g.rows.map((r) => r[0]).filter((v) => v !== target);
+  return `<div class="cat-box"><h4>${esc(g.to)}</h4><div class="ba">${worst.map((v) =>
+    `<i>${v}</i><span class="${g.kind}" style="letter-spacing:${v}">${esc(g.sample)}</span>`).join('')}
+    <i>→ ${target}</i><span class="${g.kind}" style="letter-spacing:${target};color:var(--ink-strong)">${esc(g.sample)}</span></div></div>`;
+}).join('');
+
+$('#height-table tbody').innerHTML = HEIGHTS.map(([h, where, a, b]) =>
+  `<tr><td class="v">${h}</td><td class="w">${esc(where)}</td><td class="to">${a}</td></tr>`).join('');
+
+/* Icons: today's, each at its own size and stroke, and the same ones at the proposal's. */
+const ICONS = [
+  ['chevron', '0 0 12 8', '<path d="M1 1.5 L6 6 L11 1.5"/>', 12, 8, 1.6],
+  ['volver', '0 0 12 12', '<path d="M8 1.5 L3.5 6 L8 10.5"/>', 12, 12, 1.6],
+  ['cerrar', '0 0 12 12', '<path d="M2 2 L10 10 M10 2 L2 10"/>', 12, 12, 1.6],
+  ['deshacer', '0 0 16 16', '<path d="M3 6h7a3.5 3.5 0 0 1 0 7H6"/><path d="M6 3L3 6l3 3"/>', 14, 14, 1.6],
+  ['marca', '0 0 12 10', '<path d="M1.5 5.2 L4.6 8.2 L10.5 1.8"/>', 12, 10, 2],
+];
+const svg = (vb, d, w, h, sw) => `<svg width="${w}" height="${h}" viewBox="${vb}" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+$('#ic-now').innerHTML = ICONS.map(([n, vb, d, w, h, sw]) => `<figure>${svg(vb, d, w, h, sw)}<figcaption>${n}<br>${w} px · ${sw}</figcaption></figure>`).join('');
+$('#ic-new').innerHTML = ICONS.map(([n, vb, d, w, h]) => {
+  const [, , vw, vh] = vb.split(' ').map(Number);
+  return `<figure>${svg(vb, d, 12, 12 * vh / vw, 1.6 * vw / 12)}${svg(vb, d, 16, 16 * vh / vw, 1.6 * vw / 16)}<figcaption>${n}<br>12 · 16 px</figcaption></figure>`;
+}).join('');
+
+/* Reference, read live from the tokens. */
+const root = getComputedStyle(document.documentElement);
+const tok = (n) => root.getPropertyValue(n).trim();
+document.querySelectorAll('[data-sw]').forEach((el) => {
+  el.innerHTML = el.dataset.sw.split(' ').map((n) =>
+    `<div class="sw"><b style="background:var(${n})"></b><span>${n}<em>${esc(tok(n))}</em></span></div>`).join('');
+});
+$('#fs-table tbody').innerHTML = ['--fs-2xs', '--fs-xs', '--fs-sm', '--fs-md', '--fs-lg', '--fs-xl', '--fs-2xl'].map((n) =>
+  `<tr><td class="v">${n}</td><td class="v">${esc(tok(n))}</td><td><span style="font-size:var(${n});color:var(--ink)">Aguijón Onírico 1234</span></td></tr>`).join('');
+$('#sp-table tbody').innerHTML = ['--sp-half', '--sp-1', '--sp-2', '--sp-3', '--sp-4', '--sp-6', '--sp-8', '--sp-12', '--sp-16'].map((n) =>
+  `<tr><td class="v">${n}</td><td class="v">${esc(tok(n))}</td><td style="width:70%"><div class="sp-bar" style="width:var(${n})"></div></td></tr>`).join('');
+/* ── Round 2 · Buttons: the real classes, each with its job and where it's used ─────────── */
+const CROSS = '<svg class="ic" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M2 2 L10 10 M10 2 L2 10"/></svg>';
+const BACK_I = '<svg class="ic" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5 L3.5 6 L8 10.5"/></svg>';
+const UNDO_I = '<svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h7a3.5 3.5 0 0 1 0 7H6"/><path d="M6 3L3 6l3 3"/></svg>';
+const CHEV = '<svg class="ic chev" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1.5 L6 6 L11 1.5"/></svg>';
+const st = (label, html, col) => `<div class="st"><i>${label}</i><div class="${col ? 'is-col' : ''}">${html}</div></div>`;
+const KINDS = [
+  { name: 'Menú · <code>.btn</code>', job: 'Las acciones de una pantalla o un diálogo. <code>.btn-primary</code>, a lo que lleva la pantalla (una por pantalla); <code>.is-danger</code>, lo que tira algo.',
+    html: st('reposo', '<button class="btn">Volver al salón</button><button class="btn btn-primary">Siguiente sala</button><button class="btn is-danger">Abandonar</button>') + st('desact.', '<button class="btn" disabled>Deshacer</button>') },
+  { name: 'Texto · <code>.text-btn</code>', job: 'Una acción dentro de una línea o una lista, que no manda en la pantalla. Con icono delante si lo tiene (✕ vaciar, ↶ deshacer, ← volver).',
+    html: st('reposo', `<button class="text-btn">Caballero base</button><button class="text-btn">${CROSS}Vaciar</button><button class="text-btn">${UNDO_I}Deshacer</button><button class="text-btn">${BACK_I}Partidas</button>`) + st('desact.', `<button class="text-btn" disabled>${UNDO_I}Deshacer</button>`) },
+  { name: 'Icono · <code>.icon-btn</code>', job: 'Un glifo solo: cerrar, − y + de un contador. Siempre con <code>aria-label</code>. La «?» de ayuda (<code>.help-q</code>) usa el mismo anillo, más pequeño, dentro de la fila.',
+    html: st('reposo', `<button class="icon-btn" aria-label="Cerrar">${CROSS}</button><button class="icon-btn" aria-label="Menos">−</button><button class="icon-btn" aria-label="Más">+</button><span class="stepper"><button class="icon-btn step" aria-label="Menos">−</button><input class="step-count" type="number" value="3" aria-label="Cantidad"><button class="icon-btn step" aria-label="Más">+</button></span>`) + st('desact.', '<button class="icon-btn" disabled aria-label="Menos">−</button>') },
+  { name: 'Desplegable · <code>.disc-btn</code>', job: 'Abre algo debajo sin cambiar de pantalla. El chevron va en <code>.disc-ring</code>; abierto (<code>aria-expanded="true"</code>) el anillo se queda encendido. <code>.is-pick</code>, la forma de selector: lo elegido y lo que hace el botón.',
+    html: st('reposo', `<button class="disc-btn"><span>Ver todas las estadísticas</span><span class="disc-ring">${CHEV}</span></button><button class="disc-btn is-pick"><span style="flex:1">Cresta</span><span>Elegir enemigo</span><span class="disc-ring">${CHEV}</span></button>`, true) + st('abierto', `<button class="disc-btn" aria-expanded="true"><span>Ocultar las estadísticas</span><span class="disc-ring">${CHEV.replace('ic chev', 'ic chev up')}</span></button>`, true) },
+];
+$('#kinds').innerHTML = KINDS.map((K) => `<div class="cat-box is-now"><h4>${K.name}</h4><p>${K.job}</p>${K.html}</div>`).join('');
+
+/* ── Round 3 · Choosing and typing: the real classes ────────────────────────────────────── */
+const TICK = '<svg class="ic" viewBox="0 0 12 10" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 5.2 L4.6 8.2 L10.5 1.8"/></svg>';
+const LENS = '<svg class="ic" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-linecap="round"><circle cx="5" cy="5" r="3.6"/><path d="M7.8 7.8 L10.8 10.8"/></svg>';
+const R3 = [
+  { name: 'Elegir una opción · <code>.seg</code>', job: 'Un grupo con una siempre elegida (<code>aria-pressed</code>). <code>.seg.sm</code> para lo pequeño; una cuenta va en <code>&lt;i&gt;</code>. Lo usan comparar con, la importación, los filtros y el estado del Diario, el idioma y el lado del hechizo.',
+    html: st('reposo', '<span class="seg"><button aria-pressed="true">Caballero base</button><button aria-pressed="false">Build fijada</button></span><span class="seg langsel"><button aria-pressed="false">EN</button><button aria-pressed="true">ES</button></span>') +
+      st('pequeño', '<span class="seg sm jr-kinds"><button aria-pressed="true">Todos <i>180</i></button><button aria-pressed="false">Jefes <i>51</i></button><button aria-pressed="false">Enemigos <i>129</i></button></span>') },
+  { name: 'Sí / no · <code>.check</code>', job: 'Una <code>&lt;label class="check"&gt;</code> con su casilla nativa, o un botón con <code>role="checkbox"</code> o <code>"switch"</code> que lleva un <code>.check-box</code> (las filas del Diario, seguir al juego).',
+    html: st('reposo', '<label class="check"><input type="checkbox" checked> Ver también lo conseguido</label><label class="check"><input type="checkbox"> Ver los nombres de las zonas</label>', true) +
+      st('botón', `<button class="check" role="switch" aria-checked="true"><span class="check-box">${TICK}</span>Activado</button><button class="check" role="switch" aria-checked="false"><span class="check-box">${TICK}</span>Desactivado</button>`) },
+  { name: 'Buscar · <code>.search</code>', job: 'Un <code>&lt;label class="search"&gt;</code> con la lupa y el <code>&lt;input type="search"&gt;</code> dentro; la clase del input es la de su pantalla.',
+    html: st('reposo', `<label class="search" style="width:100%;max-width:320px">${LENS}<input type="search" placeholder="Buscar en el Diario"></label>`, true) },
+  { name: '«Marcar en bloque» · <code>.text-btn.bulk-toggle</code>', job: 'La herramienta secundaria de una lista: botón de texto con chevron; abierto, en hueso sobre la línea entera.',
+    html: st('cerrado', `<button class="text-btn bulk-toggle" aria-expanded="false">Marcar en bloque${CHEV}</button>`) + st('abierto', `<button class="text-btn bulk-toggle" aria-expanded="true">Marcar en bloque${CHEV.replace('ic chev', 'ic chev up')}</button>`) },
+];
+$('#r3').innerHTML = R3.map((K) => `<div class="cat-box is-now"><h4>${K.name}</h4><p>${K.job}</p>${K.html}</div>`).join('');
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('#r3 .seg button');
+  if (b) b.parentNode.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+  const c = e.target.closest('#r3 button.check');
+  if (c) c.setAttribute('aria-checked', String(c.getAttribute('aria-checked') !== 'true'));
+});
+
+/* ── Round 4 · Showing: the real classes ───────────────────────────────────────────────── */
+const R4 = [
+  { name: 'Etiqueta · <code>.tag</code>', job: 'Información que no se toca, tras el rombo hueco. Los chips de la hoja completa (<code>.chip</code>) son lo mismo sin versalitas, porque llevan nombres de amuleto y valores; <code>.chip-charm</code> se enciende con el ratón (señala el amuleto en la cuadrícula).',
+    html: st('etiqueta', '<span class="tag">Ejemplo</span><span class="tag">Amuleto</span><span class="tag">Diario · completo</span>') + st('chip', '<span class="chips" style="grid-column:auto"><span class="chip chip-charm">Fuerza inquebrantable <b>+50 %</b></span><span class="chip syn">Sinergia <b>×1,2</b></span><span class="chip more">y 2 más</span></span>') },
+  { name: 'Filtro · <code>.pg-area.pgm-kind</code>', job: 'Una capa del mapa: un sí/no, con la casilla (<code>.check-box</code>) delante, su icono (en gris si está apagada) y su cuenta. <code>aria-pressed</code> la enciende.',
+    html: st('reposo', `<span class="pg-areas" style="margin:0;justify-content:flex-start"><button class="pg-area pgm-kind is-on" aria-pressed="true"><span class="check-box">${TICK}</span><img src="assets/effects/grub.png" alt="" style="width:18px;height:18px">Larva cautiva<span class="pgm-kind-n"><b>12</b><i class="u">/46</i></span></button><button class="pg-area pgm-kind" aria-pressed="false"><span class="check-box">${TICK}</span><img src="assets/items/rancid-egg.png" alt="" style="width:18px;height:18px">Huevo podrido<span class="pgm-kind-n"><b>0</b><i class="u">/21</i></span></button></span>`) },
+  { name: 'Aviso · <code>.banner</code>', wide: true, job: 'Arriba de la pantalla, con la regla del nivel a la izquierda: peligro (por defecto, el magenta de la sobrecarga), condición (<code>.is-run</code>, el ocre) e información (<code>.is-hint</code>, hueso). La notificación flotante (<code>.toast</code>) es el mensaje del juego y va aparte.',
+    html: st('niveles', '<div class="z-stack" style="display:flex;flex-direction:column;gap:var(--sp-2);width:100%"><div class="banner"><span class="banner-tag">Sobrecarga</span><span class="banner-text">Has superado tus muescas disponibles: recibes el doble de daño de todas las fuentes y no puedes equipar ningún amuleto más.</span></div><div class="banner is-run"><span class="banner-tag">En un panteón</span><span class="banner-text">Panteón del Maestro, sala 6 de 12. Los amuletos solo se cambian en los bancos.</span><button class="btn">Ir a la sala</button><button class="btn is-danger">Abandonar</button></div><div class="banner is-run is-hint"><span class="banner-tag">Tu partida real</span><span class="banner-text">Esta partida sigue a user1.dat, pero el navegador pide permiso otra vez para leerlo.</span><button class="btn btn-primary">Reanudar</button></div></div>', true) },
+];
+$('#r4').innerHTML = `<div class="kind-grid">${R4.filter((K) => !K.wide).map((K) => `<div class="cat-box is-now"><h4>${K.name}</h4><p>${K.job}</p>${K.html}</div>`).join('')}</div>` +
+  R4.filter((K) => K.wide).map((K) => `<div class="cat-box is-now" style="margin-top:var(--sp-4)"><h4>${K.name}</h4><p>${K.job}</p>${K.html}</div>`).join('');
+$('#r4-head').innerHTML = `<header class="inv-head"><h2 class="sec-title screen-title">Inventario</h2><svg class="rule" width="220" height="12" viewBox="0 0 220 12" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><path d="M0 6 H92"/><path d="M128 6 H220"/><path d="M110 1 L116 6 L110 11 L104 6 Z"/></svg></header>`;
+
+/* ── Round 5 · Patterns: the real classes ─────────────────────────────────────────────── */
+const RULE = '<svg class="rule" width="220" height="12" viewBox="0 0 220 12" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><path d="M0 6 H92"/><path d="M128 6 H220"/><path d="M110 1 L116 6 L110 11 L104 6 Z"/></svg>';
+const hjRow = (img, name, n, cls) => `<li><button type="button" class="hj-row ${cls || ''}"><span class="hj-medal"><img src="assets/journal/${img}.png" alt="" style="width:35px;height:40px;object-fit:contain"></span><span>${name}</span><span class="hj-left">${n}</span></button></li>`;
+const emptyHtml = (text, act = '', cls = '') => `<p class="empty${cls ? ' ' + cls : ''}">${RULE}<span>${text}</span>${act}</p>`;
+$('#r5').innerHTML = `<div class="kind-grid">
+  <div class="cat-box is-now"><h4>Fila abierta · <code>.is-cur</code></h4><p>En <code>.jr-row</code>, <code>.hj-row</code> y la cabecera de <code>.pg-row.is-open</code>: la barra del acento a la izquierda sobre el velo. El enemigo elegido (<code>.jr-row.is-on</code>, <code>.foecard.is-on</code>) lleva la misma barra sin el velo.</p>
+    ${st('lista', `<ul class="w-list">${hjRow('crawlid', 'Reptacillo', '', 'is-cur')}${hjRow('vengefly', 'Vengamosca', 44)}${hjRow('gruzzer', 'Gruzzer', 21, 'is-unseen')}</ul>`, true)}</div>
+  <div class="cat-box is-now"><h4>Vacío · <code>App.emptyHtml()</code></h4><p>La regla corta con su rombo, el texto y la acción que lo resuelve si la hay. <code>.is-inline</code>, sin regla y en una línea, para un hueco que no puede cambiar de alto o un desplegable.</p>
+    ${st('bloque', emptyHtml('Nada con ese nombre.'), true)}${st('en línea', emptyHtml('Elige contra quién quieres pelear.', '<button type="button" class="text-btn">Elegir enemigo</button>', 'is-inline'), true)}</div>
+</div>
+<div class="cat-box is-now" style="margin-top:var(--sp-4)"><h4>«No lo tienes» · <code>--missing-art</code></h4><p>Un solo gris para lo que te falta: el amuleto sin encontrar, la entrada sin ver, el símbolo sin ganar y la capa apagada.</p>
+  <div class="w-miss"><figure><img src="assets/charms/ustrength.png" alt="" style="filter:var(--missing-art)"><figcaption>amuleto</figcaption></figure>
+  <figure><img src="assets/journal/vengefly.png" alt="" style="filter:var(--missing-art)"><figcaption>Diario</figcaption></figure>
+  <figure><img src="assets/hall/badge-radiant.png" alt="" style="filter:var(--missing-art)"><figcaption>Salón</figcaption></figure>
+  <figure><img src="assets/effects/grub.png" alt="" style="filter:var(--missing-art)"><figcaption>mapa</figcaption></figure></div></div>`;
+</script>
+</body>
+</html>

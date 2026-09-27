@@ -59,35 +59,11 @@
      The masks are the health control: press the third and you're left with three, press the
      last and you're back to full health. Lifeblood is spent first, just as in the game, so
      what you have left fills the white ones first; a spent one leaves its slot dark so you can
-     go back up. With health lost, the figure reads "6/9".
-     Soul can also be spent by hand, even though no figure changes: it's there to see. It works
-     as in the game: it's a single number, the orb fills first and the rest goes to the vessels,
-     in order, so there's never a full vessel with the orb half-full, nor the second one full
-     with the first empty. Each tap on the orb casts a spell from your build (33, or 24 with
-     Spell Twister); if the vessels hold soul, the orb drops and they refill it right away
-     (SOUL_REFILL_MS: the wiki says "after a short delay" without giving the figure). When
-     there's not enough for another, the next tap fills everything. A full vessel, when
-     tapped, empties along with the ones to its right; an empty one fills, and with it
-     everything before it: the orb and the earlier vessels. It isn't saved: on reload, soul is
-     full. How the masks and the orb are used is told by their title, not by a note. */
+     go back up. With health lost, the figure reads "6/9". How the masks are used is told by
+     their title, not by a note. The soul is only drawn, always full: spending it by hand changed
+     no figure (it went on 27-sep); it's spent in Combat. */
   let panelHudPrev = null;          // the last thing the sheet's HUD painted, to animate the change
-  let soulSpent = 0;                // soul spent by hand, below what fits
-  let soulDrain = null;             // while the vessels refill the orb: the level it has dropped to
-  let soulTimer = 0;
-  const SOUL_REFILL_MS = 500;
   const calm = matchMedia('(prefers-reduced-motion: reduce)');
-  // If the vessels were refilling the orb, it finishes now: the next tap starts from there.
-  function settleSoul() {
-    if (!soulTimer) return;
-    clearTimeout(soulTimer);
-    soulTimer = 0;
-    soulDrain = null;
-  }
-  const soulLevels = () => {
-    const s = App.sheet.stats, total = s['soul.total'].value;
-    soulSpent = Math.max(0, Math.min(soulSpent, total));
-    return { total, mainMax: s['soul.main'].value, cost: s['soul.spellCost'].value, now: total - soulSpent };
-  };
   function renderStatus() {
     const s = App.sheet.stats;
     const masks = s['health.masks'].value, lb = s['health.lifeblood'].value;
@@ -95,22 +71,11 @@
     const white = Math.min(hp, masks), lbOn = Math.max(0, hp - masks);
     const main = s['soul.main'].value;
     const vessels = Math.round(s['soul.reserve'].value / D.SOUL.vesselSize);
-    // What's been spent never exceeds what fits: if you change build, it gets trimmed.
-    const { total, now: soulNow, cost } = soulLevels();
-    const mainNow = soulDrain != null ? soulDrain : Math.min(soulNow, main);
-    const orbFull = soulNow >= main;
-    const orbTitle = soulNow >= cost ? t('soulCastTitle', { n: cost }) : t('soulRefillTitle');
+    const total = s['soul.total'].value;
     const hud = hudHtml({
-      masks: white, maxMasks: masks, lb: lbOn, lbSlots: lb, soul: soulNow, main: mainNow, mainMax: main, vessels,
-      // What a tap on the orb would leave: a spell's cost less, or everything refilled if there isn't enough.
-      castSoul: soulNow >= cost ? soulNow - cost : total, ready: mainNow >= cost,
+      masks: white, maxMasks: masks, lb: lbOn, lbSlots: lb, soul: total, main, mainMax: main, vessels,
       hive: App.sheetHas(App.sheet, 'hiveblood'), lbJoni: App.sheet.joniLifeblood || 0,
       over: !!App.sheet.notches.overcharmed,
-      orbAttrs: ` data-act="soulOrb" title="${esc(orbTitle)}" aria-label="${esc(orbTitle)}"`,
-      vesselAttrs: (i, full) => {
-        const title = full ? t('vesselEmptyTitle') : orbFull ? t('vesselFillTitle') : t('vesselFillAllTitle');
-        return ` data-act="soulVessel" data-value="${i}" aria-pressed="${full}" title="${esc(title)}" aria-label="${esc(title)}"`;
-      },
       // In a save from the game (App.saveLock) the masks are the arena's: seen, not pressed.
       slot: App.saveLock() ? null : (g, cls, inner, on) => {
         const to = g + 1 === maxHp ? 0 : g + 1;
@@ -118,9 +83,9 @@
           title="${esc(to ? t('hpSetTitle', { n: to }) : t('hpFullTitle'))}">${inner}</button>`;
       },
     }, panelHudPrev);
-    panelHudPrev = { masks: white, lb: lbOn, soul: soulNow, main: mainNow };
+    panelHudPrev = { masks: white, lb: lbOn, soul: total, main };
 
-    // Health and soul, as figures only; with health lost or soul spent, over the maximum.
+    // Health and soul, as figures only; with health lost, over the maximum.
     const of = (n, max) => (n < max ? `${App.NF[0].format(n)}<i class="of">/${App.NF[0].format(max)}</i>` : App.NF[0].format(max));
     const readout = (cls, id, label, html) => `<div class="rd ${cls}${flashCls(id)}">
         <span class="lbl">${esc(label)}</span>
@@ -133,7 +98,7 @@
         ${hud}
         <div class="inv-read">
           ${readout('rd-hp', 'health.total', t('health'), of(hp, maxHp))}
-          ${readout('rd-soul', 'soul.total', t('soul'), of(soulNow, total))}
+          ${readout('rd-soul', 'soul.total', t('soul'), of(total, total))}
         </div>
       </div>
       <div class="inv-lead">
@@ -235,7 +200,7 @@
     // The game leaves a dark dot marking the next slot while something still fits.
     const slot = !n.overcharmed && n.free > 0 ? '<span class="eq-slot" aria-hidden="true"></span>' : '';
     // "Clear", on the sheet: text in the screen's ink, unboxed, like the tablet's "Close".
-    const clear = ctx.clear ? `<button type="button" class="eq-clear" data-act="clear" title="${esc(ctx.locked || t('clearCharmsHint'))}" ${worn.some((c) => !isFixed(c.id)) && !ctx.locked ? '' : 'disabled'}>${cross}${esc(t('clearCharms'))}</button>` : '';
+    const clear = ctx.clear ? `<button type="button" class="text-btn eq-clear" data-act="clear" title="${esc(ctx.locked || t('clearCharmsHint'))}" ${worn.some((c) => !isFixed(c.id)) && !ctx.locked ? '' : 'disabled'}>${cross}${esc(t('clearCharms'))}</button>` : '';
     // And the overcharm notice, below the notches: at the top it wouldn't be seen while you touch the grid.
     const overNote = ctx.over && n.overcharmed ? `<div class="banner is-band" role="status"><span class="banner-tag">${esc(t('overcharmed'))}</span><span class="banner-text">${esc(t('overcharmBanner'))}</span></div>` : '';
     return {
@@ -351,9 +316,11 @@
   }
   function sumDetail() {
     const hint = `<p class="detail-hint">${esc(hoverable.matches ? t('detailHintHover') : t('detailHintTouch'))}</p>`;
-    if (!App.state.charms.some((id) => !isFixed(id))) return hint;
+    // With nothing to sum, the hint is the detail's empty state.
+    const empty = App.emptyHtml(esc(hoverable.matches ? t('detailHintHover') : t('detailHintTouch')), '', { cls: 'detail-hint' });
+    if (!App.state.charms.some((id) => !isFixed(id))) return empty;
     const changes = wornSum();
-    if (!changes.length) return hint;
+    if (!changes.length) return empty;
     const many = changes.length > DETAIL_ROWS;
     const shown = many ? changes.slice(0, DETAIL_ROWS - 1) : changes;
     const row = (ch) => {
@@ -438,7 +405,7 @@
       <p class="insp-blurb" title="${esc(pick(c.blurb))}">${esc(pick(c.blurb))}</p>
       ${lock ? `<p class="insp-state cond" title="${esc(lock)}">${esc(lock)}</p>` : fragRow && away ? fragRow : (ownRow || state) + fragRow}
       <h3>${esc(imp.equipped ? t('inspEffectIn') : t('inspEffectIf'))}${imp.cond ? ' (' + esc(imp.cond.toLowerCase()) + ')' : ''}</h3>
-      ${imp.changes.length ? `<ul class="insp-list">${shown.map(row).join('')}${more}</ul>` : `<p class="insp-empty">${esc(t('inspEmpty'))}</p>`}`;
+      ${imp.changes.length ? `<ul class="insp-list">${shown.map(row).join('')}${more}</ul>` : App.emptyHtml(esc(t('inspEmpty')))}`;
   }
 
   /* Repaints only the detail and the preview, not the sheet: repainting it rebuilds the grid under
@@ -694,7 +661,7 @@
     }).join('');
     return `<div class="inv-effects">
       <div class="block-head">${esc(t('effectsTitle'))}<span class="quick-hint">${esc(t('effectsHint'))}</span></div>
-      ${plates ? `<div class="eff-plates">${plates}</div>` : `<p class="muted-p">${esc(t('effectsNone'))}</p>`}
+      ${plates ? `<div class="eff-plates">${plates}</div>` : App.emptyHtml(esc(t('effectsNone')))}
     </div>`;
   }
 
@@ -705,7 +672,7 @@
           <span class="medal sm"><img src="assets/charms/${c.id}.png" alt=""></span>
           <span><span class="fx-name"${NT}>${esc(pick(c))}</span><span class="fx-note">${esc(pick(c.blurb))}</span></span>
         </div>`).join('')}</div>`
-      : `<p class="muted-p">${esc(t('noCharmsYet'))}</p>`;
+      : App.emptyHtml(esc(t('noCharmsYet')));
     return `<div class="block-head">${esc(t('charmEffects'))}</div>${body}`;
   }
 
@@ -734,8 +701,8 @@
   /* The full sheet's button stays where you pressed it and the sheet opens below; when open, it
      carries an identical one at the end to close it without going back up. data-value tells
      them apart for focus. */
-  const sheetToggle = (where) => `<button type="button" class="toggle-all" data-act="detail" data-value="${where}" aria-expanded="${prefs.detailOpen}" aria-controls="sheet-detail">
-      <span>${esc(prefs.detailOpen ? t('hideAll') : t('seeAll'))}</span>${chevron(prefs.detailOpen)}
+  const sheetToggle = (where) => `<button type="button" class="disc-btn toggle-all" data-act="detail" data-value="${where}" aria-expanded="${prefs.detailOpen}" aria-controls="sheet-detail">
+      <span>${esc(prefs.detailOpen ? t('hideAll') : t('seeAll'))}</span><span class="disc-ring">${chevron(prefs.detailOpen)}</span>
     </button>`;
 
   /* ── Full sheet ──────────────────────────────────────────────────────── */
@@ -911,28 +878,6 @@
       if (!prefs.open.includes(id)) { prefs.open.push(id); savePrefs(); row.classList.add('is-open'); row.setAttribute('aria-expanded', 'true'); }
       row.scrollIntoView({ behavior: 'smooth', block: 'center' });
       row.classList.remove('is-flash'); void row.offsetWidth; row.classList.add('is-flash');
-    },
-    // The sheet's soul: it's only for show, it changes no figure (renderStatus).
-    soulOrb() {
-      settleSoul();
-      const { total, mainMax, cost, now } = soulLevels();
-      if (now < cost) { soulSpent = 0; render(); return; }      // not enough for another: it fills
-      soulSpent = total - (now - cost);
-      // With soul in the vessels, the orb drops and they refill it right away, as in the game.
-      if (now > mainMax && !calm.matches) {
-        soulDrain = mainMax - cost;
-        soulTimer = setTimeout(() => { soulTimer = 0; soulDrain = null; render(); }, SOUL_REFILL_MS);
-      }
-      render();
-    },
-    soulVessel(node) {
-      settleSoul();
-      const { total, mainMax, now } = soulLevels();
-      const i = Number(node.dataset.value), size = D.SOUL.vesselSize;
-      const full = now - mainMax - size * i >= size;
-      // Full: it empties along with the ones to its right. Empty or half-full: it fills, and with it everything before.
-      soulSpent = total - Math.min(total, mainMax + size * (full ? i : i + 1));
-      render();
     },
     compare(node) { prefs.compare = node.dataset.value; savePrefs(); recompute(); render(); },
     pin() { App.baseline = C.normalize(App.state); save(KEY.baseline, C.encode(App.baseline)); prefs.compare = 'pinned'; savePrefs(); recompute(); render(); toast(t('toastPinned')); },

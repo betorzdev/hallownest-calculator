@@ -14,7 +14,7 @@
     "knight": "node tools/fetch-knight.js",
     "artpack": "node tools/artpack.js",
     "text": "node tools/game-text.js",
-    "es": "node tools/es-page.js",
+    "pages": "node tools/pages.js",
     "check-pack": "node tools/check-pack.js",
     "rooms": "node tools/fetch-rooms.js",
     "collectibles": "node tools/fetch-collectibles.js"
