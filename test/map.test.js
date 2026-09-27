@@ -58,13 +58,17 @@ test("the doors join rooms both ways, and every bench can be walked to from King
   // Three rooms the doors reach that the map places on a neighbour (js/app-map.js, ALIAS); and the
   // White Palace, which the game's map doesn't draw (the walk skips a room with no point).
   const ALIASED = new Set(['Room_Sly_Storeroom', 'Room_Bretta_Basement']);
-  for (const [a, list] of Object.entries(R.DOORS)) {
+  for (const [a, doors] of Object.entries(R.DOORS)) {
     assert.ok(place(a) || ALIASED.has(a) || a.startsWith('White_Palace_'), a);
-    for (const b of list) assert.ok(R.DOORS[b] && R.DOORS[b].includes(a), a + ' <-> ' + b);
+    for (const [d, [b, e]] of Object.entries(doors)) {
+      // A door's name says its side of the room, or that it's in the background (js/app-map.js, doorPoint).
+      assert.match(d, /^(left|right|top|bot|door)\d+$|^(door|room)_/, a + '[' + d + ']');
+      assert.ok(R.DOORS[b] && R.DOORS[b][e] && R.DOORS[b][e][0] === a && R.DOORS[b][e][1] === d, a + '[' + d + '] <-> ' + b + '[' + e + ']');
+    }
   }
   // Breadth first from the first room. Godhome and the White Palace are entered by dream, not by a door.
   const seen = new Set(['Tutorial_01']), queue = ['Tutorial_01'];
-  while (queue.length) { const sc = queue.shift(); for (const n of R.DOORS[sc] || []) if (!seen.has(n)) { seen.add(n); queue.push(n); } }
+  while (queue.length) { const sc = queue.shift(); for (const [n] of Object.values(R.DOORS[sc] || {})) if (!seen.has(n)) { seen.add(n); queue.push(n); } }
   const sceneOf = (name) => name.replace(/_(b|c|d|part_b|left|right)$/, '');
   for (const [kind, scene] of M.PINS) {
     if (kind !== 'bench' || /^(GG_|White_Palace_)/.test(scene)) continue;
