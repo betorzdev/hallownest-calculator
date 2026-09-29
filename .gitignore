@@ -15,3 +15,7 @@ node_modules/
 # The game's full text dump (Team Cherry's): tools/game-text.js and tools/fetch-journal.js
 # download it again, pinned to patch 1.5.12620, the first time they need it
 kb/data/all_text.json
+
+# The trailers' captures, frames and videos (tools/trailer/, tools/trailer-v2/)
+tools/trailer/out/
+tools/trailer-v2/out/

@@ -1,0 +1,343 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="robots" content="noindex"><title>Trailer</title>
+<link rel="stylesheet" href="../../css/tokens.css">
+<style>
+/* tools/trailer/trailer.html — the promo trailer, one frame at a time.
+   ?lang=es|en&ratio=wide|tall&t=<s>. Nothing moves on its own: seek(t) paints the exact frame of
+   second t, so tools/trailer/render.js can step through it at 30 fps without dropping one.
+   The timeline follows the music (Laments of the War, Cethiel, CC0, from its 3 s): a quiet
+   phrase until 9 s, then a drum hit every 3 s (beats of 0.75 s) and the full orchestra at 24 s. */
+html, body { margin: 0; background: var(--bg); overflow: hidden; }
+#stage { position: relative; overflow: hidden; background: var(--page-bg); background-color: var(--bg); }
+.wide #stage { width: 1920px; height: 1080px; }
+.tall #stage { width: 1080px; height: 1920px; }
+.layer { position: absolute; inset: 0; }
+canvas.layer { pointer-events: none; }
+.scene { opacity: 0; }
+
+/* Captions: the site's page-title voice. Names in Cinzel, never numbers. */
+.cap { position: absolute; left: 0; right: 0; text-align: center; color: var(--ink-strong); }
+.wide .cap { top: 64px; }
+.tall .cap { top: 250px; padding: 0 70px; }
+.cap-main { font-family: var(--font-display); font-weight: 500; letter-spacing: .08em; margin: 0; line-height: 1.15; }
+.wide .cap-main { font-size: 62px; }
+.tall .cap-main { font-size: 74px; }
+.cap-sub { font-family: var(--font-body); font-style: italic; font-weight: 300; color: var(--ink-2); margin: 18px 0 0; }
+.wide .cap-sub { font-size: 30px; }
+.tall .cap-sub { font-size: 38px; }
+.rule { display: block; margin: 20px auto 0; width: 380px; height: 12px; }
+
+/* A screen of the site in a frame: the sheet's corner brackets and a deep shadow. */
+.frame { position: absolute; overflow: hidden; background: var(--bg); border: 1px solid var(--line-panel);
+  box-shadow: 0 50px 140px rgba(0, 0, 0, .7), 0 0 60px -20px var(--accent-line); transform-style: preserve-3d; }
+.frame img { position: absolute; left: 0; top: 0; transform-origin: 0 0; image-rendering: auto; }
+.wide .frame { width: 1520px; height: 780px; left: 200px; top: 250px; }
+.tall .frame { width: 940px; height: 1180px; left: 70px; top: 620px; }
+.persp { position: absolute; inset: 0; perspective: 2400px; }
+.brk { position: absolute; width: 34px; height: 34px; border: 3px solid var(--bracket); }
+
+/* Intro and ending */
+.knight-big { position: absolute; left: 50%; image-rendering: auto; }
+.halo { position: absolute; left: 50%; border-radius: 50%; background: radial-gradient(closest-side, var(--scene-glow), transparent); }
+.title { font-family: var(--font-display); font-weight: 700; color: var(--ink-strong); text-align: center; margin: 0; letter-spacing: .04em; }
+.url { display: inline-block; font-family: var(--font-body); font-weight: 500; color: var(--accent-ink);
+  border: 2px solid var(--accent-line); background: var(--card-idle); box-shadow: var(--glow); }
+.perks { font-family: var(--font-body); color: var(--ink-2); letter-spacing: .06em; }
+.file { position: absolute; background: var(--card-idle); border: 2px solid var(--hud-frame); color: var(--ink-strong);
+  font-family: var(--font-num); display: flex; align-items: flex-end; justify-content: center; }
+.file::before { content: ''; position: absolute; right: -2px; top: -2px; width: 34%; height: 26%;
+  background: linear-gradient(225deg, var(--bg) 50%, var(--hud-frame) 50%); }
+.ring { position: absolute; border: 3px solid var(--mask-line); border-radius: 50%; }
+.big-num { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; color: var(--ink-strong); text-align: center; margin: 0; line-height: 1; }
+.big-num small { font-weight: 400; color: var(--ink-2); }
+.row { position: absolute; left: 0; right: 0; display: flex; justify-content: center; }
+#flash { background: var(--mask-line); opacity: 0; mix-blend-mode: screen; }
+#vignette { background: radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(0, 0, 0, .75) 100%); }
+#fade { background: #000; opacity: 0; }
+</style></head>
+<body>
+<div id="stage"></div>
+<script>
+'use strict';
+const q = new URLSearchParams(location.search);
+const LANG = q.get('lang') === 'es' ? 'es' : 'en';
+const TALL = q.get('ratio') === 'tall';
+document.body.className = TALL ? 'tall' : 'wide';
+const W = TALL ? 1080 : 1920, H = TALL ? 1920 : 1080;
+const DUR = 30;
+const A = '../../assets/';
+const SHOT = (name) => `out/shots/${LANG}-${TALL ? 'tall' : 'wide'}-${name}.png`;
+const tr = (o) => o[LANG];
+
+// Everything the trailer says. Game names as the game writes them (npm run text).
+const T = {
+  intro: { es: 'Tu partida de Hollow\u00a0Knight…', en: 'Your Hollow\u00a0Knight game…' },
+  live: { es: '…viva en tu navegador', en: '…live in your browser' },
+  liveSub: { es: 'Se pone al día sola cada vez que te sientas en un banco', en: 'It catches up by itself every time you sit on a bench' },
+  map: { es: 'El mapa del juego', en: 'The game’s own map' },
+  mapSub: { es: 'Con todo lo que te falta, larva a larva', en: 'With everything you’re missing, grub by grub' },
+  charms: { es: 'Cada amuleto, cada número', en: 'Every charm, every number' },
+  charmsSub: { es: 'Cómo cambia el Caballero con cada uno', en: 'How the Knight changes with each one' },
+  fight: { es: 'Pon tu build a prueba', en: 'Put your build to the test' },
+  fightSub: { es: 'Contra los 180 enemigos y jefes', en: 'Against 180 enemies and bosses' },
+  journal: { es: 'Diario del Cazador', en: 'Hunter’s Journal' },           // INV_NAME_JOURNAL
+  hall: { es: 'Salón de los Dioses', en: 'Hall of Gods' },                 // wiki ESname
+  pantheon: { es: 'Panteones', en: 'Pantheons' },                          // wiki ESname
+  progress: { es: 'Progreso', en: 'Progress' },
+  p112: { es: 'Tal y como lo cuenta el juego', en: 'Counted the way the game does' },
+  title: { es: 'Calculadora de Hallownest', en: 'Hallownest Calculator' },
+  perks: { es: 'Gratis · Sin registro · Español e inglés', en: 'Free · No sign-up · English and Spanish' },
+};
+const URL_TEXT = 'betorzdev.github.io/hallownest-calculator';
+
+/* Where each capture's camera looks: from → to, as the centre (fractions of the image) and the
+   width seen (a fraction of the image's width). Wide and tall captures differ in layout. */
+const CAM = TALL ? {
+  home: [{ x: .5, y: .22, w: 1 }, { x: .5, y: .2, w: .82 }],
+  map: [{ x: .5, y: .4, w: 1 }, { x: .55, y: .4, w: .72 }],
+  charms: [{ x: .5, y: .22, w: 1 }, { x: .5, y: .26, w: .85 }],
+  fight: [{ x: .5, y: .3, w: 1 }, { x: .5, y: .34, w: .85 }],
+  journal: [{ x: .5, y: .36, w: 1 }, { x: .5, y: .4, w: .9 }],
+  hall: [{ x: .5, y: .3, w: 1 }, { x: .5, y: .3, w: .9 }],
+  pantheon: [{ x: .5, y: .3, w: 1 }, { x: .5, y: .3, w: .9 }],
+  progress: [{ x: .5, y: .3, w: 1 }, { x: .5, y: .3, w: .9 }],
+} : {
+  home: [{ x: .5, y: .42, w: .86 }, { x: .5, y: .4, w: .6 }],
+  map: [{ x: .5, y: .66, w: .8 }, { x: .56, y: .62, w: .5 }],
+  charms: [{ x: .5, y: .45, w: .86 }, { x: .5, y: .4, w: .64 }],
+  fight: [{ x: .5, y: .55, w: .86 }, { x: .5, y: .58, w: .64 }],
+  journal: [{ x: .5, y: .55, w: .86 }, { x: .5, y: .55, w: .78 }],
+  hall: [{ x: .5, y: .55, w: .86 }, { x: .5, y: .55, w: .78 }],
+  pantheon: [{ x: .5, y: .55, w: .86 }, { x: .5, y: .55, w: .78 }],
+  progress: [{ x: .5, y: .5, w: .86 }, { x: .5, y: .5, w: .78 }],
+};
+
+// The music's hits (video seconds): each one flashes and nudges the camera.
+const HITS = [9, 12, 15, 18, 18.75, 19.5, 20.25, 21, 24];
+
+/* ---------- helpers ---------- */
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const lerp = (a, b, k) => a + (b - a) * k;
+const ease = (k) => 1 - Math.pow(1 - clamp(k), 3);
+const easeIO = (k) => { k = clamp(k); return k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2; };
+const span = (t, a, b) => clamp((t - a) / (b - a));
+const el = (tag, cls, parent, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; if (parent) parent.appendChild(e); return e; };
+const css = (e, o) => { for (const k in o) e.style[k] = o[k]; };
+const stage = document.getElementById('stage');
+const loads = [];
+const img = (src, parent, cls) => { const i = el('img', cls, parent); loads.push(new Promise((r) => { i.onload = r; i.onerror = r; })); i.src = src; return i; };
+function rng(seed) { return () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296); }
+const RULE = '<svg class="rule" viewBox="0 0 380 12"><line x1="0" y1="6" x2="170" y2="6" stroke="var(--bracket)" stroke-width="2"/><path d="M190 1 L195 6 L190 11 L185 6 Z" fill="none" stroke="var(--bracket)" stroke-width="2"/><line x1="210" y1="6" x2="380" y2="6" stroke="var(--bracket)" stroke-width="2"/></svg>';
+
+function caption(parent, main, sub) {
+  const c = el('div', 'cap', parent);
+  el('p', 'cap-main', c, main);
+  c.insertAdjacentHTML('beforeend', RULE);
+  if (sub) el('p', 'cap-sub', c, sub);
+  return c;
+}
+/* A captured screen in its frame, with a camera that pans between two views. */
+function shotFrame(parent, name) {
+  const p = el('div', 'persp', parent);
+  const f = el('div', 'frame', p);
+  const i = img(SHOT(name), f);
+  for (const [x, y] of [[0, 0], [1, 0], [0, 1], [1, 1]]) css(el('div', 'brk', f), {
+    [x ? 'right' : 'left']: '14px', [y ? 'bottom' : 'top']: '14px',
+    [x ? 'borderLeft' : 'borderRight']: 'none', [y ? 'borderTop' : 'borderBottom']: 'none' });
+  return { p, f, i, name };
+}
+function camera(s, k) {
+  const [a, b] = CAM[s.name], fw = s.f.clientWidth, fh = s.f.clientHeight;
+  const iw = s.i.naturalWidth || 1, ih = s.i.naturalHeight || 1;
+  // Tall captures are 1000 px wide with the 390 px page (780 at 2×) on the left.
+  const cw = TALL ? Math.min(iw, 780) : iw;
+  const e = easeIO(k), cx = lerp(a.x, b.x, e) * cw, cy = lerp(a.y, b.y, e) * ih, w = lerp(a.w, b.w, e) * cw;
+  const sc = fw / w;
+  let x = fw / 2 - cx * sc, y = fh / 2 - cy * sc;
+  x = Math.min(0, Math.max(fw - cw * sc, x));
+  y = Math.min(0, Math.max(fh - ih * sc, y));
+  s.i.style.transform = `translate(${x}px, ${y}px) scale(${sc})`;
+}
+function frameMotion(s, k, tilt = 1) {
+  const e = ease(k);
+  s.f.style.transform = `rotateX(${lerp(9, 3, e) * tilt}deg) rotateY(${lerp(-12, -4, e) * tilt}deg) translateZ(${lerp(-80, 0, e)}px)`;
+}
+
+/* ---------- the dust: Hallownest's motes, drifting up ---------- */
+const dust = el('canvas', 'layer', stage); dust.width = W; dust.height = H;
+const R = rng(7);
+const MOTES = Array.from({ length: TALL ? 90 : 110 }, () => ({ x: R() * W, y: R() * H, r: .8 + R() * 2.6, v: 14 + R() * 40, a: R() * 6.28, f: .3 + R() * .8, o: .25 + R() * .6 }));
+function drawDust(t, boost) {
+  const g = dust.getContext('2d');
+  g.clearRect(0, 0, W, H);
+  for (const m of MOTES) {
+    const y = ((m.y - t * m.v * (1 + boost * 2)) % H + H) % H;
+    const x = m.x + Math.sin(t * m.f + m.a) * 24;
+    const o = m.o * (.55 + .45 * Math.sin(t * 1.7 * m.f + m.a * 3));
+    g.fillStyle = `rgba(236, 236, 236, ${o * .7})`;
+    g.beginPath(); g.arc(x, y, m.r, 0, 6.283); g.fill();
+  }
+}
+
+/* ---------- scenes ---------- */
+const S = {};
+// 1 · intro: the Knight in the dark
+S.intro = el('div', 'layer scene', stage);
+{
+  const kh = TALL ? 560 : 440;
+  S.introHalo = el('div', 'halo', S.intro);
+  css(S.introHalo, { width: kh * 2.4 + 'px', height: kh * 2.4 + 'px', marginLeft: -kh * 1.2 + 'px', top: (H / 2 - kh * 1.2 - (TALL ? 120 : 60)) + 'px' });
+  S.introKnight = img(A + 'knight/knight.png', S.intro, 'knight-big');
+  css(S.introKnight, { height: kh + 'px', width: kh * 240 / 328 + 'px', marginLeft: -kh * 120 / 328 + 'px', top: (H / 2 - kh / 2 - (TALL ? 120 : 60)) + 'px' });
+  S.introText = el('p', 'cap-main', S.intro, tr(T.intro));
+  css(S.introText, { position: 'absolute', left: 0, right: 0, textAlign: 'center', color: 'var(--ink-strong)', top: (TALL ? H / 2 + 260 : H / 2 + 230) + 'px' });
+}
+// 2 · the save file drops in and Your game opens
+S.home = el('div', 'layer scene', stage);
+S.homeShot = shotFrame(S.home, 'home');
+S.homeCap = caption(S.home, tr(T.live), tr(T.liveSub));
+S.file = el('div', 'file', S.home, '<span>user1.dat</span>');
+css(S.file, { width: '150px', height: '190px', fontSize: '24px', paddingBottom: '18px', boxSizing: 'border-box' });
+S.ring = el('div', 'ring', S.home);
+// 3 · the map
+S.map = el('div', 'layer scene', stage);
+S.mapShot = shotFrame(S.map, 'map');
+S.mapCap = caption(S.map, tr(T.map), tr(T.mapSub));
+S.runner = el('div', '', S.map);
+css(S.runner, { position: 'absolute', width: '104px', height: '140px', backgroundImage: `url(${A}knight/run.png)`, backgroundSize: '624px 140px' });
+// 4 · charms
+S.charms = el('div', 'layer scene', stage);
+S.charmsShot = shotFrame(S.charms, 'charms');
+S.charmsCap = caption(S.charms, tr(T.charms), tr(T.charmsSub));
+// 5 · fight
+S.fight = el('div', 'layer scene', stage);
+S.fightShot = shotFrame(S.fight, 'fight');
+S.fightCap = caption(S.fight, tr(T.fight), tr(T.fightSub));
+// 6 · montage: Journal → Hall of Gods → Pantheons → Progress
+S.mont = ['journal', 'hall', 'pantheon', 'progress'].map((name) => {
+  const s = el('div', 'layer scene', stage);
+  return { s, shot: shotFrame(s, name), cap: caption(s, tr(T[name])) };
+});
+// 7 · 112 %
+S.p112 = el('div', 'layer scene', stage);
+S.p112bg = img(SHOT('map'), S.p112);
+css(S.p112bg, { position: 'absolute', left: '50%', top: '50%', width: (TALL ? 1200 : 2100) + 'px', filter: 'blur(14px) brightness(.3)', transformOrigin: '50% 30%' });
+S.p112num = el('p', 'big-num', S.p112);
+css(S.p112num, { position: 'absolute', left: 0, right: 0, top: (TALL ? 700 : 300) + 'px', fontSize: (TALL ? 300 : 320) + 'px' });
+S.p112cap = el('p', 'cap-sub', S.p112, tr(T.p112));
+css(S.p112cap, { position: 'absolute', left: 0, right: 0, textAlign: 'center', top: (TALL ? 1080 : 680) + 'px', fontSize: (TALL ? 52 : 48) + 'px', color: 'var(--ink)' });
+// 8 · the call: title, the Knight, the link
+S.cta = el('div', 'layer scene', stage);
+{
+  const top = TALL ? 520 : 150;
+  S.ctaHalo = el('div', 'halo', S.cta);
+  S.ctaHdr = img(A + 'hall/tablet-hdr.png', S.cta);
+  css(S.ctaHdr, { position: 'absolute', left: '50%', width: (TALL ? 760 : 700) + 'px', marginLeft: -(TALL ? 380 : 350) + 'px', top: top + 'px' });
+  S.ctaTitle = el('p', 'title', S.cta, tr(T.title));
+  css(S.ctaTitle, { position: 'absolute', left: 0, right: 0, top: (top + (TALL ? 120 : 110)) + 'px', fontSize: (TALL ? 76 : 96) + 'px', lineHeight: 1.1, padding: TALL ? '0 60px' : 0 });
+  const kh = TALL ? 330 : 260, ky = TALL ? top + 400 : top + 250;
+  css(S.ctaHalo, { width: kh * 3 + 'px', height: kh * 3 + 'px', marginLeft: -kh * 1.5 + 'px', top: ky + kh / 2 - kh * 1.5 + 'px' });
+  S.ctaKnight = img(A + 'knight/knight.png', S.cta, 'knight-big');
+  css(S.ctaKnight, { height: kh + 'px', width: kh * 240 / 328 + 'px', marginLeft: -kh * 120 / 328 + 'px', top: ky + 'px' });
+  const urlRow = el('div', 'row', S.cta); css(urlRow, { top: ky + kh + (TALL ? 90 : 60) + 'px' });
+  S.ctaUrl = el('span', 'url', urlRow, URL_TEXT);
+  css(S.ctaUrl, { fontSize: (TALL ? 40 : 44) + 'px', padding: TALL ? '22px 34px' : '20px 44px' });
+  S.ctaPerks = el('p', 'perks', S.cta, tr(T.perks));
+  css(S.ctaPerks, { position: 'absolute', left: 0, right: 0, textAlign: 'center', top: ky + kh + (TALL ? 250 : 190) + 'px', fontSize: (TALL ? 38 : 34) + 'px' });
+}
+const vignette = el('div', 'layer', stage); vignette.id = 'vignette';
+const flash = el('div', 'layer', stage); flash.id = 'flash';
+const fade = el('div', 'layer', stage); fade.id = 'fade';
+
+/* ---------- the clock ---------- */
+// A scene's opacity: in over `fi` from a, out over `fo` to b (0 = a hard cut).
+const vis = (t, a, b, fi = .3, fo = .3) => (t < a || t >= b ? 0 : Math.min(fi ? span(t, a, a + fi) : 1, fo ? 1 - span(t, b - fo, b) : 1));
+
+function seek(t) {
+  // The hits: a white flash and a camera kick that settle in 0.35 s.
+  let hit = 0;
+  for (const h of HITS) if (t >= h && t < h + .5) hit = Math.max(hit, 1 - (t - h) / .5);
+  const kick = Math.pow(hit, 2);
+  flash.style.opacity = (kick * (t >= 24 && t < 24.6 ? .8 : .35)).toFixed(3);
+  stage.style.transform = hit ? `scale(${1 + kick * .025})` : '';
+  drawDust(t, t >= 24 ? .4 : 0);
+
+  // 1 · intro 0–3.6
+  S.intro.style.opacity = vis(t, 0, 3.6, .01, .45);
+  S.introKnight.style.opacity = ease(span(t, .2, 1.6));
+  S.introKnight.style.transform = `translateY(${lerp(30, 0, ease(span(t, .2, 2.4)))}px)`;
+  S.introHalo.style.opacity = ease(span(t, .6, 2.2));
+  S.introText.style.opacity = ease(span(t, 1.2, 2.2));
+  // Scaled, not letter-spaced: spacing reflows the text and can break it onto another line.
+  S.introText.style.transform = `scale(${lerp(TALL ? 1.05 : 1.12, 1, ease(span(t, 1.2, 3)))})`;
+
+  // 2 · Your game 3.3–9
+  const th = t - 3.3;
+  S.home.style.opacity = vis(t, 3.3, 9, .3, 0);
+  const land = TALL ? { x: W / 2, y: 1150 } : { x: W / 2, y: 640 };
+  const fk = ease(span(th, .3, .9));
+  css(S.file, { left: land.x - 75 + 'px', top: lerp(-260, land.y - 95, fk * fk) + 'px', transform: `rotate(${lerp(-18, 0, fk)}deg) scale(${1 - span(th, .9, 1.2) * .6})`, opacity: 1 - span(th, 1, 1.25) });
+  const rk = span(th, .9, 1.6);
+  css(S.ring, { left: land.x - 20 - rk * 380 + 'px', top: land.y - 20 - rk * 380 + 'px', width: 40 + rk * 760 + 'px', height: 40 + rk * 760 + 'px', opacity: rk > 0 && rk < 1 ? (1 - rk) * .8 : 0 });
+  S.homeShot.p.style.opacity = ease(span(th, .9, 1.5));
+  S.homeShot.p.style.transform = `scale(${lerp(.6, 1, ease(span(th, .9, 1.8)))})`;
+  frameMotion(S.homeShot, span(th, .9, 5.7));
+  camera(S.homeShot, span(th, 1.4, 5.7));
+  S.homeCap.style.opacity = ease(span(th, 1.1, 1.8));
+
+  // 3–5 · map, charms, fight: a hard cut on each hit
+  for (const [sc, shot, cap, a] of [[S.map, S.mapShot, S.mapCap, 9], [S.charms, S.charmsShot, S.charmsCap, 12], [S.fight, S.fightShot, S.fightCap, 15]]) {
+    sc.style.opacity = vis(t, a, a + 3, 0, 0);
+    if (t < a || t >= a + 3) continue;
+    const k = span(t, a, a + 3);
+    frameMotion(shot, k, .6);
+    camera(shot, k);
+    cap.style.transform = `translateY(${lerp(-24, 0, ease(span(t, a, a + .5)))}px)`;
+    cap.style.opacity = ease(span(t, a, a + .4));
+  }
+  // The Knight runs along the map's frame.
+  if (t >= 9 && t < 12) {
+    const k = span(t, 9, 12), fr = Math.floor(t * 12) % 6;
+    const y = TALL ? 1720 : 930, x0 = TALL ? 60 : 180, x1 = TALL ? 920 : 1640;
+    css(S.runner, { left: lerp(x0, x1, k) + 'px', top: y + 'px', backgroundPosition: `${-fr * 104}px 0` });
+  }
+
+  // 6 · montage 18–21, a cut per beat
+  S.mont.forEach((m, i) => {
+    const a = 18 + i * .75;
+    m.s.style.opacity = vis(t, a, a + .75, 0, 0);
+    if (t < a || t >= a + .75) return;
+    const k = span(t, a, a + .75);
+    m.shot.p.style.transform = `scale(${lerp(1.08, 1, ease(k * 2))})`;
+    frameMotion(m.shot, .7 + k * .3, .6);
+    camera(m.shot, k);
+  });
+
+  // 7 · 112 % 21–24
+  S.p112.style.opacity = vis(t, 21, 24, 0, .25);
+  const n = Math.round(112 * ease(span(t, 21.1, 22.9)));
+  S.p112num.innerHTML = `${n}<small>${LANG === 'es' ? ' %' : '%'}</small>`;
+  S.p112num.style.transform = `scale(${lerp(.85, 1, ease(span(t, 21, 22)))})`;
+  S.p112bg.style.transform = `translate(-50%, -50%) scale(${lerp(1, 1.15, span(t, 21, 24))})`;
+  S.p112cap.style.opacity = ease(span(t, 22.4, 23));
+
+  // 8 · the call 24–30, with the full orchestra
+  S.cta.style.opacity = vis(t, 24, 30, 0, 0);
+  const tc = t - 24;
+  S.ctaHdr.style.opacity = ease(span(tc, .1, .8));
+  S.ctaTitle.style.opacity = ease(span(tc, .2, 1));
+  S.ctaTitle.style.transform = `scale(${lerp(1.1, 1, ease(span(tc, .2, 1.6)))})`;
+  S.ctaKnight.style.opacity = ease(span(tc, 0, .5));
+  S.ctaKnight.style.transform = `scale(${lerp(1.3, 1, ease(span(tc, 0, 1.2)))})`;
+  S.ctaHalo.style.opacity = .6 + .4 * Math.sin(tc * 2);
+  S.ctaUrl.style.opacity = ease(span(tc, 1, 1.6));
+  S.ctaUrl.style.transform = `translateY(${lerp(20, 0, ease(span(tc, 1, 1.6)))}px)`;
+  S.ctaPerks.style.opacity = ease(span(tc, 1.6, 2.3));
+
+  fade.style.opacity = span(t, 29, 30).toFixed(3);
+}
+
+window.seek = seek;
+window.ready = Promise.all([...loads, document.fonts.ready]).then(() => document.fonts.load('700 40px Cinzel')).then(() => { seek(Number(q.get('t') || 0)); return true; });
+</script>
+</body></html>

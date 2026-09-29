@@ -42,6 +42,9 @@ localStorage.setItem('hollow.prefs', JSON.stringify({
   hallDiff: q.get('hdiff') || '',
   fightTab: q.get('tab') || 'combat',
   pgMapBig: q.get('mapbig') === '1',   /* &mapbig=1: the Map's large size */
+  /* &mapwhole=1: the whole map drawn, whatever the save has visited; &mapfound=1: what you have too. */
+  pgMapWhole: q.get('mapwhole') === '1',
+  pgMapFound: q.get('mapfound') === '1',
   cocoon: Number(q.get('cocoon') || 0),
   /* &binds=all or &binds=nail,soul: the bindings chosen on the choose-a-pantheon screen. */
   bindings: Object.fromEntries(['nail', 'shell', 'charms', 'soul'].map((k) =>
@@ -196,6 +199,60 @@ f.addEventListener('load', () => {
   for (const id of (q.get('info') || '').split(',').filter(Boolean)) clickN(`[data-act="help"][data-id="${id}"]`, 1);
   // ?click=restCocoon,restSit presses those buttons (by their data-act) in that order.
   for (const act of (q.get('click') || '').split(',').filter(Boolean)) clickN(`[data-act="${act}"]`, 1);
+  /* The trailer's drop (tools/trailer-v2/): &imp=idle|drag|ready opens the import into slot 1,
+     and drags a file over it (the zone lit, "Let go") or drops it, &impfile=<path from here>
+     being the save it reads (a synthetic DataTransfer: what a real drop hands the page). */
+  if (q.get('imp')) {
+    // Headless doesn't tick an idle page's animations: the screen's entrance would stay half-faded.
+    const st = f.contentDocument.createElement('style');
+    st.textContent = '*, *::before, *::after { animation: none !important; transition: none !important; }';
+    f.contentDocument.head.appendChild(st);
+  }
+  if (q.get('imp') === 'idle') {
+    f.contentWindow.HK.app.importFirstEmpty();
+    // Where the zone is (it moves with each language's text), in a pre#zone for --dump-dom.
+    const r = f.contentDocument.querySelector('.imp-drop').getBoundingClientRect();
+    const pre = document.createElement('pre'); pre.id = 'zone';
+    pre.textContent = JSON.stringify({ x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, h: r.height });
+    document.body.appendChild(pre);
+  } else if (q.get('imp')) {
+    const W = f.contentWindow, A = W.HK.app;
+    A.importFirstEmpty();
+    const x = new XMLHttpRequest();
+    x.open('GET', q.get('impfile'), false);
+    x.overrideMimeType('text/plain; charset=x-user-defined');
+    x.send();
+    const bytes = Uint8Array.from(x.responseText, (c) => c.charCodeAt(0) & 0xff);
+    const dt = new W.DataTransfer();
+    dt.items.add(new W.File([bytes], 'user1.dat', { lastModified: Date.parse('2026-09-20T21:14:00Z') }));
+    // A synthetic item has no file handle to give: without the method, the site reads the File itself.
+    delete W.DataTransferItem.prototype.getAsFileSystemHandle;
+    // Once the screen has settled (a later repaint would drop the lit zone).
+    setTimeout(() => {
+      const zone = f.contentDocument.querySelector('.imp-drop');
+      zone.dispatchEvent(new W.DragEvent('dragenter', { bubbles: true, cancelable: true, dataTransfer: dt }));
+      if (q.get('imp') === 'ready') zone.dispatchEvent(new W.DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer: dt }));
+    }, 400);
+  }
+  /* The trailer's map (tools/trailer-v2/): &pins=all draws what you have as if missing (the
+     trailer's "before"), &pins=missing hides it in place (the same layout, so the two captures
+     line up pin for pin), and both write every pin's box and whether you have it into
+     a pre#pins for --dump-dom. */
+  if (q.get('pins')) {
+    const d = f.contentDocument;
+    // Something you can have: not a place (bench:3, people:iselda) nor a stag station (is-on there means closed).
+    const counts = (id) => !/^people:|^[a-z-]+:\d+$|^stag-/.test(id);
+    const pins = () => [...d.querySelectorAll('.pgm-pin[data-id]')].map((g) => ({ g, id: g.dataset.id, n: counts(g.dataset.id), on: g.classList.contains('is-on') && counts(g.dataset.id) }));
+    for (const p of pins()) if (p.on) p.g.style[q.get('pins') === 'all' ? 'opacity' : 'visibility'] = q.get('pins') === 'all' ? '1' : 'hidden';
+    setTimeout(() => {
+      const out = pins().map(({ g, id, n, on }) => {
+        const r = (g.querySelector('circle') || g).getBoundingClientRect();   // yours (shade, markers) have no disc
+        return { id, n, on, x: +(r.left + r.width / 2).toFixed(1), y: +(r.top + r.height / 2).toFixed(1), r: +(r.width / 2).toFixed(1) };
+      });
+      const pre = document.createElement('pre'); pre.id = 'pins'; pre.textContent = JSON.stringify(out);
+      document.body.appendChild(pre);
+    }, 500);
+  }
   // The Knight (js/app-knight.js) fades in with a CSS transition, which headless Chrome doesn't
   // tick once the page is idle: he'd be captured half seen. Cut, he's always whole.
   { const st = f.contentDocument.createElement('style'); st.textContent = '.kn { transition: none !important; }'; f.contentDocument.head.appendChild(st); }
