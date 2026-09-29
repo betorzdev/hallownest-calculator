@@ -184,6 +184,8 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 .btn:is(:hover, :focus-visible):not(:disabled) { color: var(--ink-strong); border-color: var(--accent-line); background-color: var(--accent-soft); }
 .btn-primary { color: var(--ink-strong); border-color: var(--accent-line); background-color: color-mix(in oklab, var(--accent) 10%, transparent); --bk: var(--accent); --bk-len: var(--sp-3); }
 .btn-primary:is(:hover, :focus-visible):not(:disabled) { background-color: color-mix(in oklab, var(--accent) 18%, transparent); }
+/* Large: the one call-to-action a flow ends in (the import preview's Import). */
+.btn-lg { min-height: calc(var(--ctl) + var(--sp-2)); padding-inline: var(--sp-8); font-size: var(--fs-sm); --bk-len: var(--sp-4); }
 .btn.is-danger { color: var(--bad); --bk: var(--bad); }
 .btn.is-danger:is(:hover, :focus-visible):not(:disabled) { color: var(--bad); border-color: var(--bad); background-color: var(--bad-soft); }
 .btn:disabled { color: var(--muted); background-color: transparent; --bk: var(--line-ctl); cursor: default; }
@@ -2207,6 +2209,7 @@ button.gplate:is(:hover, :focus-visible) .gplate-art::before, .gplate:has(.lvlpi
 .fdust:nth-child(4n) { width: 4px; height: 4px; bottom: 30%; }
 
 @keyframes title-in { from { opacity: 0; } }
+@keyframes imp-call { 50% { inset: calc(var(--sp-1) * -1 - 1px); } }
 @keyframes bar-trail { to { opacity: 0; } }
 @keyframes foe-hit {
   0% { filter: brightness(0) invert(1); transform: translateX(-50%) translateX(10px); }
@@ -3723,9 +3726,10 @@ kbd {
 
 .imp-found {
   display: grid; grid-template-columns: auto auto; justify-content: center; align-items: center;
-  grid-template-areas: "fname fname" "nail hud" "nail meta" "facts facts" "pans pans" "warn warn" "sync sync" "actions actions";
+  grid-template-areas: "lead lead" "fname fname" "nail hud" "nail meta" "facts facts" "pans pans" "warn warn" "actions actions" "sync sync" "other other";
   gap: var(--sp-3) var(--sp-6); text-align: center;
 }
+.imp-found-lead { grid-area: lead; justify-self: center; max-width: 40ch; margin: 0 0 var(--sp-2); font-size: var(--fs-md); line-height: 1.45; color: var(--ink-strong); text-wrap: balance; }
 .imp-fname { grid-area: fname; margin: 0 0 var(--sp-2); display: inline-flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: var(--sp-2); font-family: var(--font-num); font-size: var(--fs-sm); color: var(--ink-2); }
 .imp-steel { margin-left: var(--sp-2); color: var(--ink-strong); }
 .imp-hud { grid-area: hud; display: flex; align-items: center; flex-wrap: wrap; gap: var(--sp-2) var(--sp-4); justify-content: flex-start; }
@@ -3749,12 +3753,13 @@ kbd {
 /* Following the game (js/live.js): a row of the game's options menu. What it is in the text's
    ink, and its value on a button (.btn, its frame says it can be pressed) with the rule's
    diamond: lit in bone when it's on, hollow and dimmer when it's off. */
-.imp-sync { grid-area: sync; justify-self: center; display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); max-width: 44ch; margin-top: var(--sp-3); }
-.imp-sync-k { font-size: var(--fs-md); color: var(--ink-strong); }
-.imp-sync-v { font-size: var(--fs-md); }
+.imp-sync { grid-area: sync; justify-self: center; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: var(--sp-1) var(--sp-3); max-width: 44ch; }
+.imp-sync-k { font-size: var(--fs-sm); color: var(--ink); }
+.imp-sync-v { font-size: var(--fs-sm); }
 .imp-sync-v[aria-checked="true"] { color: var(--ink-strong); }
-.imp-sync-note { margin: 0; font-size: var(--fs-sm); line-height: 1.45; color: var(--muted); text-wrap: pretty; }
-.imp-actions { grid-area: actions; display: flex; flex-direction: column; align-items: center; gap: var(--sp-3); margin-top: var(--sp-3); }
+.imp-sync-note { flex: 1 0 100%; margin: 0; font-size: var(--fs-xs); line-height: 1.45; color: var(--muted); text-wrap: pretty; }
+.imp-actions { grid-area: actions; display: flex; justify-content: center; margin-top: var(--sp-3); }
+.imp-other { grid-area: other; justify-self: center; }
 
 @media (prefers-reduced-motion: no-preference) {
   .imp.is-fresh .imp-step { animation: title-in var(--dur-slow) var(--ease-fade) both; animation-delay: calc(var(--i) * 140ms + 100ms); }
@@ -3766,7 +3771,9 @@ kbd {
   .imp-drop[data-state="reading"] .imp-drop-title { animation: notch-pending 700ms var(--ease-fade) infinite alternate; }
   .imp-drop-in > * { animation: title-in var(--dur-slow) var(--ease-fade) both; }
   .imp-hud img { animation: mask-mend 500ms var(--ease) both; animation-delay: calc(var(--i) * 70ms + 150ms); }
-  .imp-meta, .imp-facts, .imp-pans, .imp-warn, .imp-actions { animation: title-in 600ms var(--ease-fade) 600ms both; }
+  .imp-meta, .imp-facts, .imp-pans, .imp-warn, .imp-actions, .imp-sync, .imp-other { animation: title-in 600ms var(--ease-fade) 600ms both; }
+  /* Once it's in, the Import's brackets reach out and back twice: the preview isn't the end. */
+  .imp-actions .btn-lg::before { animation: imp-call 800ms var(--ease) 1300ms 2; }
   .imp-pan.is-done { animation: title-in 500ms var(--ease-fade) both; animation-delay: calc(700ms + var(--p) * 120ms); }
 }
 @keyframes imp-breathe { from { opacity: 0.5; } to { opacity: 0.85; } }
@@ -3829,7 +3836,7 @@ kbd {
 }
 @media (max-width: 599px) {
   .saves-body { --inv-pad: var(--sp-4); }
-  .imp-found { grid-template-areas: "fname fname" "nail hud" "meta meta" "facts facts" "pans pans" "warn warn" "sync sync" "actions actions"; }
+  .imp-found { grid-template-areas: "lead lead" "fname fname" "nail hud" "meta meta" "facts facts" "pans pans" "warn warn" "actions actions" "sync sync" "other other"; }
   .imp-meta { justify-content: center; }
   .imp-bar { margin-bottom: var(--sp-2); }
   /* On a phone an empty slot says only «Import». */

@@ -108,8 +108,8 @@
     saveImportBad:  { es: 'Ese archivo no es una partida del juego: busca user1.dat, user2.dat…', en: 'That file isn\'t a save from the game: look for user1.dat, user2.dat…' },
     /* The import view: how to get the game's file, and the file itself */
     impTitle:       { es: 'Importar a la Partida {n}', en: 'Import into Save {n}' },
-    impLead:        { es: 'Trae tu partida real: la web lee el archivo que guarda el juego y rellena esta partida con tu build, tus amuletos, el Diario, el Salón de los Dioses y la puerta de la saviavida.',
-                      en: 'Bring in your real game: the site reads the file the game saves and fills this save with your build, charms, Journal, Hall of Gods and Lifeblood door.' },
+    impLead:        { es: 'Trae tu partida real: la web lee el archivo que guarda el juego y te enseña tu 112 %, el mapa con lo que te falta, el Diario y el Hogar de Dioses.',
+                      en: 'Bring in your real game: the site reads the file the game saves and shows your 112%, the map with what\'s missing, the Journal and Godhome.' },
     impMobile:      { es: 'Tus partidas están en el ordenador donde juegas: abre esta web allí, o pásate el archivo a este dispositivo.',
                       en: 'Your saves are on the computer you play on: open this site there, or send the file to this device.' },
     impOs:          { es: 'Tu sistema', en: 'Your system' },
@@ -136,6 +136,8 @@
     impReading:     { es: 'Leyendo la partida…', en: 'Reading the save…' },
     impReplace:     { es: 'Sustituirá lo que tiene ahora la Partida {n}.', en: 'It will replace what Save {n} holds now.' },
     impOther:       { es: 'Elegir otro archivo', en: 'Choose another file' },
+    impFound:       { es: 'Esta es tu partida. Impórtala para ver tu 112 %, el mapa con lo que te falta y el Diario.',
+                      en: 'This is your game. Import it to see your 112%, the map with what\'s missing and the Journal.' },
     impTime:        { es: '{h} h {m} min', en: '{h} h {m} min' },
     impSteel:       { es: 'Alma de Acero', en: 'Steel Soul' },          // MODE_STEEL
     impCompletion:  { es: 'Finalización', en: 'Completion' },          // COMPLETION

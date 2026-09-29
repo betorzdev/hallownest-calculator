@@ -1516,11 +1516,14 @@ masks, the nails and the buttons line up from one slot to the next.
   ⇧⌘G on macOS, Ctrl+L on Linux) and **pick the file** (the game keeps save *n* as
   `user<n>.dat`; the `.bak` ones are backups). Right, **the drop zone**: the Knight floating
   under a light that breathes, which brightens when a file is dragged over the view (it can be
-  dropped anywhere on it), and *Choose file*. Once read, the zone shows the save as the game's
-  profile screen would —masks appearing one by one, soul vessels, nail, time played, completion,
+  dropped anywhere on it), and *Choose file*. Once read, the zone says first that this is your
+  game and what importing it shows (the 112%, the map, the Journal), and scrolls to that line;
+  then it shows the save as the game's profile screen would —masks appearing one by one, soul vessels, nail, time played, completion,
   geo, Steel Soul if it is— with the charms, Journal and Hall counts and the pantheons
   completed (five diamonds, lit in bone one after another, and *3/5*; each one's name on hover), and nothing is written until
-  *Import into Save n*; over a full slot it warns first that it will replace it. A file that
+  *Import into Save n*: the one large button (`.btn-lg`), right under the counts, whose brackets
+  reach out twice once the preview is in; the sync option and *Choose another file* go under it.
+  Over a full slot it warns first that it will replace it. A file that
   isn't a save brings up the Shade and *Choose another file*. On a phone a note says the saves
   are on the computer you play on. Then the page enters the imported game, as tapping the slot
   would; when the slot is to follow the file, the browser first asks, on that same click, whether
@@ -1543,8 +1546,8 @@ masks, the nails and the buttons line up from one slot to the next.
   The pantheon in progress and the pinned build aren't in the game: the slot starts without them.
 - **Keep in sync with the game**: where the browser can hand the page the file itself (Chrome
   and Edge on a computer, over `file://` or the web; not Firefox, Safari, a phone or inside an
-  embedded frame), *Choose file* and dropping keep a handle to it, and the preview carries an
-  option like a row of the game's options menu: *Keep in sync with the game* and its value on a
+  embedded frame), *Choose file* and dropping keep a handle to it, and the preview carries, under
+  the Import, an option like a row of the game's options menu: *Keep in sync with the game* and its value on a
   button, **On** (the rule's diamond lit) or **Off** (hollow), the game's own `MOH_ON`/`MOH_OFF`;
   **on by default**. On, the slot follows that file. The game writes it on resting at
   a bench and on quitting, so the slot catches up then (checked every 2 s while the tab is
