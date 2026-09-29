@@ -53,7 +53,7 @@ and the first time. Before, the menu button's hairlines were at 55% and faded at
 
 | Kind | Class | Job | Look |
 |---|---|---|---|
-| Menu | `.btn` (+ `.btn-primary`, `.is-danger`) | a screen's or a dialog's actions | a thin frame with the panels' corner brackets in the accent; primary, longer brackets and a veil of the accent (one per screen); danger, red at rest |
+| Menu | `.btn` (+ `.btn-primary`, `.is-danger`) | a screen's or a dialog's actions | a thin frame with the panels' corner brackets in the accent; primary, longer brackets and a veil of the accent (one per screen); `.btn-lg`, taller and in `--fs-sm`, only for the call-to-action a flow ends in (the import preview's *Import*); danger, red at rest |
 | Text | `.text-btn` | an action inside a line or a list | the secondary ink, always underlined with the accent's line; an icon in front (✕, ↶, ←) isn't underlined |
 | Icon | `.icon-btn` | a glyph alone: close, − and + | a thin accent ring inside a `--ctl-sm` hit area; fills with the accent under the pointer; always with `aria-label` |
 | Disclosure | `.disc-btn` (+ `.disc-ring`, `.is-pick`) | opens something below, without leaving the screen | a row between two rules, the label on the left and the chevron in the icons' ring on the right, lit while open; `.is-pick` is the picker's form (what's chosen + what the button does) |

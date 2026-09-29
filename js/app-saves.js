@@ -215,7 +215,9 @@
     </ol>`;
   }
 
-  // What the drop zone holds in each state. The file's contents go in the preview, as a slot card would show them.
+  /* What the drop zone holds in each state. The file's contents go in the preview, as a slot card
+     would show them, under a line that says it isn't imported yet; the import comes right after
+     them, before the sync option: read as a finished result, the preview was where 2 of 3 stopped. */
   function dropInner() {
     const choose = (key, primary) => `<button type="button" class="btn${primary ? ' btn-primary' : ''}" data-act="importPick">${esc(t(key))}</button>`;
     if (imp.state === 'ready') {
@@ -249,6 +251,7 @@
           <b>${num(m.pantheons.length)}</b><i class="u">/${num(PN.PANTHEONS.length)}</i></div>`;
       const full = store && S.list(store)[imp.n].snap;
       return `<div class="imp-found" role="status">
+          <p class="imp-found-lead">${esc(t('impFound'))}</p>
           <p class="imp-fname" translate="no">${FILE_ICON}${esc(f.name)}${m.steel ? `<span class="tag imp-steel"${NT}>${esc(t('impSteel'))}</span>` : ''}</p>
           <div class="imp-hud"><span class="save-masks">${masks}</span>${vessels ? `<span class="save-vessels">${vessels}</span>` : ''}</div>
           <div class="imp-nail"><img src="${D.art('nails', s.st.nail)}" alt="" width="80" height="360"><span${NT}>${esc(pick(D.NAILS[s.st.nail]))}</span></div>
@@ -256,11 +259,11 @@
           <p class="save-facts imp-facts">${facts}</p>
           ${pantheons}
           ${full ? `<p class="imp-warn">${esc(t('impReplace', { n: imp.n }))}</p>` : ''}
-          ${f.handle ? syncOpt() : ''}
           <div class="imp-actions">
-            <button type="button" class="btn btn-primary" data-act="importDo">${esc(t('impTitle', { n: imp.n }))}</button>
-            <button type="button" class="text-btn" data-act="importPick">${esc(t('impOther'))}</button>
+            <button type="button" class="btn btn-primary btn-lg" data-act="importDo">${esc(t('impTitle', { n: imp.n }))}</button>
           </div>
+          ${f.handle ? syncOpt() : ''}
+          <button type="button" class="text-btn imp-other" data-act="importPick">${esc(t('impOther'))}</button>
         </div>`;
     }
     if (imp.state === 'error') {
@@ -628,7 +631,7 @@
       imp.state = 'ready';
       paintDrop();
       track('import-read');
-      focusIn('[data-act="importDo"]');
+      showFound();
     };
     reader.onerror = () => { imp.state = 'error'; paintDrop(); };
     reader.readAsArrayBuffer(file);
@@ -705,6 +708,15 @@
     try { navigator.clipboard.writeText(text).then(done, fallback); } catch (e) { fallback(); }
   }
   const focusIn = (sel) => { const b = el.saves.querySelector(sel); if (b) b.focus(); };
+  /* The preview read from its first line (it isn't imported yet) down to the Import, which takes
+     the focus: the line goes to the top, unless the button would then fall below the fold. */
+  function showFound() {
+    const lead = el.saves.querySelector('.imp-found-lead'), b = el.saves.querySelector('[data-act="importDo"]');
+    if (!lead || !b) return;
+    b.focus({ preventScroll: true });
+    lead.scrollIntoView({ block: 'start' });
+    if (b.getBoundingClientRect().bottom > innerHeight) b.scrollIntoView({ block: 'end' });
+  }
 
   // The slot you're playing, or 0 (S.FREE) in free mode.
   const activeSlot = () => (store ? S.read(store).active : S.FREE);
