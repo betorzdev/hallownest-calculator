@@ -1,0 +1,50 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="robots" content="noindex"><title>benches</title>
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+/* Debug page: every bench of js/benches.js as Your game draws it (the real .hmC-hero and
+   .hmC-bench), one card per scene, numbered, on its area's light. ?seat=1 or the checkbox marks
+   the seat line (11 px of the game below where it sits the Knight: his seat). */
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); margin: 0; padding: var(--sp-6); }
+.bar { display: flex; gap: var(--sp-6); align-items: center; margin-bottom: var(--sp-6); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: var(--sp-4); }
+.card { border: 1px solid var(--inv-line); }
+.card .hmC-hero { margin: 0; padding: var(--sp-6) var(--sp-4); min-height: 330px; justify-content: flex-end; }
+.num { position: absolute; top: var(--sp-2); left: var(--sp-3); font-family: var(--font-num); font-size: var(--fs-lg); color: var(--ink-strong); }
+.meta { padding: var(--sp-2) var(--sp-3); font-size: var(--fs-sm); color: var(--ink-2); line-height: 1.5; }
+.meta b { color: var(--ink-strong); font-weight: 400; }
+.meta code { font-family: var(--font-num); }
+.seat { display: none; position: absolute; left: -12%; right: -12%; height: 1px; background: red;
+  bottom: 0; margin-bottom: calc((var(--bh) - var(--by) - 11) / var(--bw) * 100%); }
+.show-seat .seat { display: block; }
+</style></head><body>
+<div class="bar"><label><input type="checkbox" id="seat"> seat line</label><span id="count"></span></div>
+<div class="grid" id="grid"></div>
+<script src="js/rooms.js"></script>
+<script src="js/benches.js"></script>
+<script>
+const R = HK.rooms, B = HK.benches;
+const q = new URLSearchParams(location.search);
+const box = document.getElementById('seat');
+box.checked = q.get('seat') === '1';
+const toggle = () => document.body.classList.toggle('show-seat', box.checked);
+box.addEventListener('change', toggle); toggle();
+const uses = {};
+for (const [key] of Object.values(B.SCENES)) uses[key] = (uses[key] || 0) + 1;
+// Grouped by picture, so the same bench sits side by side.
+const scenes = Object.entries(B.SCENES).sort((a, b) => a[1][0].localeCompare(b[1][0]) || a[0].localeCompare(b[0]));
+document.getElementById('count').textContent = scenes.length + ' benches · ' + Object.keys(B.ART).length + ' pictures';
+document.getElementById('grid').innerHTML = scenes.map(([scene, [key, y]], i) => {
+  const [w, h, x] = B.ART[key];
+  const area = R.areaOf(scene), a = R.AREAS[area] || {}, lt = a.light || 'crossroads';
+  const place = R.placeOf(scene), p = (R.PLACES || {})[place];
+  return `<div class="card"><div class="hmC-hero" style="--area-l: var(--area-${lt}-light); --area-m: var(--area-${lt}-mid); --area-d: var(--area-${lt}-deep);">
+      <span class="num">${i + 1}</span>
+      <div class="hmC-bench" style="--bw: ${w}; --bh: ${h}; --bx: ${x}; --by: ${y};">
+        <img class="hmC-seat" src="assets/benches/${key}.png" alt="" width="${w}" height="${h}"><span class="hmC-kn"></span><i class="seat"></i></div>
+    </div>
+    <div class="meta"><b>${a.es || area || '?'}</b>${p ? ' · ' + (p.es || place) : ''}<br>
+      <code>${scene}</code> · <code>${key}</code>${uses[key] > 1 ? ' (×' + uses[key] + ')' : ''}</div></div>`;
+}).join('');
+</script>
+</body></html>

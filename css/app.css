@@ -4158,14 +4158,21 @@ kbd {
   background: radial-gradient(ellipse 55% 80% at 50% 38%, var(--area-m), var(--area-d) 55%, transparent 80%); }
 .hmC-sup { font-family: var(--font-display); font-size: var(--fs-sm); letter-spacing: var(--track-wide); text-transform: uppercase; color: var(--ink-2); }
 .hmC-area { font-family: var(--font-display); font-size: clamp(1.8rem, 5vw, 3.2rem); font-weight: 400; letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--ink-strong); line-height: 1.1; margin: 0; }
-/* The bench under the name (js/app-home.js, a silhouette in the page's black with the area's light
-   as its edge), with the Knight sitting on it: a picture of him (the sit strip, --kn-bench tall,
-   the bench 2.75 of that wide), feet hanging in front of the seat, which lies at half the
-   picture's height, lit in the area's colour. Still: the Knight who moves, and marks the tab
-   you're on, is the one on the screen bar (js/app-knight.js). */
-.hmC-bench { position: relative; width: calc(var(--kn-bench) * 2.75); margin: var(--sp-3) 0 var(--sp-1); }
-.hmC-seat { display: block; width: 100%; height: auto; fill: var(--bg); stroke: color-mix(in oklab, var(--area-l) 55%, transparent); stroke-width: 2; paint-order: stroke; }
-.hmC-kn { position: absolute; left: 50%; bottom: 22%; width: calc(var(--kn-bench) * 104 / 140); height: var(--kn-bench); translate: -50% 0;
+/* The bench under the name (js/app-home.js): the one you rest at, the game's picture (js/benches.js:
+   --bw × --bh of its pixels, where the game sits the Knight at --bx, --by), with him on it (the sit
+   strip, 104 × 140, that point 105 down it: his seat is 11 below), both at the game's scale: the Knight --kn-bench tall. A big
+   bench (the Nailmasters', Godhome's roof) shrinks whole to --kn-bench-max tall, and to the width.
+   Lit in the area's colour. Still: the Knight who moves, and marks the tab you're on, is the one
+   on the screen bar (js/app-knight.js). */
+.hmC-bench { position: relative; max-width: 100%; margin: var(--sp-3) 0 var(--sp-1);
+  width: min(calc(var(--bw) * var(--kn-bench) / 140), calc(var(--kn-bench-max) * var(--bw) / var(--bh))); }
+/* The seat's picture leaves room above for his head where the bench is lower than him (its margin,
+   a share of the width); he stands on the bench's foot, raised to its seat (his translate, a
+   share of his own 140). */
+.hmC-seat { display: block; width: 100%; height: auto; margin-top: calc(max(0, 105 - var(--by)) / var(--bw) * 100%);
+  filter: drop-shadow(0 0 14px color-mix(in oklab, var(--area-l) 45%, transparent)); }
+.hmC-kn { position: absolute; left: calc(var(--bx) / var(--bw) * 100%); bottom: 0;
+  width: calc(104 / var(--bw) * 100%); aspect-ratio: 104 / 140; translate: -50% calc((var(--bh) - var(--by) - 35) / -140 * 100%);
   background: url(../assets/knight/sit.png) 0 0 / auto 100% no-repeat; filter: drop-shadow(0 0 18px color-mix(in oklab, var(--area-l) 60%, transparent)); }
 .hmC-figs { justify-content: center; margin-top: var(--sp-6); }
 .hmC-figs .hm-fig { align-items: center; }
