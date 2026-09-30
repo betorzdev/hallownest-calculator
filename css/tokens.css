@@ -343,6 +343,17 @@
   --lamp-plate-edge: 7%;     /* …and edge */
   --dur-flash: 900ms;                   /* the glow of a figure that just changed */
   --dur-arrive: 1s;                     /* one ring of the Map's pins you came to see (three of them) */
+  /* Your game opening (design/17-home-alive.html, C): the area's name fading in like the game's
+     title card, then the bench, then the bar and what's new, one by one, each with a shine. The
+     figures' count-up (1 s in, 1.1 s long) is js/app-home.js's COUNT_DELAY and COUNT_MS. */
+  --dur-card: 1.8s;
+  --dur-card-bench: 1.2s;
+  --delay-card-bench: 0.5s;
+  --delay-card-bar: 1.1s;
+  --delay-card-new: 1.6s;
+  --dur-card-step: 0.18s;               /* between one new thing and the next */
+  --dur-breathe: 5s;                    /* the bench's light, in and out */
+  --dur-bob: 3.2s;                      /* your shade, floating */
   /* The screens' frame (css/app.css, .frame-line): the line's inset from the plate's edge, the
      corners' curl, and how much of the section's lamp the line takes. */
   --frame-inset: var(--sp-2);

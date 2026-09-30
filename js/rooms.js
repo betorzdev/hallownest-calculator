@@ -33,7 +33,7 @@
   };
   const BY_AREA = {
     dirtmouth: ['Grimm_Divine', 'Grimm_Main_Tent', 'Room_Bretta', 'Room_Ouiji', 'Room_Town_Stag_Station', 'Room_mapper', 'Room_shop', 'Town', 'Tutorial_01'],
-    crossroads: ['Crossroads_01', 'Crossroads_02', 'Crossroads_03', 'Crossroads_04', 'Crossroads_05', 'Crossroads_06', 'Crossroads_07', 'Crossroads_08', 'Crossroads_09', 'Crossroads_10', 'Crossroads_11_alt', 'Crossroads_12', 'Crossroads_13', 'Crossroads_14', 'Crossroads_15', 'Crossroads_16', 'Crossroads_18', 'Crossroads_19', 'Crossroads_21', 'Crossroads_22', 'Crossroads_25', 'Crossroads_27', 'Crossroads_30', 'Crossroads_31', 'Crossroads_33', 'Crossroads_35', 'Crossroads_36', 'Crossroads_37', 'Crossroads_38', 'Crossroads_39', 'Crossroads_40', 'Crossroads_42', 'Crossroads_43', 'Crossroads_45', 'Crossroads_46', 'Crossroads_47', 'Crossroads_48', 'Crossroads_49', 'Crossroads_52', 'Crossroads_ShamanTemple', 'Mines_33', 'Room_Charm_Shop', 'Room_Mender_House', 'Room_ruinhouse', 'Room_temple'],
+    crossroads: ['Crossroads_01', 'Crossroads_02', 'Crossroads_03', 'Crossroads_04', 'Crossroads_05', 'Crossroads_06', 'Crossroads_07', 'Crossroads_08', 'Crossroads_09', 'Crossroads_10', 'Crossroads_11_alt', 'Crossroads_12', 'Crossroads_13', 'Crossroads_14', 'Crossroads_15', 'Crossroads_16', 'Crossroads_18', 'Crossroads_19', 'Crossroads_21', 'Crossroads_22', 'Crossroads_25', 'Crossroads_27', 'Crossroads_30', 'Crossroads_31', 'Crossroads_33', 'Crossroads_35', 'Crossroads_36', 'Crossroads_37', 'Crossroads_38', 'Crossroads_39', 'Crossroads_40', 'Crossroads_42', 'Crossroads_43', 'Crossroads_45', 'Crossroads_46', 'Crossroads_47', 'Crossroads_48', 'Crossroads_49', 'Crossroads_52', 'Crossroads_ShamanTemple', 'Mines_33', 'Room_Charm_Shop', 'Room_Final_Boss_Atrium', 'Room_Final_Boss_Core', 'Room_Mender_House', 'Room_ruinhouse', 'Room_temple'],
     greenpath: ['Fungus1_01', 'Fungus1_01b', 'Fungus1_02', 'Fungus1_03', 'Fungus1_04', 'Fungus1_05', 'Fungus1_06', 'Fungus1_07', 'Fungus1_08', 'Fungus1_09', 'Fungus1_10', 'Fungus1_11', 'Fungus1_12', 'Fungus1_13', 'Fungus1_14', 'Fungus1_15', 'Fungus1_16_alt', 'Fungus1_17', 'Fungus1_19', 'Fungus1_20_v02', 'Fungus1_21', 'Fungus1_22', 'Fungus1_25', 'Fungus1_26', 'Fungus1_29', 'Fungus1_30', 'Fungus1_31', 'Fungus1_32', 'Fungus1_34', 'Fungus1_35', 'Fungus1_36', 'Fungus1_37', 'Fungus1_Slug', 'Room_Slug_Shrine', 'Room_nailmaster_02'],
     fungal: ['Deepnest_01', 'Fungus2_01', 'Fungus2_02', 'Fungus2_03', 'Fungus2_04', 'Fungus2_05', 'Fungus2_06', 'Fungus2_07', 'Fungus2_08', 'Fungus2_09', 'Fungus2_10', 'Fungus2_11', 'Fungus2_12', 'Fungus2_13', 'Fungus2_14', 'Fungus2_15', 'Fungus2_17', 'Fungus2_18', 'Fungus2_19', 'Fungus2_20', 'Fungus2_21', 'Fungus2_23', 'Fungus2_26', 'Fungus2_28', 'Fungus2_29', 'Fungus2_30', 'Fungus2_31', 'Fungus2_32', 'Fungus2_33', 'Fungus2_34'],
     fog: ['Fungus3_01', 'Fungus3_02', 'Fungus3_03', 'Fungus3_24', 'Fungus3_25', 'Fungus3_25b', 'Fungus3_26', 'Fungus3_27', 'Fungus3_28', 'Fungus3_30', 'Fungus3_35', 'Fungus3_44', 'Fungus3_47', 'Fungus3_archive', 'Fungus3_archive_02', 'Room_Fungus_Shaman'],
@@ -84,7 +84,7 @@
   };
   const BY_PLACE = {
     kingspass: ['Tutorial_01'],
-    eggtemple: ['Room_temple'],
+    eggtemple: ['Room_Final_Boss_Atrium', 'Room_Final_Boss_Core', 'Room_temple'],
     shamantemple: ['Crossroads_ShamanTemple'],
     acid_lake: ['Fungus1_26', 'Fungus1_Slug', 'Room_Slug_Shrine'],
     noeyes_temple: ['Fungus1_35', 'Fungus1_36'],

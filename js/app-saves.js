@@ -54,9 +54,17 @@
   /* The link with the game (js/live.js): the linked slots ({ n: file name }, read once at boot),
      and the active slot's watcher and what it says: '' (not linked), 'live', 'paused' or 'lost'. */
   const live = { links: {}, ready: false, n: 0, name: '', state: '', watcher: null };
-  // The picker for the game's save, the import's and Follow's: it remembers the folder (id).
-  const pickSave = () => showOpenFilePicker({ id: 'hk-save', multiple: false,
-    types: [{ description: 'Hollow Knight', accept: { 'application/octet-stream': ['.dat'], 'application/json': ['.json'] } }] });
+  /* The picker for the game's save, the import's and Follow's: it remembers the folder (id), but
+     only once a file has been picked with it, which is noted here (browser-wide, not per game:
+     it isn't in js/saves.js's KEYS). Until then Follow shows where the file is (liveFollow). */
+  const PICKED_KEY = 'hollow.picked';
+  const pickedBefore = () => { try { return localStorage.getItem(PICKED_KEY) === '1'; } catch (e) { return false; } };
+  const pickSave = async () => {
+    const r = await showOpenFilePicker({ id: 'hk-save', multiple: false,
+      types: [{ description: 'Hollow Knight', accept: { 'application/octet-stream': ['.dat'], 'application/json': ['.json'] } }] });
+    try { localStorage.setItem(PICKED_KEY, '1'); } catch (e) { /* the folders show again next time */ }
+    return r;
+  };
 
   const parse = (s, def) => { try { const v = JSON.parse(s); return v == null ? def : v; } catch (e) { return def; } };
   /* What a slot's card shows, read from its copy with the same defaults as the loaders: with no
@@ -500,10 +508,18 @@
       leave(0, rec ? () => enterHere(rec) : null);
     },
     /* Following a slot that follows nothing: the file is picked, the slot takes it in at once (the
-       game wins, as on every save after) and from then on it follows it. */
+       game wins, as on every save after) and from then on it follows it. If the picker has never
+       been used here it would open anywhere: the import view goes instead, with the folders and
+       the sync on. */
     async liveFollow(node) {
       const n = Number(node.dataset.value);
       if (!store) return;
+      if (!pickedBefore()) {
+        App.go('saves');
+        imp.sync = true;
+        actions.saveImport({ dataset: { value: String(n) } });
+        return;
+      }
       let h, file, r;
       try { [h] = await pickSave(); } catch (e) { return; }
       try { file = await h.getFile(); r = F.read(new Uint8Array(await file.arrayBuffer())); } catch (e) { r = null; }

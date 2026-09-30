@@ -75,7 +75,12 @@ const PLACES = {
 // Rooms the randomizer doesn't list. The trams' cars are counted where their line runs.
 const EXTRA = { 'Room_Tram': 'deepnest', 'Room_Tram_RG': 'resting',
   // The three trials' arenas, where their rewards are given.
-  'Room_Colosseum_Bronze': 'colosseum', 'Room_Colosseum_Silver': 'colosseum', 'Room_Colosseum_Gold': 'colosseum' };
+  'Room_Colosseum_Bronze': 'colosseum', 'Room_Colosseum_Silver': 'colosseum', 'Room_Colosseum_Gold': 'colosseum',
+  // The Black Egg Temple's inner rooms (its bench and the Hollow Knight's chamber): the randomizer
+  // lists only its entrance, Room_temple, in the Crossroads, where the game's map puts its pin.
+  'Room_Final_Boss_Atrium': 'crossroads', 'Room_Final_Boss_Core': 'crossroads' };
+// …and in the Temple, as its entrance is.
+const EXTRA_PLACE = { 'Room_Final_Boss_Atrium': 'EGGTEMPLE', 'Room_Final_Boss_Core': 'EGGTEMPLE' };
 
 const norm = (s) => String(s).replace(/[’‘]/g, "'").replace(/[“”]/g, '"').replace(/\s+/g, ' ').trim();
 const q = (s) => `'${s.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
@@ -97,6 +102,7 @@ const q = (s) => `'${s.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
     if (PLACES[r.TitledArea]) placeOf[r.SceneName] = PLACES[r.TitledArea];
   }
   Object.assign(scenes, EXTRA);
+  Object.assign(placeOf, EXTRA_PLACE);
   const placeName = (base, lang) => {
     const parts = ['_SUPER', '_MAIN', '_SUB'].map((x) => text[lang][base + x]).filter(Boolean);
     if (!parts.length) throw new Error('no title ' + base);

@@ -105,6 +105,30 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
     bench is known), with the Knight sitting on its seat at the game's scale (a bench taller
     than `--kn-bench-max` shrinks, him with it), lit in the area's colour: a picture of him resting there (css `.hmC-kn`), still, while the Knight
     who marks the tab stays on the bar ("The Knight" above).
+  - **The area, alive** (`design/17-home-alive.html`, all three layers, 30 September 2026). The
+    card and the bench stand in **their area's scene**, the arena stage's ramp (`--area-*-mid` →
+    `-deep` → black) fading out before the figures, under the game's title ornament (the fleur,
+    above and below the name), with the bench's light breathing and a black floor that catches
+    the area's light. Over the scene, **the area's own particles** on a canvas (`ambience()`,
+    `FX`): rain in the City, glints in the Peaks, leaves in Greenpath and the Gardens, spores in
+    the Wastes, the Hive and the Resting Grounds, ash on Kingdom's Edge, wind on the Cliffs and
+    in Dirtmouth, bubbles in the Waterways and Fog Canyon, dust in Deepnest and the Basin. Soft,
+    always on while the screen is shown; stopped when the tab hides or you leave, and one still
+    frame with *reduce motion*. Beside the card (under the figures on a phone), **the area's
+    map**, as the Map screen draws it (`App.pgmRoomsSvg`: mapped rooms whole, the rest sketched
+    or a ghost, a little stronger here), with your bench and the Knight on it (a ring beating),
+    your shade if it's in that area, and what you're missing there as pins: each opens it on the
+    Map, and hovering a cell of *Missing nearby* lights its pin (and the other way round). An area
+    the game's map doesn't draw (the Hive, Godhome, the White Palace…) has none. The Black Egg
+    Temple's bench counts as the Crossroads, where the game's map puts the Temple (the randomizer's
+    rooms list only its entrance: `EXTRA` in `tools/fetch-rooms.js`), and on the map it sits at the
+    Temple's door (`ALIAS` in `js/app-map.js`).
+    **The arrival**: when the screen opens, and again when the game saves something new while
+    it's open (`hollow.prev` changes), the name fades in like the game's title card, the
+    completion and the Journal **count up from the save before**, a bar out of 112 lights what
+    you just gained, and the rows of *Since last time* come in one by one with a shine
+    (`.is-enter`; the timings are tokens, `--dur-card*`). The geo isn't kept in `hollow.prev`:
+    it only shows. The Dreamers in *Since last time* carry their map pin as a picture.
   - **The link to the game's file**: *Live*, *Paused* with its *Resume* button (after a reload the
     browser asks for a click; the notice above the screen says so too, here as on the rest), *File
     missing* with *Pick it again*, or, following no file, *Imported from the game, not following
@@ -121,19 +145,22 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
     isn't told. A bench sat at with nothing new doesn't empty it. **The live notice says the
     same** when the game saves: "Bench in City of Tears: Watcher Knight, Lurien the Watcher,
     Captive Grub and 1 more, +2%".
-  - **Your shade**: where it waits and with how much geo, and a link to the Map (it used to be a
-    notice above every screen).
+  - **Your shade**: drawn as the game draws it, floating, with where it waits and with how much
+    geo, and a link to the Map (it used to be a notice above every screen); with none, its dim
+    silhouette.
   - **Missing nearby**: the collectibles of the area of your bench you haven't got (twelve in view,
     the count alongside), each with its place, and a link to the Map.
-  - **With no game** (free mode, the first visit) the screen is an **invitation** instead. On a
-    computer, two columns. On the left, *Connect your game*: one line, *Import from the game* (the
-    import view of the first empty save) and *or drop your user1.dat here* —dropping the file
-    anywhere on the screen opens that import already reading it—, so that the button is on the
-    first screen of a laptop; under it, four pieces with the game's art (Progress, Map, Your
-    shade, Journal), each opening its screen. On the right, an **example** game (resting in City
-    of Tears, its figures and three things it got since last time), dimmed and fading out at its
-    foot; in a narrow window its figures go two by two. On a phone, one column: the example on
-    top, without its list, fading out under *Connect your game*, then the four pieces. Under
+  - **With no game** (free mode, the first visit) the screen is an **invitation** instead, in one
+    column at every width (`design/18-connect-variants.html`, A, 30 September 2026). First,
+    centred as the screen's title card under the game's ornament, *Connect your game*: one line,
+    *Import from the game* (the import view of the first empty save) and, on a computer, *or drop
+    your user1.dat here* —dropping the file anywhere on the screen opens that import already
+    reading it—. Then an **example** game (resting in City of Tears, its figures and three things
+    it got since last time), dimmed and fading out at its foot, showing the area alive as your
+    game will (the City's scene and rain, the title ornament, the bar out of 112 and, on a
+    computer, the City's map beside the card); in a narrow window its figures go two by two, and
+    on a phone it has no list or map. Then four pieces with the game's art (Progress, Map, Your
+    shade, Journal: one row on a computer, two by two on a phone), each opening its screen. Under
     everything, the other way in: *Just try builds* (Charms); a save is never made by hand, since
     it's the game's and isn't changed here ([Saves](#saves)). The steps (the folder, the file) are
     the import view's. It replaced the import notice that used to sit above every screen.
@@ -1697,7 +1724,10 @@ masks, the nails and the buttons line up from one slot to the next.
   *Stop following*) carries **Follow the game** (*Follow* on a narrow screen) above *Import from
   the game*, its icon two arrows chasing each other that turn on hover: it opens the picker,
   the slot takes that file in at once (the game wins) and follows it from then on; on the save
-  you're in, the browser asks for the file on that click too, and the link starts live.
+  you're in, the browser asks for the file on that click too, and the link starts live. The
+  picker only remembers the save folder once a file has been picked with it (`hollow.picked`), so
+  until then *Follow the game* opens the import view for that slot instead, with the folders to
+  copy and the option on.
 - **The import's preview** also says, quietly at the end of its line, the game's version that
   wrote the save and the mods it had (a save from before 1.5 counts some things otherwise:
   Oblobbles needed three defeats).
