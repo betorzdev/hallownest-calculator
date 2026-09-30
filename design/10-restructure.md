@@ -3,7 +3,9 @@
 **Status (26 September 2026):** built. The variants are in
 [`10-home-variants.html`](10-home-variants.html): **C · the bench** was chosen, and on a phone the
 tools fold into one tab. While building, the Hall of Gods and the Pantheons went together as
-**Godhome** (one place in the game) and Combat became the arena alone. Left: the check on Windows
+**Godhome** (one place in the game) and Combat became the arena alone. On 30 September 2026 the chosen
+screen got livelier: its area's scene and particles, the area's map and the arrival, all three
+layers of [`17-home-alive.html`](17-home-alive.html). Left: the check on Windows
 with the game running (a bench sat at → the notice with the changes and *Since last time*).
 
 ## Why

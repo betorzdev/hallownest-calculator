@@ -4288,9 +4288,13 @@ kbd {
 .hm-near-cell { display: flex; flex-direction: column; align-items: center; gap: var(--sp-1); padding: 0; font-size: var(--fs-2xs); color: var(--muted); text-align: center; line-height: 1.2; transition: color var(--dur) var(--ease); }
 .hm-near-cell:is(:hover, :focus-visible) { color: var(--accent); }
 .hm-near img { height: 28px; width: auto; max-width: 48px; object-fit: contain; filter: brightness(0.55) saturate(0.4); }
-.hm-shade { display: flex; gap: var(--sp-3); align-items: center; }
-.hm-shade img { width: 40px; height: auto; filter: brightness(0.25) contrast(1.4); }
-.hm-shade p { margin: 0; font-size: var(--fs-sm); color: var(--ink-2); }
+/* Your shade as the game draws it, floating in the area's light; with none, its dim place. */
+.hm-shade { display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); align-self: stretch; text-align: center; }
+.hm-shade-art { width: 72px; height: auto; filter: drop-shadow(0 0 12px color-mix(in oklab, var(--area-l, var(--tint)) 50%, transparent)); }
+.hm-shade.is-none .hm-shade-art { opacity: 0.12; filter: grayscale(1); }
+.hm-shade p { margin: 0; max-width: 30ch; font-size: var(--fs-sm); color: var(--ink-2); }
+.hm-shade + .text-btn { align-self: center; }
+.hm-item-art .pg-atlas { width: 100%; height: 100%; }
 /* The title card: "Resting at" over the area's name, on the area's light (--area-*: tokens.css). */
 .hmC-hero { position: relative; isolation: isolate; display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); text-align: center;
   padding: var(--sp-8) var(--sp-4); margin: var(--sp-4) var(--bleed) 0; }
@@ -4312,7 +4316,9 @@ kbd {
    bench (the Nailmasters', Godhome's roof) shrinks whole to --kn-bench-max tall, and to the width.
    Lit in the area's colour. Still: the Knight who moves, and marks the tab you're on, is the one
    on the screen bar (js/app-knight.js). */
-.hmC-bench { position: relative; max-width: 100%; margin: var(--sp-3) 0 var(--sp-1);
+/* Decoration: its light (::before, far wider than the bench, and a layer of its own while it fades
+   in) would sit over the link line under it and take its clicks. */
+.hmC-bench { position: relative; max-width: 100%; margin: var(--sp-3) 0 var(--sp-1); pointer-events: none;
   width: min(calc(var(--bw) * var(--kn-bench) / 140), calc(var(--kn-bench-max) * var(--bw) / var(--bh))); }
 /* The seat's picture leaves room above for his head where the bench is lower than him (its margin,
    a share of the width); he stands on the bench's foot, raised to its seat (his translate, a
@@ -4324,25 +4330,98 @@ kbd {
   background: url(../assets/knight/sit.png) 0 0 / auto 100% no-repeat; filter: drop-shadow(0 0 18px color-mix(in oklab, var(--area-l) 60%, transparent)); }
 .hmC-figs { justify-content: center; margin-top: var(--sp-6); }
 .hmC-figs .hm-fig { align-items: center; }
+/* ── Your game, alive (design/17-home-alive.html) ──
+   A · the bench in its area's scene: the arena's ramp (mid → deep → black) behind the title card
+   and the bench, faded out before the figures (nothing goes behind a figure), with the area's own
+   particles on a canvas (js/app-home.js, ambience), the game's title ornament around the name,
+   the bench's light breathing and a black floor under it that catches the area's light.
+   B · the game's map of the area beside the card (under it on a phone), with your bench, your
+   shade and what's missing. C · the arrival: .is-enter while the screen opens. */
+.hmC-card { display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); min-width: 0; }
+.hm.has-area .hmC-hero { padding-top: var(--sp-4); }
+.hmC-hero.has-map { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: var(--sp-8); }
+/* The scene fades out to nothing on every side (an ellipse), not to a colour: fading to
+   --scene-bg left its edges as a box on a plate of another black (the invitation's example). */
+.hmA-scene { position: absolute; inset: 0 0 auto; height: min(100%, 460px); z-index: -1; pointer-events: none;
+  background: linear-gradient(to bottom,
+    color-mix(in oklab, var(--area-m) 70%, var(--scene-bg)) 0%,
+    color-mix(in oklab, var(--area-d) 70%, var(--scene-bg)) 60%,
+    var(--scene-bg) 100%);
+  -webkit-mask: radial-gradient(closest-side at 50% 50%, #000 45%, transparent 100%);
+  mask: radial-gradient(closest-side at 50% 50%, #000 45%, transparent 100%); }
+.hmA-fx { position: absolute; inset: 0; width: 100%; height: 100%; }
+.hmA-orn { display: block; width: min(237px, 60%); height: auto; opacity: 0.8; }
+.hmA-orn.is-top { transform: scaleY(-1); margin-bottom: var(--sp-2); }
+.hm.has-area .hmC-bench::before, .hmI-demo .hmC-bench::before { content: ''; position: absolute; left: 50%; top: 50%; width: 260%; aspect-ratio: 1.6; translate: -50% -60%; z-index: -1;
+  background: radial-gradient(closest-side, color-mix(in oklab, var(--area-l) 30%, transparent), transparent); }
+.hm.has-area .hmC-bench::after, .hmI-demo .hmC-bench::after { content: ''; position: absolute; left: -60%; right: -60%; bottom: calc(-1 * var(--sp-3)); height: var(--sp-3); z-index: -1;
+  background: var(--scene-bg); box-shadow: 0 -1px 0 color-mix(in oklab, var(--area-l) 55%, transparent);
+  -webkit-mask: linear-gradient(to right, transparent, #000 25%, #000 75%, transparent);
+  mask: linear-gradient(to right, transparent, #000 25%, #000 75%, transparent); }
+/* The completion out of 112: what you had in bone, what you just gained in soul's white. */
+.hmC-bar { display: flex; width: min(420px, 100%); height: 6px; margin-top: var(--sp-3); background: var(--inv-line); overflow: hidden; }
+.hmC-bar i { display: block; height: 100%; background: var(--ink-2); }
+.hmC-bar i.is-new { background: var(--ink-strong); box-shadow: 0 0 10px var(--ink-strong); }
+.hmB-map { margin: 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); }
+.hmB-svg { display: block; width: 100%; max-height: 360px; }
+/* The example's map, under its figures: a computer only (on a phone the example is long enough). */
+.hmI-demo .hmB-svg { max-height: 300px; }
+@media (max-width: 899px) { .hmI-demo .hmB-map { display: none; } }
+.hmB-cap { font-size: var(--fs-xs); color: var(--muted); text-align: center; }
+.hmB-pin[data-near] { cursor: pointer; }
+/* The rooms you haven't mapped read a little more than on the Map: here they're the area's shape. */
+.hmB-svg .pgm-room.is-ghost { opacity: 0.3; }
+.hmB-pin[data-near] image { filter: brightness(0.6) saturate(0.5); transition: filter var(--dur) var(--ease); }
+.hmB-pin[data-near]:is(:hover, .is-lit) image { filter: none; }
+.hmB-pin.is-here image { filter: drop-shadow(0 0 0.1px var(--area-l)); }
+.hmB-ring { fill: none; stroke: var(--area-l); stroke-width: 0.03; opacity: 0; }
+.hm-near-cell.is-lit { color: var(--accent); }
+.hm-near-cell.is-lit img { filter: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .hm.has-area .hmC-bench::before, .hmI-demo .hmC-bench::before { animation: hm-breathe var(--dur-breathe) var(--ease-fade) infinite alternate; }
+  .hm-shade:not(.is-none) .hm-shade-art { animation: hm-bob var(--dur-bob) var(--ease-fade) infinite alternate; }
+  .hmB-ring { animation: hm-ring calc(var(--dur-arrive) * 2.4) var(--ease) infinite; transform-box: fill-box; transform-origin: center; }
+  .hmB-pin[data-near] image { transition: filter var(--dur) var(--ease), transform var(--dur) var(--ease); transform-box: fill-box; transform-origin: center; }
+  .hmB-pin[data-near]:is(:hover, .is-lit) image { transform: scale(1.35); }
+  .hm.is-enter :is(.hmC-sup, .hmA-orn) { animation: hm-fade var(--dur-card-bench) var(--ease-fade) both; }
+  .hm.is-enter .hmC-area { animation: hm-card var(--dur-card) var(--ease-fade) both; }
+  .hm.is-enter :is(.hmC-bench, .hmB-map) { animation: hm-fade var(--dur-card-bench) var(--delay-card-bench) var(--ease-fade) both; }
+  .hm.is-enter .hmC-bar i { animation: hm-grow var(--dur-card-bench) var(--delay-card-bar) var(--ease) both; transform-origin: left; }
+  .hm.is-enter .hmC-bar i.is-new { animation: hm-grow var(--dur-card-bench) var(--delay-card-bar) var(--ease) both,
+    hm-glow var(--dur-card-bench) calc(var(--delay-card-bar) + var(--dur-card-bench)) var(--ease-fade) 2 alternate; }
+  .hm.is-enter .hm-list > .hm-item { position: relative; animation: hm-fade var(--dur-slow) calc(var(--delay-card-new) + var(--i, 0) * var(--dur-card-step)) var(--ease-fade) both; }
+  .hm.is-enter .hm-list > .hm-item::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(100deg, transparent 30%, color-mix(in oklab, var(--ink-strong) 22%, transparent) 50%, transparent 70%) no-repeat;
+    background-size: 250% 100%; animation: hm-shine var(--dur-flash) calc(var(--delay-card-new) + var(--i, 0) * var(--dur-card-step)) var(--ease) both; }
+}
+@keyframes hm-breathe { from { opacity: 0.55; } to { opacity: 1; } }
+@keyframes hm-bob { to { transform: translateY(-6px); } }
+@keyframes hm-ring { from { transform: scale(0.6); opacity: 1; } to { transform: scale(3); opacity: 0; } }
+@keyframes hm-fade { from { opacity: 0; } }
+/* The name fades in out of a blur, as the game's title card: nothing that changes its size (a
+   wider letter-spacing wrapped a long name to two lines and back, a jump). */
+@keyframes hm-card { from { opacity: 0; filter: blur(6px); } }
+@keyframes hm-grow { from { transform: scaleX(0); } }
+@keyframes hm-glow { to { opacity: 0.35; } }
+@keyframes hm-shine { from { background-position: 120% 0; } to { background-position: -120% 0; } }
 .hmC-cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-8) var(--sp-12); margin-top: var(--sp-12); padding-top: var(--sp-8); border-top: 1px solid var(--inv-line); }
-/* Nobody's game: the invitation. Written phone first (the other way round from the rest of the
-   file): one column, an example bench on top, dimmed and fading out under the call to connect
-   yours, which rises into the fade; then what the site keeps, with the game's art, and the other
-   way in. On a computer (900 px up) the call and the example go side by side instead, the call on
-   the left, so that its button is on the first screen of a laptop whatever the example's height:
-   the example, compact (the area's name no bigger than a large figure, its list of gains shown),
-   fades out at its foot alone. The example is a picture: inert, and no pointer over it. */
-.hmI { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--sp-8); }
-.hmI-demo { pointer-events: none; user-select: none; opacity: 0.8;
-  -webkit-mask: linear-gradient(to bottom, var(--bg) 50%, transparent 90%); mask: linear-gradient(to bottom, var(--bg) 50%, transparent 90%); }
-.hmI-demo .hmC-hero { margin-top: 0; padding-bottom: var(--sp-12); }
-.hmI-tag { margin-bottom: var(--sp-4); }
+/* Nobody's game: the invitation (design/18-connect-variants.html, A). One column at every width:
+   the call first, centred as the screen's title card with the game's ornament and the one strong
+   button; then the example, dimmed and fading out at its foot, as your game will look (on a
+   computer its area's map beside its card, and its list of gains under both); then what the site
+   keeps, with the game's art, and the other way in. The example is a picture: inert, and no
+   pointer over it. It's its own container: in a narrow window its four figures go two by two. */
+.hmI { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; align-items: stretch; gap: var(--sp-8); }
+.hmI-demo { pointer-events: none; user-select: none; opacity: 0.8; container-type: inline-size;
+  -webkit-mask: linear-gradient(to bottom, var(--bg) 60%, transparent 95%); mask: linear-gradient(to bottom, var(--bg) 60%, transparent 95%); }
+.hmI-demo .hmC-hero { margin: 0; padding-bottom: var(--sp-8); }
+.hmI-tag { margin-bottom: var(--sp-2); justify-self: center; }
 .hmI-since { display: none; width: min(100%, 420px); margin-top: var(--sp-6); text-align: left; flex-direction: column; gap: var(--sp-2); }
 .hmI-since .hm-list { align-self: stretch; }
-.hmI-cta { position: relative; margin-top: calc(-1 * var(--sp-16)); text-align: center; display: flex; flex-direction: column; align-items: center; gap: var(--sp-3); }
+.hmI-cta { position: relative; padding-top: var(--sp-4); text-align: center; display: flex; flex-direction: column; align-items: center; gap: var(--sp-3); }
+.hmI-cta .hmA-orn { margin-bottom: var(--sp-1); }
 .hmI-cta h3 { font-family: var(--font-display); font-size: var(--fs-xl); font-weight: 400; letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--ink-strong); margin: 0; }
 .hmI-cta p { margin: 0 0 var(--sp-2); max-width: 46ch; color: var(--ink-2); font-size: var(--fs-md); line-height: 1.45; }
-.hmI-cta .btn { min-height: 48px; padding-inline: var(--sp-8); font-size: var(--fs-sm); }
 .hmI-drop { font-size: var(--fs-xs); color: var(--muted); }
 @media (hover: none), (max-width: 899px) { .hmI-drop { display: none; } }
 /* A file over the screen: the call lights up, as the import's drop zone does. */
@@ -4368,27 +4447,20 @@ kbd {
 .hmI-or { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--sp-4); }
 .hmI-way { grid-template-columns: 40px minmax(0, 1fr); justify-items: start; text-align: left; column-gap: var(--sp-3); }
 .hmI-way img { grid-row: span 2; width: 40px; height: 40px; object-fit: contain; }
-/* A computer: the call on the left with the four pieces under it, the example on the right
-   beside both, and the other way in under the two columns. The card doesn't bleed past its
-   column there (the fade's mask clips at the column's edge, so anything wider would be cut).
-   The example is its own container: in a narrow column (a window under the page's width) its
-   four figures go two by two, as on a phone, instead of wrapping three and one. */
+/* A computer: the call larger; the example's card and its map side by side (the tag and the
+   list of gains across both), and the four pieces in one row. */
 @media (min-width: 900px) {
-  .hmI { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-12); align-items: start; }
-  .hmI-demo { grid-column: 2; grid-row: 1 / span 2; container-type: inline-size;
-    -webkit-mask: linear-gradient(to bottom, var(--bg) 75%, transparent); mask: linear-gradient(to bottom, var(--bg) 75%, transparent); }
-  .hmI-demo .hmC-hero { margin-inline: 0; padding-bottom: var(--sp-8); }
+  .hmI-cta h3 { font-size: var(--fs-2xl); }
+  .hmI-cta p { font-size: var(--fs-lg); }
+  .hmI-demo .hmC-hero.has-map :is(.hmI-tag, .hmI-since) { grid-column: 1 / -1; justify-self: center; }
   .hmI-demo .hmC-area { font-size: clamp(var(--fs-xl), 2.5vw, var(--fs-2xl)); }
   .hmI-demo .hmC-figs { margin-top: var(--sp-4); gap: var(--sp-4) var(--sp-6); }
   .hmI-since { display: flex; }
-  .hmI-cta { grid-column: 1; grid-row: 1; margin-top: 0; padding-top: var(--sp-8); text-align: left; align-items: flex-start; }
-  .hmI-cta h3 { font-size: var(--fs-2xl); }
-  .hmI-cta p { font-size: var(--fs-lg); }
-  .hmI-feats { grid-column: 1; grid-row: 2; }
-  .hmI-or { grid-column: 1 / -1; grid-row: 3; }
+  .hmI-feats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 @container (max-width: 499px) { .hmI-demo .hmC-figs { display: grid; grid-template-columns: repeat(2, auto); justify-content: center; } }
 @media (max-width: 899px) {
+  .hmC-hero.has-map { grid-template-columns: minmax(0, 1fr); }
   .hmC-cols { grid-template-columns: minmax(0, 1fr); }
   .hm-figs { gap: var(--sp-3) var(--sp-6); }
 }

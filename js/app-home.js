@@ -11,11 +11,12 @@
 (() => {
   'use strict';
   const HK = globalThis.HK;
-  const D = HK.data, HJ = HK.hunter, F = HK.foes, R = HK.rooms, CO = HK.collectibles, CP = HK.completion, CH = HK.changes, L = HK.live, I = HK.i18n, BE = HK.benches;
+  const D = HK.data, M = HK.map, HJ = HK.hunter, F = HK.foes, R = HK.rooms, CO = HK.collectibles, CP = HK.completion, CH = HK.changes, L = HK.live, I = HK.i18n, BE = HK.benches;
   const App = HK.app;
   const { t, pick, el, NT, esc, load, brackets, screenHead, actions, prefs, pctSpace } = App;
 
   const num = (n) => App.NF[0].format(n);
+  const calm = () => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
   const json = (k) => { try { return JSON.parse(load(k) || 'null'); } catch (e) { return null; } };
 
   /* ── What the game was at the save before (hollow.prev) and what changed since ────────────
@@ -46,7 +47,8 @@
       case 'item': {
         const cat = catOf(c.id);
         const m = cat ? App.pgMeta(cat, c.id) : null;
-        return { name: m ? m.name : c.id, note: '', art: m ? m.art : '' };
+        // The Dreamers have no picture of their own: their pins on the game's map.
+        return { name: m ? m.name : c.id, note: '', art: m ? m.art : '', pin: cat === 'dreamers' ? 'dreamer-' + c.id : '' };
       }
       case 'upgrade':
         if (c.id === 'nail') return { name: pick(D.NAILS[c.to]), note: '', art: D.art('nails', c.to) };
@@ -133,11 +135,11 @@
   }
   function changesBlock() {
     const g = gained();
-    const rows = g.list.map((c) => {
-      if (c.kind === 'pct') return `<li class="hm-item"><span class="hm-item-art"></span><span class="hm-item-name">${esc(t('pgCompletion'))}</span>
+    const rows = g.list.map((c, i) => {
+      if (c.kind === 'pct') return `<li class="hm-item" style="--i: ${i}"><span class="hm-item-art"></span><span class="hm-item-name">${esc(t('pgCompletion'))}</span>
         <span class="hm-item-v">${num(c.from)} → ${num(c.to)}${esc(pctSpace())}</span></li>`;
       const m = describe(c);
-      return `<li class="hm-item"><span class="hm-item-art">${m.art ? `<img src="${m.art}" alt="" loading="lazy">` : ''}</span>
+      return `<li class="hm-item" style="--i: ${i}"><span class="hm-item-art">${m.art ? `<img src="${m.art}" alt="" loading="lazy">` : m.pin ? App.pinArtHtml(m.pin) : ''}</span>
         <span class="hm-item-name"${NT}>${esc(m.name)}${m.sub ? `<small>${esc(m.sub)}</small>` : ''}</span>
         ${m.value ? `<span class="hm-item-v">${esc(m.value)}</span>` : m.note ? `<span class="tag hm-item-k">${esc(m.note)}</span>` : ''}${targetOf(c) ? App.mapPinHtml(targetOf(c), m.name) : ''}</li>`;
     }).join('');
@@ -146,52 +148,123 @@
       ${rows ? `<ul class="hm-list">${rows}</ul>` : App.emptyHtml(esc(t('homeSinceNone')))}</section>`;
   }
 
+  /* Your shade, drawn as the game draws it, floating; with none, its place stays, dim. */
   function shadeBlock() {
     const sh = App.progress.shade;
     const area = sh && pick(R.AREAS[R.areaOf(sh.scene)]);
+    const line = sh ? t('shadeBanner', { area: area || '?', geo: num(sh.geo) }) : t(App.progress.bench ? 'homeNoShade' : 'homeShadeUnknown');
     return `<section class="hm-block"><h3 class="block-head">${esc(t('shadeTag'))}</h3>
-      ${sh ? `<div class="hm-shade"><img src="${D.art('hud', 'knight')}" alt=""><p>${esc(t('shadeBanner', { area: area || '?', geo: num(sh.geo) }))}</p></div>
-        <button type="button" class="text-btn" data-act="view" data-value="map">${esc(t('homeOnMap'))}</button>`
-        : App.emptyHtml(esc(t(App.progress.bench ? 'homeNoShade' : 'homeShadeUnknown')))}</section>`;
+      <div class="hm-shade${sh ? '' : ' is-none'}"><img class="hm-shade-art" src="${D.art('knight', 'shade')}" alt=""><p>${esc(line)}</p></div>
+      ${sh ? `<button type="button" class="text-btn" data-act="view" data-value="map">${esc(t('homeOnMap'))}</button>` : ''}</section>`;
   }
 
+  // What you're missing in the area of your bench: the list under "Missing nearby" and the map's pins.
+  const NEAR_MAX = 12;
+  function nearLeft(area) {
+    const found = new Set(App.progress.found);
+    return CO.ITEMS.filter((it) => R.areaOf(it.scene) === area && !found.has(it.id));
+  }
   function nearBlock() {
     const area = R.areaOf(App.progress.bench);
     if (!area) return `<section class="hm-block"><h3 class="block-head">${esc(t('homeNear'))}</h3>${App.emptyHtml(esc(t('homeNearUnknown')))}</section>`;
-    const found = new Set(App.progress.found);
-    const left = CO.ITEMS.filter((it) => R.areaOf(it.scene) === area && !found.has(it.id));
-    const cells = left.slice(0, 12).map((it) => {
+    const left = nearLeft(area);
+    const cells = left.slice(0, NEAR_MAX).map((it, i) => {
       const k = D.COLLECTIBLE_KINDS[it.kind];
-      // Each takes you to it on the Map.
-      return `<button type="button" class="hm-near-cell" data-act="toMap" data-target="collect:${it.id}" data-name="${esc(pick(k))}" title="${esc(pick(k) + ' · ' + t('seeOnMap'))}"><img src="${D.art(k.art[0], k.art[1])}" alt="${esc(pick(k))}" loading="lazy">${esc(placeName(it.scene))}</button>`;
+      // Each takes you to it on the Map; hovered, it lights its pin on the area's map (data-near).
+      return `<button type="button" class="hm-near-cell" data-near="${i}" data-act="toMap" data-target="collect:${it.id}" data-name="${esc(pick(k))}" title="${esc(pick(k) + ' · ' + t('seeOnMap'))}"><img src="${D.art(k.art[0], k.art[1])}" alt="${esc(pick(k))}" loading="lazy">${esc(placeName(it.scene))}</button>`;
     }).join('');
     return `<section class="hm-block"><h3 class="block-head">${esc(t('homeNear'))}<span class="block-note"${NT}>${esc(pick(R.AREAS[area]))} · ${num(left.length)}</span></h3>
       ${left.length ? `<div class="hm-near">${cells}</div>` : App.emptyHtml(esc(t('homeNearNone')))}
       <button type="button" class="text-btn" data-act="view" data-value="map">${esc(t('homeOnMap'))}</button></section>`;
   }
 
+  /* ── The area's map (design/17-home-alive.html, B) ──
+     The game's own drawing of the area you rest in, as the Map screen draws it (js/app-map.js: the
+     rooms you've mapped whole, the rest sketched or a ghost), with your bench and the Knight on it,
+     your shade, and what you're missing there, each a way to it on the Map. An area the game's map
+     doesn't draw (the Hive, Godhome, the White Palace…): none, and the title card stays centred. */
+  const AREA_BOX = {};
+  function areaBox(i) {
+    if (AREA_BOX[i] !== undefined) return AREA_BOX[i];
+    const rs = Object.values(M.ROOMS).filter((r) => r[0] === i);
+    if (!rs.length) return (AREA_BOX[i] = null);
+    const x0 = Math.min(...rs.map((r) => r[1] - r[3] / 2)), x1 = Math.max(...rs.map((r) => r[1] + r[3] / 2));
+    const y0 = Math.min(...rs.map((r) => r[2] - r[4] / 2)), y1 = Math.max(...rs.map((r) => r[2] + r[4] / 2));
+    return (AREA_BOX[i] = [x0, y0, x1 - x0, y1 - y0]);
+  }
+  function areaMapHtml(area, benchScene) {
+    const i = M.AREA_IDS.indexOf(area), box = i >= 0 && areaBox(i);
+    if (!box || !App.pgmRoomsSvg) return '';
+    const [x, y, w, h] = box, pad = 0.4;
+    const at = (p, body, cls = '', attrs = '') => `<g class="hmB-pin${cls}"${attrs} transform="translate(${p[0].toFixed(3)} ${(-p[1]).toFixed(3)})">${body}</g>`;
+    const pr = App.progress, bench = benchScene && App.pgmBenchPoint(benchScene);
+    const near = nearLeft(area).slice(0, NEAR_MAX).map((it, n) => {
+      const p = App.pgmItemPoint(it.id), k = D.COLLECTIBLE_KINDS[it.kind];
+      return p ? at(p, `<image href="${D.art(k.art[0], k.art[1])}" x="-0.3" y="-0.3" width="0.6" height="0.6"/>`, '', ` data-near="${n}" data-act="toMap" data-target="collect:${it.id}" data-name="${esc(pick(k))}"`) : '';
+    }).join('');
+    const shade = pr.shade && pr.shade.x !== undefined && R.areaOf(pr.shade.scene) === area ? at([pr.shade.x, pr.shade.y], App.pgmAtlasSvg('shade', 0.8)) : '';
+    const here = bench ? at(bench, `<circle class="hmB-ring" r="0.4"/>${App.pgmAtlasSvg('bench', 0.8)}<image href="${D.art('hud', 'knight')}" x="-0.3" y="-1.25" width="0.6" height="0.7"/>`, ' is-here') : '';
+    const left = nearLeft(area).length;
+    return `<figure class="hmB-map">
+      <svg class="hmB-svg" viewBox="${(x - pad).toFixed(3)} ${(-y - h - pad).toFixed(3)} ${(w + 2 * pad).toFixed(3)} ${(h + 2 * pad).toFixed(3)}" role="img" aria-label="${esc(t('homeMapLabel', { area: pick(R.AREAS[area]) }))}">
+        <g>${App.pgmRoomsSvg(i)}</g>${near}${shade}${here}</svg>
+      <figcaption class="hmB-cap"${NT}>${esc(pick(R.AREAS[area]))} · ${esc(t('homeMapLeft', { n: num(left) }))}</figcaption></figure>`;
+  }
+
+  /* ── The arrival (design/17-home-alive.html, C) ──
+     What you had at the save before (hollow.prev), for the figures to count up from it and the
+     bar to light what you just gained. The geo isn't kept there: it only shows. */
+  function before() {
+    let p = null;
+    try { p = JSON.parse(load('hollow.prev') || 'null'); } catch (e) { p = null; }
+    if (!p || !p.snap) return null;
+    const g = CH.fromSnap(p.snap);
+    return { pct: CP.count({ build: g.build, owned: g.owned, book: g.book, progress: g.progress }).total, journal: HJ.counts(g.book).completed };
+  }
+
+  /* The pieces of the area alive (design/17-home-alive.html), shared by your game and the
+     invitation's example: the scene with its particles' canvas, the game's title ornament, and the
+     bar out of 112 (what you had, what you just gained). */
+  const SCENE = '<div class="hmA-scene" aria-hidden="true"><canvas class="hmA-fx"></canvas></div>';
+  const orn = (cls) => `<img class="hmA-orn${cls}" src="${D.art('hunter', 'fleur')}" alt="" width="237" height="37">`;
+  const pctBar = (had, now, max) => {
+    const w = (v) => (v / max * 100).toFixed(2);
+    return `<div class="hmC-bar" aria-hidden="true"><i class="is-had" style="width: ${w(had)}%"></i><i class="is-new" style="width: ${w(now - had)}%"></i></div>`;
+  };
+
   /* ── The screen ── */
-  function gameHtml(n) {
+  function gameHtml(n, enter) {
     const meta = json('hollow.meta') || {};
     const area = R.areaOf(App.progress.bench);
     const r = CP.count({ build: App.state, owned: App.owned, book: App.hjBook(), progress: App.progress });
     const hj = HJ.counts(App.hjBook());
+    const was = enter && before();
+    const from = (k, v) => (was && was[k] < v ? was[k] : v);
+    const pctFrom = was && was.pct < r.total ? was.pct : r.total;
     const slot = t('saveSlot', { n });
     const when = meta.saved ? ` · <span class="hm-ago" data-at="${meta.saved}">${esc(ago(meta.saved))}</span>` : '';
     const title = area
-      ? `<span class="hmC-sup">${esc(t('homeRestingAt'))}</span><h3 class="hmC-area"${NT}>${esc(pick(R.AREAS[area]))}</h3>`
+      ? `${orn(' is-top')}<span class="hmC-sup">${esc(t('homeRestingAt'))}</span><h3 class="hmC-area"${NT}>${esc(pick(R.AREAS[area]))}</h3>${orn('')}`
       : `<h3 class="hmC-area">${esc(slot)}</h3>`;
-    return `<div class="hmC-hero" style="${areaVars(area)}">
+    // A figure that counts up from the save before (data-from → its own value): App's arrive().
+    const up = (k, v) => `<b class="hm-up" data-from="${from(k, v)}" data-to="${v}">${num(enter ? from(k, v) : v)}</b>`;
+    const map = areaMapHtml(area, App.progress.bench);
+    const card = `<div class="hmC-card">
         ${title}
         ${benchHtml(App.progress.bench)}
         <div class="hm-link-row">${linkLine(n)}</div>
         ${area ? `<span class="hm-when">${esc(slot)}${when}</span>` : ''}
         <div class="hm-figs hmC-figs">
-          ${fig(t('pgCompletion'), `${num(r.total)}<span class="u">${esc(pctSpace())} / ${num(r.max)}</span>`, true)}
+          ${fig(t('pgCompletion'), `${up('pct', r.total)}<span class="u">${esc(pctSpace())} / ${num(r.max)}</span>`, true)}
           ${meta.time ? fig(t('homeTime'), played(meta.time)) : ''}
           ${meta.geo != null && meta.time ? fig('Geo', num(meta.geo)) : ''}
-          ${fig(t('navJournal'), `${num(hj.completed)}<span class="u">/ ${num(hj.total)}</span>`)}
+          ${fig(t('navJournal'), `${up('journal', hj.completed)}<span class="u">/ ${num(hj.total)}</span>`)}
         </div>
+        ${pctBar(pctFrom, r.total, r.max)}
+      </div>`;
+    return `<div class="hmC-hero${map ? ' has-map' : ''}">
+        ${area ? SCENE : ''}
+        ${card}${map}
       </div>
       <div class="hmC-cols">${changesBlock()}${shadeBlock()}${nearBlock()}</div>`;
   }
@@ -201,7 +274,7 @@
      what the site keeps of it, each opening its screen, and the other way in: just trying builds
      (a save is never made by hand: it's the game's, read here). The steps (the folder, the file)
      are the import sheet's: js/app-saves.js. */
-  const DEMO = { area: 'city', bench: 'Ruins1_29', pct: 87, time: 41 * 3600 + 12 * 60, geo: 2350, journal: [131, 146],
+  const DEMO = { area: 'city', bench: 'Ruins1_29', pct: 87, gainedPct: 2, time: 41 * 3600 + 12 * 60, geo: 2350, journal: [131, 146],
     gained: [{ kind: 'spell', id: 'dd', to: 1 }, { kind: 'charm', id: 'twister' }, { kind: 'journal', id: 'soul-master', done: true }] };
   const FEATS = [
     { view: 'progress', title: 'navProgress', text: 'homeFeatPct', art: D.art('effects', 'grub') },
@@ -218,26 +291,35 @@
     }).join('');
     const feats = FEATS.map((f) => `<button type="button" class="hmI-feat" data-act="view" data-value="${f.view}">
         <img src="${f.art}" alt=""><b>${esc(t(f.title))}</b><span>${esc(t(f.text))}</span></button>`).join('');
+    // The call first, as the screen's title card; then the example, as your game will look; then
+    // what the site keeps, and the other way in (design/18-connect-variants.html, A).
+    const map = areaMapHtml(DEMO.area, DEMO.bench);
     return `<div class="hmI">
-      <div class="hmI-demo" aria-hidden="true" inert>
-        <div class="hmC-hero" style="${areaVars(DEMO.area)}">
-          <span class="tag hmI-tag">${esc(t('homeExample'))}</span>
-          <span class="hmC-sup">${esc(t('homeRestingAt'))}</span><h3 class="hmC-area"${NT}>${esc(pick(R.AREAS[DEMO.area]))}</h3>
-          ${benchHtml(DEMO.bench)}
-          <div class="hm-figs hmC-figs">
-            ${fig(t('pgCompletion'), `${num(DEMO.pct)}<span class="u">${esc(pctSpace())} / ${num(112)}</span>`, true)}
-            ${fig(t('homeTime'), played(DEMO.time))}
-            ${fig('Geo', num(DEMO.geo))}
-            ${fig(t('navJournal'), `${num(DEMO.journal[0])}<span class="u">/ ${num(DEMO.journal[1])}</span>`)}
-          </div>
-          <div class="hmI-since"><span class="block-head">${esc(t('homeSince'))}</span><ul class="hm-list">${gained}</ul></div>
-        </div>
-      </div>
       <div class="hmI-cta">
+        ${orn(' is-top')}
         <h3>${esc(t('homeConnect'))}</h3>
         <p>${esc(t(L.canLive() ? 'homeConnectLine' : 'homeConnectLineFile'))}</p>
-        <button type="button" class="btn btn-primary" data-act="homeImport">${esc(t('saveImport'))}</button>
+        <button type="button" class="btn btn-primary btn-lg" data-act="homeImport">${esc(t('saveImport'))}</button>
         ${desk ? `<span class="hmI-drop">${esc(t('homeDrop'))}</span>` : ''}
+      </div>
+      <div class="hmI-demo" aria-hidden="true" inert>
+        <div class="hmC-hero${map ? ' has-map' : ''}" style="${areaVars(DEMO.area)}">
+          ${SCENE}
+          <span class="tag hmI-tag">${esc(t('homeExample'))}</span>
+          <div class="hmC-card">
+            ${orn(' is-top')}<span class="hmC-sup">${esc(t('homeRestingAt'))}</span><h3 class="hmC-area"${NT}>${esc(pick(R.AREAS[DEMO.area]))}</h3>${orn('')}
+            ${benchHtml(DEMO.bench)}
+            <div class="hm-figs hmC-figs">
+              ${fig(t('pgCompletion'), `${num(DEMO.pct)}<span class="u">${esc(pctSpace())} / ${num(112)}</span>`, true)}
+              ${fig(t('homeTime'), played(DEMO.time))}
+              ${fig('Geo', num(DEMO.geo))}
+              ${fig(t('navJournal'), `${num(DEMO.journal[0])}<span class="u">/ ${num(DEMO.journal[1])}</span>`)}
+            </div>
+            ${pctBar(DEMO.pct - DEMO.gainedPct, DEMO.pct, 112)}
+          </div>
+          ${map}
+          <div class="hmI-since"><span class="block-head">${esc(t('homeSince'))}</span><ul class="hm-list">${gained}</ul></div>
+        </div>
       </div>
       <div class="hmI-feats">${feats}</div>
       <div class="hmI-or">
@@ -247,14 +329,139 @@
     </div>`;
   }
 
+  /* The arrival plays when the screen opens, and again when the game saves something new while
+     it's open (hollow.prev changes); not on every repaint. */
+  let shownKey = null;
   function renderHome() {
-    if (prefs.view !== 'home') return;
+    if (prefs.view !== 'home') { shownKey = null; stopAmbience(); return; }
     const n = App.activeSlot();
+    const key = n + '|' + load('hollow.prev');
+    const enter = !!n && key !== shownKey;
+    shownKey = key;
     /* With a game, the screen's light is the area of your bench (css: .hm.has-area): one light, the
        frame's, where the title card used to paint its own over the section's. */
-    const lit = n ? ` has-area" style="${areaVars(R.areaOf(App.progress.bench))}` : '';
-    el.home.innerHTML = `<div class="gear-body hm${lit}">${brackets}${screenHead(esc(t('navHome')))}${n ? gameHtml(n) : inviteHtml()}</div>`;
+    const area = R.areaOf(App.progress.bench);
+    const lit = n ? ` has-area${enter ? ' is-enter' : ''}" style="${areaVars(area)}` : '';
+    el.home.innerHTML = `<div class="gear-body hm${lit}">${brackets}${screenHead(esc(t('navHome')))}${n ? gameHtml(n, enter) : inviteHtml()}</div>`;
+    // The particles: your bench's area, or the example's in the invitation.
+    const cv = el.home.querySelector('.hmA-fx');
+    if (cv) ambience(cv, n ? area : DEMO.area); else stopAmbience();
+    if (enter) countUp();
   }
+
+  /* The figures count up from the save before (.hm-up: data-from → data-to), after the title card. */
+  function countUp() {
+    const figs = [...el.home.querySelectorAll('.hm-up')].filter((b) => b.dataset.from !== b.dataset.to);
+    if (!figs.length || calm()) { for (const b of figs) b.textContent = num(Number(b.dataset.to)); return; }
+    const t0 = performance.now() + COUNT_DELAY;
+    const step = (now) => {
+      const p = Math.min(1, Math.max(0, (now - t0) / COUNT_MS)), e = 1 - Math.pow(1 - p, 3);
+      for (const b of figs) { if (!b.isConnected) return; const a = Number(b.dataset.from), z = Number(b.dataset.to); b.textContent = num(Math.round(a + (z - a) * e)); }
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+  const COUNT_DELAY = 1000, COUNT_MS = 1100;
+
+  /* ── The area's ambience (design/17-home-alive.html, A) ──
+     Each area's own particles over its scene, soft: the City's rain, the Peaks' glints, Greenpath's
+     leaves, the Wastes' spores… Their colour is the area's light (--area-l) and, for the few that
+     glow, soul's white (--ink-strong), read from the tokens. One loop, stopped when the screen
+     goes, the tab hides or the motion is reduced (then one still frame). Kept across repaints
+     while the area is the same, so a repaint doesn't make them jump. */
+  const FX = {
+    city: { n: 70, kind: 'rain' }, waterways: { n: 22, kind: 'bubble' }, crossroads: { n: 26, kind: 'mote' },
+    dirtmouth: { n: 30, kind: 'wind' }, cliffs: { n: 40, kind: 'wind' }, greenpath: { n: 20, kind: 'leaf' },
+    gardens: { n: 20, kind: 'leaf' }, fungal: { n: 30, kind: 'spore' }, fog: { n: 16, kind: 'bubble' },
+    crystal: { n: 36, kind: 'glint' }, resting: { n: 30, kind: 'spore', glow: true }, deepnest: { n: 26, kind: 'dust' },
+    basin: { n: 26, kind: 'dust' }, abyss: { n: 26, kind: 'dust' }, edge: { n: 70, kind: 'ash' },
+    hive: { n: 22, kind: 'spore' }, colosseum: { n: 26, kind: 'mote' }, palace: { n: 26, kind: 'spore', glow: true },
+    godhome: { n: 26, kind: 'spore', glow: true },
+  };
+  let fx = null;   // { area, ps, cv, raf }
+  function stopAmbience() { if (fx && fx.raf) cancelAnimationFrame(fx.raf); if (fx) fx.raf = 0; }
+  function ambience(cv, area) {
+    stopAmbience();
+    const cfg = FX[area] || FX.crossroads, box = cv.getBoundingClientRect();
+    if (!box.width || !box.height) return;
+    const dpr = Math.min(2, globalThis.devicePixelRatio || 1), W = box.width, H = box.height;
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    const g = cv.getContext('2d');
+    if (!g) return;
+    g.scale(dpr, dpr);
+    const css = getComputedStyle(cv), light = css.getPropertyValue('--area-l').trim(), white = css.getPropertyValue('--ink-strong').trim();
+    const rnd = Math.random;
+    const ps = fx && fx.area === area && fx.ps.length === cfg.n ? fx.ps
+      : Array.from({ length: cfg.n }, () => ({ x: rnd() * W, y: rnd() * H, s: rnd(), a: rnd() * Math.PI * 2, v: 0.4 + rnd() * 0.8 }));
+    fx = { area, ps, cv, raf: 0 };
+    const still = calm();
+    const draw = (now) => {
+      if (!cv.isConnected) { stopAmbience(); return; }
+      g.clearRect(0, 0, W, H);
+      for (const p of ps) {
+        if (!still) move(p, cfg.kind, now);
+        paint(g, p, cfg, now, light, white);
+        if (p.y > H + 20) { p.y = -20; p.x = rnd() * W; } else if (p.y < -20) { p.y = H + 20; p.x = rnd() * W; }
+        if (p.x > W + 20) p.x = -20; else if (p.x < -20) p.x = W + 20;
+      }
+      g.globalAlpha = 1;
+      fx.raf = still || document.hidden ? 0 : requestAnimationFrame(draw);
+    };
+    fx.draw = draw;
+    fx.raf = requestAnimationFrame(draw);
+  }
+  function move(p, kind, now) {
+    switch (kind) {
+      case 'rain': p.y += 7 * p.v; p.x -= 1.2 * p.v; break;
+      case 'ash': p.y += 0.9 * p.v; p.x += 0.8 + Math.sin(now / 900 + p.a) * 0.6; break;
+      case 'wind': p.x += 3 * p.v; p.y += Math.sin(now / 700 + p.a) * 0.3; break;
+      case 'leaf': p.y += 0.6 * p.v; p.x += Math.sin(now / 800 + p.a) * 0.9; break;
+      case 'mote': p.y -= 0.15 * p.v; p.x += Math.sin(now / 1200 + p.a) * 0.35; break;
+      case 'spore': case 'bubble': p.y -= 0.45 * p.v; p.x += Math.sin(now / 1200 + p.a) * 0.35; break;
+      case 'dust': p.y += 0.25 * p.v; p.x += Math.sin(now / 1500 + p.a) * 0.2; break;
+      default: break;
+    }
+  }
+  function paint(g, p, cfg, now, light, white) {
+    g.globalAlpha = 0.2 + p.s * 0.45;
+    g.fillStyle = light; g.strokeStyle = light; g.lineWidth = 1;
+    switch (cfg.kind) {
+      case 'rain': g.beginPath(); g.moveTo(p.x, p.y); g.lineTo(p.x + 2.4, p.y - 14 * p.v); g.stroke(); break;
+      case 'wind': g.beginPath(); g.moveTo(p.x, p.y); g.lineTo(p.x - 18 * p.v, p.y); g.stroke(); break;
+      case 'ash': g.fillStyle = white; g.fillRect(p.x, p.y, 1 + p.s * 2, 1 + p.s * 2); break;
+      case 'dust': g.fillRect(p.x, p.y, 1.5, 1.5); break;
+      case 'leaf':
+        g.save(); g.translate(p.x, p.y); g.rotate(Math.sin(now / 600 + p.a));
+        g.beginPath(); g.ellipse(0, 0, 4 + p.s * 3, 1.6 + p.s, 0, 0, Math.PI * 2); g.fill(); g.restore(); break;
+      case 'glint': {
+        const k = (Math.sin(now / 500 * p.v + p.a) + 1) / 2, r = 1 + k * 2.5;
+        g.globalAlpha = k * 0.8; g.fillStyle = white; g.shadowColor = light; g.shadowBlur = 10;
+        g.beginPath(); g.moveTo(p.x, p.y - r * 2); g.lineTo(p.x + r * 0.5, p.y); g.lineTo(p.x, p.y + r * 2); g.lineTo(p.x - r * 0.5, p.y); g.fill();
+        g.shadowBlur = 0; break;
+      }
+      default: {   // mote, spore, bubble
+        const r = cfg.kind === 'bubble' ? 2 + p.s * 4 : 1 + p.s * 1.8;
+        if (cfg.glow || cfg.kind === 'spore') { g.shadowColor = light; g.shadowBlur = 8; }
+        if (cfg.glow) g.fillStyle = white;
+        g.beginPath(); g.arc(p.x, p.y, r, 0, Math.PI * 2);
+        if (cfg.kind === 'bubble') g.stroke(); else g.fill();
+        g.shadowBlur = 0;
+      }
+    }
+  }
+  // Hidden, the loop stops (fx.raf is left at 0); back, it goes on where it was.
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && fx && !fx.raf && fx.cv.isConnected && prefs.view === 'home' && !calm()) fx.raf = requestAnimationFrame(fx.draw);
+  });
+
+  /* A place under "Missing nearby" and its pin on the area's map light each other. */
+  function lightNear(e) {
+    const on = e.type === 'pointerover' || e.type === 'focusin' ? e.target.closest('[data-near]') : null;
+    for (const x of el.home.querySelectorAll('[data-near].is-lit')) x.classList.remove('is-lit');
+    if (on) for (const x of el.home.querySelectorAll(`[data-near="${on.dataset.near}"]`)) x.classList.add('is-lit');
+  }
+  for (const ev of ['pointerover', 'pointerout', 'focusin', 'focusout']) el.home.addEventListener(ev, lightNear);
+
 
   /* The bar's tab: its name alone. The link's state isn't here (it was, as a diamond, and it
      drew the eye on every screen): the header's save selector carries it, and Your game itself. */

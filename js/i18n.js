@@ -80,6 +80,8 @@
     homeNoShade:    { es: 'No hay ninguna sombra esperándote.', en: 'No shade is waiting for you.' },
     homeShadeUnknown:{ es: 'Solo una partida importada del juego sabe dónde está tu sombra.', en: 'Only a game imported from its file knows where your shade is.' },
     homeNear:       { es: 'Te falta cerca', en: 'Missing nearby' },
+    homeMapLabel:   { es: 'Mapa de {area}: tu banco, tu sombra y lo que te falta', en: 'Map of {area}: your bench, your shade and what you are missing' },
+    homeMapLeft:    { es: '{n} por encontrar', en: '{n} left to find' },
     homeNearNone:   { es: 'Nada: ya lo tienes todo en esta zona.', en: 'Nothing: you have everything in this area.' },
     homeNearUnknown:{ es: 'Con tu partida importada, aquí verás lo que te falta en la zona donde descansas.', en: 'With your game imported, what you are missing in the area where you rest shows here.' },
     homeConnect:    { es: 'Conecta tu partida', en: 'Connect your game' },

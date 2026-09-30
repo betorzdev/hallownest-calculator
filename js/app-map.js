@@ -28,7 +28,9 @@
   // Rooms the doors don't reach (a storeroom, a basement, the White Palace): placed on their neighbour.
   // (The Colosseum's third trial: js/map.js places the first two on its pin, and this one with them.)
   const ALIAS = { Room_Sly_Storeroom: 'Room_shop', Room_Bretta_Basement: 'Room_Bretta', White_Palace_09: 'Abyss_05',
-    Room_Colosseum_Gold: 'Room_Colosseum_Bronze' };
+    Room_Colosseum_Gold: 'Room_Colosseum_Bronze',
+    // The Black Egg Temple's inner rooms (its bench, the Hollow Knight's chamber): at its door in the Crossroads.
+    Room_Final_Boss_Atrium: 'Room_temple', Room_Final_Boss_Core: 'Room_temple' };
   const roomPoint = (scene) => {
     const sc = ALIAS[scene] || scene, r = M.ROOMS[sc];
     return r ? [r[1], r[2]] : M.ANCHORS[sc] || M.HOSTS[sc] || null;
@@ -475,13 +477,14 @@
     if (mapped.has(name) || mapped.has(sceneOf(name))) return 'full';
     return SKETCHED.has(name) ? 'rough' : 'ghost';
   }
-  function roomsSvg() {
+  // All the rooms, or one area's (its index in M.AREAS: Your game draws the area of your bench).
+  function roomsSvg(only) {
     const mapped = new Set(App.progress.mapped);
     const [aw, ah] = M.ATLAS.full, [rw, rh] = M.ATLAS.rough;
     // A room's second drawing, once the world shows it (a lift, a wall broken…); with no save,
     // the world finished: all of them.
     const alts = mapped.size ? new Set(App.progress.alts) : new Set(Object.keys(M.ROOMS));
-    return Object.entries(M.ROOMS).map(([name, r]) => {
+    return Object.entries(M.ROOMS).filter(([, r]) => only === undefined || r[0] === only).map(([name, r]) => {
       const [area, x, y, w, h, rW, rH, full, rough, alt] = r;
       const st = roomState(name, area, mapped);
       const useFull = st !== 'rough';
@@ -1159,5 +1162,7 @@
 
   Object.assign(App, { renderPgMap, pgMapAfterPaint: afterPaint, pgmBenchPoint: benchPoint, pgmDoorPoint: doorPoint, mapTargets, mapPinHtml, mapLinkHtml, pinned, showOnMap,
     // One of the game's map pins as a picture (the Progress plates of the Dreamers and the Colosseum).
-    pinArtHtml: (key) => atlasSvg(key, null, ' pg-atlas') });
+    pinArtHtml: (key) => atlasSvg(key, null, ' pg-atlas'),
+    // Your game's map of the area you rest in (js/app-home.js): the same rooms, pins and places.
+    pgmRoomsSvg: roomsSvg, pgmAtlasSvg: atlasSvg, pgmItemPoint: (id) => COL_POS[id] || null });
 })();
