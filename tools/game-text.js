@@ -75,7 +75,8 @@ function audit(dump) {
   Object.values(D.SPELLS).forEach((s) => { add('SPELLS.' + s.key + '.slot', s.slot); s.levels.forEach((l, i) => l && add('SPELLS.' + s.key + i, l)); });
   add('ABILITIES.dream', D.ABILITIES.dream);
   add('ABILITIES.awoken', D.ABILITIES.awoken);
-  [...D.EQUIPMENT, ...D.KEY_ITEMS, ...D.CARRIED].forEach((it) => add('ITEMS.' + it.id, it));
+  [...D.EQUIPMENT, ...D.KEY_ITEMS, ...D.MAP_ITEMS, ...D.CARRIED].forEach((it) => add('ITEMS.' + it.id, it));
+  Object.entries(D.COMPLETION_NAMES).forEach(([id, v]) => add('COMPLETION_NAMES.' + id, v));
   add('SHARDS', D.SHARDS); add('FRAGMENTS', D.FRAGMENTS);
   const R = require(JS('rooms.js'));
   Object.entries(R.AREAS).forEach(([id, a]) => add('AREAS.' + id, a));

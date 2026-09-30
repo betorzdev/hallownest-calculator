@@ -1,7 +1,7 @@
 /* js/completion.js — your game's completion: the 112% the game counts, and what it's made of.
    Pure: no DOM and no language, like js/hunter.js. The names come with the screen.
 
-   The rules are the wiki's ("Completion (Hollow Knight)"), fifteen categories that add up to
+   The rules are the wiki's ("Completion (Hollow Knight)"), what each thing is worth, adding up to
    112, and they were checked against the game's own figure (playerData.completionPercentage)
    in 51 real saves from 1% to 107%: all 51 match. And against the game's own code (26 September
    2026): PlayerData.CountGameCompletion and CountCharms, read from Assembly-CSharp.dll (patch
@@ -27,20 +27,27 @@
   const HJ = HK.hunter || require('./hunter.js');
   const P = HK.progress || require('./progress.js');
 
-  /* The categories, in the wiki's order, and what each one is out of. Each item is
+  /* The categories, and what each one is out of. The wiki groups the things by the content pack
+     that added them (the Grimm Troupe's six, Lifeblood's Hive Knight); here they go by what they
+     are and where you get them in a game: fourteen. The Troupe's other three charms (Dreamshield,
+     Weaversong, Sprintmaster) are found outside its ritual, so they're charms; the Hive Knight is a
+     boss; the Troupe keeps its ritual (Grimmchild, its master, its king). Each thing is worth what
+     the game says, so the 112 is the same. The bosses go in the order a usual playthrough meets
+     them, the warrior dreams in the Hunter's Journal's (the game's). Each item is
      [id, where it's read, points]: 'journal' (the entry of that id encountered), 'progress',
      'charm' (the site's charm id, any version), or a function (build, { book, has, charm }). */
   const seen = (book, id) => HJ.stateOf(book, id).seen;
   const CATEGORIES = Object.freeze([
-    { id: 'bosses', items: ['broken-vessel', 'brooding-mawlek', 'the-collector', 'dung-defender', 'false-knight',
-      'gruz-mother', 'hornet-protector', 'mantis-lords', 'nosk', 'soul-master', 'traitor-lord', 'uumuu',
-      'watcher-knights'].map((id) => [id, 'journal', 1]).concat([['hornet-sentinel', 'progress', 1]]) },
-    { id: 'dreams', items: ['elder-hu', 'galien', 'gorb', 'markoth', 'marmu', 'no-eyes', 'xero'].map((id) => [id, 'journal', 1]) },
+    { id: 'bosses', items: ['false-knight', 'gruz-mother', 'hornet-protector', 'brooding-mawlek', 'mantis-lords',
+      'soul-master', 'dung-defender', 'broken-vessel', 'watcher-knights', 'the-collector', 'uumuu', 'nosk',
+      'hive-knight', 'traitor-lord'].map((id) => [id, 'journal', 1]).concat([['hornet-sentinel', 'progress', 1]]) },
+    { id: 'dreams', items: ['xero', 'gorb', 'elder-hu', 'marmu', 'no-eyes', 'galien', 'markoth'].map((id) => [id, 'journal', 1]) },
     { id: 'colosseum', items: ['trial-warrior', 'trial-conqueror', 'trial-fool'].map((id) => [id, 'progress', 1]) },
     { id: 'charms', items: ['compass', 'swarm', 'stalwart', 'catcher', 'shaman', 'eater', 'dashmaster', 'thorns',
       'fury', 'heart', 'greed', 'strength', 'twister', 'steady', 'heavy', 'quickslash', 'longnail', 'pride',
       'baldur', 'flukenest', 'crest', 'womb', 'quickfocus', 'deepfocus', 'lbheart', 'lbcore', 'joni', 'grubsong',
-      'elegy', 'hiveblood', 'spore', 'sharpshadow', 'unn', 'glory', 'wielder', 'king'].map((id) => [id, 'charm', 1]) },
+      'elegy', 'hiveblood', 'spore', 'sharpshadow', 'unn', 'glory', 'wielder', 'king',
+      'dreamshield', 'weaversong', 'sprintmaster'].map((id) => [id, 'charm', 1]) },
     { id: 'equipment', items: [['crystal-heart', 'progress', 2], ['isma-tear', 'progress', 2], ['kings-brand', 'progress', 2],
       ['mantis-claw', 'progress', 2], ['monarch-wings', 'progress', 2],
       ['mothwing-cloak', (b) => (b.cloak >= 1 ? 2 : 0), 2], ['shade-cloak', (b) => (b.cloak >= 2 ? 2 : 0), 2]] },
@@ -51,10 +58,8 @@
     { id: 'nail', items: [['nail', (b) => b.nail, 4]] },
     { id: 'dreamNail', items: [['dream-nail', (b) => +!!b.dream, 1], ['dream-awakened', 'progress', 1], ['seer-ascended', 'progress', 1]] },
     { id: 'dreamers', items: ['monomon', 'lurien', 'herrah'].map((id) => [id, 'progress', 1]) },
-    { id: 'grimm', items: [['dreamshield', 'charm', 1], ['grimmchild', (b, x) => +x.charm('grimm'), 1],
-      ['sprintmaster', 'charm', 1], ['weaversong', 'charm', 1], ['troupe-master-grimm', (b, x) => +seen(x.book, 'grimm'), 1],
+    { id: 'grimm', items: [['grimmchild', (b, x) => +x.charm('grimm'), 1], ['troupe-master-grimm', (b, x) => +seen(x.book, 'grimm'), 1],
       ['nkg', (b, x) => +(seen(x.book, 'nkg') || x.has('banishment')), 1]] },
-    { id: 'hive', items: [['hive-knight', 'journal', 1]] },
     { id: 'godmaster', items: [['godtuner', 'progress', 1], ['pantheon-master', 'progress', 1],
       ['pantheon-artist', 'progress', 1], ['pantheon-sage', 'progress', 1], ['pantheon-knight', 'progress', 1]] },
   ]);

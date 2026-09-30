@@ -116,6 +116,21 @@
       ${L.canLive() ? `<button type="button" class="text-btn" data-act="liveFollow" data-value="${n}">${esc(t('liveFollow'))}</button>` : ''}`;
   }
 
+  /* Where a change is on the Map (js/app-map.js, mapTargets): its target, or '' (a statue: Godhome). */
+  function targetOf(c) {
+    switch (c.kind) {
+      case 'journal': return 'foe:' + c.id;
+      case 'charm': return 'c112:charms:' + c.id;
+      case 'item': { const cat = catOf(c.id); return cat ? `c112:${cat}:${c.id}` : ''; }
+      case 'upgrade': return c.id === 'nail' ? 'c112:nail:nail' : 'collect:' + ({ masks: 'mask-shard', vessels: 'vessel-fragment', notches: 'charm-notch' }[c.id] || '');
+      case 'spell': return 'c112:spells:' + c.id;
+      case 'art': return 'c112:arts:' + c.id;
+      case 'cloak': return 'cloak';
+      case 'dream': return 'c112:dreamNail:dream-nail';
+      case 'found': return 'collect:' + c.id;
+      default: return '';
+    }
+  }
   function changesBlock() {
     const g = gained();
     const rows = g.list.map((c) => {
@@ -124,7 +139,7 @@
       const m = describe(c);
       return `<li class="hm-item"><span class="hm-item-art">${m.art ? `<img src="${m.art}" alt="" loading="lazy">` : ''}</span>
         <span class="hm-item-name"${NT}>${esc(m.name)}${m.sub ? `<small>${esc(m.sub)}</small>` : ''}</span>
-        ${m.value ? `<span class="hm-item-v">${esc(m.value)}</span>` : m.note ? `<span class="tag hm-item-k">${esc(m.note)}</span>` : ''}</li>`;
+        ${m.value ? `<span class="hm-item-v">${esc(m.value)}</span>` : m.note ? `<span class="tag hm-item-k">${esc(m.note)}</span>` : ''}${targetOf(c) ? App.mapPinHtml(targetOf(c), m.name) : ''}</li>`;
     }).join('');
     const when = g.saved && g.list.length ? `<span class="block-note">${esc(t('homeSinceNote', { when: ago(g.saved) }))}</span>` : '';
     return `<section class="hm-block"><h3 class="block-head">${esc(t('homeSince'))}${when}</h3>
@@ -147,7 +162,8 @@
     const left = CO.ITEMS.filter((it) => R.areaOf(it.scene) === area && !found.has(it.id));
     const cells = left.slice(0, 12).map((it) => {
       const k = D.COLLECTIBLE_KINDS[it.kind];
-      return `<span title="${esc(pick(k))}"><img src="${D.art(k.art[0], k.art[1])}" alt="${esc(pick(k))}" loading="lazy">${esc(placeName(it.scene))}</span>`;
+      // Each takes you to it on the Map.
+      return `<button type="button" class="hm-near-cell" data-act="toMap" data-target="collect:${it.id}" data-name="${esc(pick(k))}" title="${esc(pick(k) + ' · ' + t('seeOnMap'))}"><img src="${D.art(k.art[0], k.art[1])}" alt="${esc(pick(k))}" loading="lazy">${esc(placeName(it.scene))}</button>`;
     }).join('');
     return `<section class="hm-block"><h3 class="block-head">${esc(t('homeNear'))}<span class="block-note"${NT}>${esc(pick(R.AREAS[area]))} · ${num(left.length)}</span></h3>
       ${left.length ? `<div class="hm-near">${cells}</div>` : App.emptyHtml(esc(t('homeNearNone')))}
@@ -234,7 +250,10 @@
   function renderHome() {
     if (prefs.view !== 'home') return;
     const n = App.activeSlot();
-    el.home.innerHTML = `<div class="gear-body hm">${brackets}${screenHead(esc(t('navHome')))}${n ? gameHtml(n) : inviteHtml()}</div>`;
+    /* With a game, the screen's light is the area of your bench (css: .hm.has-area): one light, the
+       frame's, where the title card used to paint its own over the section's. */
+    const lit = n ? ` has-area" style="${areaVars(R.areaOf(App.progress.bench))}` : '';
+    el.home.innerHTML = `<div class="gear-body hm${lit}">${brackets}${screenHead(esc(t('navHome')))}${n ? gameHtml(n) : inviteHtml()}</div>`;
   }
 
   /* The bar's tab: its name alone. The link's state isn't here (it was, as a diamond, and it

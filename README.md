@@ -184,5 +184,8 @@ Data from [hollowknight.wiki](https://hollowknight.wiki/) and the
 fonts under the [SIL OFL 1.1](assets/fonts/OFL.txt). The code is [MIT](LICENSE). The details
 are in the [guide](docs/guide.md#credits-and-licences).
 
+No cookies: your games stay in your browser, and the visit counter
+([GoatCounter](https://www.goatcounter.com/)) keeps no IP. See the [guide](docs/guide.md#privacy).
+
 Made by **Albert** ([@betorzdev](https://github.com/betorzdev)) ·
 [betorzdev@gmail.com](mailto:betorzdev@gmail.com)

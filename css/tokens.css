@@ -342,6 +342,15 @@
   --lamp-plate: 24%;         /* the plates' halo, centre… */
   --lamp-plate-edge: 7%;     /* …and edge */
   --dur-flash: 900ms;                   /* the glow of a figure that just changed */
+  --dur-arrive: 1s;
+  /* The screens' frame (css/app.css, .frame-line): the line's inset from the plate's edge, the
+     corners' curl, and how much of the section's lamp the line, the light from the top and the
+     glow around take. */
+  --frame-inset: var(--sp-2);
+  --frame-corner: var(--sp-12);
+  --lamp-frame: 60%;
+  --frame-light: 32%;
+  --frame-glow: 50%;                     /* one ring of the Map's pins you came to see (three of them) */
   --dur-delta: 4s;                      /* how long your last change's chip stays in view */
   /* What's touched on that black goes unboxed: on hover, a veil of ink; the chosen one, a
      veil of the accent with its rule (--accent-line). Used by Your game and combat. */

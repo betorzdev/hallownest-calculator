@@ -27,13 +27,15 @@ Before touching anything, check whether it's already solved:
   texts, never edited by hand. And `js/map.js` with `assets/map/`: the game's own map, drawn
   from its files by `tools/extract-map.py` (Python + UnityPy, with the game installed; once per
   game patch). The same goes for `js/benches.js` with `assets/benches/`, each bench as the game
-  draws it (`tools/extract-benches.py`).
+  draws it (`tools/extract-benches.py`), and `js/scene-objects.js` with `assets/world/`, what
+  each room holds for the Map: enemies, secrets, geo, totems, tablets (`tools/extract-scenes.py`).
+  `js/people.js`, the characters' meetings, was read by hand from the game's scenes.
 
 Neither folder is part of the page: `index.html` doesn't load them.
 
 ## Hard constraints
 
-- **No framework and no build.** `index.html` loads **thirty-three classic scripts**, not modules.
+- **No framework and no build.** `index.html` loads **thirty-five classic scripts**, not modules.
   The page is `js/app.js` (the core) and one script per screen (`js/app-*.js`), sharing the
   `HK.app` object, and `js/app-boot.js` starts it; the rules for sharing are in `js/app.js`'s header.
   Plus GoatCounter's (`async`, external), the visit counter: the site has to work the same

@@ -90,7 +90,8 @@
   ];
   /* The 112%'s things that have no name elsewhere on the site (js/completion.js, the Progress
      screen): the Dreamers as the Resting Grounds' inscription names them, the Colosseum's trials
-     as its achievements do, and the Seer. */
+     as its achievements do, the Seer's ascension as its achievement does, Hornet's two fights and
+     the Troupe's two Grimms by their titles. */
   const COMPLETION_NAMES = {
     monomon: { es: 'Monomon, la Maestra', en: 'Monomon the Teacher' },          // DREAMERS_INSPECT_RG2
     lurien: { es: 'Lurien, el Vigilante', en: 'Lurien the Watcher' },           // DREAMERS_INSPECT_RG3
@@ -98,7 +99,11 @@
     'trial-warrior': { es: 'Prueba del Guerrero', en: 'Trial of the Warrior' },        // COLOSSEUM_1_TEXT
     'trial-conqueror': { es: 'Prueba del Conquistador', en: 'Trial of the Conqueror' }, // COLOSSEUM_2_TEXT
     'trial-fool': { es: 'Prueba de los Insensatos', en: 'Trial of the Fool' },         // COLOSSEUM_3_TEXT
-    'seer-ascended': { es: 'Vidente', en: 'Seer' },                             // DREAM_MOTH_MAIN
+    'seer-ascended': { es: 'Ascensión', en: 'Ascension' },                      // ASCENSION_TITLE
+    'hornet-protector': { es: 'Protectora Hornet', en: 'Hornet Protector' },     // NAME_HORNET_1
+    'hornet-sentinel': { es: 'Centinela Hornet', en: 'Hornet Sentinel' },        // NAME_HORNET_2
+    'troupe-master-grimm': { es: 'Maestro de la Compañía Grimm', en: 'Troupe Master Grimm' },   // GRIMM_SUPER + GRIMM_MAIN
+    nkg: { es: 'Rey Pesadilla Grimm', en: 'Nightmare King Grimm' },              // NIGHTMARE_GRIMM_SUPER + NIGHTMARE_GRIMM_MAIN
   };
   /* The collectibles' kinds (js/collectibles.js), each with its name as the game writes it (the
      Inventory's, or the map's legend, KEY_*) and its picture. The flames have no name of their

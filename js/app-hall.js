@@ -6,7 +6,7 @@
   const HK = globalThis.HK;
   const F = HK.foes, HG = HK.hall;
   const App = HK.app;
-  const { t, pick, KEY, el, NT, esc, load, save, prefs, savePrefs, brackets, chevron, rule, fight, fs, alive,
+  const { t, pick, KEY, el, NT, esc, load, save, prefs, savePrefs, brackets, corners, chevron, rule, fight, fs, alive,
     hallFight, foe, phasesOf, totalHp, fightReset, jrNarrow, enduranceOf, fightEndHtml, fightSumHtml, wonNote, dealtOf,
     arenaHtml, render, underNav, navTo, actions } = App;
 
@@ -220,7 +220,7 @@
         <span class="lbl" id="hall-go-lbl">${esc(t('hallFightLbl'))}</span>
         ${HG.DIFFS.map((d) => `<button type="button" class="btn btn-primary hall-go" data-act="hallFight" data-value="${d}">${esc(t(DIFF_KEY[d]))}</button>`).join('')}
       </div>`;
-    return `${brackets}
+    return `${corners}
       <button type="button" class="btn jr-back" data-act="hallList">‹ ${esc(t('fightTabHall'))}</button>
       <div class="hall-art${markFx && markFx.id === s.id && markFx.on ? ' is-marked' : ''}"><img src="assets/hall/${HG.artOf(s)}.png" alt=""></div>
       <h3 class="jr-title"${NT}>${esc(pick(x.name))}</h3>

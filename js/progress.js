@@ -24,6 +24,13 @@
   'use strict';
   const HK = globalThis.HK || (globalThis.HK = {});
   const CO = HK.collectibles || require('./collectibles.js');
+  const SO = HK.sceneObjects || require('./scene-objects.js');
+  const PE = HK.people || require('./people.js');
+  /* What the Map follows of the rooms (js/scene-objects.js), as "scene|name": what breaks and
+     stays broken and the geo chests (opened), and the geo rocks (rocks). */
+  const keysOf = (list, at) => Object.entries(list).flatMap(([sc, rows]) => rows.map((r) => sc + '|' + r[at]));
+  const OPENED = [...keysOf(SO.SECRETS, 1), ...keysOf(SO.CHESTS, 0)], OPENED_SET = new Set(OPENED);
+  const ROCKS = keysOf(SO.ROCKS, 0), ROCKS_SET = new Set(ROCKS);
   const FOUND = CO.ITEMS.map((it) => it.id);
 
   const doorDone = (n) => (pd) => {
@@ -91,7 +98,8 @@
   const SCENE = /^[A-Za-z0-9_]{1,64}$/;
   const scene = (s) => (typeof s === 'string' && SCENE.test(s) && s !== 'None' ? s : '');
 
-  const EMPTY = Object.freeze({ ids: [], counts: {}, found: [], bench: '', shade: null, gate: null, statues: null, mapped: [], markers: [], alts: [] });
+  const EMPTY = Object.freeze({ ids: [], counts: {}, found: [], bench: '', shade: null, gate: null, statues: null, mapped: [], markers: [], alts: [],
+    opened: [], rocks: [], met: [] });
   /* The map's rooms with a second drawing (js/map.js, a room's alt), and when the game swaps it
      in (its FSM map_altsprite): Dirtmouth's lift to Crystal Peak once you've been there, and
      three ways in Deepnest and Kingdom's Edge once they're open. (pd, sceneData's picked set) → yes. */
@@ -127,7 +135,10 @@
     const markers = Array.isArray(o.markers)
       ? o.markers.map((m) => (m && MARKERS.includes(m.c) && point(m) ? { c: m.c, ...point(m) } : null)).filter(Boolean).slice(0, 24) : [];
     const alts = Array.isArray(o.alts) ? Object.keys(ALTS).filter((k) => o.alts.includes(k)) : [];
-    return { ids, counts, found, bench: scene(o.bench), shade, gate, statues, mapped, markers, alts };
+    // The rooms' state and the characters met: only what's known, each once.
+    const known = (list, set) => (Array.isArray(list) ? [...new Set(list.filter((k) => set.has(k)))] : []);
+    const opened = known(o.opened, OPENED_SET), rocks = known(o.rocks, ROCKS_SET), met = known(o.met, new Set(PE.FLAGS));
+    return { ids, counts, found, bench: scene(o.bench), shade, gate, statues, mapped, markers, alts, opened, rocks, met };
   }
 
   /* Which collectibles a save says you have (js/collectibles.js, `how`). sd is the save's
@@ -171,7 +182,13 @@
     const markers = MARKERS.flatMap((c) => list('placedMarkers_' + c).map((m) => ({ c, ...point(m) })));
     const picked = pickedOf(sd);
     const alts = Object.keys(ALTS).filter((k) => ALTS[k](pd, picked));
-    return normalize({ ids, counts, found: detect(pd, sd), bench: pd.respawnScene, shade, gate, statues, mapped, markers, alts });
+    // What's broken or opened, of what the Map follows; a geo rock with no hits left; the meetings had.
+    const opened = OPENED.filter((k) => picked.has(k));
+    const rocks = (sd && Array.isArray(sd.geoRocks) ? sd.geoRocks : [])
+      .filter((r) => r && typeof r.sceneName === 'string' && typeof r.id === 'string' && int(r.hitsLeft) <= 0)
+      .map((r) => r.sceneName + '|' + r.id);
+    const met = PE.FLAGS.filter((f) => !!pd[f]);
+    return normalize({ ids, counts, found: detect(pd, sd), bench: pd.respawnScene, shade, gate, statues, mapped, markers, alts, opened, rocks, met });
   }
 
   const isEmpty = (p) => {

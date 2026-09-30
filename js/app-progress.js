@@ -1,6 +1,6 @@
 /* js/app-progress.js — the Progress screen: your game's completion, the 112% the game counts
    (js/completion.js), drawn as a tablet (design/09-progress.md, variant C): the figure the
-   game's map shows, and one row per category of the wiki's fifteen, with its things as pips and
+   game's map shows, and one row per category (the wiki's, regrouped: js/completion.js), with its things as pips and
    its points. A row opens to show its things as plates, and a tap marks one.
    A thing is marked where the site already keeps it, so no two screens disagree: a boss is its
    Hunter's Journal entry, a charm is your collection, and the rest (equipment, Dreamers,
@@ -12,7 +12,7 @@
 (() => {
   'use strict';
   const HK = globalThis.HK;
-  const D = HK.data, HJ = HK.hunter, F = HK.foes, PN = HK.pantheons, P = HK.progress, CP = HK.completion, R = HK.rooms;
+  const D = HK.data, HJ = HK.hunter, F = HK.foes, PN = HK.pantheons, P = HK.progress, CP = HK.completion;
   const App = HK.app;
   const { t, pick, el, NT, esc, brackets, screenHead, render, actions, prefs, savePrefs, setProgress, setOwned, pctSpace } = App;
 
@@ -26,16 +26,18 @@
     king: ['kingsoul', 'voidheart'], grimm: ['grimmchild', 'melody'] };
   const versionOf = (base) => (VERSIONS[base] ? VERSIONS[base].find((v) => App.owned.includes(v)) || VERSIONS[base][0] : base);
   const bookName = (id) => { const r = HJ.ROW[id]; return (r && r.name) || (HJ.EXTRAS[id] || F.FOE_BY_ID[id] || {}).name; };
-  // Hornet's two fights are one Journal entry: each is told apart by where it happens.
-  const HORNET = { 'hornet-protector': 'greenpath', 'hornet-sentinel': 'edge' };
+  // Hornet's two fights are one Journal entry (its picture): each by its title (D.COMPLETION_NAMES).
+  const HORNET = { 'hornet-protector': 1, 'hornet-sentinel': 1 };
   // The items that are a yes or no of something that isn't their own id.
   const SPECIAL = { grimmchild: ['charm', 'grimm'], 'troupe-master-grimm': ['journal', 'grimm'], nkg: ['journal', 'nkg'] };
 
   function meta(cat, id) {
     const b = App.state;
-    if (HORNET[id]) return { name: `${pick(bookName('hornet-protector'))} · ${pick(R.AREAS[HORNET[id]])}`, art: D.art('journal', 'hornet-protector') };
-    if (id === 'troupe-master-grimm') return { name: pick(bookName('grimm')), art: D.art('journal', 'grimm') };
-    if (cat === 'bosses' || cat === 'dreams' || cat === 'hive' || id === 'nkg') return { name: pick(bookName(id)), art: D.art('journal', id) };
+    if (HORNET[id]) return { name: pick(D.COMPLETION_NAMES[id]), art: D.art('journal', 'hornet-protector') };
+    if (id === 'troupe-master-grimm') return { name: pick(D.COMPLETION_NAMES[id]), art: D.art('journal', 'grimm') };
+    // The Nightmare King's point is also the Troupe banished: the plate says so when that's how.
+    if (id === 'nkg') return { name: pick(D.COMPLETION_NAMES.nkg), art: D.art('journal', 'nkg'), note: P.has(App.progress, 'banishment') ? t('pgBanished') : '' };
+    if (cat === 'bosses' || cat === 'dreams' || id === 'nkg') return { name: pick(bookName(id)), art: D.art('journal', id) };
     if (cat === 'charms' || ['dreamshield', 'sprintmaster', 'weaversong', 'grimmchild'].includes(id)) {
       const v = versionOf(id === 'grimmchild' ? 'grimm' : id);
       return { name: pick(D.CHARM_BY_ID[v]), art: `assets/charms/${v}.png` };
@@ -57,7 +59,14 @@
     if (id === 'dream-nail') return { name: pick(D.ABILITIES.dream), art: D.art('abilities', D.ABILITIES.dream.art) };
     if (id === 'dream-awakened') return { name: pick(D.ABILITIES.awoken), art: D.art('abilities', D.ABILITIES.awoken.art) };
     if (id === 'seer-ascended') return { name: pick(D.COMPLETION_NAMES[id]), art: D.art('items', 'essence'), note: t('pgSeerNote') };
-    if (id.startsWith('pantheon-')) return { name: pick(PN.PANTHEON_BY_ID[id.slice(9)].name), art: '' };
+    // A pantheon: the statue of its last fight, in the Hall of Gods.
+    if (id.startsWith('pantheon-')) {
+      const p = PN.PANTHEON_BY_ID[id.slice(9)], last = p.rooms.filter((r) => r.type === 'fight').pop();
+      return { name: pick(p.name), art: last ? D.art('hall', last.foe) : '' };
+    }
+    // The Dreamers and the Colosseum's trials: the game's own pins for them on its map.
+    if (cat === 'dreamers') return { name: pick(D.COMPLETION_NAMES[id]), art: '', pin: 'dreamer-' + id };
+    if (cat === 'colosseum') return { name: pick(D.COMPLETION_NAMES[id]), art: '', pin: 'colosseum' };
     return { name: pick(D.COMPLETION_NAMES[id]) || id, art: '' };
   }
 
@@ -70,7 +79,7 @@
 
   /* ── The tablet ── */
   // A thing's picture, or the rule's diamond where there's none (the Dreamers, the trials, the pantheons).
-  const artHtml = (m) => (m.art ? `<img src="${m.art}" alt="" loading="lazy">` : '<i class="pg-glyph" aria-hidden="true"></i>');
+  const artHtml = (m) => (m.art ? `<img src="${m.art}" alt="" loading="lazy">` : m.pin && App.pinArtHtml ? App.pinArtHtml(m.pin) : '<i class="pg-glyph" aria-hidden="true"></i>');
   const stateOf = (it) => (it.got >= it.max ? 'is-on' : it.got > 0 ? 'is-part' : '');
   // Several steps (a spell's two levels, the nail's four upgrades…) say how many; a piece of
   // equipment is worth 2 but it's one thing.
@@ -80,18 +89,23 @@
     const m = meta(cat, it.id);
     const st = stateOf(it), on = st === 'is-on';
     const where = whereOf(cat, it.id);
-    const val = STEPPED.includes(cat) ? `${it.got}/${it.max}` : on ? (m.note || '') : where === 'game' ? t('pgInGame') : t('notFound');
+    // The masks as you have them (5 to 9): their points are the ones past the first five.
+    // What's marked on the Inventory says so, unless the save is the game's (nothing's marked by hand).
+    const val = cat === 'masks' ? `${App.state.masks}/${D.HEALTH.maxMasks}` : STEPPED.includes(cat) ? `${it.got}/${it.max}`
+      : on ? (m.note || '') : where === 'game' && !App.saveLock() ? t('pgInGame') : t('notFound');
     const body = `<span class="gplate-art">${artHtml(m)}</span>
         <span class="gplate-name"${NT}>${esc(m.name)}</span>
-        <span class="gplate-val${on && !STEPPED.includes(cat) ? '' : ' is-none'}">${esc(val)}</span>`;
+        <span class="gplate-val${on && !STEPPED.includes(cat) ? ' is-text' : ' is-none'}">${esc(val)}</span>`;
     // The build's things aren't marked here: the plate takes you to Your game.
+    // Each with its pin to the Map, where it has a place there (js/app-map.js).
+    const target = `c112:${cat}:${it.id}`;
     if (where === 'game') {
-      return `<button type="button" class="gplate is-far${st ? ' ' + st : ''}" data-act="view" data-value="game" title="${esc(t('pgInGameHint'))}">${body}</button>`;
+      return App.pinned(`<button type="button" class="gplate is-far${st ? ' ' + st : ''}" data-act="view" data-value="game" title="${esc(t('pgInGameHint'))}">${body}</button>`, target, m.name);
     }
     // In a save from the game (App.saveLock, js/app.js) the plate only says what it is: nothing marks it.
     const held = !!App.saveLock();
-    return `<button type="button" class="gplate${st ? ' ' + st : ''}" data-act="pgMark" data-key="${cat}" data-id="${it.id}" aria-pressed="${on}" ${held ? 'disabled' : ''}
-        title="${esc(held ? m.name : m.name + ' · ' + t(on ? 'pgUnmark' : 'pgMark'))}">${body}</button>`;
+    return App.pinned(`<button type="button" class="gplate${st ? ' ' + st : ''}" data-act="pgMark" data-key="${cat}" data-id="${it.id}" aria-pressed="${on}" ${held ? 'disabled' : ''}
+        title="${esc(held ? m.name : m.name + ' · ' + t(on ? 'pgUnmark' : 'pgMark'))}">${body}</button>`, target, m.name);
   }
 
   function row(c) {
@@ -117,7 +131,7 @@
   function renderProgress() {
     if (prefs.view !== 'progress' && prefs.view !== 'map') return;
     const r = count();
-    /* Two screens in this section: the 112% (the game's figure and its fifteen categories) and
+    /* Two screens in this section: the 112% (the game's figure and its fourteen categories) and
        the Map, with the collectibles on it (js/app-map.js). */
     const head = `${brackets}${screenHead(esc(t(prefs.view === 'map' ? 'navMap' : 'navProgress')))}`;
     el.pg.classList.toggle('is-big', prefs.view === 'map' && !!prefs.pgMapBig);
@@ -129,7 +143,6 @@
     const body = `<div class="pg-total">
           <span class="pg-total-k">${esc(t('pgCompletion'))}</span>
           <span class="pg-total-v">${num(r.total)}<span class="u">${esc(pctSpace())} / ${num(r.max)}</span></span>
-          <p class="pg-lead">${esc(t(App.saveLock() ? 'pgLeadHeld' : 'pgLead'))}</p>
         </div>
         <ol class="pg-rows">${r.categories.map(row).join('')}</ol>`;
     el.pg.innerHTML = `<div class="gear-body pg-body">${head}${body}</div>`;

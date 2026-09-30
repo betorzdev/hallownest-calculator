@@ -222,8 +222,9 @@ body inside; a handwritten annotation in capitals below; a tiny page number **ou
 frame. The creature's artwork goes **directly on the black, frameless**, with its name in small
 caps underneath.
 
-*(Our `.bk` corner brackets are already exactly this pattern. It's the most accurate thing in the
-current design.)*
+*(Our `.bk` corner brackets were already this pattern. Since 30 Sep 2026 the frame is the sister
+site's instead —a hairline all round, corner curls, the title in a plaque on the top line—, chosen
+by Albert in `design/14-sister-variants.html`.)*
 
 ### HUD
 

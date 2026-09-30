@@ -159,7 +159,7 @@
     <section class="about" id="about" lang="en" aria-labelledby="about-h">
       <h1 id="about-h">Hollow Knight save analyzer: what's missing for 112%</h1>
       <p>Stuck at 111%? Drop your save file here (<code>user1.dat</code> to <code>user4.dat</code>, one per slot) and the analyzer tells you what counts and what doesn't: charms, bosses, warrior dreams, the Colosseum of Fools' trials, equipment, spells, masks, vessels, the nail, the Dreamers, the Grimm Troupe and the pantheons. And beyond the 112%, every grub, Mask Shard, Vessel Fragment, Pale Ore and charm notch you have left, on the game's map.</p>
-      <p>The file is on <strong>Windows</strong>: <code>%USERPROFILE%\AppData\LocalLow\Team Cherry\Hollow Knight</code>; on <strong>macOS</strong>: <code>~/Library/Application Support/unity.Team Cherry.Hollow Knight</code>; on <strong>Linux</strong>: <code>~/.config/unity3d/Team Cherry/Hollow Knight</code>. With Steam Cloud that folder already holds the synced copy. In Chrome and Edge the site can follow the file: every time the game saves (resting at a bench or quitting), the page catches up on its own.</p>
+      <p>The file is on <strong>Windows</strong>: <code>%USERPROFILE%\AppData\LocalLow\Team Cherry\Hollow Knight</code>; on <strong>macOS</strong>: <code>~/Library/Application Support/unity.Team Cherry.Hollow Knight</code>; on <strong>Linux</strong>, with Steam and Proton: <code>~/.local/share/Steam/steamapps/compatdata/367520/pfx/drive_c/users/steamuser/AppData/LocalLow/Team Cherry/Hollow Knight</code>, and with the native version: <code>~/.config/unity3d/Team Cherry/Hollow Knight</code>. With Steam Cloud that folder already holds the synced copy. In Chrome and Edge the site can follow the file: every time the game saves (resting at a bench or quitting), the page catches up on its own.</p>
       <div class="about-faq">
         <h2>Questions</h2>
         <h3>Why am I stuck at 111%?</h3>
@@ -199,6 +199,8 @@
 <script src="js/collectibles.js"></script>
 <script src="js/map.js"></script>
 <script src="js/benches.js"></script>
+<script src="js/scene-objects.js"></script>
+<script src="js/people.js"></script>
 <script src="js/progress.js"></script>
 <script src="js/completion.js"></script>
 <script src="js/engine.js"></script>

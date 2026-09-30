@@ -50,7 +50,7 @@
   /* The import view: the slot it's for (0: the list shows), the system whose steps it shows,
      and the file: 'idle' (none yet), 'reading', 'ready' (read: { name, snap, meta }) or 'error'.
      fresh: the view has just opened, and its steps come in one after another. */
-  const imp = { n: 0, os: 'win', state: 'idle', file: null, fresh: false, copied: 0, sync: true };
+  const imp = { n: 0, os: 'win', state: 'idle', file: null, fresh: false, copied: 0, copiedAt: 0, sync: true };
   /* The link with the game (js/live.js): the linked slots ({ n: file name }, read once at boot),
      and the active slot's watcher and what it says: '' (not linked), 'live', 'paused' or 'lost'. */
   const live = { links: {}, ready: false, n: 0, name: '', state: '', watcher: null };
@@ -158,11 +158,16 @@
      Where each system keeps the game's saves, and how its file picker takes a pasted folder:
      Windows expands %USERPROFILE% in the name box, macOS opens "Go to folder" with ⇧⌘G and
      GTK/KDE the location bar with Ctrl+L. Folders and keys aren't translated: they're what's on
-     the disk and on the keyboard (Enter is, in Spanish: «Intro»). */
+     the disk and on the keyboard (Enter is, in Spanish: «Intro»). Linux has two: Steam runs the
+     game through Proton more often than not (367520 is its Steam id), and then the saves live in
+     the Windows folder inside Proton's prefix; the native build's folder goes second. */
   const SYSTEMS = {
-    win:   { name: 'Windows', dir: '%USERPROFILE%\\AppData\\LocalLow\\Team Cherry\\Hollow Knight', how: 'impHowWin', keys: [] },
-    mac:   { name: 'macOS', dir: '~/Library/Application Support/unity.Team Cherry.Hollow Knight', how: 'impHowMac', keys: ['⇧⌘G'] },
-    linux: { name: 'Linux', dir: '~/.config/unity3d/Team Cherry/Hollow Knight', how: 'impHowLinux', keys: ['Ctrl+L'] },
+    win:   { name: 'Windows', dirs: [{ path: '%USERPROFILE%\\AppData\\LocalLow\\Team Cherry\\Hollow Knight' }], how: 'impHowWin', keys: [] },
+    mac:   { name: 'macOS', dirs: [{ path: '~/Library/Application Support/unity.Team Cherry.Hollow Knight' }], how: 'impHowMac', keys: ['⇧⌘G'] },
+    linux: { name: 'Linux', dirs: [
+      { label: 'impProton', path: '~/.local/share/Steam/steamapps/compatdata/367520/pfx/drive_c/users/steamuser/AppData/LocalLow/Team Cherry/Hollow Knight' },
+      { label: 'impNative', path: '~/.config/unity3d/Team Cherry/Hollow Knight' },
+    ], how: 'impHowLinux', keys: ['Ctrl+L'] },
   };
   // The system this browser runs on, for the first tab; a phone gets Windows and a note.
   const ua = () => { try { return ((navigator.userAgentData && navigator.userAgentData.platform) || '') + ' ' + navigator.userAgent; } catch (e) { return ''; } };
@@ -183,6 +188,13 @@
       .replace('\u0001', keys[0] || kbd(t('impEnter'))).replace('\u0002', kbd(t('impEnter')));
     const tabs = Object.entries(SYSTEMS).map(([id, x]) =>
       `<button type="button" data-act="importOs" data-value="${id}" aria-pressed="${id === imp.os}">${x.name}</button>`).join('');
+    const paths = sys.dirs.map((d, i) => {
+      const done = imp.copied && imp.copiedAt === i;
+      return `<div class="imp-path-w">${d.label ? `<span class="imp-path-k">${esc(t(d.label))}</span>` : ''}<div class="imp-path">
+            <code translate="no">${esc(d.path)}</code>
+            <button type="button" class="text-btn imp-copy${done ? ' is-done' : ''}" data-act="importCopy" data-value="${i}">${esc(t(done ? 'impCopied' : 'impCopy'))}</button>
+          </div></div>`;
+    }).join('');
     const files = [1, 2, 3, 4].map((k) => `<li translate="no">${FILE_ICON}user${k}.dat</li>`).join('')
       + `<li class="is-bak" translate="no">${FILE_ICON}user1.dat.bak1</li>`;
     return `<ol class="imp-steps">
@@ -191,10 +203,7 @@
         <div class="imp-step-body">
           <h3 class="imp-step-title">${esc(t('impStep1'))}</h3>
           <div class="seg sm imp-os" role="group" aria-label="${esc(t('impOs'))}">${tabs}</div>
-          <div class="imp-path">
-            <code translate="no">${esc(sys.dir)}</code>
-            <button type="button" class="text-btn imp-copy${imp.copied ? ' is-done' : ''}" data-act="importCopy">${esc(t(imp.copied ? 'impCopied' : 'impCopy'))}</button>
-          </div>
+          ${paths}
         </div>
       </li>
       <li class="imp-step" style="--i:1">
@@ -317,7 +326,7 @@
     if (imp.n) { el.saves.innerHTML = importView(); return; }
     const [free, ...slots] = store ? S.list(store) : [{ n: S.FREE, active: true, snap: {} }];
     el.saves.innerHTML = `<div class="saves-body">${brackets}
-      ${screenHead(esc(t('savesTitle')), `<p class="saves-note">${esc(t('savesNote'))}</p>`)}
+      ${screenHead(esc(t('savesTitle')))}
       <div class="saves-lists">
         <ul class="saves-list is-free">${card(free)}</ul>
         ${slots.length ? `<ol class="saves-list">${slots.map(card).join('')}</ol>` : ''}
@@ -458,7 +467,7 @@
       render();
       focusIn(`[data-act="importOs"][data-value="${imp.os}"]`);
     },
-    importCopy() { copyPath(); },
+    importCopy(node) { copyPath(+node.dataset.value || 0); },
     /* With a handle where the browser gives one (the slot can then follow the file), with the
        hidden input where it doesn't. Cancelling the picker leaves things as they were. */
     async importPick() {
@@ -682,23 +691,25 @@
     if (e.key === 'Escape' && imp.n && prefs.view === 'saves') actions.importClose();
   });
 
-  /* Copy the folder. The clipboard API where there is one; if not (or it's refused), selecting
-     the text and the old copy command. The button says it's done for a moment. */
-  function copyPath() {
-    const text = SYSTEMS[imp.os].dir;
+  /* Copy folder i. The clipboard API where there is one; if not (or it's refused), selecting
+     the text and the old copy command. Its button says it's done for a moment. */
+  function copyPath(i) {
+    const text = SYSTEMS[imp.os].dirs[i].path;
+    const btn = (x) => el.saves.querySelector(`.imp-copy[data-value="${x}"]`);
+    const reset = (x) => { const b = btn(x); if (b) { b.textContent = t('impCopy'); b.classList.remove('is-done'); } };
     const done = () => {
-      imp.copied++;
-      const k = imp.copied, b = el.saves.querySelector('.imp-copy');
+      if (imp.copied && imp.copiedAt !== i) reset(imp.copiedAt);
+      imp.copied++; imp.copiedAt = i;
+      const k = imp.copied, b = btn(i);
       if (b) { b.textContent = t('impCopied'); b.classList.add('is-done'); }
       setTimeout(() => {
         if (imp.copied !== k) return;
         imp.copied = 0;
-        const x = el.saves.querySelector('.imp-copy');
-        if (x) { x.textContent = t('impCopy'); x.classList.remove('is-done'); }
+        reset(i);
       }, 2000);
     };
     const fallback = () => {
-      const code = el.saves.querySelector('.imp-path code');
+      const code = el.saves.querySelectorAll('.imp-path code')[i];
       try {
         const range = document.createRange(); range.selectNodeContents(code);
         const sel = getSelection(); sel.removeAllRanges(); sel.addRange(range);

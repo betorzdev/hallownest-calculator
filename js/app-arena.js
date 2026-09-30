@@ -8,7 +8,7 @@
   const D = HK.data, E = HK.engine, F = HK.foes, PN = HK.pantheons, J = HK.journal, HG = HK.hall, FT = HK.fight;
   const App = HK.app;
   const { t, pick, el, hoverable, SPELL_KEYS, ART_KEYS, ART_STAT, POSITIONAL, NT, esc, pctSpace, spellArt,
-    prefs, savePrefs, brackets, chevron, rule, hudHtml, render, toast, navTo, actions } = App;
+    prefs, savePrefs, brackets, corners, chevron, rule, hudHtml, render, toast, navTo, actions } = App;
 
   /* ── Combat simulator ──────────────────────────────────────────────────
      An exchange of blows by hand: you decide the order. Each button applies its number
@@ -732,7 +732,7 @@
          ${e.of ? `<p class="jr-aside">${esc(t('jrShared', { name: pick(F.FOE_BY_ID[e.of].name) }))}</p>` : ''}`
       : `<p class="jr-aside">${esc(t('jrNoEntry'))}</p>`;
     const fact = factHtml;
-    return `${brackets}
+    return `${corners}
       ${entry && entry.n ? `<span class="jr-num">${esc(t('jrNum', { n: entry.n }))}</span>` : ''}
       <div class="jr-art"><img src="${D.art('enemies', x.id)}" alt="" onerror="this.classList.add('is-missing')"></div>
       <h3 class="jr-title"${NT}>${esc(pick(x.name))}</h3>
@@ -850,19 +850,20 @@
      place in the game—, centred and with the rule below, like the other screens. Combat, the
      arena, is a screen of its own drawn in this section (design/10-restructure.md): its title alone. */
   function fightHead() {
-    if (prefs.view === 'fight') return `<header class="inv-head fight-head">
-      <h2 class="sec-title screen-title" tabindex="-1">${esc(t('navFight'))}</h2>${rule}
+    if (prefs.view === 'fight') return `<header class="inv-head screen-head fight-head">${App.PLAQUE}
+      <h2 class="sec-title screen-title" tabindex="-1">${esc(t('navFight'))}</h2>
     </header>`;
     // "Hall of Gods" doesn't fit on mobile: there that tab carries its short label.
     const tab = (id, key, short) => `<button type="button" role="tab" class="tab ${prefs.fightTab === id ? 'is-on' : ''}"
       data-act="fightTab" data-value="${id}" aria-selected="${prefs.fightTab === id}" ${short ? `aria-label="${esc(t(key))}"` : ''}>${short
         ? `<span class="tab-long" aria-hidden="true">${esc(t(key))}</span><span class="tab-short" aria-hidden="true">${esc(t(short))}</span>` : esc(t(key))}</button>`;
     const sep = '<span class="tab-sep" aria-hidden="true"></span>';
-    return `<header class="inv-head fight-head">
+    // Godhome's two tabs, in the title's plaque.
+    return `<header class="inv-head screen-head fight-head">${App.PLAQUE}
       <h2 class="sr-only screen-title" tabindex="-1">${esc(t('navGodhome'))}</h2>
       <div class="tabs" role="tablist" aria-label="${esc(t('navGodhome'))}">
         ${tab('hall', 'fightTabHall', 'fightTabHallShort')}${sep}${tab('pantheon', 'fightTabPantheon')}
-      </div>${rule}
+      </div>
     </header>`;
   }
 
