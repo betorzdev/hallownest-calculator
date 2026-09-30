@@ -10,9 +10,10 @@ const P = require('../js/progress.js');
 const CP = require('../js/completion.js');
 const F = require('../js/savefile.js');
 
-// The wiki's categories ("Completion (Hollow Knight)"), in its order, and what each is worth.
-const WIKI = { bosses: 14, dreams: 7, colosseum: 3, charms: 36, equipment: 14, spells: 6, arts: 3, masks: 4,
-  vessels: 3, nail: 4, dreamNail: 3, dreamers: 3, grimm: 6, hive: 1, godmaster: 5 };
+// The site's categories and what each is worth: the wiki's ("Completion (Hollow Knight)"), with
+// the Troupe's three other charms among the charms and the Hive Knight among the bosses.
+const WIKI = { bosses: 15, dreams: 7, colosseum: 3, charms: 39, equipment: 14, spells: 6, arts: 3, masks: 4,
+  vessels: 3, nail: 4, dreamNail: 3, dreamers: 3, grimm: 3, godmaster: 5 };
 
 // Every entry the 112% reads from the Journal, completed.
 const JOURNAL_IDS = CP.CATEGORIES.flatMap((c) => c.items).filter((it) => it[1] === 'journal').map((it) => it[0])
@@ -22,7 +23,7 @@ const fullBook = () => Object.fromEntries(JOURNAL_IDS.map((id) => [id, 0]));
 const count = (o) => CP.count({ build: C.PRESETS.base, owned: [], book: {}, progress: {}, ...o });
 const cat = (r, id) => r.categories.find((c) => c.id === id);
 
-test("the categories are the wiki's, and they add up to 112", () => {
+test("the categories are the wiki's, regrouped, and they add up to 112", () => {
   assert.equal(CP.TOTAL, 112);
   const r = count({});
   assert.deepEqual(Object.fromEntries(r.categories.map((c) => [c.id, c.max])), WIKI);
@@ -52,9 +53,9 @@ test('masks, vessels, nail and spells count their steps', () => {
 test('charms: any version counts once, and a fragile one with the Divine does not', () => {
   const owned = ['fheart', 'ugreed', 'voidheart', 'melody', 'dreamshield'];
   const r = count({ owned });
-  assert.equal(cat(r, 'charms').got, 3);            // Fragile Heart, Unbreakable Greed, Void Heart
-  assert.equal(cat(r, 'grimm').got, 2);             // Carefree Melody (Grimmchild's slot) and Dreamshield
-  assert.equal(cat(count({ owned, progress: { ids: ['divine-heart'] } }), 'charms').got, 2);
+  assert.equal(cat(r, 'charms').got, 4);            // Fragile Heart, Unbreakable Greed, Void Heart, Dreamshield
+  assert.equal(cat(r, 'grimm').got, 1);             // Carefree Melody (Grimmchild's slot)
+  assert.equal(cat(count({ owned, progress: { ids: ['divine-heart'] } }), 'charms').got, 3);   // without the Fragile Heart
 });
 
 test('bosses come from the Journal, except Hornet Sentinel', () => {

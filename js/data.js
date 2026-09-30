@@ -69,6 +69,12 @@
     { id: 'tram-pass', es: 'Pase para el tranvía', en: 'Tram Pass' },             // INV_NAME_TRAM_PASS
     { id: 'godtuner', es: 'Afinador de Dioses', en: 'Godtuner' },                 // INV_NAME_GODFINDER
   ];
+  /* Two more you pick up that the Inventory doesn't list among the key items: they're only on the
+     Map (js/app-map.js), with the key items. */
+  const MAP_ITEMS = [
+    { id: 'collectors-map', es: 'Mapa del coleccionista', en: "Collector's Map" }, // COLLECTOR_MAP
+    { id: 'hunters-journal', es: 'Diario del Cazador', en: "Hunter's Journal" },    // INV_NAME_JOURNAL
+  ];
   /* What you carry, in the Inventory's order: max is the most there can be (js/progress.js),
      sell what Relic Seeker Lemm pays for one (wiki, each relic's page). */
   const CARRIED = [
@@ -84,7 +90,8 @@
   ];
   /* The 112%'s things that have no name elsewhere on the site (js/completion.js, the Progress
      screen): the Dreamers as the Resting Grounds' inscription names them, the Colosseum's trials
-     as its achievements do, and the Seer. */
+     as its achievements do, the Seer's ascension as its achievement does, Hornet's two fights and
+     the Troupe's two Grimms by their titles. */
   const COMPLETION_NAMES = {
     monomon: { es: 'Monomon, la Maestra', en: 'Monomon the Teacher' },          // DREAMERS_INSPECT_RG2
     lurien: { es: 'Lurien, el Vigilante', en: 'Lurien the Watcher' },           // DREAMERS_INSPECT_RG3
@@ -92,7 +99,11 @@
     'trial-warrior': { es: 'Prueba del Guerrero', en: 'Trial of the Warrior' },        // COLOSSEUM_1_TEXT
     'trial-conqueror': { es: 'Prueba del Conquistador', en: 'Trial of the Conqueror' }, // COLOSSEUM_2_TEXT
     'trial-fool': { es: 'Prueba de los Insensatos', en: 'Trial of the Fool' },         // COLOSSEUM_3_TEXT
-    'seer-ascended': { es: 'Vidente', en: 'Seer' },                             // DREAM_MOTH_MAIN
+    'seer-ascended': { es: 'Ascensión', en: 'Ascension' },                      // ASCENSION_TITLE
+    'hornet-protector': { es: 'Protectora Hornet', en: 'Hornet Protector' },     // NAME_HORNET_1
+    'hornet-sentinel': { es: 'Centinela Hornet', en: 'Hornet Sentinel' },        // NAME_HORNET_2
+    'troupe-master-grimm': { es: 'Maestro de la Compañía Grimm', en: 'Troupe Master Grimm' },   // GRIMM_SUPER + GRIMM_MAIN
+    nkg: { es: 'Rey Pesadilla Grimm', en: 'Nightmare King Grimm' },              // NIGHTMARE_GRIMM_SUPER + NIGHTMARE_GRIMM_MAIN
   };
   /* The collectibles' kinds (js/collectibles.js), each with its name as the game writes it (the
      Inventory's, or the map's legend, KEY_*) and its picture. The flames have no name of their
@@ -272,6 +283,8 @@
       'love-key':          'Love_Key.png',
       'tram-pass':         'Tram_Pass.png',
       'godtuner':          'Godtuner.png',
+      'collectors-map':    "Collector's_Map.png",
+      'hunters-journal':   "Hunter's_Journal.png",
       'geo':               'Geo.png',
       'essence':           'Essence.png',
       'pale-ore':          'Pale_Ore.png',
@@ -818,7 +831,7 @@
   const STAT_BY_ID = Object.fromEntries(STAT_DEFS.map((d) => [d.id, d]));
 
   HK.data = {
-    NAILS, NAIL, ARTS, ABILITIES, EQUIPMENT, KEY_ITEMS, CARRIED, SHARDS, FRAGMENTS, COMPLETION_NAMES, COLLECTIBLE_KINDS, SPELLS, SPELL_COST, SPELL_COST_TWISTER,
+    NAILS, NAIL, ARTS, ABILITIES, EQUIPMENT, KEY_ITEMS, MAP_ITEMS, CARRIED, SHARDS, FRAGMENTS, COMPLETION_NAMES, COLLECTIBLE_KINDS, SPELLS, SPELL_COST, SPELL_COST_TWISTER,
     SOUL, HEALTH, FOCUS, MOVE, PETS, CHARM_NOTCHES,
     CHARMS, CHARM_BY_ID, EFFECT_WHEN, CHARM_EFFECTS, GROUPS, STAT_DEFS, STAT_BY_ID, ART, art,
   };

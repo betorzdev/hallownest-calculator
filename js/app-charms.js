@@ -150,7 +150,7 @@
       st: App.state, notches: App.sheet.notches, act: 'quick', locked, held,
       info: (id) => ({ equipped: App.state.charms.includes(id), action: C.charmAction(App.state, id) }),
       // While some are missing, the hint also says they can be unlocked there (the grid carries no mark at rest).
-      hint: held ? t('saveLockShort') : locked ? t('runLockShort') : (hoverable.matches ? t('quickHintHover') : t('quickHintTouch'))
+      hint: held ? t('saveLockShort') + (hoverable.matches ? '; ' + t('saveLockHover') : '') : locked ? t('runLockShort') : (hoverable.matches ? t('quickHintHover') : t('quickHintTouch'))
         + (D.CHARMS.some((c) => !isOwned(c.id) && !C.OWN_SLOT_OF[c.id]) || C.OWN_SLOTS.some((sl) => !C.ownState(App.owned, sl.id))
           ? '; ' + t('quickHintUnlock') : ''),
     };
@@ -432,11 +432,14 @@
      would become on removing it). No green: a hypothesis isn't a gain; what gets worse, in red. It
      goes out on clicking (then the figure flashes with its chip) until the pointer moves to another
      charm. If the charm can't be touched or its effect depends on health (Fury, Elegy), a click
-     wouldn't change those figures right now: there's no preview. */
+     wouldn't change those figures right now: there's no preview. With no free notch for it, it
+     shows what it would do if you had them (impact works it out so, as the detail does). In a save from the game
+     (App.saveLock) nothing is equipped here, but the preview still shows what it would do: it's a
+     hypothesis, not a change. Only a pantheon's lock (outside its benches) takes it away. */
   App.previewId = '';
   function paintPreview() {
     let next = null;
-    if (App.previewId && !anyLock() && C.charmAction(App.state, App.previewId).action !== 'blocked') {
+    if (App.previewId && !App.charmLock()) {
       const imp = impact(App.previewId);
       if (!imp.cond) {
         next = new Map(imp.changes.map((ch) => {
@@ -472,9 +475,19 @@
      back to white— and what goes, today's. No preview if the charm is blocked (the detail says
      why) or moves no notch (Void Heart without Kingsoul). */
   function notchPreview(id) {
-    if (!id || anyLock()) return null;
+    if (!id || App.charmLock()) return null;
     if (!App.state.charms.includes(id) && !isOwned(id)) return null;  // it can't be equipped
     const a = C.charmAction(App.state, id);
+    /* No free notch for it: the game wouldn't let it on. The row says what's missing: the dots it
+       would need after yours, as dashed rings (is-lack), and "0 free → 2 short". */
+    if (a.action === 'blocked') {
+      const now = App.sheet.notches, cost = D.CHARM_BY_ID[id].notches;
+      const lack = a.partner ? Math.max(0, cost - D.CHARM_BY_ID[a.partner].notches) : cost;
+      if (!lack) return null;
+      const ctx = pageCharms();
+      return { dots: notchDots(ctx) + '<i class="notch is-free is-lack"></i>'.repeat(lack),
+        label: `${esc(notchFreeText(now))}<span class="nf-to is-lack"> → ${esc(t('notchLack', { n: lack }))}</span>` };
+    }
     const next = C.toggleCharm(App.state, id);
     if (!next) return null;
     const cost = D.CHARM_BY_ID[id].notches;

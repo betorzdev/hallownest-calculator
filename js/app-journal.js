@@ -198,6 +198,7 @@
       <div class="hj-art ${s.seen ? '' : 'is-shadow'} ${r.id === 'seal-of-binding' ? 'is-medal' : ''}"${area ? ` data-area="${area}"` : ''}><img src="${hjArt(r, s)}" alt="" onerror="this.classList.add('is-missing')"><span class="hj-folio" aria-hidden="true">${esc(t('hjFolio', { n: App.NF[0].format(r.n) }))}</span></div>
       <h3 class="hj-page-name"${NT}>${esc(pick(hjNameOf(r)))}</h3>
       ${zone ? `<p class="hj-zone"${NT}>${esc(pick(zone))}</p>` : ''}
+      ${App.mapLinkHtml ? `<p class="hj-map">${App.mapLinkHtml('foe:' + r.id, pick(hjNameOf(r)))}</p>` : ''}
       <img class="hj-fleur" src="${D.art('hunter', 'fleur')}" alt="" width="237" height="37">
       <div class="hj-text">${text}</div>`;
   }
@@ -235,7 +236,6 @@
           <ul class="hj-counts" aria-label="${esc(t('hjCountsTitle'))}" title="${esc(t('hjRules'))}">${tally('hjSeen', c.encountered, w && w.encountered)}${tally('hjDone', c.completed, w && w.completed)}</ul>
           <p class="hj-total-note">${esc(t('hjTotalNote', { req: App.NF[0].format(c.required), max: App.NF[0].format(c.max) }))}</p>
           <ul class="hj-feats">${feat('hjKeen', 'hjKeenText', c.reqSeen, c.reqSeen === c.required, w && w.reqSeen === w.required)}${feat('hjTrue', 'hjTrueText', c.reqDone, markDone, hjWas && HJ.stateOf(hjWas, HJ.MARK).done)}</ul>
-          <p class="hj-howto">${esc(t(App.saveLock() ? 'hjHowToHeld' : 'hjHowTo'))}</p>
         </div>
       </div>`;
   }

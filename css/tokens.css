@@ -262,7 +262,8 @@
   --dur-step: 100ms;
   --dur-run: 500ms;
   --kn-bar: 26px;      /* sitting under a tab's title without touching its letters */
-  --kn-bench: 64px;    /* sitting on his bench on Your game (drawn 2.75 of this wide) */
+  --kn-bench: 96px;    /* sitting on his bench on Your game (the bench at the game's scale to him) */
+  --kn-bench-max: 180px; /* the tallest a bench is drawn there (a bigger one shrinks, him with it) */
 
   --page-max: 1216px;
   --page-pad: var(--sp-8);
@@ -341,6 +342,12 @@
   --lamp-plate: 24%;         /* the plates' halo, centre… */
   --lamp-plate-edge: 7%;     /* …and edge */
   --dur-flash: 900ms;                   /* the glow of a figure that just changed */
+  --dur-arrive: 1s;                     /* one ring of the Map's pins you came to see (three of them) */
+  /* The screens' frame (css/app.css, .frame-line): the line's inset from the plate's edge, the
+     corners' curl, and how much of the section's lamp the line takes. */
+  --frame-inset: var(--sp-2);
+  --frame-corner: var(--sp-12);
+  --lamp-frame: 60%;
   --dur-delta: 4s;                      /* how long your last change's chip stays in view */
   /* What's touched on that black goes unboxed: on hover, a veil of ink; the chosen one, a
      veil of the accent with its rule (--accent-line). Used by Your game and combat. */

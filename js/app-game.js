@@ -41,7 +41,7 @@
      lights up to it; tapping a lit one takes it off with every one after it, so a single tap
      reaches any value, down to none. The ones every Knight starts with can't be removed. Below,
      what would change with one more. */
-  function pieceRow(key, value, min, max, label, range, piece, previewNext) {
+  function pieceRow(key, value, min, max, label, range, piece, previewNext, pin = '') {
     // The ones you add light up in order from the first new one; the ones you remove, from the last.
     const had = was((st) => st[key]);
     const btns = Array.from({ length: max }, (_, i) => {
@@ -55,7 +55,7 @@
     return `<div class="field">
       <div class="field-row">
         <span class="field-text"><span class="field-name">${esc(label)}</span><span class="field-note">${esc(range)}</span></span>
-        <span class="field-num">${value}<i class="u">/${max}</i></span>
+        <span class="field-num">${value}<i class="u">/${max}</i></span>${pin}
       </div>
       <div class="pieces is-${key}" role="group" aria-label="${esc(label)}" style="--n:${max}">${btns}</div>
       ${value < max && !App.saveLock() ? previewOf(previewNext, 'ifOneMore') : ''}
@@ -88,7 +88,7 @@
       </button>`;
     }).join('');
     return `<section class="block is-nail gear-hero">
-      <h3 class="block-head">${esc(t('theNail'))}</h3>
+      <h3 class="block-head">${esc(t('theNail'))}${App.mapPinHtml('c112:nail:nail', t('theNail'), 'is-head')}</h3>
       <div class="nailpicks">${nails}</div>
       <p class="gh-caption"${NT}>${esc(pick(cur))}</p>
     </section>`;
@@ -99,11 +99,11 @@
   function renderArtsBlock() {
     const plates = ART_KEYS.map((k) => {
       const on = !!App.state.arts[k];
-      return `<button type="button" class="gplate${on ? ' is-on' : ''}${fx(on, was((st) => !!st.arts[k]))}" data-act="art" data-key="${k}" aria-pressed="${on}" title="${esc(D.ARTS[k].en)}">
+      return App.pinned(`<button type="button" class="gplate${on ? ' is-on' : ''}${fx(on, was((st) => !!st.arts[k]))}" data-act="art" data-key="${k}" aria-pressed="${on}" title="${esc(D.ARTS[k].en)}">
         <span class="gplate-art"><img src="${D.art('arts', k)}" alt=""></span>
         <span class="gplate-name"${NT}>${esc(pick(D.ARTS[k]))}</span>
         <span class="gplate-val${on ? '' : ' is-none'}">${on ? fmtStatRich(App.sheet.stats[ART_STAT[k]]) : esc(t('notLearned'))}</span>
-      </button>`;
+      </button>`, 'c112:arts:' + k, pick(D.ARTS[k]));
     }).join('');
     return `<section class="block is-arts"><h3 class="block-head">${esc(t('arts'))}</h3><div class="gplates">${plates}</div></section>`;
   }
@@ -117,12 +117,13 @@
       // A new level (Vengeful Spirit → Shade Soul) lights up too: it's another spell.
       const lvlWas = was((st) => st.spells[k]);
       const lit = lvl && lvlWas && lvl !== lvlWas ? ' is-lit' : fx(!!lvl, !!lvlWas);
-      return `<div class="gplate${lvl ? ' is-on' : ''}${lit}">
+      const plate = `<div class="gplate${lvl ? ' is-on' : ''}${lit}">
         <span class="gplate-art"><img src="${spellArt(k, lvl, (id) => App.state.charms.includes(id))}" alt=""></span>
         <span class="gplate-name"${NT}>${esc(lvl ? pick(sp.levels[lvl]) : pick(sp.slot))}</span>
         <span class="gplate-val${lvl ? '' : ' is-none'}">${lvl ? fmtStatRich(App.sheet.stats['spell.' + k]) : esc(t('notLearned'))}</span>
         ${levelPick('spells.' + k, lvl, levels, pick(sp.slot))}
       </div>`;
+      return App.pinned(plate, 'c112:spells:' + k, pick(sp.slot));
     }).join('');
     return `<section class="block is-spells"><h3 class="block-head">${esc(t('spells'))}</h3><div class="gplates">${plates}</div></section>`;
   }
@@ -170,18 +171,22 @@
         ${phases('grimm', App.state.grimm, ['I', 'II', 'III', 'IV'].map((text, i) => ({ text, from: 1,
           off: i === 3 && !App.state.dream, title: i === 3 && !App.state.dream ? t('grimmNeedsDream') : t('grimmPhase', { n: i + 1 }) })), pick(D.CHARM_BY_ID.grimmchild))}
       </div>`;
-    return `<section class="block is-abilities"><h3 class="block-head">${esc(t('abilities'))}</h3><div class="gplates">${dream}${cloakPlate}${grimm}</div></section>`;
+    const pins = [App.pinned(dream, 'c112:dreamNail:dream-nail', pick(A.dream)), App.pinned(cloakPlate, 'cloak', t('cloakLbl')),
+      grimm && App.pinned(grimm, 'c112:grimm:grimmchild', pick(D.CHARM_BY_ID.grimmchild))].join('');
+    return `<section class="block is-abilities"><h3 class="block-head">${esc(t('abilities'))}</h3><div class="gplates">${pins}</div></section>`;
   }
 
   /* An item of your game as a plate you tap, like the nail arts: as a silhouette until you have
      it. None of these changes a figure, so under the name there's only whether you have it. */
   function itemPlate(it) {
     const on = hasP(it.id);
-    return `<button type="button" class="gplate${on ? ' is-on' : ''}${fx(on, wasP(it.id))}" data-act="progToggle" data-id="${it.id}" aria-pressed="${on}" title="${esc(it.en)}">
+    // Each with its pin to the Map: the equipment as the 112%'s, the key items as themselves.
+    const target = D.KEY_ITEMS.includes(it) ? 'key:' + it.id : 'c112:equipment:' + it.id;
+    return App.pinned(`<button type="button" class="gplate${on ? ' is-on' : ''}${fx(on, wasP(it.id))}" data-act="progToggle" data-id="${it.id}" aria-pressed="${on}" title="${esc(it.en)}">
         <span class="gplate-art"><img src="${D.art('items', it.id)}" alt=""></span>
         <span class="gplate-name"${NT}>${esc(pick(it))}</span>
         <span class="gplate-val is-none">${on ? '' : esc(t('notFound'))}</span>
-      </button>`;
+      </button>`, target, pick(it));
   }
   // The Inventory's equipment: what takes you places (the cloaks are in Abilities: they change a figure).
   function renderEquipmentBlock() {
@@ -200,7 +205,7 @@
     const bank = it.id === 'geo' && countP('bank') ? `<span class="gcount-note">${esc(t('bankNote', { geo: App.NF[0].format(countP('bank')) }))}</span>` : '';
     // In a save from the game (App.saveLock) the number alone, in its box: nothing steps it.
     const held = !!App.saveLock();
-    return `<div class="gplate is-count${v ? ' is-on' : ''}${lit}">
+    return App.pinned(`<div class="gplate is-count${v ? ' is-on' : ''}${lit}">
         <span class="gplate-art"><img src="${D.art('items', it.id)}" alt=""></span>
         <span class="gplate-name"${NT}>${esc(name)}</span>
         <span class="gcount">
@@ -210,7 +215,7 @@
             ${held ? '' : `<button type="button" class="icon-btn step" data-act="progStep" data-id="${it.id}" data-value="1" ${v < max ? '' : 'disabled'} aria-label="${esc(t('countMore', { what: name }))}" title="${esc(t('countMore', { what: name }))}">+</button>`}
           </span>${bank}
         </span>
-      </div>`;
+      </div>`, 'collect:' + it.id, name);
   }
   function renderItemsBlock() {
     const worth = D.CARRIED.reduce((n, it) => n + (it.sell || 0) * countP(it.id), 0);
@@ -288,13 +293,13 @@
   function renderBodyBlock() {
     return `<section class="block is-body"><h3 class="block-head">${esc(t('body'))}</h3>
       ${pieceRow('masks', App.state.masks, D.HEALTH.baseMasks, D.HEALTH.maxMasks, t('masksField'), t('masksNote'), maskPiece,
-        App.state.masks < D.HEALTH.maxMasks ? C.set(App.state, 'masks', App.state.masks + 1) : null)}
+        App.state.masks < D.HEALTH.maxMasks ? C.set(App.state, 'masks', App.state.masks + 1) : null, App.mapPinHtml('collect:mask-shard', pick(D.SHARDS)))}
       ${App.state.masks < D.HEALTH.maxMasks ? shardRow('shards', D.SHARDS, 3, 'mask-shard', t('shardsNote')) : ''}
       ${pieceRow('vessels', App.state.vessels, 0, D.SOUL.maxVessels, t('vesselsField'), t('vesselsNote'), vesselPiece,
-        App.state.vessels < D.SOUL.maxVessels ? C.set(App.state, 'vessels', App.state.vessels + 1) : null)}
+        App.state.vessels < D.SOUL.maxVessels ? C.set(App.state, 'vessels', App.state.vessels + 1) : null, App.mapPinHtml('collect:vessel-fragment', pick(D.FRAGMENTS)))}
       ${App.state.vessels < D.SOUL.maxVessels ? shardRow('fragments', D.FRAGMENTS, 2, 'vessel-frag', t('fragmentsNote')) : ''}
       ${pieceRow('notches', App.state.notches, D.CHARM_NOTCHES.base, D.CHARM_NOTCHES.max, t('notchesField'), t('notchesNote'), notchPiece,
-        App.state.notches < D.CHARM_NOTCHES.max ? C.set(App.state, 'notches', App.state.notches + 1) : null)}
+        App.state.notches < D.CHARM_NOTCHES.max ? C.set(App.state, 'notches', App.state.notches + 1) : null, App.mapPinHtml('collect:charm-notch', t('notchesField')))}
     </section>`;
   }
 
@@ -320,7 +325,8 @@
       <div class="gear-col">${renderNailBlock()}${renderArtsBlock()}${renderSpellsBlock()}${renderAbilitiesBlock()}${renderEquipmentBlock()}</div>
       <div class="gear-col">${renderBodyBlock()}${renderOwnedBlock()}${renderItemsBlock()}</div>
     </div>`;
-    if (held) for (const c of el.gear.querySelectorAll('button, input')) c.disabled = true;
+    // (The pins to the Map only take you there: they stay.)
+    if (held) for (const c of el.gear.querySelectorAll('button:not(.map-pin), input')) c.disabled = true;
   }
 
   const KNIGHT_IDS = [...D.EQUIPMENT, ...D.KEY_ITEMS].map((it) => it.id).concat(['dream-awakened']);

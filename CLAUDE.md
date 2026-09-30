@@ -26,13 +26,16 @@ Before touching anything, check whether it's already solved:
   (`npm run collectibles`): generated from the community's randomizer data and the game's
   texts, never edited by hand. And `js/map.js` with `assets/map/`: the game's own map, drawn
   from its files by `tools/extract-map.py` (Python + UnityPy, with the game installed; once per
-  game patch).
+  game patch). The same goes for `js/benches.js` with `assets/benches/`, each bench as the game
+  draws it (`tools/extract-benches.py`), and `js/scene-objects.js` with `assets/world/`, what
+  each room holds for the Map: enemies, secrets, geo, totems, tablets (`tools/extract-scenes.py`).
+  `js/people.js`, the characters' meetings, was read by hand from the game's scenes.
 
 Neither folder is part of the page: `index.html` doesn't load them.
 
 ## Hard constraints
 
-- **No framework and no build.** `index.html` loads **thirty-two classic scripts**, not modules.
+- **No framework and no build.** `index.html` loads **thirty-five classic scripts**, not modules.
   The page is `js/app.js` (the core) and one script per screen (`js/app-*.js`), sharing the
   `HK.app` object, and `js/app-boot.js` starts it; the rules for sharing are in `js/app.js`'s header.
   Plus GoatCounter's (`async`, external), the visit counter: the site has to work the same
@@ -99,7 +102,8 @@ what the game says.
   `design/12-seo.md`) and `sitemap.xml` are generated from it, and `test/pages.test.js` fails if
   one is behind.
 - To look at the page: `debug-smoke.html` drives the site and writes the result; `debug.html`
-  sets the preferences for screenshots; `debug-overflow.html` lists what spills past the width;
+  sets the preferences for screenshots; `debug-overflow.html` lists what spills past the width; `debug-benches.html` shows every bench
+  of Your game with the Knight on it (`?seat=1` marks the seat);
   `debug-hover.html` tests the mouse behaviour, and has to be run with
   `--blink-settings=primaryHoverType=2,primaryPointerType=4,availableHoverTypes=2,availablePointerTypes=4`
   (without it, headless Chrome behaves as touch).

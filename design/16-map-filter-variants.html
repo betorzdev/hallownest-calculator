@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Map filter variants</title>
+<!-- Design material, not part of the site: the Map's filter (under the map), three looks to choose
+     from (30 Sep 2026). The site's real CSS and frame; the filter's real sections, layers, pictures
+     and counts (pack save 17.1). A bar at the bottom switches design and width (?d=a|b|c&w=390); at
+     390 the page shows itself in an iframe that wide. The layers, options and sections really work.
+     Chosen 30 Sep: A (built in js/app-map.js filterHtml and css .pgm-sec / .pgm-kind / .switch). -->
+<base href="../">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+body { background: var(--page-bg); background-color: var(--bg); background-attachment: fixed; margin: 0; }
+.fv-main { max-width: var(--page-max); margin: 0 auto; padding: var(--sp-8) var(--page-pad) 120px; }
+.fv-h1 { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-xl); letter-spacing: var(--track-title); color: var(--ink-strong); margin: 0 0 var(--sp-2); }
+.fv-lead { max-width: var(--measure); color: var(--ink-2); font-size: var(--fs-sm); margin: 0 0 var(--sp-12); }
+.fv-screen { display: block; }
+.fv-map { height: 120px; margin-bottom: var(--sp-6); display: grid; place-items: center; color: var(--muted); font-size: var(--fs-sm);
+  border: 1px dashed var(--inv-line); }
+.fv-bar { position: fixed; z-index: 10; left: 0; right: 0; bottom: 0; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: var(--sp-2) var(--sp-8);
+  padding: var(--sp-3) var(--sp-4); background: var(--card); border-top: 1px solid var(--line-panel); font-size: var(--fs-sm); }
+.fv-bar span { color: var(--muted); font-family: var(--font-num); font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; }
+.fv-bar button { color: var(--ink-2); padding: var(--sp-1) 0; border-bottom: 1px solid transparent; margin-left: var(--sp-3); }
+.fv-bar button[aria-pressed="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.fv-iframe { display: block; margin: 0 auto; border: 1px solid var(--line-panel); background: var(--bg); }
+
+/* ── Common: the filter's head (title, the three options, all / none) ── */
+.fv-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-3) var(--sp-6); margin-bottom: var(--sp-4); }
+.fv-title { font-family: var(--font-display); font-size: var(--fs-sm); font-weight: 600; letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--ink-strong); margin: 0; }
+.fv-opts { display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-6); flex: 1; }
+.fv-all { display: flex; gap: var(--sp-4); }
+/* A switch: a track with a knob, lit in the accent when on (the accent marks what responds). */
+.fv-sw { display: inline-flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-sm); color: var(--ink-2); cursor: pointer; }
+.fv-sw i { position: relative; flex: none; width: 30px; height: 16px; border-radius: 8px; border: 1px solid var(--line-ctl); background: var(--card); transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease); }
+.fv-sw i::after { content: ''; position: absolute; top: 2px; left: 2px; width: 10px; height: 10px; border-radius: 50%; background: var(--muted); transition: translate var(--dur) var(--ease), background var(--dur) var(--ease); }
+.fv-sw[aria-pressed="true"] { color: var(--ink); }
+.fv-sw[aria-pressed="true"] i { background: var(--accent-soft); border-color: var(--accent); }
+.fv-sw[aria-pressed="true"] i::after { translate: 14px 0; background: var(--accent); }
+.fv-art { flex: none; display: inline-block; overflow: hidden; width: 28px; height: 28px; transition: opacity var(--dur) var(--ease), filter var(--dur) var(--ease); }
+.fv-art > img, .fv-art > svg { display: block; width: 100%; height: 100%; max-width: none; object-fit: contain; }
+.fv-n { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-xs); color: var(--muted); white-space: nowrap; }
+.fv-n b { color: var(--ink-strong); font-weight: 600; }
+.fv-n.is-full b { color: var(--good); }
+.is-off .fv-art { opacity: 0.3; filter: grayscale(1); }
+.is-off .fv-name, .is-off .fv-n b { color: var(--muted); }
+
+/* ── A · the sister's: sections that fold; the picture is the switch ── */
+.fa-sec { border-top: 1px solid var(--inv-line); }
+.fa-sec:last-child { border-bottom: 1px solid var(--inv-line); }
+.fa-sec-h { display: flex; align-items: center; gap: var(--sp-3); }
+.fa-sec-h > button:first-child { display: flex; align-items: center; gap: var(--sp-3); flex: 1; min-height: var(--ctl); text-align: left; color: var(--ink-strong); }
+.fa-caret { width: 10px; height: 10px; flex: none; transition: rotate var(--dur) var(--ease); color: var(--lamp, var(--accent)); }
+.fa-sec.is-open .fa-caret { rotate: 90deg; }
+.fa-sec-t { font-family: var(--font-display); font-size: var(--fs-sm); font-weight: 600; letter-spacing: var(--track-caps); text-transform: uppercase; }
+.fa-sec-body { display: none; flex-wrap: wrap; gap: var(--sp-2) var(--sp-6); padding: 0 0 var(--sp-4) var(--sp-6); }
+.fa-sec.is-open .fa-sec-body { display: flex; }
+.fa-chip { display: inline-flex; align-items: center; gap: var(--sp-2); padding: var(--sp-1) 0; font-size: var(--fs-sm); color: var(--ink); }
+.fa-chip:hover .fv-name { color: var(--accent); }
+
+/* ── B · cards ── */
+.fb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: var(--sp-4); align-items: start; }
+.fb-card { padding: var(--sp-4); background: color-mix(in oklab, var(--card) 70%, transparent); border: 1px solid var(--inv-line); }
+.fb-card-h { display: flex; align-items: baseline; gap: var(--sp-3); margin-bottom: var(--sp-2); }
+.fb-card-h .fv-title { flex: 1; }
+.fb-meter { height: 2px; margin-bottom: var(--sp-3); background: var(--inv-line); }
+.fb-meter i { display: block; height: 100%; background: var(--lamp, var(--accent)); }
+.fb-row { display: flex; align-items: center; gap: var(--sp-3); width: 100%; padding: var(--sp-1) 0; text-align: left; }
+.fb-row .fv-name { flex: 1; }
+
+/* ── C · compact legend ── */
+.fc-row { display: flex; align-items: center; gap: var(--sp-2) var(--sp-4); padding: var(--sp-2) 0; border-top: 1px solid var(--inv-line); flex-wrap: wrap; }
+.fc-lbl { width: 170px; flex: none; font-family: var(--font-num); font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); }
+.fc-icons { display: flex; flex-wrap: wrap; gap: var(--sp-2); flex: 1; }
+.fc-ic { position: relative; display: grid; place-items: center; width: 48px; height: 48px; border: 1px solid transparent; }
+.fc-ic:hover, .fc-ic:focus-visible { border-color: var(--accent-line); }
+.fc-ic .fv-art { width: 32px; height: 32px; }
+.fc-badge { position: absolute; right: -4px; bottom: -2px; padding: 0 3px; background: var(--bg); font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-2xs); color: var(--ink-2); }
+.fc-tip { position: absolute; z-index: 2; bottom: calc(100% + 4px); left: 50%; translate: -50% 0; padding: var(--sp-1) var(--sp-2); background: var(--card); border: 1px solid var(--line-panel);
+  font-size: var(--fs-xs); color: var(--ink); white-space: nowrap; display: none; }
+.fc-ic:is(:hover, :focus-visible) .fc-tip { display: block; }
+@media (max-width: 599px) {
+  .fv-head { flex-direction: column; align-items: flex-start; }
+  .fv-opts { flex-direction: column; }
+  .fc-lbl { width: 100%; }
+  .fc-ic { width: 72px; height: auto; padding: var(--sp-1) 0; gap: 2px; align-content: start; }
+  .fc-badge { right: 6px; top: 22px; bottom: auto; }
+  .fc-ic .fc-tip { display: block; position: static; translate: none; border: 0; background: none; padding: 0; font-size: var(--fs-2xs); color: var(--muted); white-space: normal; text-align: center; }
+}
+</style>
+</head>
+<body>
+<div class="fv-embed">
+<main class="fv-main">
+  <h1 class="fv-h1">El filtro del mapa</h1>
+  <p class="fv-lead">Tres diseños para la parte de debajo del mapa, con los apartados y las cuentas de la partida de prueba (17,1 %). Pulsa las capas, las opciones y los apartados: funcionan. La barra de abajo cambia de diseño y de ancho.</p>
+  <section class="gear pg fv-screen"><div class="gear-body pg-body"><span class="frame-line" aria-hidden="true"></span><span class="bk tl" aria-hidden="true"><svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg></span><span class="bk tr" aria-hidden="true"><svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg></span><span class="bk bl" aria-hidden="true"><svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg></span><span class="bk br" aria-hidden="true"><svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg></span><header class="inv-head screen-head"><svg class="screen-plaque" viewBox="0 0 100 30" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><polygon class="is-outer" points="6,1 94,1 99.5,15 94,29 6,29 0.5,15" vector-effect="non-scaling-stroke"/><polygon class="is-inner" points="8,4 92,4 96.5,15 92,26 8,26 3.5,15" vector-effect="non-scaling-stroke"/></svg><h2 class="sec-title screen-title">Mapa</h2></header>
+    <div class="fv-map">(el mapa)</div>
+    <div id="filter"></div>
+  </div></section>
+</main>
+</div>
+<nav class="fv-bar"><span>Diseño</span><button type="button" data-k="d" data-v="a">A · Hermana</button><button type="button" data-k="d" data-v="b">B · Tarjetas</button><button type="button" data-k="d" data-v="c">C · Leyenda compacta</button>
+  <span>Ancho</span><button type="button" data-k="w" data-v="1440">Escritorio</button><button type="button" data-k="w" data-v="390">Móvil</button></nav>
+<script>
+const DATA = [{"t": "Para el 112 %", "layers": [{"name": "Amuletos", "art": "<img src=\"assets/charms/compass.png\" alt=\"\">", "got": 14, "max": 40, "on": true}, {"name": "Equipo, hechizos y artes", "art": "<img src=\"assets/items/mantis-claw.png\" alt=\"\">", "got": 13, "max": 19, "on": true}, {"name": "Jefes y pruebas", "art": "<img src=\"assets/journal/false-knight.png\" alt=\"\">", "got": 6, "max": 25, "on": true}, {"name": "Tumbas de guerreros", "art": "<svg class=\"pgm-atlas pgm-ico\" viewBox=\"77 297 75 75\" aria-hidden=\"true\"><image href=\"assets/map/pins.png\" width=\"512\" height=\"449\"></image></svg>", "got": 3, "max": 7, "on": true}, {"name": "Soñadores", "art": "<svg class=\"pgm-atlas pgm-ico\" viewBox=\"283 0 79 98\" aria-hidden=\"true\"><image href=\"assets/map/pins.png\" width=\"512\" height=\"449\"></image></svg>", "got": 0, "max": 3, "on": true}, {"name": "Fragmentos de máscara", "art": "<img src=\"assets/hud/mask-shard.png\" alt=\"\">", "got": 2, "max": 16, "on": true}, {"name": "Fragmentos de vasija", "art": "<img src=\"assets/hud/vessel-frag.png\" alt=\"\">", "got": 5, "max": 9, "on": true}, {"name": "Mineral Pálido", "art": "<img src=\"assets/items/pale-ore.png\" alt=\"\">", "got": 2, "max": 6, "on": true}]}, {"t": "Coleccionables", "layers": [{"name": "Larvas cautivas", "art": "<img src=\"assets/effects/grub.png\" alt=\"\">", "got": 19, "max": 46, "on": true}, {"name": "Muescas de amuleto", "art": "<img src=\"assets/hud/notch.png\" alt=\"\">", "got": 2, "max": 8, "on": false}, {"name": "Llaves simples", "art": "<img src=\"assets/items/simple-key.png\" alt=\"\">", "got": 2, "max": 4, "on": false}, {"name": "Objetos clave", "art": "<img src=\"assets/items/city-crest.png\" alt=\"\">", "got": 4, "max": 9, "on": false}, {"name": "Huevos podridos", "art": "<img src=\"assets/items/rancid-egg.png\" alt=\"\">", "got": 0, "max": 21, "on": false}, {"name": "Reliquias", "art": "<img src=\"assets/items/kings-idol.png\" alt=\"\">", "got": 6, "max": 43, "on": false}, {"name": "Mapas", "art": "<img src=\"assets/effects/map.png\" alt=\"\">", "got": 0, "max": 13, "on": false}]}, {"t": "Misiones", "layers": [{"name": "Raíces susurrantes", "art": "<img src=\"assets/items/whispering-root.png\" alt=\"\">", "got": 0, "max": 15, "on": false}, {"name": "Llamas de los Grimarios", "art": "<img src=\"assets/items/grimmkin-flame.png\" alt=\"\">", "got": 5, "max": 10, "on": false}, {"name": "Encuentros con personajes", "art": "<svg class=\"pgm-ico\" viewBox=\"-0.5 -0.5 1 1\" aria-hidden=\"true\"><g class=\"pgm-glyph\"><path d=\"M-0.3 -0.24 H0.3 V0.12 H-0.04 L-0.18 0.26 V0.12 H-0.3 Z\"></path></g></svg>", "got": 4, "max": 31, "on": false}]}, {"t": "Enemigos del Diario", "layers": [{"name": "Enemigos", "art": "<img src=\"assets/journal/crawlid.png\" alt=\"\">", "got": 22, "max": 614, "on": false}]}, {"t": "Secretos y geo", "layers": [{"name": "Muros y suelos que se rompen", "art": "<svg class=\"pgm-ico\" viewBox=\"-0.5 -0.5 1 1\" aria-hidden=\"true\"><g class=\"pgm-glyph\"><rect x=\"-0.3\" y=\"-0.26\" width=\"0.28\" height=\"0.14\"></rect><rect x=\"0.02\" y=\"-0.26\" width=\"0.28\" height=\"0.14\"></rect><rect x=\"-0.14\" y=\"-0.07\" width=\"0.28\" height=\"0.14\"></rect><path d=\"M-0.3 0.12 H-0.02 V0.26 H-0.3 Z M0.02 0.12 L0.12 0.2 L0.08 0.26 H0.3 V0.12 Z\"></path></g></svg>", "got": 36, "max": 174, "on": false}, {"name": "Zonas ocultas", "art": "<svg class=\"pgm-ico\" viewBox=\"-0.5 -0.5 1 1\" aria-hidden=\"true\"><g class=\"pgm-glyph is-line\"><path d=\"M-0.2 0.28 V-0.08 A0.2 0.2 0 0 1 0.2 -0.08 V0.28 Z\" stroke-dasharray=\"0.08 0.06\"></path></g></svg>", "got": 14, "max": 111, "on": false}, {"name": "Cofres de geo", "art": "<svg class=\"pgm-ico\" viewBox=\"-0.5 -0.5 1 1\" aria-hidden=\"true\"><g class=\"pgm-glyph\"><path d=\"M-0.3 -0.04 V-0.12 A0.3 0.14 0 0 1 0.3 -0.12 V-0.04 Z M-0.3 0 H0.3 V0.24 H-0.3 Z\"></path></g></svg>", "got": 3, "max": 12, "on": false}, {"name": "Rocas de geo", "art": "<img src=\"assets/items/geo.png\" alt=\"\">", "got": 5, "max": 189, "on": false}]}, {"t": "Lugares", "layers": [{"name": "Bancos", "art": "<svg class=\"pgm-atlas pgm-ico\" viewBox=\"0 220 75 75\" aria-hidden=\"true\"><image href=\"assets/map/pins.png\" width=\"512\" height=\"449\"></image></svg>", "got": 0, "max": 0, "on": true}, {"name": "Estaciones de ciervo", "art": "<svg class=\"pgm-atlas pgm-ico\" viewBox=\"0 297 75 75\" aria-hidden=\"true\"><image href=\"assets/map/pins.png\" width=\"512\" height=\"449\"></image></svg>", "got": 7, "max": 11, "on": true}, {"name": "Estaciones de tranvía", "art": "<svg class=\"pgm-atlas pgm-ico\" viewBox=\"385 220 75 75\" aria-hidden=\"true\"><image href=\"assets/map/pins.png\" width=\"512\" height=\"449\"></image></svg>", "got": 0, "max": 0, "on": true}, {"name": "Ascensores", "art": "<svg class=\"pgm-ico\" viewBox=\"-0.5 -0.5 1 1\" aria-hidden=\"true\"><g class=\"pgm-glyph\"><rect x=\"-0.2\" y=\"-0.16\" width=\"0.4\" height=\"0.32\" rx=\"0.04\"></rect><path d=\"M0 -0.4 L0.13 -0.24 L-0.13 -0.24 Z M0 0.4 L0.13 0.24 L-0.13 0.24 Z\"></path></g></svg>", "got": 0, "max": 0, "on": false}, {"name": "Tiendas y personajes", "art": "<svg class=\"pgm-atlas pgm-ico\" viewBox=\"77 220 75 75\" aria-hidden=\"true\"><image href=\"assets/map/pins.png\" width=\"512\" height=\"449\"></image></svg>", "got": 0, "max": 0, "on": true}, {"name": "Aguas termales", "art": "<svg class=\"pgm-atlas pgm-ico\" viewBox=\"231 220 75 75\" aria-hidden=\"true\"><image href=\"assets/map/pins.png\" width=\"512\" height=\"449\"></image></svg>", "got": 0, "max": 0, "on": false}, {"name": "Capullos", "art": "<svg class=\"pgm-atlas pgm-ico\" viewBox=\"154 297 75 75\" aria-hidden=\"true\"><image href=\"assets/map/pins.png\" width=\"512\" height=\"449\"></image></svg>", "got": 0, "max": 0, "on": false}, {"name": "Tótems de alma", "art": "<img src=\"assets/world/totem.png\" alt=\"\">", "got": 0, "max": 0, "on": false}, {"name": "Tablillas", "art": "<img src=\"assets/world/tablet.png\" alt=\"\">", "got": 0, "max": 0, "on": false}]}, {"t": "Tu partida", "layers": [{"name": "Tu banco", "art": "<svg class=\"pgm-atlas pgm-ico\" viewBox=\"0 220 75 75\" aria-hidden=\"true\"><image href=\"assets/map/pins.png\" width=\"512\" height=\"449\"></image></svg>", "got": 0, "max": 0, "on": true}, {"name": "Tu sombra", "art": "<svg class=\"pgm-atlas pgm-ico\" viewBox=\"0 122 90 96\" aria-hidden=\"true\"><image href=\"assets/map/pins.png\" width=\"512\" height=\"449\"></image></svg>", "got": 0, "max": 0, "on": true}, {"name": "Portal Onírico", "art": "<svg class=\"pgm-atlas pgm-ico\" viewBox=\"428 122 79 79\" aria-hidden=\"true\"><image href=\"assets/map/pins.png\" width=\"512\" height=\"449\"></image></svg>", "got": 0, "max": 0, "on": true}, {"name": "Marcadores", "art": "<svg class=\"pgm-atlas pgm-ico\" viewBox=\"260 122 82 83\" aria-hidden=\"true\"><image href=\"assets/map/pins.png\" width=\"512\" height=\"449\"></image></svg>", "got": 0, "max": 0, "on": true}]}];
+const q = new URLSearchParams(location.search);
+const d = q.get('d') || 'a', w = q.get('w') || '1440', embed = q.get('embed') === '1';
+for (const b of document.querySelectorAll('.fv-bar button')) {
+  b.setAttribute('aria-pressed', String((b.dataset.k === 'd' ? d : w) === b.dataset.v));
+  b.addEventListener('click', () => { q.set(b.dataset.k, b.dataset.v); q.delete('embed'); location.search = q; });
+}
+if (embed) document.querySelector('.fv-bar').remove();
+const framed = !embed && w === '390';
+if (framed) {
+  const u = new URLSearchParams(q); u.set('embed', '1');
+  document.querySelector('.fv-embed').innerHTML = '<iframe class="fv-iframe" width="390" height="' + (innerHeight - 70) + '" src="design/16-map-filter-variants.html?' + u + '"></iframe>';
+}
+const opts = { whole: false, found: false, names: true };
+const open = new Set([0]);
+const sum = (g) => g.layers.reduce((a, l) => [a[0] + l.got, a[1] + l.max], [0, 0]);
+const cnt = (got, max) => (max ? `<span class="fv-n${got === max ? ' is-full' : ''}"><b>${got}</b>/${max}</span>` : '');
+const OPTS = [['whole', 'Ver siempre el mapa entero'], ['found', 'Ver también lo conseguido'], ['names', 'Nombres de las zonas']];
+const head = () => `<div class="fv-head"><h3 class="fv-title">Qué se ve</h3>
+  <div class="fv-opts">${OPTS.map(([k, t]) => `<button type="button" class="fv-sw" data-opt="${k}" aria-pressed="${opts[k]}"><i></i>${t}</button>`).join('')}</div>
+  <div class="fv-all"><button type="button" class="text-btn" data-all="1">Mostrar todo</button><button type="button" class="text-btn" data-all="0">Esconder todo</button></div></div>`;
+function render() {
+  if (framed) return;
+  let h = head();
+  if (d === 'a') {
+    h += DATA.map((g, gi) => { const [got, max] = sum(g); return `<section class="fa-sec${open.has(gi) ? ' is-open' : ''}">
+      <div class="fa-sec-h"><button type="button" data-fold="${gi}" aria-expanded="${open.has(gi)}"><svg class="fa-caret" viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1 L8 5 L3 9 Z" fill="currentColor"/></svg><span class="fa-sec-t">${g.t}</span>${cnt(got, max)}</button>
+        <button type="button" class="text-btn" data-sec="${gi}">${g.layers.every((l) => l.on) ? 'Ninguno' : 'Todos'}</button></div>
+      <div class="fa-sec-body">${g.layers.map((l, li) => `<button type="button" class="fa-chip${l.on ? '' : ' is-off'}" data-l="${gi}.${li}" aria-pressed="${l.on}"><span class="fv-art">${l.art}</span><span class="fv-name">${l.name}</span>${cnt(l.got, l.max)}</button>`).join('')}</div></section>`; }).join('');
+  } else if (d === 'b') {
+    h += '<div class="fb-grid">' + DATA.map((g, gi) => { const [got, max] = sum(g); return `<section class="fb-card">
+      <div class="fb-card-h"><h4 class="fv-title">${g.t}</h4>${cnt(got, max)}</div>
+      <div class="fb-meter">${max ? `<i style="width:${(got / max * 100).toFixed(1)}%"></i>` : ''}</div>
+      ${g.layers.map((l, li) => `<button type="button" class="fb-row fv-sw${l.on ? '' : ' is-off'}" data-l="${gi}.${li}" aria-pressed="${l.on}"><span class="fv-art">${l.art}</span><span class="fv-name">${l.name}</span>${cnt(l.got, l.max)}<i></i></button>`).join('')}</section>`; }).join('') + '</div>';
+  } else {
+    h += DATA.map((g, gi) => `<div class="fc-row"><span class="fc-lbl">${g.t}</span><div class="fc-icons">${g.layers.map((l, li) => `<button type="button" class="fc-ic${l.on ? '' : ' is-off'}" data-l="${gi}.${li}" aria-pressed="${l.on}" aria-label="${l.name}"><span class="fv-art">${l.art}</span>${l.max ? `<span class="fc-badge">${l.got}/${l.max}</span>` : ''}<span class="fc-tip">${l.name}</span></button>`).join('')}</div></div>`).join('');
+  }
+  document.getElementById('filter').innerHTML = h;
+}
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('#filter button'); if (!b) return;
+  if (b.dataset.l) { const [g, l] = b.dataset.l.split('.').map(Number); DATA[g].layers[l].on = !DATA[g].layers[l].on; }
+  else if (b.dataset.fold) { const i = +b.dataset.fold; if (open.has(i)) open.delete(i); else open.add(i); }
+  else if (b.dataset.sec) { const g = DATA[+b.dataset.sec], v = !g.layers.every((l) => l.on); g.layers.forEach((l) => { l.on = v; }); }
+  else if (b.dataset.all) { DATA.forEach((g) => g.layers.forEach((l) => { l.on = b.dataset.all === '1'; })); }
+  else if (b.dataset.opt) { opts[b.dataset.opt] = !opts[b.dataset.opt]; }
+  else return;
+  render();
+});
+render();
+</script>
+</body>
+</html>

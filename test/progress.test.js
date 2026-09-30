@@ -15,10 +15,22 @@ const BASE = { charmSlots: 3, maxHealthBase: 5, MPReserveMax: 0, nailSmithUpgrad
 test('it keeps only what it knows: ids once and in order, counts clamped, rooms by name', () => {
   assert.deepEqual(P.normalize({ ids: ['lurien', 'nope', 'monomon', 'lurien'],
     counts: { shards: 7, geo: -3, 'pale-ore': 2.4, nope: 5 }, bench: 'Town', shade: { scene: 'Fungus3_02', geo: 120 } }),
-  { ids: ['monomon', 'lurien'], counts: { shards: 3, 'pale-ore': 2 }, found: [], bench: 'Town', shade: { scene: 'Fungus3_02', geo: 120 }, gate: null, statues: null, mapped: [], markers: [], alts: [] });
-  assert.deepEqual(P.normalize(null), { ids: [], counts: {}, found: [], bench: '', shade: null, gate: null, statues: null, mapped: [], markers: [], alts: [] });
-  assert.deepEqual(P.normalize({ bench: '<b>', shade: { scene: 'None', geo: 5 } }), { ids: [], counts: {}, found: [], bench: '', shade: null, gate: null, statues: null, mapped: [], markers: [], alts: [] });
+  { ids: ['monomon', 'lurien'], counts: { shards: 3, 'pale-ore': 2 }, found: [], bench: 'Town', shade: { scene: 'Fungus3_02', geo: 120 }, gate: null, statues: null, mapped: [], markers: [], alts: [], opened: [], rocks: [], met: [] });
+  assert.deepEqual(P.normalize(null), { ids: [], counts: {}, found: [], bench: '', shade: null, gate: null, statues: null, mapped: [], markers: [], alts: [], opened: [], rocks: [], met: [] });
+  assert.deepEqual(P.normalize({ bench: '<b>', shade: { scene: 'None', geo: 5 } }), { ids: [], counts: {}, found: [], bench: '', shade: null, gate: null, statues: null, mapped: [], markers: [], alts: [], opened: [], rocks: [], met: [] });
   assert.deepEqual(P.normalize({ found: ['grub-crossroads-acid', 'nope', 'grub-crossroads-acid'] }).found, ['grub-crossroads-acid']);
+});
+
+test('what the Map follows of the rooms and the characters: broken, opened, met', () => {
+  const sd = { persistentBoolItems: [{ sceneName: 'Crossroads_10', id: 'Chest', activated: true },
+    { sceneName: 'Tutorial_01', id: 'Secret Mask', activated: true }, { sceneName: 'Tutorial_01', id: 'Nope', activated: true }],
+  geoRocks: [{ sceneName: 'Tutorial_01', id: 'Geo Rock 4', hitsLeft: 0 }, { sceneName: 'Tutorial_01', id: 'Geo Rock 1', hitsLeft: 3 }] };
+  const p = P.fromSave({ ...BASE, quirrelSlugShrine: true, notAFlag: true }, sd);
+  assert.deepEqual(p.opened.sort(), ['Crossroads_10|Chest', 'Tutorial_01|Secret Mask']);
+  assert.deepEqual(p.rocks, ['Tutorial_01|Geo Rock 4']);
+  assert.deepEqual(p.met, ['quirrelSlugShrine']);
+  // What it doesn't know isn't kept.
+  assert.deepEqual(P.normalize({ opened: ['x|y'], rocks: ['Tutorial_01|Geo Rock 4', 'Tutorial_01|Geo Rock 4'], met: ['nope'] }).rocks, ['Tutorial_01|Geo Rock 4']);
 });
 
 test('a save brings its progress: equipment, keys, Dreamers, Colosseum, pantheons, the Divine', () => {

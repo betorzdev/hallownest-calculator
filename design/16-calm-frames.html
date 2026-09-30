@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Calm frames</title>
+<!-- Design material, not part of the site: the screens' frame (.frame-line, the curls, the title's
+     plaque) toned down, six proposals beside the current one (30 Sep 2026: the light and the glow
+     read as too much). Chosen the same day: A, no light. It loads the site's real tokens and CSS and overrides only the frame per
+     variant. The switch at the top tries them in each section's tint. -->
+<base href="../">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+body { background: var(--page-bg); background-attachment: fixed; margin: 0; }
+.cfs { max-width: 1100px; margin: 0 auto; padding: var(--sp-8) var(--page-pad) var(--sp-16); }
+.cf-h1 { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-xl); letter-spacing: var(--track-title); color: var(--ink-strong); margin: 0 0 var(--sp-2); }
+.cf-lead { max-width: var(--measure); color: var(--ink-2); font-size: var(--fs-sm); margin: 0 0 var(--sp-4); }
+.cf-tints { display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-4); align-items: center; margin: 0 0 var(--sp-12); color: var(--ink-2); font-size: var(--fs-sm); }
+.cf-tints button { background: none; border: 0; padding: var(--sp-1) 0; font: inherit; color: var(--muted); cursor: pointer; }
+.cf-tints button[aria-pressed="true"] { color: var(--accent); box-shadow: inset 0 -1px 0 var(--accent-line); }
+.cf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 480px), 1fr)); gap: var(--sp-16) var(--sp-8); }
+.cf-h2 { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-md); letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--ink-strong); margin: 0 0 var(--sp-1); }
+.cf-desc { color: var(--muted); font-size: var(--fs-sm); margin: 0 0 var(--sp-8); min-height: 3em; }
+.cf-screen .gear-body { display: block; padding-top: var(--sp-12); }
+.cf-body { text-align: center; }
+.cf-lbl { margin: 0; font-family: var(--font-num); font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); }
+.cf-num { margin: 0 0 var(--sp-4); font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-2xl); font-weight: 700; color: var(--ink-strong); }
+.cf-num span { font-size: var(--fs-md); font-weight: 400; color: var(--muted); }
+.cf-rows { list-style: none; margin: 0; padding: 0; text-align: left; }
+.cf-rows li { display: flex; justify-content: space-between; padding: var(--sp-3) var(--sp-2); border-top: 1px solid var(--inv-line); color: var(--ink); font-size: var(--fs-sm); }
+.cf-rows b { font-family: var(--font-num); font-variant-numeric: tabular-nums; color: var(--ink-strong); }
+.cf-rows small { color: var(--muted); font-weight: 400; }
+
+/* ════ The variants: only the frame changes ════ */
+/* A: no light. */
+.v-a .frame-line { background: var(--inv-bg); box-shadow: none; }
+/* B: a trace of the light, shorter, no glow; the line dimmer. */
+.v-b .frame-line {
+  border-color: color-mix(in oklab, var(--lamp) 35%, transparent); box-shadow: none;
+  background: radial-gradient(ellipse 70% 180px at 50% 0%, color-mix(in oklab, var(--lamp-light) 10%, transparent), transparent), var(--inv-bg);
+}
+/* C: no light; the line in the controls' grey; colour only in the plaque and the curls. */
+.v-c .frame-line { background: var(--inv-bg); box-shadow: none; border-color: var(--line-ctl); }
+.v-c .bk { opacity: 0.7; }
+/* D: the curls alone. */
+.v-d .frame-line { background: var(--inv-bg); box-shadow: none; border-color: transparent; }
+/* E: a rule on top only. */
+.v-e .frame-line { background: var(--inv-bg); box-shadow: none; border: 0; border-top: 1px solid color-mix(in oklab, var(--lamp) 45%, transparent); }
+.v-e .bk { display: none; }
+/* F: a plain box. */
+.v-f .frame-line { background: var(--inv-bg); box-shadow: none; border-color: color-mix(in oklab, var(--lamp) 40%, transparent); }
+.v-f .bk { display: none; }
+</style>
+</head>
+<body>
+<main class="cfs">
+  <h1 class="cf-h1">Marcos más tranquilos</h1>
+  <p class="cf-lead"><b>Elegida el 30-sep: A · Sin luz.</b> El marco de cada pestaña, rebajado. Arriba a la izquierda, el actual; las demás quitan la luz, el resplandor o parte del dibujo. Cambia el color de la sección para verlas en cada pestaña.</p>
+  <div class="cf-tints" role="group" aria-label="Color">Color:
+    <button data-t="progress" aria-pressed="true">Progreso</button><button data-t="sheet">Partida · Amuletos</button><button data-t="journal">Diario</button><button data-t="combat">Combate</button><button data-t="godhome">Hogar de Dioses</button>
+  </div>
+  <div class="cf-grid">
+<article class="cf v-now"><h2 class="cf-h2">Actual</h2><p class="cf-desc">Como está: línea, luz verde desde arriba, resplandor alrededor, volutas y placa.</p>
+<section class="gear pg cf-screen"><div class="gear-body">
+<span class="frame-line" aria-hidden="true"></span><span class="bk tl" aria-hidden="true"><svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg></span><span class="bk tr" aria-hidden="true"><svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg></span><span class="bk bl" aria-hidden="true"><svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg></span><span class="bk br" aria-hidden="true"><svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg></span>
+<header class="inv-head screen-head"><svg class="screen-plaque" viewBox="0 0 100 30" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><polygon class="is-outer" points="6,1 94,1 99.5,15 94,29 6,29 0.5,15" vector-effect="non-scaling-stroke"/><polygon class="is-inner" points="8,4 92,4 96.5,15 92,26 8,26 3.5,15" vector-effect="non-scaling-stroke"/></svg><h2 class="sec-title screen-title">Progreso</h2></header>
+<div class="cf-body"><p class="cf-lbl">Completado</p><p class="cf-num">65<span>% / 112</span></p><ul class="cf-rows"><li><span>Jefes</span><b>0<small>/15</small></b></li><li><span>Sueños de guerreros</span><b>0<small>/7</small></b></li><li><span>Amuletos</span><b>39<small>/39</small></b></li><li><span>Equipo</span><b>4<small>/14</small></b></li></ul></div>
+</div></section></article>
+<article class="cf v-a"><h2 class="cf-h2">A · Sin luz</h2><p class="cf-desc">Todo el dibujo (línea, volutas, placa) pero el fondo negro liso: fuera la luz de arriba y el resplandor.</p>
+<section class="gear pg cf-screen"><div class="gear-body">
+<span class="frame-line" aria-hidden="true"></span><span class="bk tl" aria-hidden="true"><svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg></span><span class="bk tr" aria-hidden="true"><svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg></span><span class="bk bl" aria-hidden="true"><svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg></span><span class="bk br" aria-hidden="true"><svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg></span>
+<header class="inv-head screen-head"><svg class="screen-plaque" viewBox="0 0 100 30" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><polygon class="is-outer" points="6,1 94,1 99.5,15 94,29 6,29 0.5,15" vector-effect="non-scaling-stroke"/><polygon class="is-inner" points="8,4 92,4 96.5,15 92,26 8,26 3.5,15" vector-effect="non-scaling-stroke"/></svg><h2 class="sec-title screen-title">Progreso</h2></header>
+<div class="cf-body"><p class="cf-lbl">Completado</p><p class="cf-num">65<span>% / 112</span></p><ul class="cf-rows"><li><span>Jefes</span><b>0<small>/15</small></b></li><li><span>Sueños de guerreros</span><b>0<small>/7</small></b></li><li><span>Amuletos</span><b>39<small>/39</small></b></li><li><span>Equipo</span><b>4<small>/14</small></b></li></ul></div>
+</div></section></article>
+<article class="cf v-b"><h2 class="cf-h2">B · Luz tenue</h2><p class="cf-desc">La luz de arriba se queda como un rastro (un tercio, más corta) y sin resplandor fuera; la línea más apagada.</p>
+<section class="gear pg cf-screen"><div class="gear-body">
+<span class="frame-line" aria-hidden="true"></span><span class="bk tl" aria-hidden="true"><svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg></span><span class="bk tr" aria-hidden="true"><svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg></span><span class="bk bl" aria-hidden="true"><svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg></span><span class="bk br" aria-hidden="true"><svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg></span>
+<header class="inv-head screen-head"><svg class="screen-plaque" viewBox="0 0 100 30" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><polygon class="is-outer" points="6,1 94,1 99.5,15 94,29 6,29 0.5,15" vector-effect="non-scaling-stroke"/><polygon class="is-inner" points="8,4 92,4 96.5,15 92,26 8,26 3.5,15" vector-effect="non-scaling-stroke"/></svg><h2 class="sec-title screen-title">Progreso</h2></header>
+<div class="cf-body"><p class="cf-lbl">Completado</p><p class="cf-num">65<span>% / 112</span></p><ul class="cf-rows"><li><span>Jefes</span><b>0<small>/15</small></b></li><li><span>Sueños de guerreros</span><b>0<small>/7</small></b></li><li><span>Amuletos</span><b>39<small>/39</small></b></li><li><span>Equipo</span><b>4<small>/14</small></b></li></ul></div>
+</div></section></article>
+<article class="cf v-c"><h2 class="cf-h2">C · Línea neutra</h2><p class="cf-desc">Sin luz; la línea en el gris de los controles, no en el color de la sección. El color queda solo en la placa y las volutas.</p>
+<section class="gear pg cf-screen"><div class="gear-body">
+<span class="frame-line" aria-hidden="true"></span><span class="bk tl" aria-hidden="true"><svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg></span><span class="bk tr" aria-hidden="true"><svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg></span><span class="bk bl" aria-hidden="true"><svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg></span><span class="bk br" aria-hidden="true"><svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg></span>
+<header class="inv-head screen-head"><svg class="screen-plaque" viewBox="0 0 100 30" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><polygon class="is-outer" points="6,1 94,1 99.5,15 94,29 6,29 0.5,15" vector-effect="non-scaling-stroke"/><polygon class="is-inner" points="8,4 92,4 96.5,15 92,26 8,26 3.5,15" vector-effect="non-scaling-stroke"/></svg><h2 class="sec-title screen-title">Progreso</h2></header>
+<div class="cf-body"><p class="cf-lbl">Completado</p><p class="cf-num">65<span>% / 112</span></p><ul class="cf-rows"><li><span>Jefes</span><b>0<small>/15</small></b></li><li><span>Sueños de guerreros</span><b>0<small>/7</small></b></li><li><span>Amuletos</span><b>39<small>/39</small></b></li><li><span>Equipo</span><b>4<small>/14</small></b></li></ul></div>
+</div></section></article>
+<article class="cf v-d"><h2 class="cf-h2">D · Solo volutas</h2><p class="cf-desc">Ni línea ni luz: las cuatro volutas marcan el panel y la placa lleva el título.</p>
+<section class="gear pg cf-screen"><div class="gear-body">
+<span class="frame-line" aria-hidden="true"></span><span class="bk tl" aria-hidden="true"><svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg></span><span class="bk tr" aria-hidden="true"><svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg></span><span class="bk bl" aria-hidden="true"><svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg></span><span class="bk br" aria-hidden="true"><svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg></span>
+<header class="inv-head screen-head"><svg class="screen-plaque" viewBox="0 0 100 30" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><polygon class="is-outer" points="6,1 94,1 99.5,15 94,29 6,29 0.5,15" vector-effect="non-scaling-stroke"/><polygon class="is-inner" points="8,4 92,4 96.5,15 92,26 8,26 3.5,15" vector-effect="non-scaling-stroke"/></svg><h2 class="sec-title screen-title">Progreso</h2></header>
+<div class="cf-body"><p class="cf-lbl">Completado</p><p class="cf-num">65<span>% / 112</span></p><ul class="cf-rows"><li><span>Jefes</span><b>0<small>/15</small></b></li><li><span>Sueños de guerreros</span><b>0<small>/7</small></b></li><li><span>Amuletos</span><b>39<small>/39</small></b></li><li><span>Equipo</span><b>4<small>/14</small></b></li></ul></div>
+</div></section></article>
+<article class="cf v-e"><h2 class="cf-h2">E · Filete arriba</h2><p class="cf-desc">Solo una línea arriba con la placa encima, como un encabezado; sin caja, sin volutas, sin luz.</p>
+<section class="gear pg cf-screen"><div class="gear-body">
+<span class="frame-line" aria-hidden="true"></span><span class="bk tl" aria-hidden="true"><svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg></span><span class="bk tr" aria-hidden="true"><svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg></span><span class="bk bl" aria-hidden="true"><svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg></span><span class="bk br" aria-hidden="true"><svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg></span>
+<header class="inv-head screen-head"><svg class="screen-plaque" viewBox="0 0 100 30" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><polygon class="is-outer" points="6,1 94,1 99.5,15 94,29 6,29 0.5,15" vector-effect="non-scaling-stroke"/><polygon class="is-inner" points="8,4 92,4 96.5,15 92,26 8,26 3.5,15" vector-effect="non-scaling-stroke"/></svg><h2 class="sec-title screen-title">Progreso</h2></header>
+<div class="cf-body"><p class="cf-lbl">Completado</p><p class="cf-num">65<span>% / 112</span></p><ul class="cf-rows"><li><span>Jefes</span><b>0<small>/15</small></b></li><li><span>Sueños de guerreros</span><b>0<small>/7</small></b></li><li><span>Amuletos</span><b>39<small>/39</small></b></li><li><span>Equipo</span><b>4<small>/14</small></b></li></ul></div>
+</div></section></article>
+<article class="cf v-f"><h2 class="cf-h2">F · Caja lisa</h2><p class="cf-desc">Línea y placa, sin volutas ni luz: el marco más simple que sigue siendo marco.</p>
+<section class="gear pg cf-screen"><div class="gear-body">
+<span class="frame-line" aria-hidden="true"></span><span class="bk tl" aria-hidden="true"><svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg></span><span class="bk tr" aria-hidden="true"><svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg></span><span class="bk bl" aria-hidden="true"><svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg></span><span class="bk br" aria-hidden="true"><svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg></span>
+<header class="inv-head screen-head"><svg class="screen-plaque" viewBox="0 0 100 30" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><polygon class="is-outer" points="6,1 94,1 99.5,15 94,29 6,29 0.5,15" vector-effect="non-scaling-stroke"/><polygon class="is-inner" points="8,4 92,4 96.5,15 92,26 8,26 3.5,15" vector-effect="non-scaling-stroke"/></svg><h2 class="sec-title screen-title">Progreso</h2></header>
+<div class="cf-body"><p class="cf-lbl">Completado</p><p class="cf-num">65<span>% / 112</span></p><ul class="cf-rows"><li><span>Jefes</span><b>0<small>/15</small></b></li><li><span>Sueños de guerreros</span><b>0<small>/7</small></b></li><li><span>Amuletos</span><b>39<small>/39</small></b></li><li><span>Equipo</span><b>4<small>/14</small></b></li></ul></div>
+</div></section></article>
+  </div>
+</main>
+<script>
+  const bs = document.querySelectorAll('[data-t]');
+  for (const b of bs) b.addEventListener('click', () => {
+    for (const x of bs) x.setAttribute('aria-pressed', x === b);
+    for (const g of document.querySelectorAll('.cf-screen')) g.style.setProperty('--tint', 'var(--tint-' + b.dataset.t + ')');
+  });
+</script>
+</body>
+</html>

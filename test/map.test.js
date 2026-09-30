@@ -75,3 +75,9 @@ test("the doors join rooms both ways, and every bench can be walked to from King
     assert.ok(seen.has(sceneOf(scene)), scene);
   }
 });
+
+test('the key items have their place on the map (js/app-map.js, KEY_AT)', () => {
+  // The ItemChanger places js/app-map.js puts them on: each must be among the map's SPOTS.
+  for (const ic of ['Sly', 'City_Crest', "Shopkeeper's_Key", 'Sly_(Key)', 'Love_Key', 'Tram_Pass', 'Godtuner',
+    "Collector's_Map", "Hunter's_Journal"]) assert.ok(M.SPOTS[ic], ic);
+});

@@ -92,22 +92,57 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 }
 .block-head { margin: 0 0 var(--sp-3); }
 
-/* Corner brackets. */
-.bk { position: absolute; width: 16px; height: 16px; pointer-events: none; }
-.bk.tl { top: -1px; left: -1px; border-top: 2px solid var(--bracket); border-left: 2px solid var(--bracket); }
-.bk.tr { top: -1px; right: -1px; border-top: 2px solid var(--bracket); border-right: 2px solid var(--bracket); }
-.bk.bl { bottom: -1px; left: -1px; border-bottom: 2px solid var(--bracket); border-left: 2px solid var(--bracket); }
-.bk.br { bottom: -1px; right: -1px; border-bottom: 2px solid var(--bracket); border-right: 2px solid var(--bracket); }
+/* The screens' frame (js/app.js, brackets; the sister site's, design/14-sister-variants.html):
+   a hairline inset all round the panel in the section's lamp (.frame-line), a
+   curl in each corner (drawn once for the top left, mirrored), and the title's plaque astride the
+   top line (.screen-head). Behind the plate, the page shows through the inset. */
+.bk { position: absolute; z-index: 1; width: var(--frame-corner); height: var(--frame-corner); color: var(--bracket); pointer-events: none; }
+.bk-art { display: block; width: 100%; height: 100%; overflow: visible; }
+.bk.tl { top: calc(var(--sp-1) * -1); left: calc(var(--sp-1) * -1); }
+.bk.tr { top: calc(var(--sp-1) * -1); right: calc(var(--sp-1) * -1); scale: -1 1; }
+.bk.bl { bottom: calc(var(--sp-1) * -1); left: calc(var(--sp-1) * -1); scale: 1 -1; }
+.bk.br { bottom: calc(var(--sp-1) * -1); right: calc(var(--sp-1) * -1); scale: -1 -1; }
+.bk.is-small { width: var(--sp-8); height: var(--sp-8); }
+@media (max-width: 599px) { .bk:not(.is-small) { width: var(--sp-8); height: var(--sp-8); } }
+/* The line, and inside it the plate's plain black: nothing black shows past the line. The light
+   from the top and the glow around it went on 30 Sep (design/16-calm-frames.html, A): too loud. */
+.frame-line {
+  position: absolute; inset: var(--frame-inset); z-index: -1; pointer-events: none;
+  border: 1px solid color-mix(in oklab, var(--lamp) var(--lamp-frame), transparent);
+  background: var(--inv-bg);
+}
+/* The title on the top line, centred on it, in its plaque (a thin double outline with pointed ends,
+   filled with the plate's black so the line goes behind it); it reaches a little above the plate. */
+.inv-head.screen-head {
+  position: absolute; z-index: 2; flex-direction: row; gap: 0; top: var(--frame-inset); left: 50%; transform: translate(-50%, -50%);
+  display: flex; align-items: center; max-width: calc(100% - var(--frame-corner) * 2);
+  margin: 0; padding: var(--sp-2) var(--sp-8); white-space: nowrap;
+}
+.screen-plaque { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; color: var(--lamp); pointer-events: none; }
+.screen-plaque .is-outer { fill: var(--inv-bg); }
+.screen-plaque .is-inner { opacity: 0.4; }
+.inv-head.screen-head .sec-title { position: relative; margin: 0; font-size: var(--fs-lg); overflow: hidden; text-overflow: ellipsis; }
+.screen-head > :not(.screen-plaque) { position: relative; }
+/* What goes with the title opens the screen, centred, under the plaque. */
+/* Godhome's two tabs in the plaque: side by side, as wide as their words. */
+.inv-head.screen-head .tabs { display: flex; flex-wrap: nowrap; align-items: center; gap: var(--sp-3); }
+.inv-head.screen-head .tabs > * { flex: none; width: auto; white-space: nowrap; }
+@media (max-width: 599px) {
+  .inv-head.screen-head { max-width: calc(100% - var(--sp-8)); padding-inline: var(--sp-4); }
+  .inv-head.screen-head .sec-title { font-size: var(--fs-md); }
+  .inv-head.screen-head .tabs { gap: var(--sp-2); }
+}
+.screen-lead { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); text-align: center; }
 
 /* ── Tinted sections ─────────────────────────────────────────────────────
    Each section carries the pale tint of its area on the game's map (tokens.css): the sheet
-   and Your game, City of Tears'; combat, Crystal Peak's; the Hall and the
+   and Your game with no game loaded (free mode), City of Tears'; combat, Crystal Peak's; the Hall and the
    Pantheons, Godhome's; the Journal, Fungal Wastes'. The title goes in the tint; the corner
    brackets, the rule under the title and the lights (the spotlight, the plates' halo) in its lamp,
    below. The figures and what responds to the finger don't change. */
 .panel, .gear { --tint: var(--tint-sheet); }
 .fight { --tint: var(--tint-combat); }
-.gear.pg, .gear.home { --tint: var(--tint-progress); }
+.gear.pg { --tint: var(--tint-progress); }
 .fight.is-godhome { --tint: var(--tint-godhome); }
 /* The page's chrome (the screen bar's rule, what sits outside a section) takes the tint of the
    screen in view. */
@@ -115,13 +150,13 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 .page:has(.fight:not([hidden])) { --tint: var(--tint-combat); }
 .page:has(.fight.is-godhome:not([hidden])) { --tint: var(--tint-godhome); }
 .page:has(.hj-sec:not([hidden])) { --tint: var(--tint-journal); }
-.page:has(.pg:not([hidden])), .page:has(.home:not([hidden])) { --tint: var(--tint-progress); }
+.page:has(.pg:not([hidden])) { --tint: var(--tint-progress); }
 /* The pale tints are all close to bone: on the lights they're carried by the section's lamp, the
    tint's hue with a little more chroma (tokens.css). Declared again on every element that sets
    --tint, because a custom property is resolved where it's declared: the lamp, the brackets, the
    spotlight and the plates' halo follow that element's tint. Without relative colour, the lamp
    is the tint itself. */
-.page, .panel, .gear, .hj-sec, .saves {
+.page, .panel, .gear, .hj-sec, .saves, .hm.has-area {
   --lamp: var(--tint);
   --lamp-light: var(--tint);
   --bracket: color-mix(in oklab, var(--lamp) var(--lamp-line), transparent);
@@ -131,7 +166,7 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
     color-mix(in oklab, var(--lamp-light) var(--lamp-plate-edge), transparent) 58%, transparent);
 }
 @supports (color: oklch(from red l c h)) {
-  .page, .panel, .gear, .hj-sec, .saves {
+  .page, .panel, .gear, .hj-sec, .saves, .hm.has-area {
     --lamp: oklch(from var(--tint) var(--lamp-l) var(--lamp-c) h);
     --lamp-light: oklch(from var(--tint) var(--lamp-l) var(--lamp-light-c) h);
   }
@@ -262,6 +297,28 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 .check input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .check-box > svg { opacity: 0; }
 :is([aria-checked="true"], [aria-pressed="true"]) > .check-box > svg { opacity: 1; }
+/* A switch (.switch): a button with role="switch" for a choice that changes how a screen shows
+   (the Map's whole map, what you have, area names): a track with a knob, the accent when on. */
+.switch {
+  display: inline-flex; align-items: center; gap: var(--sp-2); min-height: var(--ctl-sm); padding: 0;
+  font-family: var(--font-body); font-size: var(--fs-sm); color: var(--ink-2); cursor: pointer;
+  transition: color var(--dur) var(--ease);
+}
+.switch:hover, .switch[aria-checked="true"] { color: var(--ink-strong); }
+.switch-track {
+  position: relative; flex: none; width: 30px; height: 16px; border-radius: 8px;
+  border: 1px solid color-mix(in oklab, var(--accent-line) 80%, transparent); background: var(--card);
+  transition: background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+.switch-track::after {
+  content: ''; position: absolute; top: 2px; left: 2px; width: 10px; height: 10px; border-radius: 50%;
+  background: var(--muted); transition: translate var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+.switch:hover .switch-track { border-color: var(--accent); }
+.switch[aria-checked="true"] .switch-track { background: var(--accent-soft); border-color: var(--accent); }
+.switch[aria-checked="true"] .switch-track::after { translate: 14px 0; background: var(--accent); }
+.switch:focus-visible { outline: none; }
+.switch:focus-visible .switch-track { outline: 2px solid var(--accent); outline-offset: 2px; }
 /* Search (.search): a sunken well with its rule and the lens in front, the well of the steppers'
    number, so it's plain that it takes typing. The rule takes the accent under the pointer and,
    doubled, while typing (the focus mark: the input itself draws no ring). */
@@ -409,6 +466,20 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 .colophon a:hover { color: var(--accent-ink); }
 /* The GitHub mark after the contact line: just the icon, so no underline. */
 .colophon .gh { display: inline-flex; vertical-align: -3px; margin-left: var(--sp-1); text-decoration: none; }
+/* The privacy notice, folded: its summary responds to the finger, so it takes the links' accent; open,
+   a short left-aligned list in the footer's muted ink, no wider than a comfortable line. */
+.colophon-privacy summary {
+  display: inline-flex; align-items: center; gap: var(--sp-1); cursor: pointer; list-style: none;
+  color: var(--accent); transition: color var(--dur) var(--ease);
+}
+.colophon-privacy summary:hover { color: var(--accent-ink); }
+.colophon-privacy summary::-webkit-details-marker { display: none; }
+.colophon-privacy summary::after { content: '▾'; transition: transform var(--dur) var(--ease); }
+.colophon-privacy[open] summary::after { transform: rotate(180deg); }
+.colophon-privacy ul {
+  max-width: 60ch; margin: var(--sp-2) auto 0; padding-left: var(--sp-4);
+  display: flex; flex-direction: column; gap: var(--sp-1); text-align: left; text-wrap: pretty;
+}
 /* The About block (tools/pages.js): the page's text for search engines and for whoever lands
    from one, under the screens and above the footer. As wide as the screens above it, in the
    secondary ink, so it's there to read without competing with them; only its links take the
@@ -421,6 +492,9 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 .about h1 { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-xl); line-height: 1.2; letter-spacing: var(--track-title); color: var(--ink-strong); text-wrap: balance; }
 .about h2 { margin-top: var(--sp-4); font-family: var(--font-display); font-size: var(--fs-2xs); letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--muted); }
 .about h3 { margin-top: var(--sp-2); font-size: var(--fs-sm); font-weight: 600; color: var(--ink); }
+/* Folded with a save loaded (renderAbout in js/app.js): only the disclosure shows. */
+.about.is-folded > :not(.about-fold) { display: none; }
+.about.is-folded { padding-top: 0; border-top: 0; }
 .about-faq { display: flex; flex-direction: column; gap: var(--sp-1); }
 .about code { font-family: var(--font-num); font-size: var(--fs-xs); color: var(--ink); overflow-wrap: anywhere; }
 .about strong { color: var(--ink); font-weight: 600; }
@@ -532,7 +606,7 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
   container: inv / inline-size;
   --inv-pad: var(--sp-8);
   --inv-line: color-mix(in oklab, var(--tint) 13%, transparent);
-  position: relative; background: var(--inv-bg); padding: var(--inv-pad) var(--inv-pad) 0;
+  position: relative; background: var(--inv-bg); padding: var(--inv-pad);
 }
 .inv-head { display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-4); text-align: center; }
 .inv-head .sec-title { font-size: var(--fs-xl); }
@@ -737,6 +811,10 @@ button.hud-mask { padding: 0; border: 0; background: none; cursor: pointer; }
 .notch.is-pending.is-over { --fill: var(--notch-over-pending-fill); filter: drop-shadow(0 0 4px var(--notch-over-glow)); }
 @keyframes notch-pending { to { opacity: 0.55; } }
 .notch.is-leaving { filter: none; opacity: 0.38; }
+/* The ones a charm would need and you don't have (no free notch: the game won't let it on): a
+   dashed ring in the warning red, where the row would grow. */
+.notch.is-lack::before { border-style: dashed; border-color: var(--bad); }
+.notch-free .nf-to.is-lack { color: var(--bad); }
 /* Right after equipping or removing (notchDots, App.was): the notches the charm takes light up one
    by one from the left, from the free ring to the full dot with a burst of its glow; the ones it
    gives back go out from the right, their dot draining into the ring. */
@@ -773,7 +851,7 @@ button.hud-mask { padding: 0; border: 0; background: none; cursor: pointer; }
   position: relative; isolation: isolate; overflow: clip;
   display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 336px);
   gap: var(--sp-6); align-items: start;
-  margin: var(--sp-8) calc(var(--inv-pad) * -1) 0; padding: var(--sp-8) var(--inv-pad);
+  margin: var(--sp-8) var(--bleed) 0; padding: var(--sp-8) calc(var(--bleed) * -1);
   background: var(--well); border-block: 1px solid var(--inv-line);
 }
 .band-col { display: flex; flex-direction: column; gap: var(--sp-6); min-width: 0; }
@@ -1164,15 +1242,31 @@ button.plate.is-on:is(:hover, :focus-visible) .plate-art > img { filter: brightn
 .gplates { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-1) var(--sp-3); }
 .gplate { display: grid; grid-row: span 3; grid-template-rows: subgrid; row-gap: var(--sp-1); justify-items: center; align-items: start; text-align: center; min-width: 0; padding: 0; }
 .gplate:has(.lvlpick) { grid-row: span 4; }
+/* A plate with its pin to the Map (js/app-map.js, mapPinHtml): beside the plate, not in it (a plate
+   is itself a button), at the corner of its picture. */
+.gplate-wrap { position: relative; display: grid; grid-row: span 3; grid-template-rows: subgrid; min-width: 0; }
+.gplate-wrap:has(.lvlpick) { grid-row: span 4; }
+.gplate-wrap > .gplate { grid-row: 1 / -1; }
+.map-pin { color: var(--ink-2); }
+.gplate-wrap > .map-pin { position: absolute; z-index: 1; top: 0; right: 0; }
+.field-row > .map-pin { align-self: center; }
+.map-pin.is-head { vertical-align: middle; margin-left: var(--sp-2); }
+.map-link { display: inline-flex; align-items: center; gap: var(--sp-1); }
+.hj-map { margin: var(--sp-2) 0 0; text-align: center; }
 .gplate-art { position: relative; isolation: isolate; width: 100%; height: 60px; display: grid; place-items: center; }
 .gplate-art::before { content: ''; position: absolute; z-index: -1; inset: -8% 2%; background: var(--halo-plate); opacity: 0; transition: opacity var(--dur) var(--ease), filter var(--dur) var(--ease); }
 .gplate-art img { width: auto; height: auto; max-width: min(100px, 92%); max-height: 50px; object-fit: contain; }
 .gplate:not(.is-on) .gplate-art::before { background: var(--halo-plate-off); }
-.gplate:not(.is-on) .gplate-art img { filter: var(--missing-art); }
+.gplate:not(.is-on) .gplate-art :is(img, .pg-atlas) { filter: var(--missing-art); }
+/* A picture from the game's map pins (js/app-map.js, pinArtHtml): the Dreamers', the Colosseum's. */
+.gplate-art .pg-atlas { width: 50px; height: 50px; }
+.pg-pip .pg-atlas { width: 100%; height: 100%; filter: brightness(0.3) saturate(0); opacity: 0.6; }
 .gplate-name { font-size: var(--fs-xs); line-height: 1.25; color: var(--ink-2); }
 .gplate.is-on .gplate-name { color: var(--ink); }
 .gplate-val { font-size: var(--fs-md); font-weight: 700; line-height: 1.25; color: var(--ink-strong); }
 .gplate-val.is-none { font-family: var(--font-body); font-size: var(--fs-xs); font-weight: 400; color: var(--muted); }
+/* A word, not a figure (a Progress plate's note: "Troupe banished", "2400 essence"): the body face, small, lit. */
+.gplate-val.is-text { font-family: var(--font-body); font-size: var(--fs-xs); font-weight: 400; color: var(--ink-2); }
 button.gplate:hover .gplate-name, button.gplate:focus-visible .gplate-name { color: var(--accent); }
 button.gplate:is(:hover, :focus-visible) .gplate-art::before, .gplate:has(.lvlpick button:is(:hover, :focus-visible)) .gplate-art::before { opacity: 1; }
 /* The level under a plate: each level's own artwork, small, and the dimmed "not learnt" first.
@@ -1417,6 +1511,9 @@ button.gplate:is(:hover, :focus-visible) .gplate-art::before, .gplate:has(.lvlpi
 .nav-num { white-space: nowrap; }
 @media (min-width: 900px) and (max-width: 1239px) {
   .nav:has(#minihud:not([hidden])) { flex-direction: column; align-items: stretch; gap: 0; }
+  /* The tabs' row fills what the mini-bar leaves, so its bottom edge is the mini-bar's rule and
+     the Knight sits on it (with only its own 44 px he sat on air, over the titles). */
+  .nav:has(#minihud:not([hidden])) .nav-tabs { flex: 1 0 auto; }
   .nav:has(#minihud:not([hidden])) .minihud { flex: none; justify-content: flex-end; padding: var(--sp-2) 0; border-top: 1px solid var(--line-row); }
   :root:has(#minihud:not([hidden])) { --sticky-h: 110px; }
 }
@@ -3100,7 +3197,7 @@ button.tl-go:focus-visible { outline-offset: 3px; }
   .tablet-list { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(22, auto); }
   .tablet-bar {
     position: sticky; top: var(--sticky-h); z-index: 1;
-    margin: 0 calc(-1 * var(--inv-pad)) var(--sp-2); padding: 0 var(--inv-pad);
+    margin: 0 var(--bleed) var(--sp-2); padding: 0 calc(var(--bleed) * -1);
     background: var(--inv-bg);
   }
   /* The fade, downwards only: a shadow would also spill out of the frame's sides. */
@@ -3188,7 +3285,6 @@ button.tl-go:focus-visible { outline-offset: 3px; }
 .hj-feat-num b { font-size: var(--fs-sm); }
 .hj-feat.is-done .hj-feat-lbl { color: var(--ink-strong); }
 .hj-total-note { max-width: 40ch; font-size: var(--fs-xs); line-height: 1.5; color: var(--muted); }
-.hj-howto { max-width: 40ch; font-size: var(--fs-sm); line-height: 1.5; color: var(--ink); }
 /* Mark in bulk, at the foot of the list. Collapsed, only its text button. Open, unboxed and on
    three short lines, so the list stays in view while ticking boxes: at the bottom, the
    button and All · None (it doesn't move on opening: the panel grows upwards); above, which
@@ -3677,6 +3773,8 @@ button.tl-go:focus-visible { outline-offset: 3px; }
 .imp-step-title { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: var(--fs-lg); letter-spacing: var(--track-title); line-height: 1.25; color: var(--ink-strong); }
 .imp-text { margin: 0; max-width: var(--measure); font-size: var(--fs-sm); line-height: 1.6; color: var(--ink-2); text-wrap: pretty; }
 .imp-os { align-self: flex-start; }
+.imp-path-w { display: flex; flex-direction: column; gap: var(--sp-1); }
+.imp-path-k { font-size: var(--fs-xs); color: var(--ink-2); }
 .imp-path {
   display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-2) var(--sp-3);
   border: 1px solid var(--line-ctl); background: var(--card);
@@ -3955,7 +4053,6 @@ kbd {
 .pg-total-k { font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); }
 .pg-total-v { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; line-height: 1; color: var(--ink-strong); font-size: calc(var(--fs-xl) * 2.2); }
 .pg-total-v .u { font-size: 0.38em; font-weight: 400; color: var(--muted); }
-.pg-lead { max-width: 52ch; margin: var(--sp-2) 0 0; font-size: var(--fs-sm); line-height: 1.5; color: var(--muted); text-wrap: balance; }
 .pg-rows { list-style: none; margin: 0 auto; padding: 0; max-width: 900px; border-top: 1px solid var(--inv-line); }
 .pg-row { border-bottom: 1px solid var(--inv-line); }
 .pg-head {
@@ -3977,8 +4074,8 @@ kbd {
 .pg-pips { display: flex; flex-wrap: wrap; gap: var(--sp-1); }
 .pg-pip { width: 18px; height: 18px; display: grid; grid-template-rows: minmax(0, 1fr); place-items: center; }
 .pg-pip img { max-width: 100%; max-height: 100%; object-fit: contain; filter: brightness(0.3) saturate(0); opacity: 0.6; }
-.pg-pip.is-on img { filter: none; opacity: 1; }
-.pg-pip.is-part img { filter: brightness(0.6) saturate(0.6); opacity: 1; }
+.pg-pip.is-on :is(img, .pg-atlas) { filter: none; opacity: 1; }
+.pg-pip.is-part :is(img, .pg-atlas) { filter: brightness(0.6) saturate(0.6); opacity: 1; }
 /* Where there's no picture (the Dreamers, the trials, the pantheons): the rule's diamond. */
 .pg-glyph { display: block; width: 30px; height: 30px; border: 1px solid currentColor; transform: rotate(45deg) scale(0.7); color: var(--ink-2); }
 .pg-pip .pg-glyph { width: 10px; height: 10px; transform: rotate(45deg); color: var(--muted); }
@@ -4002,32 +4099,44 @@ kbd {
    own tint (baked into the drawings). Whole what the Quill drew, rough what you only bought,
    barely there what you don't know. The pins keep their size on screen (--k). ── */
 .pgm { display: flex; flex-direction: column; gap: var(--sp-3); }
-.pgm-kinds .pg-area img, .pgm-ico { width: 18px; height: 18px; object-fit: contain; flex: none; }
+.pgm-ico { width: 18px; height: 18px; object-fit: contain; flex: none; }
 /* The area names' layer has no picture: a letter in the titles' face stands for it. */
 .pgm-ico.is-name { display: inline-grid; place-items: center; font-family: var(--font-display); font-style: normal; font-size: var(--fs-sm); line-height: 1; color: var(--ink-2); }
 /* How many of each kind you have: the figures in the sans, in bone; a kind complete, in --good. */
-.pgm-kind-n { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-xs); color: var(--muted); }
+.pgm-kind-n { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-xs); color: var(--muted); white-space: nowrap; }
 .pgm-kind-n b { font-weight: 700; color: var(--ink-strong); }
 .pgm-kind-n .u { font-style: normal; }
-.pgm-kind.is-full .pgm-kind-n b { color: var(--good); }
-/* A layer is an on/off: the box in front (.check-box); off, its icon in grey. */
-.pg-area.pgm-kind { border-bottom: 0; }
-.pg-area.pgm-kind.is-on { color: var(--ink); background: none; }
-.pg-area.pgm-kind:hover { color: var(--ink-strong); }
-.pgm-kind:hover .check-box { border-color: var(--accent); }
-.pgm-kind:not(.is-on) :is(img, .pgm-ico) { filter: var(--missing-art); }
-/* The filter, under the map: a title with show all · hide all, the two choices, and the layers
-   in four groups (collectibles, the 112%, places, yours), each a row of chips that wraps. */
-.pgm-filter { display: flex; flex-direction: column; gap: var(--sp-3); padding-top: var(--sp-3); border-top: 1px solid var(--inv-line); }
-.pgm-filter-bar { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--sp-2) var(--sp-6); }
-.pgm-filter-t { margin: 0; font-family: var(--font-display); font-size: var(--fs-md); font-weight: 400; color: var(--ink-strong); }
+.pgm-kind-n.is-full b { color: var(--good); }
+/* The filter, under the map (design/16, the sister's): a head with the title, the three choices
+   as switches and show all · hide all; then the groups, each a row that folds (caret in the
+   section's lamp, the title in Cinzel caps, its total, its own all · none) over its layers. */
+.pgm-filter { display: flex; flex-direction: column; gap: var(--sp-3); }
+.pgm-filter-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-6); }
+.pgm-filter-t { margin: 0; font-family: var(--font-display); font-size: var(--fs-sm); font-weight: 600; letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--ink-strong); }
+.pgm-opts { display: flex; flex-wrap: wrap; flex: 1; gap: var(--sp-1) var(--sp-6); }
 .pgm-all { display: inline-flex; gap: var(--sp-4); }
-.pgm-opts { display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-6); }
-.pgm-group { display: flex; flex-direction: column; gap: var(--sp-1); }
-.pgm-group-t { margin: 0; font-family: var(--font-body); font-size: var(--fs-xs); font-weight: 400; letter-spacing: var(--track-label); text-transform: uppercase; color: var(--muted); }
-.pgm-filter .pg-areas { max-width: none; margin: 0; flex-wrap: wrap; overflow: visible; padding-bottom: 0; }
+.pgm-sec { border-top: 1px solid var(--inv-line); }
+.pgm-sec:last-child { border-bottom: 1px solid var(--inv-line); }
+.pgm-sec-h { display: flex; align-items: center; gap: var(--sp-3); }
+.pgm-fold { display: flex; flex: 1; align-items: center; gap: var(--sp-3); min-height: var(--ctl); padding: 0; text-align: left; color: var(--ink-strong); }
+.pgm-fold:hover .pgm-sec-t { color: var(--accent); }
+.pgm-caret { flex: none; width: 10px; height: 10px; color: var(--lamp, var(--accent)); transition: rotate var(--dur) var(--ease); }
+.pgm-sec.is-open .pgm-caret { rotate: 90deg; }
+.pgm-sec-t { font-family: var(--font-display); font-size: var(--fs-sm); font-weight: 600; letter-spacing: var(--track-caps); text-transform: uppercase; transition: color var(--dur) var(--ease); }
+.pgm-kinds { display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-6); padding: 0 0 var(--sp-3) var(--sp-6); }
+/* A layer: its picture is the switch; off, the picture in grey and the name muted. */
+.pgm-kind { display: inline-flex; align-items: center; gap: var(--sp-2); min-height: var(--ctl-sm); padding: 0; font-size: var(--fs-sm); color: var(--ink); }
+.pgm-kind-art { flex: none; display: inline-block; overflow: hidden; width: 28px; height: 28px; }
+.pgm-kind-art > :is(img, .pgm-ico) { display: block; width: 100%; height: 100%; max-width: none; object-fit: contain; transition: filter var(--dur) var(--ease), opacity var(--dur) var(--ease); }
+.pgm-kind:hover .pgm-kind-t { color: var(--accent); }
+.pgm-kind:not(.is-on) .pgm-kind-art > * { filter: var(--missing-art); }
+.pgm-kind:not(.is-on) :is(.pgm-kind-t, .pgm-kind-n b) { color: var(--muted); }
+@media (max-width: 599px) {
+  .pgm-filter-bar { flex-direction: column; align-items: flex-start; }
+  .pgm-opts { flex-direction: column; }
+  .pgm-kinds { padding-left: 0; }
+}
 .pgm-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-6); }
-.pgm-note { flex: 1 1 32ch; margin: 0; font-size: var(--fs-sm); color: var(--muted); }
 /* The zoom, over the map's top right corner, as maps have it: always in sight, the large map too. */
 .pgm-zoom { position: absolute; z-index: 3; top: var(--sp-3); right: var(--sp-3); display: inline-flex; border: 1px solid var(--line-ctl); background: var(--card); box-shadow: var(--shadow-md); }
 /* The search, beside the zoom: a line to type on, as the Journal's, and its results under it,
@@ -4044,7 +4153,18 @@ kbd {
 .pgm-result.empty:hover { background: none; }
 .pgm-result.is-cur .pgm-card-t b { color: var(--accent); }
 .pgm-result .pgm-card-art, .pgm-result .pgm-card-art img, .pgm-result .pgm-card-art svg { width: 24px; height: 24px; }
-.pgm-box { position: relative; height: min(72vh, 720px, 62vw + 120px); background: var(--bg); border: 1px solid var(--inv-line); overflow: hidden; }
+/* The map lies on the screen's own light, with no box of its own (as the game's map on its black):
+   only the large map, out of the frame over the page, keeps a plate. */
+.pgm-box { position: relative; height: min(72vh, 720px, 62vw + 120px); overflow: hidden; }
+.pg.is-big .pgm-box { background: var(--bg); border: 1px solid var(--inv-line); }
+/* Focus (js/app-map.js, showOnMap): several things from another screen, only them on the map, and
+   this bar at the box's foot: what, how many, ‹ i of n ›, out. */
+.pgm-focus { position: absolute; z-index: 3; left: var(--sp-3); right: var(--sp-3); bottom: var(--sp-3); display: flex; align-items: center; flex-wrap: wrap; gap: var(--sp-2) var(--sp-3);
+  padding: var(--sp-2) var(--sp-3); background: var(--card); border: 1px solid var(--line-panel); box-shadow: var(--shadow-md); }
+.pgm-focus-t { display: flex; flex-direction: column; flex: 1 1 10em; min-width: 0; font-size: var(--fs-sm); color: var(--ink-2); }
+.pgm-focus-t b { color: var(--ink-strong); font-weight: 600; }
+.pgm-focus-step { display: inline-flex; align-items: center; gap: var(--sp-1); }
+.pgm-focus-i { min-width: 4.5em; text-align: center; font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-sm); color: var(--ink); }
 /* The large map, a choice (the zoom's third button, ⤢ / ⤡): on a computer it takes the window's whole
    width (--page-w, set by js/app-map.js), centred over the page's column, and its box the
    window's height under the bar: the map is 3:2, so the height is what makes it bigger. On a
@@ -4063,9 +4183,24 @@ kbd {
 .pgm-pin circle { fill: var(--bg); stroke: var(--line-ctl); stroke-width: 0.06; }
 .pgm-pin:hover circle, .pgm-pin:focus-visible circle, .pgm-pin.is-sel circle { stroke: var(--accent); stroke-width: 0.1; }
 .pgm-pin:focus { outline: none; }
+/* "How to get there": the way from your bench, in the pins' bone, under them (js/app-map.js, routeSvg). */
+.pgm-route polyline { fill: none; stroke: var(--ink-strong); stroke-width: 3; stroke-dasharray: 6 5; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; opacity: 0.85; }
+.pgm-route circle { fill: var(--ink-strong); }
+.pgm-route-row { display: flex; flex-direction: column; gap: var(--sp-1); max-width: 22em; white-space: normal; }
 .pgm-pin.is-on { opacity: 0.4; }
+/* The pins you came to see from another screen (js/app-map.js, showOnMap): a ring in the pins'
+   bone that swells out of them and fades, three times; still, without motion, just the ring. */
+.pgm-pin .pgm-arrive { fill: none; stroke: var(--ink-strong); stroke-width: 0.14; opacity: 0; transform-box: fill-box; transform-origin: center; }
+@media (prefers-reduced-motion: no-preference) {
+  .pgm-pin .pgm-arrive { animation: pgm-arrive var(--dur-arrive) var(--ease) 3; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pgm-pin .pgm-arrive { opacity: 0.8; transform: scale(1.35); }
+}
+@keyframes pgm-arrive { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(2.8); } }
 /* The lift, drawn by the site (the game has no pin for it): in bone, like the game's pins. */
 .pgm-glyph { fill: var(--ink-strong); }
+.pgm-glyph.is-line { fill: none; stroke: var(--ink-strong); stroke-width: 0.06; }
 /* Close up (.is-near), each pin's name under it, in bone with the black of the map around its
    letters, so it reads over the rooms' lines. */
 .pgm-lbl { display: none; font-family: var(--font-body); font-size: 0.46px; text-anchor: middle; fill: var(--ink-strong);
@@ -4098,6 +4233,10 @@ kbd {
 .pgm-card-art { display: inline-grid; place-items: center; width: 32px; height: 32px; }
 .pgm-card-art img, .pgm-card-art svg { width: 32px; height: 32px; object-fit: contain; }
 .pgm-card-t { display: flex; flex-direction: column; font-size: var(--fs-sm); color: var(--ink-2); }
+/* A lore tablet's text, as the game writes it: its line breaks kept, under the card's row and as
+   wide as the card, which never passes the map's box (js/app-map.js, paintCard). */
+.pgm-card.has-text { flex-wrap: wrap; white-space: normal; }
+.pgm-card-text { flex-basis: 100%; white-space: pre-line; max-height: 14em; overflow-y: auto; margin: 0; font-size: var(--fs-sm); color: var(--ink); line-height: 1.45; }
 .pgm-card-t b { color: var(--ink-strong); font-weight: 600; }
 
 
@@ -4136,7 +4275,7 @@ kbd {
 .hm-block { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-3); min-width: 0; }
 .hm-block .block-head { display: flex; align-items: baseline; gap: var(--sp-3); flex-wrap: wrap; margin: 0; }
 .hm-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; align-self: stretch; }
-.hm-item { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: var(--sp-3); align-items: center; padding: var(--sp-2) 0; border-bottom: 1px solid var(--inv-line); }
+.hm-item { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto auto; gap: var(--sp-3); align-items: center; padding: var(--sp-2) 0; border-bottom: 1px solid var(--inv-line); }
 .hm-item:last-child { border-bottom: 0; }
 .hm-item-art { width: 36px; height: 32px; display: grid; place-items: center; }
 .hm-item-art img { max-width: 100%; max-height: 100%; object-fit: contain; }
@@ -4146,26 +4285,42 @@ kbd {
 .hm-item-v { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-sm); color: var(--ink-2); white-space: nowrap; }
 /* What's missing near your bench: small pictures, grey until found, each with its place. */
 .hm-near { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: var(--sp-2); align-self: stretch; }
-.hm-near span { display: flex; flex-direction: column; align-items: center; gap: var(--sp-1); font-size: var(--fs-2xs); color: var(--muted); text-align: center; line-height: 1.2; }
+.hm-near-cell { display: flex; flex-direction: column; align-items: center; gap: var(--sp-1); padding: 0; font-size: var(--fs-2xs); color: var(--muted); text-align: center; line-height: 1.2; transition: color var(--dur) var(--ease); }
+.hm-near-cell:is(:hover, :focus-visible) { color: var(--accent); }
 .hm-near img { height: 28px; width: auto; max-width: 48px; object-fit: contain; filter: brightness(0.55) saturate(0.4); }
 .hm-shade { display: flex; gap: var(--sp-3); align-items: center; }
 .hm-shade img { width: 40px; height: auto; filter: brightness(0.25) contrast(1.4); }
 .hm-shade p { margin: 0; font-size: var(--fs-sm); color: var(--ink-2); }
 /* The title card: "Resting at" over the area's name, on the area's light (--area-*: tokens.css). */
 .hmC-hero { position: relative; isolation: isolate; display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); text-align: center;
-  padding: var(--sp-8) var(--sp-4); margin: var(--sp-4) calc(-1 * var(--inv-pad)) 0; }
+  padding: var(--sp-8) var(--sp-4); margin: var(--sp-4) var(--bleed) 0; }
+/* With a game, Your game's whole frame takes the area of your bench (.hm.has-area,
+   design/15-tab-colours.html): its tint is the area's light, and from it the lamp, as any section's
+   (the line, the curls, the plaque, the light inside); the title card's own light goes, there's one.
+   The invitation's example has none either (.hmI-demo): as your game will look, on the frame's light. */
+.hm.has-area { --tint: var(--area-l); }
+/* The areas' lights run darker than the section tints: the title takes the lamp, at its fixed lightness. */
+.hm.has-area .screen-title { color: var(--lamp); }
+.hm.has-area > .hmC-hero::before, .hmI-demo .hmC-hero::before { display: none; }
 .hmC-hero::before { content: ''; position: absolute; inset: 0; z-index: -1; opacity: 0.7;
   background: radial-gradient(ellipse 55% 80% at 50% 38%, var(--area-m), var(--area-d) 55%, transparent 80%); }
 .hmC-sup { font-family: var(--font-display); font-size: var(--fs-sm); letter-spacing: var(--track-wide); text-transform: uppercase; color: var(--ink-2); }
 .hmC-area { font-family: var(--font-display); font-size: clamp(1.8rem, 5vw, 3.2rem); font-weight: 400; letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--ink-strong); line-height: 1.1; margin: 0; }
-/* The bench under the name (js/app-home.js, a silhouette in the page's black with the area's light
-   as its edge), with the Knight sitting on it: a picture of him (the sit strip, --kn-bench tall,
-   the bench 2.75 of that wide), feet hanging in front of the seat, which lies at half the
-   picture's height, lit in the area's colour. Still: the Knight who moves, and marks the tab
-   you're on, is the one on the screen bar (js/app-knight.js). */
-.hmC-bench { position: relative; width: calc(var(--kn-bench) * 2.75); margin: var(--sp-3) 0 var(--sp-1); }
-.hmC-seat { display: block; width: 100%; height: auto; fill: var(--bg); stroke: color-mix(in oklab, var(--area-l) 55%, transparent); stroke-width: 2; paint-order: stroke; }
-.hmC-kn { position: absolute; left: 50%; bottom: 22%; width: calc(var(--kn-bench) * 104 / 140); height: var(--kn-bench); translate: -50% 0;
+/* The bench under the name (js/app-home.js): the one you rest at, the game's picture (js/benches.js:
+   --bw × --bh of its pixels, where the game sits the Knight at --bx, --by), with him on it (the sit
+   strip, 104 × 140, that point 105 down it: his seat is 11 below), both at the game's scale: the Knight --kn-bench tall. A big
+   bench (the Nailmasters', Godhome's roof) shrinks whole to --kn-bench-max tall, and to the width.
+   Lit in the area's colour. Still: the Knight who moves, and marks the tab you're on, is the one
+   on the screen bar (js/app-knight.js). */
+.hmC-bench { position: relative; max-width: 100%; margin: var(--sp-3) 0 var(--sp-1);
+  width: min(calc(var(--bw) * var(--kn-bench) / 140), calc(var(--kn-bench-max) * var(--bw) / var(--bh))); }
+/* The seat's picture leaves room above for his head where the bench is lower than him (its margin,
+   a share of the width); he stands on the bench's foot, raised to its seat (his translate, a
+   share of his own 140). */
+.hmC-seat { display: block; width: 100%; height: auto; margin-top: calc(max(0, 105 - var(--by)) / var(--bw) * 100%);
+  filter: drop-shadow(0 0 14px color-mix(in oklab, var(--area-l) 45%, transparent)); }
+.hmC-kn { position: absolute; left: calc(var(--bx) / var(--bw) * 100%); bottom: 0;
+  width: calc(104 / var(--bw) * 100%); aspect-ratio: 104 / 140; translate: -50% calc((var(--bh) - var(--by) - 35) / -140 * 100%);
   background: url(../assets/knight/sit.png) 0 0 / auto 100% no-repeat; filter: drop-shadow(0 0 18px color-mix(in oklab, var(--area-l) 60%, transparent)); }
 .hmC-figs { justify-content: center; margin-top: var(--sp-6); }
 .hmC-figs .hm-fig { align-items: center; }
@@ -4237,3 +4392,31 @@ kbd {
   .hmC-cols { grid-template-columns: minmax(0, 1fr); }
   .hm-figs { gap: var(--sp-3) var(--sp-6); }
 }
+
+/* ── The screens' bodies: the frame's room ──────────────────────────────
+   --bleed: how far a band that runs edge to edge (the Charms' band, the Hall's tablet bar, Your
+   game's title card) reaches out from the content: up to the frame's line, not past it.
+   The plate is clear: the frame's line carries the black and the light (.frame-line), so the body
+   isolates it behind the content. Room above for the title's plaque on the top line. */
+.panel, .gear-body, .fight-body, .hj-body, .saves-body {
+  --bleed: calc(var(--inv-pad) * -1 + var(--frame-inset) + 1px);
+  isolation: isolate; background: none;
+  margin-top: var(--sp-6);
+  padding-top: calc(var(--inv-pad) + var(--sp-8));
+}
+
+/* ── Block headings (the sister site's, design/14-sister-variants.html) ───
+   «◇ ARTS ———— 3/3»: a hollow diamond in the section's lamp, the heading in Cinzel capitals, a rule
+   running to what comes after it (a count, a note, All · None), which goes at the end. */
+:is(.panel, .gear-body, .fight-body, .hj-body, .saves-body) .block-head {
+  display: flex; align-items: center; flex-wrap: wrap; gap: var(--sp-1) var(--sp-2);
+  font-family: var(--font-display); font-size: var(--fs-sm); font-weight: 600;
+  letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--ink-strong);
+}
+:is(.panel, .gear-body, .fight-body, .hj-body, .saves-body) .block-head::before {
+  content: ''; flex: none; width: 5px; height: 5px; border: 1px solid var(--lamp); transform: rotate(45deg);
+}
+:is(.panel, .gear-body, .fight-body, .hj-body, .saves-body) .block-head::after {
+  content: ''; flex: 1 1 var(--sp-8); order: 1; border-top: 1px solid var(--inv-line);
+}
+:is(.panel, .gear-body, .fight-body, .hj-body, .saves-body) .block-head > * { order: 2; }

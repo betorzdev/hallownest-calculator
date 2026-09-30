@@ -475,7 +475,18 @@
   const bindAllFx = () => overcharmFx(true);
 
   /* ── Mockup ornaments ────────────────────────────────────────────────── */
-  const brackets = '<span class="bk tl"></span><span class="bk tr"></span><span class="bk bl"></span><span class="bk br"></span>';
+  /* The screens' frame, the sister site's (../pharloom-calculator; design/14-sister-variants.html,
+     chosen 30 Sep): a hairline inset all round the panel (.frame-line, in the section's lamp), a curl in
+     each corner (one drawing, mirrored by CSS), and the screen's title in a plaque astride the top
+     line (screenHead). */
+  const CORNER = '<svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg>';
+  const bkCorners = (cls) => ['tl', 'tr', 'bl', 'br'].map((c) => `<span class="bk ${c}${cls}" aria-hidden="true">${CORNER}</span>`).join('');
+  const brackets = '<span class="frame-line" aria-hidden="true"></span>' + bkCorners('');
+  // A card inside a screen (the Hall's plaque, the arena's Journal page): its curls alone, small.
+  const corners = bkCorners(' is-small');
+  /* The title's plaque: a double outline with pointed ends, stretched to the title, filled with the
+     panel's black so the frame's top line goes behind it. */
+  const PLAQUE = '<svg class="screen-plaque" viewBox="0 0 100 30" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><polygon class="is-outer" points="6,1 94,1 99.5,15 94,29 6,29 0.5,15" vector-effect="non-scaling-stroke"/><polygon class="is-inner" points="8,4 92,4 96.5,15 92,26 8,26 3.5,15" vector-effect="non-scaling-stroke"/></svg>';
   const chevron = (up) => `<svg class="ic chev ${up ? 'up' : ''}" width="12" height="8" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1.5 L6 6 L11 1.5"/></svg>`;
   // The search fields' lens and the on/off box's tick (css: .search, .check).
   const lens = '<svg class="ic" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="5" cy="5" r="3.6"/><path d="M7.8 7.8 L10.8 10.8"/></svg>';
@@ -492,7 +503,9 @@
   // An empty state (css: .empty): the rule, the text and, if there is one, the action that solves it.
   const emptyHtml = (text, act = '', { tag = 'p', cls = '' } = {}) =>
     `<${tag} class="empty${cls ? ' ' + cls : ''}"${tag === 'li' ? ' role="presentation"' : ''}>${rule}<span>${text}</span>${act}</${tag}>`;
-  const screenHead = (title, after = '') => `<header class="inv-head"><h2 class="sec-title screen-title" tabindex="-1">${title}</h2>${rule}${after}</header>`;
+  /* Each screen's head: its title in the plaque on the frame's top line; what goes with it (the
+     Inventory's starting points, the import's lead) opens the screen, centred, under it. */
+  const screenHead = (title, after = '') => `<header class="inv-head screen-head">${PLAQUE}<h2 class="sec-title screen-title" tabindex="-1">${title}</h2></header>${after ? `<div class="screen-lead">${after}</div>` : ''}`;
 
   /* ── The soul orb and the vessels, traced from the HUD ─────────────────
      The game describes the orb like this: "a circular meter that fills with white liquid,
@@ -578,9 +591,27 @@
      (a search engine reads the page as served, on its own screen). Its links go to the other pages' folders; over file:// a folder
      doesn't open its index.html, so there they carry it. */
   let aboutLinks = false;
+  /* With a save loaded, the block folds behind a disclosure (as the sibling site does): it stays
+     in the page and opens in place. Search engines have no save, so they read it open. */
+  let aboutOpen = false;
   function renderAbout() {
     if (!el.about) return;
     el.about.hidden = prefs.lang !== PAGE_LANG || prefs.view !== (PAGE_VIEW || 'home');
+    // With a save the block folds; its button opens it and, open, folds it again.
+    const foldable = !!(App.activeSlot && App.activeSlot());
+    const folded = !aboutOpen && foldable;
+    let btn = el.about.querySelector(':scope > .about-fold');
+    if (foldable && !btn) {
+      el.about.insertAdjacentHTML('afterbegin', `<button type="button" class="disc-btn about-fold" aria-expanded="false" data-act="aboutFold"><span></span><span class="disc-ring"></span></button>`);
+      btn = el.about.firstElementChild;
+    }
+    if (btn) {
+      btn.hidden = !foldable;
+      btn.setAttribute('aria-expanded', String(!folded));
+      btn.firstElementChild.textContent = t('aboutFold');
+      btn.lastElementChild.innerHTML = chevron(!folded);
+    }
+    el.about.classList.toggle('is-folded', folded);
     if (aboutLinks || location.protocol !== 'file:') return;
     aboutLinks = true;
     for (const a of el.about.querySelectorAll('a[data-page]')) a.setAttribute('href', a.getAttribute('href').replace(/\.\/$/, '') + 'index.html');
@@ -618,7 +649,8 @@
 
   /* The footer, under every screen: that this is a fan project with Team Cherry's artwork, where
      the numbers come from (docs/guide.md, "Credits and licences") and who to write to (docs/guide.md, "Contact"). Small and muted, so it doesn't
-     compete with the sheet; only its links take the accent. */
+     compete with the sheet; only its links take the accent. Last, the privacy notice folded in a
+     <details> (docs/guide.md, "Privacy"): no cookies, so no banner, but the counter must be told. */
   function renderColophon() {
     const ext = (href, text) => `<a href="${href}" target="_blank" rel="noopener">${esc(text)}</a>`;
     el.colophon.setAttribute('aria-label', t('footLabel'));
@@ -630,7 +662,18 @@
         lic: ext('https://creativecommons.org/licenses/by-sa/3.0/', 'CC BY-SA 3.0'),
       })}</p>
       <p>${t('footMade', { mail: '<a href="mailto:betorzdev@gmail.com">betorzdev@gmail.com</a>' })}
-        <a class="gh" href="https://github.com/betorzdev/hallownest-calculator" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">${GITHUB}</a></p>`;
+        <a class="gh" href="https://github.com/betorzdev/hallownest-calculator" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">${GITHUB}</a></p>
+      <details class="colophon-privacy">
+        <summary>${esc(t('footPrivacy'))}</summary>
+        <ul>
+          <li>${t('footPrivNone')}</li>
+          <li>${t('footPrivLocal')}</li>
+          <li>${t('footPrivSaves')}</li>
+          <li>${t('footPrivCount', { gc: ext('https://www.goatcounter.com/help/gdpr', 'GoatCounter') })}</li>
+          <li>${t('footPrivHost', { gh: ext('https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement', 'GitHub Pages') })}</li>
+          <li>${t('footPrivErase')}</li>
+        </ul>
+      </details>`;
   }
 
   /* The screen bar, in two groups: your game (Your game with the link's state, the Inventory, Progress with your
@@ -1013,6 +1056,13 @@
     // From another screen (the notice), focus goes to the new one's title; from the bar or
     // the site's title, it stays on the link pressed.
     view(node) { go(node.dataset.value, !node.closest('#nav, .masthead')); },
+    // Open: to its title, for whoever reads with the keyboard; folded again: the focus stays on the button.
+    aboutFold() {
+      aboutOpen = !aboutOpen;
+      renderAbout();
+      const h = aboutOpen && el.about.querySelector('h1');
+      if (h) { h.setAttribute('tabindex', '-1'); h.focus(); }
+    },
   };
 
   // The Journal isn't a dropdown: it doesn't close on a tap outside, only with its button or Esc.
@@ -1223,7 +1273,7 @@
     NEED_KEY, NT, namedSrc, esc, load, save, rebuildNF, pctSpace, fmtValue, fmtStat, fmtStatRich, sign,
     masksText, notchText, spellArt, shortOf, badgeText, goodClass, deltaChip, changeChip, prefs, loadPrefs,
     savePrefs, justWorn, justFound, splitHash, here, loadState, persist, compareLabel, compute, impact, recompute, commit, bindAllFx,
-    brackets, chevron, cross, lens, tick, FLEURS, rule, emptyHtml, screenHead, hudHtml, restoreFocus, focusDescriptor, render, go, navTo, screenOf,
+    brackets, corners, PLAQUE, chevron, cross, lens, tick, FLEURS, rule, emptyHtml, screenHead, hudHtml, restoreFocus, focusDescriptor, render, go, navTo, screenOf,
     underNav, toast, track, actions, isMaxOwned, loadOwned, saveOwned, isOwned, fragileAway, withFixed, isFixed, setOwned, loadProgress, saveProgress, setProgress, reloadGame,
     saveLock, edits });
 })();

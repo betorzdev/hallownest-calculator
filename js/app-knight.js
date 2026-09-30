@@ -159,10 +159,12 @@
      and from a door of the other room to its bench. Dijkstra over the doors (under 900; a plain
      scan for the nearest is enough). A door with no point on the map (the White Palace, which the
      map doesn't draw) is never nearer than one with. → the way's points, both benches included,
-     the two sides of each door as one; or null (no way, or a bench with no point). */
-  function doorsRoute(from, to) {
-    const pa = App.pgmBenchPoint(from), pb = App.pgmBenchPoint(to);
+     the two sides of each door as one; or null (no way, or a bench with no point). The Map's
+     "How to get there" (js/app-map.js) asks it for a way to a point in a room (end), not a bench. */
+  function doorsRoute(from, to, end) {
+    const pa = App.pgmBenchPoint(from), pb = end || App.pgmBenchPoint(to);
     if (!pa || !pb || !R.DOORS[from] || !R.DOORS[to]) return null;
+    if (from === to) return [pa, pb];
     const split = (n) => { const i = n.indexOf('['); return [n.slice(0, i), n.slice(i + 1, -1)]; };
     const at = { S: pa, E: pb };                       // a node's point: 'S', 'E', or 'scene[door]'
     const point = (n) => (n in at ? at[n] : (at[n] = (([sc, d]) => App.pgmDoorPoint(sc, d, R.DOORS[sc][d][0]))(split(n))));
@@ -270,5 +272,5 @@
 
   // Where he is and whether the map is in view, for the smoke test and the debug pages.
   const state = () => ({ perch, tabId, mapSeen, mapOn, cls: kn.className, walking });
-  App.knight = { start, sync, onSave, state };
+  App.knight = { start, sync, onSave, state, route: doorsRoute };
 })();

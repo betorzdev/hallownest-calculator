@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Your game, alive</title>
+<!-- Design material, not part of the site. Your game with a game imported (view=home) read as
+     bland on 30 Sep 2026: the area's name, a small bench, four figures and three flat columns on
+     black. Three layers that can be taken apart or together, over the site's real CSS, art and the
+     game's own map:
+       A · the area's ambience: the bench sits in its area's scene (the arena's ramp and black
+           floor), under the game's area-title ornament, with the area's own particles (rain in the
+           City, spores in the Fungal Wastes, glints in the Peaks…) and the bench's light breathing.
+       B · the area's map: the game's own drawing of the area you rest in, with your bench, your
+           shade and what's missing there as pins. "Missing nearby" becomes places, not a grid.
+       C · the arrival: the screen tells what changed as it opens, the way the game's title card
+           does: the name fades in, the figures count up from the last save, the completion bar
+           lights the part you just gained, and each new thing comes in with the item-get shine.
+     Chosen on 30 Sep 2026: all three together, the particles always on (soft), and built
+     (js/app-home.js, css/app.css "Your game, alive"; docs/guide.md).
+     Nothing goes behind a figure (design/00-system.md §6): the scene fades to black above them.
+     The bar at the top picks the variant, the area, the shade and the width; also via the URL:
+     ?v=now|a|b|c|all&area=city&shade=1&w=390. The <base> points at the root so "assets/…" works. -->
+<base href="../">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+/* ════ The mockup's chrome: none of this goes into the site ══════════════════════════════ */
+body { background: var(--page-bg); background-attachment: fixed; margin: 0; }
+.mk { max-width: 1180px; margin: 0 auto; padding: var(--sp-6) var(--page-pad) var(--sp-16); }
+.mk-h1 { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-xl); letter-spacing: var(--track-title); color: var(--ink-strong); margin: 0 0 var(--sp-2); }
+.mk-lead { max-width: var(--measure); color: var(--ink-2); font-size: var(--fs-sm); margin: 0 0 var(--sp-4); }
+.mk-bar { position: sticky; top: 0; z-index: 50; display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-4);
+  padding: var(--sp-2) 0; margin-bottom: var(--sp-6); background: var(--scene-bg); border-bottom: 1px solid var(--line); font-size: var(--fs-sm); color: var(--muted); }
+.mk-bar b { font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); font-weight: 600; }
+.mk-bar button { background: none; border: 0; padding: var(--sp-1) 0; font: inherit; color: var(--muted); cursor: pointer; }
+.mk-bar button[aria-pressed="true"] { color: var(--accent); box-shadow: inset 0 -1px 0 var(--accent-line); }
+.mk-bar button:hover { color: var(--ink-strong); }
+.mk-bar select { background: var(--scene-bg); color: var(--ink); border: 1px solid var(--line-ctl); font: inherit; padding: var(--sp-1) var(--sp-2); }
+.mk-sep { width: 1px; align-self: stretch; background: var(--line); }
+.mk-note { max-width: var(--measure); margin: 0 auto var(--sp-6); color: var(--ink-2); font-size: var(--fs-sm); text-align: center; min-height: 3em; }
+.mk-stage { margin: 0 auto; }
+.mk-frame { display: block; width: 390px; height: 2300px; margin: 0 auto; border: 1px solid var(--line); }
+.is-embed .mk-h1, .is-embed .mk-lead, .is-embed .mk-bar, .is-embed .mk-note { display: none; }
+.is-embed .mk { padding: 0 var(--page-pad); }
+
+/* ════ → css/app.css if chosen ═══════════════════════════════════════════════════════════ */
+
+/* ── A · The area's ambience ──
+   The hero's upper part (the title card and the bench) is the area's scene, as the arena's stage
+   draws it: the ramp mid → deep → black, and the bench on a black floor whose edge catches the
+   area's light. The particles are a canvas over it, masked out before the figures. */
+.v-a .hmC-hero { padding-top: 0; }
+.hmA-scene { display: none; }
+.v-a .hmA-scene { display: block; position: absolute; inset: 0 0 auto; height: var(--hmA-h, 440px); z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(60% 70% at 50% 60%, transparent 35%, var(--scene-bg) 100%),
+    linear-gradient(to bottom,
+      color-mix(in oklab, var(--area-m) 70%, var(--scene-bg)) 0%,
+      color-mix(in oklab, var(--area-d) 70%, var(--scene-bg)) 60%,
+      var(--scene-bg) 100%);
+  -webkit-mask: radial-gradient(closest-side at 50% 50%, #000 45%, transparent 100%); mask: radial-gradient(closest-side at 50% 50%, #000 45%, transparent 100%); }
+.hmA-fx { position: absolute; inset: 0; width: 100%; height: 100%; }
+/* The black floor the bench stands on, with the area's light on its edge. */
+.v-a .hmC-bench::after { content: ''; position: absolute; left: -60%; right: -60%; bottom: -10px; height: 12px; z-index: -1;
+  background: var(--scene-bg); box-shadow: 0 -1px 0 color-mix(in oklab, var(--area-l) 55%, transparent);
+  -webkit-mask: linear-gradient(to right, transparent, #000 25%, #000 75%, transparent); mask: linear-gradient(to right, transparent, #000 25%, #000 75%, transparent); }
+/* The bench's light: the game's benches sit under a small lamp; here it breathes. */
+.v-a .hmC-bench::before { content: ''; position: absolute; left: 50%; top: 50%; width: 260%; aspect-ratio: 1.6; translate: -50% -60%; z-index: -1;
+  background: radial-gradient(closest-side, color-mix(in oklab, var(--area-l) 30%, transparent), transparent); }
+@media (prefers-reduced-motion: no-preference) {
+  .v-a .hmC-bench::before { animation: hmA-breathe 5s var(--ease-fade) infinite alternate; }
+}
+@keyframes hmA-breathe { from { opacity: 0.55; } to { opacity: 1; } }
+/* The game's area title card: the name between two thin ornaments. */
+.hmA-orn { display: none; }
+.v-a .hmA-orn { display: block; width: min(237px, 60%); height: auto; opacity: 0.8; }
+.v-a .hmA-orn.is-top { transform: scaleY(-1); margin-top: var(--sp-10, var(--sp-8)); }
+.v-a .hmC-sup { margin-top: var(--sp-2); }
+
+/* ── B · The area's map ── */
+.hmB-map { display: none; }
+.v-b .hmC-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: var(--sp-8); width: 100%; }
+.v-b .hmB-map { display: block; position: relative; width: 100%; }
+.hmB-canvas { position: relative; margin: 0 auto; }
+.hmB-room { position: absolute; background-image: url(assets/map/rooms-full.png); background-repeat: no-repeat; }
+.hmB-pin { position: absolute; translate: -50% -50%; background-image: url(assets/map/pins.png); background-repeat: no-repeat; }
+.hmB-here { position: absolute; translate: -50% -100%; width: 26px; height: 30px; background: url(assets/hud/knight.png) center / contain no-repeat;
+  filter: drop-shadow(0 0 6px var(--area-l)); }
+@media (prefers-reduced-motion: no-preference) {
+  .hmB-ring { position: absolute; width: 18px; height: 18px; translate: -50% -50%; border-radius: 50%; border: 1px solid var(--area-l);
+    animation: hmB-ring 2.4s var(--ease) infinite; }
+}
+@keyframes hmB-ring { from { transform: scale(0.6); opacity: 1; } to { transform: scale(3); opacity: 0; } }
+.hmB-miss { position: absolute; translate: -50% -50%; width: 22px; height: 22px; padding: 0; border: 0; background: none; cursor: pointer; }
+.hmB-miss img { width: 100%; height: 100%; object-fit: contain; filter: brightness(0.6) saturate(0.5); transition: filter var(--dur) var(--ease), transform var(--dur) var(--ease); }
+.hmB-miss:is(:hover, :focus-visible, .is-lit) img { filter: none; transform: scale(1.35); }
+.hmB-cap { margin-top: var(--sp-2); font-size: var(--fs-xs); color: var(--muted); text-align: center; }
+/* With the map, "Missing nearby" is the list of places; the grid's cells light their pin. */
+.v-b .hm-near-cell.is-lit { color: var(--accent); }
+
+/* ── C · The arrival ── */
+.hmC-bar { display: none; }
+.v-c .hmC-bar { display: flex; width: min(420px, 100%); height: 6px; margin: var(--sp-3) auto 0; background: var(--inv-line); position: relative; overflow: hidden; }
+.hmC-bar i { display: block; height: 100%; background: var(--bone, var(--ink-2)); }
+.hmC-bar i.is-new { background: var(--ink-strong); box-shadow: 0 0 10px var(--ink-strong); }
+@media (prefers-reduced-motion: no-preference) {
+  .v-c.is-enter .hmC-sup, .v-c.is-enter .hmA-orn { animation: hmC-fade 1.2s var(--ease-fade) both; }
+  .v-c.is-enter .hmC-area { animation: hmC-card 1.8s var(--ease-fade) both; }
+  .v-c.is-enter .hmC-bench { animation: hmC-fade 1.2s 0.5s var(--ease-fade) both; }
+  .v-c.is-enter .hmC-bar i { transition: width 1.2s 1.1s var(--ease); }
+  .v-c.is-enter .hmC-bar i.is-new { animation: hmC-glow 1.6s 2.2s var(--ease-fade) 2 alternate both; }
+  .v-c.is-enter .hm-list > .hm-item { animation: hmC-fade 0.5s calc(1.6s + var(--i) * 0.18s) var(--ease-fade) both; }
+  .v-c.is-enter .hm-list > .hm-item::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(100deg, transparent 30%, color-mix(in oklab, var(--ink-strong) 22%, transparent) 50%, transparent 70%) no-repeat;
+    background-size: 250% 100%; animation: hmC-shine 0.9s calc(1.75s + var(--i) * 0.18s) var(--ease) both; }
+  .v-c .hmC-shade-art { animation: hmC-bob 3.2s var(--ease-fade) infinite alternate; }
+}
+.v-c .hm-item { position: relative; }
+@keyframes hmC-fade { from { opacity: 0; } }
+@keyframes hmC-card { from { opacity: 0; filter: blur(6px); } }
+@keyframes hmC-shine { from { background-position: 120% 0; } to { background-position: -120% 0; } }
+@keyframes hmC-glow { to { opacity: 0.35; } }
+@keyframes hmC-bob { to { transform: translateY(-6px); } }
+/* The shade block, drawn: your shade floating, or its empty place. */
+.hmC-shade { display: none; }
+.v-c .hm-shade, .v-c .hmC-shade-none { display: none; }
+.v-c .hmC-shade { display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); align-self: stretch; text-align: center; }
+.hmC-shade-art { width: 72px; height: auto; filter: drop-shadow(0 0 12px color-mix(in oklab, var(--area-l) 50%, transparent)); }
+.hmC-shade.is-none .hmC-shade-art { opacity: 0.12; filter: grayscale(1); }
+.hmC-shade p { margin: 0; font-size: var(--fs-sm); color: var(--ink-2); max-width: 28ch; }
+
+@media (max-width: 699px) {
+  .v-b .hmC-top { grid-template-columns: minmax(0, 1fr); }
+}
+</style>
+</head>
+<body>
+<script src="js/i18n.js"></script>
+<script src="js/data.js"></script>
+<script src="js/rooms.js"></script>
+<script src="js/collectibles.js"></script>
+<script src="js/map.js"></script>
+<script src="js/benches.js"></script>
+
+<div class="mk">
+  <h1 class="mk-h1">Your game, alive</h1>
+  <p class="mk-lead">The screen with a game imported, a sample half done (two saves apart). Three layers you can take
+    one by one or together; switch the area to see how each one changes with where you rest.</p>
+  <div class="mk-bar" id="bar"></div>
+  <p class="mk-note" id="note"></p>
+  <div class="mk-stage" id="stage"></div>
+</div>
+
+<script>
+'use strict';
+const HK = globalThis.HK, D = HK.data, R = HK.rooms, CO = HK.collectibles, M = HK.map, BE = HK.benches;
+const q = new URLSearchParams(location.search);
+const still = q.get('still') === '1', embed = q.get('embed') === '1';
+if (embed) document.documentElement.classList.add('is-embed');   // screenshots: the arrival's end state, no motion
+const st = { v: q.get('v') || 'all', area: q.get('area') || 'city', shade: q.get('shade') === '1', phone: q.get('w') === '390' };
+const es = (o) => (o && (o.es || o.en)) || '';
+const CORNER = '<svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg>';
+const brackets = '<span class="frame-line" aria-hidden="true"></span>' + ['tl', 'tr', 'bl', 'br'].map((c) => `<span class="bk ${c}" aria-hidden="true">${CORNER}</span>`).join('');
+const PLAQUE = '<svg class="screen-plaque" viewBox="0 0 100 30" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><polygon class="is-outer" points="6,1 94,1 99.5,15 94,29 6,29 0.5,15" vector-effect="non-scaling-stroke"/><polygon class="is-inner" points="8,4 92,4 96.5,15 92,26 8,26 3.5,15" vector-effect="non-scaling-stroke"/></svg>';
+
+const VARIANTS = {
+  now: ['Now', 'The screen as it is today.'],
+  a: ['A · Ambience', 'The bench in its area\'s scene: the ramp and the black floor of the arena, the game\'s title ornament, the area\'s own particles and the bench\'s light breathing. Changes with every area.'],
+  b: ['B · Area map', 'The game\'s own map of the area you rest in, beside the title card: your bench (with the Knight), your shade and what you\'re missing there as pins. Hovering a place under "Missing nearby" lights its pin.'],
+  c: ['C · Arrival', 'The screen tells what changed as it opens: the name fades in like the game\'s title card, the figures count up from the last save, the bar lights the % you just gained and each new thing comes in with a shine. The shade, drawn.'],
+  all: ['A + B + C', 'The three together.'],
+};
+const AREAS = ['city', 'crossroads', 'greenpath', 'fungal', 'fog', 'gardens', 'waterways', 'crystal', 'resting', 'deepnest', 'basin', 'edge', 'dirtmouth', 'cliffs', 'hive'];
+const BENCH = { city: 'Ruins1_29', crossroads: 'Crossroads_30', greenpath: 'Fungus1_01b', fungal: 'Fungus2_02', fog: 'Fungus3_archive', gardens: 'Fungus1_24',
+  waterways: 'Waterways_02', crystal: 'Mines_18', resting: 'RestingGrounds_09', deepnest: 'Deepnest_14', basin: 'Abyss_18', edge: 'Deepnest_East_06',
+  dirtmouth: 'Town', cliffs: 'Room_nailmaster', hive: 'Hive_01' };
+/* The sample: the same two saves for every area (what changed doesn't depend on the bench). */
+const PREV = { pct: 75, geo: 3710, journal: 27 }, NOW = { pct: 77, time: 3 * 3600 + 20 * 60, geo: 4083, journal: 29, jTotal: 149 };
+const since = () => [
+  { name: 'Gran cáscara centinela', art: D.art('journal', 'great-husk-sentry'), note: 'Diario' },
+  { name: 'Caballeros vigía', art: D.art('journal', 'watcher-knights'), note: 'Diario, completa' },
+  { name: 'Lurien, el Vigilante', pin: 'dreamer-lurien' },
+  { name: 'Larva cautiva', sub: es(R.AREAS[st.area]), art: D.art(...D.COLLECTIBLE_KINDS.grub.art) },
+  { name: 'Larva cautiva', sub: es(R.AREAS[st.area]), art: D.art(...D.COLLECTIBLE_KINDS.grub.art) },
+];
+
+const has = (l) => st.v === 'all' || st.v === l;
+const areaVars = (a) => { const lt = (R.AREAS[a] || {}).light || 'crossroads';
+  return `--area-l: var(--area-${lt}-light); --area-m: var(--area-${lt}-mid); --area-d: var(--area-${lt}-deep);`; };
+const placeName = (scene) => es(R.PLACES[R.placeOf(scene)]) || es(R.AREAS[R.areaOf(scene)]);
+
+function benchHtml(scene) {
+  const [key, y] = BE.SCENES[scene] || BE.SCENES.Crossroads_30;
+  const [w, h, x] = BE.ART[key];
+  return `<div class="hmC-bench" aria-hidden="true" style="--bw: ${w}; --bh: ${h}; --bx: ${x}; --by: ${y};">
+    <img class="hmC-seat" src="assets/benches/${key}.png" alt="" width="${w}" height="${h}"><span class="hmC-kn"></span></div>`;
+}
+const fig = (k, v, big, id) => `<div class="hm-fig${big ? ' is-big' : ''}"><span class="hm-fig-k">${k}</span><span class="hm-fig-v"${id ? ` id="${id}"` : ''}>${v}</span></div>`;
+
+/* ── The area's map: its rooms from the game's atlas, the bench, the shade, what's missing ── */
+function missing() {
+  return CO.ITEMS.filter((it) => R.areaOf(it.scene) === st.area && M.ROOMS[it.scene]).filter((_, i) => i % 3 !== 1).slice(0, 9);
+}
+function mapHtml(maxW, maxH) {
+  const ai = M.AREA_IDS.indexOf(st.area);
+  const rooms = Object.entries(M.ROOMS).filter(([, r]) => r[0] === ai);
+  if (!rooms.length) return `<p class="hmB-cap">(This area has no map of its own in the game.)</p>`;
+  let x0 = Infinity, y0 = -Infinity, x1 = -Infinity, y1 = Infinity;
+  for (const [, r] of rooms) { x0 = Math.min(x0, r[1] - r[3] / 2); x1 = Math.max(x1, r[1] + r[3] / 2); y0 = Math.max(y0, r[2] + r[4] / 2); y1 = Math.min(y1, r[2] - r[4] / 2); }
+  const PX = 100, [aw, ah] = M.ATLAS.full, [pw, ph] = M.ATLAS.pins;
+  const W = (x1 - x0) * PX, H = (y0 - y1) * PX, k = Math.min(maxW / W, maxH / H, 1.6);
+  const X = (x) => (x - x0) * PX * k, Y = (y) => (y0 - y) * PX * k;
+  const roomsHtml = rooms.map(([, r]) => { const [cx, cy, cw, ch] = r[7];
+    return `<span class="hmB-room" style="left:${X(r[1] - r[3] / 2)}px;top:${Y(r[2] + r[4] / 2)}px;width:${cw * k}px;height:${ch * k}px;background-position:${-cx * k}px ${-cy * k}px;background-size:${aw * k}px ${ah * k}px"></span>`; }).join('');
+  const pin = (key, x, y, s = 1) => { const [px, py, w, h] = M.PIN_ART[key];
+    return `<span class="hmB-pin" style="left:${X(x)}px;top:${Y(y)}px;width:${w * s}px;height:${h * s}px;background-position:${-px * s}px ${-py * s}px;background-size:${pw * s}px ${ph * s}px"></span>`; };
+  const bp = M.PINS.find((p) => p[0] === 'bench' && p[1] === BENCH[st.area]) || (() => { const r = M.ROOMS[BENCH[st.area]]; return r && ['bench', '', r[1], r[2]]; })();
+  let marks = '';
+  if (bp) marks += pin('bench', bp[2], bp[3], 0.4) + `<span class="hmB-ring" style="left:${X(bp[2])}px;top:${Y(bp[3])}px"></span><span class="hmB-here" style="left:${X(bp[2])}px;top:${Y(bp[3]) - 8}px"></span>`;
+  if (st.shade) { const r = rooms[Math.floor(rooms.length * 0.7)][1]; marks += pin('shade', r[1], r[2], 0.45); }
+  marks += missing().map((it, i) => { const r = M.ROOMS[it.scene], kd = D.COLLECTIBLE_KINDS[it.kind];
+    return `<button type="button" class="hmB-miss" data-i="${i}" style="left:${X(r[1])}px;top:${Y(r[2])}px" title="${es(kd)} · ${placeName(it.scene)}"><img src="${D.art(...kd.art)}" alt=""></button>`; }).join('');
+  return `<div class="hmB-canvas" style="width:${W * k}px;height:${H * k}px">${roomsHtml}${marks}</div>
+    <p class="hmB-cap">${es(R.AREAS[st.area])} · ${missing().length} por encontrar${st.shade ? ' · tu sombra' : ''}</p>`;
+}
+
+/* ── The screen ── */
+function render() {
+  const phone = st.phone, a = st.area, areaName = es(R.AREAS[a]);
+  const cls = ['gear-body', 'hm', 'has-area', has('a') && 'v-a', has('b') && 'v-b', has('c') && 'v-c', has('c') && !still && 'is-enter'].filter(Boolean).join(' ');
+  const c = has('c') && !still;
+  const cv = has('c');
+  const bar = `<div class="hmC-bar" aria-hidden="true"><i id="bar-old" style="width:${(c ? 0 : PREV.pct) / 112 * 100}%"></i><i id="bar-new" class="is-new" style="width:${(c ? 0 : NOW.pct - PREV.pct) / 112 * 100}%"></i></div>`;
+  const orn = `<img class="hmA-orn is-top" src="${D.art('hunter', 'fleur')}" alt="">`;
+  const orn2 = `<img class="hmA-orn" src="${D.art('hunter', 'fleur')}" alt="">`;
+  const card = `${orn}<span class="hmC-sup">Descansas en</span><h3 class="hmC-area">${areaName}</h3>${orn2}${benchHtml(BENCH[a])}
+    <div class="hm-link-row"><span class="hm-live is-live"><i class="nav-live is-live"></i>En vivo</span></div>
+    <span class="hm-when">Partida 1 · hace 12 minutos</span>`;
+  const figs = `<div class="hm-figs hmC-figs">
+      ${fig('Finalización', `<b id="f-pct">${c ? PREV.pct : NOW.pct}</b><span class="u">% / 112</span>`, true)}
+      ${fig('Tiempo', '3<span class="u">h</span> 20<span class="u">min</span>')}
+      ${fig('Geo', `<b id="f-geo">${c ? PREV.geo : NOW.geo}</b>`)}
+      ${fig('Diario', `<b id="f-hj">${c ? PREV.journal : NOW.journal}</b><span class="u">/ ${NOW.jTotal}</span>`)}
+    </div>${bar}`;
+  const narrow = phone || innerWidth < 700, mapW = narrow ? 290 : 470, mapH = narrow ? 240 : 340;
+  const top = has('b') ? `<div class="hmC-top"><div style="display:flex;flex-direction:column;align-items:center;gap:var(--sp-2)">${card}${figs}</div>
+      <div class="hmB-map">${mapHtml(mapW, mapH)}</div></div>` : card + figs;
+
+  const rows = since().map((s, i) => `<li class="hm-item" style="--i:${i}"><span class="hm-item-art">${s.art ? `<img src="${s.art}" alt="">` : s.pin && cv ? pinImg(s.pin) : ''}</span>
+      <span class="hm-item-name">${s.name}${s.sub ? `<small>${s.sub}</small>` : ''}</span>${s.note ? `<span class="tag hm-item-k">${s.note}</span>` : '<span></span>'}<span></span></li>`).join('')
+    + `<li class="hm-item" style="--i:5"><span class="hm-item-art"></span><span class="hm-item-name">Finalización</span><span class="hm-item-v">75 → 77 %</span><span></span></li>`;
+  const shadeArea = es(R.AREAS[a]);
+  const shade = `<section class="hm-block"><h3 class="block-head">Tu sombra</h3>
+      ${st.shade ? `<div class="hm-shade"><img src="${D.art('hud', 'knight')}" alt=""><p>Tu sombra te espera en ${shadeArea} con 1250 geo.</p></div>`
+        : `<div class="hmC-shade-none">${'<div class="empty-state"><span class="empty-orn"></span><p>No hay ninguna sombra esperándote.</p></div>'}</div>`}
+      <div class="hmC-shade${st.shade ? '' : ' is-none'}"><img class="hmC-shade-art" src="assets/knight/shade.png" alt="">
+        <p>${st.shade ? `Tu sombra te espera en ${shadeArea} con <b>1250</b> geo.` : 'Ninguna sombra te espera: moriste por última vez sin perder geo.'}</p></div>
+    </section>`;
+  const cells = missing().map((it, i) => { const kd = D.COLLECTIBLE_KINDS[it.kind];
+    return `<button type="button" class="hm-near-cell" data-i="${i}"><img src="${D.art(...kd.art)}" alt="">${placeName(it.scene)}</button>`; }).join('');
+  const near = `<section class="hm-block"><h3 class="block-head">Te falta cerca<span class="block-note">${areaName} · ${missing().length}</span></h3>
+      <div class="hm-near">${cells}</div><button type="button" class="text-btn">Verlo en el mapa</button></section>`;
+
+  const stage = document.getElementById('stage');
+  document.getElementById('note').textContent = VARIANTS[st.v][1];
+  paintBar();
+  /* The phone is this same page in a 390 px frame: the site's CSS answers to the window's width. */
+  if (phone && !embed) {
+    stage.innerHTML = `<iframe class="mk-frame" title="390 px" src="design/17-home-alive.html?v=${st.v}&area=${st.area}${st.shade ? '&shade=1' : ''}${still ? '&still=1' : ''}&embed=1"></iframe>`;
+    history.replaceState(null, '', `?v=${st.v}&area=${st.area}${st.shade ? '&shade=1' : ''}&w=390${still ? '&still=1' : ''}`);
+    return;
+  }
+  stage.innerHTML = `<div class="${cls}" style="${areaVars(a)}">${brackets}<header class="inv-head screen-head">${PLAQUE}<h2 class="sec-title screen-title">Partida</h2></header>
+    <div class="hmC-hero">${has('a') ? '<div class="hmA-scene"><canvas class="hmA-fx"></canvas></div>' : ''}${top}</div>
+    <div class="hmC-cols"><section class="hm-block"><h3 class="block-head">Desde la última vez<span class="block-note">desde el guardado de hace 1 hora</span></h3><ul class="hm-list">${rows}</ul></section>${shade}${near}</div></div>`;
+  if (has('a')) fx(stage.querySelector('.hmA-fx'));
+  if (c) arrive();
+  if (embed) return;
+  history.replaceState(null, '', `?v=${st.v}&area=${st.area}${st.shade ? '&shade=1' : ''}${phone ? '&w=390' : ''}${still ? '&still=1' : ''}`);
+}
+function pinImg(key) {
+  const [px, py, w, h] = M.PIN_ART[key], [pw, ph] = M.ATLAS.pins, s = 28 / Math.max(w, h);
+  return `<span style="display:block;width:${w * s}px;height:${h * s}px;background:url(assets/map/pins.png) ${-px * s}px ${-py * s}px / ${pw * s}px ${ph * s}px no-repeat"></span>`;
+}
+
+/* C: the figures count up from the last save, then the bar fills and lights what's new. */
+function arrive() {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const count = (id, from, to, delay) => {
+    const node = document.getElementById(id); if (!node) return;
+    if (reduce) { node.textContent = to; return; }
+    const t0 = performance.now() + delay, dur = 1100;
+    const step = (t) => { const p = Math.min(1, Math.max(0, (t - t0) / dur)), e = 1 - Math.pow(1 - p, 3);
+      node.textContent = Math.round(from + (to - from) * e); if (p < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  };
+  count('f-pct', PREV.pct, NOW.pct, 1000); count('f-geo', PREV.geo, NOW.geo, 1000); count('f-hj', PREV.journal, NOW.journal, 1000);
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const o = document.getElementById('bar-old'), n = document.getElementById('bar-new');
+    if (o) o.style.width = PREV.pct / 112 * 100 + '%';
+    if (n) n.style.width = (NOW.pct - PREV.pct) / 112 * 100 + '%';
+  }));
+}
+
+/* A: each area's own particles, on a canvas over its scene. Colours from the tokens: the area's
+   light, and soul's white for the few that glow. Still under reduced motion (one frame drawn). */
+const FX = {
+  city:       { n: 90, kind: 'rain' },
+  waterways:  { n: 26, kind: 'bubble' },
+  crossroads: { n: 30, kind: 'mote' },
+  dirtmouth:  { n: 40, kind: 'wind' },
+  cliffs:     { n: 50, kind: 'wind' },
+  greenpath:  { n: 22, kind: 'leaf' },
+  gardens:    { n: 22, kind: 'leaf' },
+  fungal:     { n: 34, kind: 'spore' },
+  fog:        { n: 18, kind: 'bubble' },
+  crystal:    { n: 40, kind: 'glint' },
+  resting:    { n: 34, kind: 'spore', glow: true },
+  deepnest:   { n: 30, kind: 'dust' },
+  basin:      { n: 30, kind: 'dust' },
+  edge:       { n: 90, kind: 'ash' },
+  hive:       { n: 26, kind: 'spore' },
+};
+let fxRun = 0;
+function fx(cv) {
+  const run = ++fxRun, cfg = FX[st.area] || FX.crossroads;
+  const box = cv.getBoundingClientRect(), dpr = devicePixelRatio || 1;
+  cv.width = box.width * dpr; cv.height = box.height * dpr;
+  const g = cv.getContext('2d'); g.scale(dpr, dpr);
+  const css = getComputedStyle(cv);
+  const light = css.getPropertyValue('--area-l').trim() || '#fff', white = css.getPropertyValue('--ink-strong').trim() || '#fff';
+  const W = box.width, H = box.height, R0 = Math.random;
+  const ps = Array.from({ length: cfg.n }, () => ({ x: R0() * W, y: R0() * H, s: R0(), a: R0() * Math.PI * 2, v: 0.4 + R0() * 0.8 }));
+  const draw = (t) => {
+    if (run !== fxRun) return;
+    g.clearRect(0, 0, W, H);
+    for (const p of ps) {
+      g.globalAlpha = 0.25 + p.s * 0.5;
+      switch (cfg.kind) {
+        case 'rain': p.y += 7 * p.v; p.x -= 1.2 * p.v; g.strokeStyle = light; g.lineWidth = 1; g.beginPath(); g.moveTo(p.x, p.y); g.lineTo(p.x + 2.4, p.y - 14 * p.v); g.stroke(); break;
+        case 'ash': p.y += 0.9 * p.v; p.x += 0.8 + Math.sin(t / 900 + p.a) * 0.6; g.fillStyle = white; g.fillRect(p.x, p.y, 1 + p.s * 2, 1 + p.s * 2); break;
+        case 'wind': p.x += 3 * p.v; p.y += Math.sin(t / 700 + p.a) * 0.3; g.strokeStyle = light; g.beginPath(); g.moveTo(p.x, p.y); g.lineTo(p.x - 18 * p.v, p.y); g.stroke(); break;
+        case 'leaf': p.y += 0.6 * p.v; p.x += Math.sin(t / 800 + p.a) * 0.9; g.fillStyle = light; g.save(); g.translate(p.x, p.y); g.rotate(Math.sin(t / 600 + p.a)); g.beginPath(); g.ellipse(0, 0, 4 + p.s * 3, 1.6 + p.s, 0, 0, Math.PI * 2); g.fill(); g.restore(); break;
+        case 'spore': case 'mote': case 'bubble': {
+          p.y -= (cfg.kind === 'mote' ? 0.15 : 0.45) * p.v; p.x += Math.sin(t / 1200 + p.a) * 0.35;
+          const r = cfg.kind === 'bubble' ? 2 + p.s * 4 : 1 + p.s * 1.8;
+          if (cfg.glow || cfg.kind === 'spore') { g.shadowColor = light; g.shadowBlur = 8; }
+          g.fillStyle = cfg.glow ? white : light; g.strokeStyle = light; g.beginPath(); g.arc(p.x, p.y, r, 0, Math.PI * 2);
+          cfg.kind === 'bubble' ? g.stroke() : g.fill(); g.shadowBlur = 0; break; }
+        case 'glint': { const k = (Math.sin(t / 500 * p.v + p.a) + 1) / 2; g.globalAlpha = k * 0.9; g.fillStyle = white; g.shadowColor = light; g.shadowBlur = 10;
+          const r = 1 + k * 2.5; g.beginPath(); g.moveTo(p.x, p.y - r * 2); g.lineTo(p.x + r * 0.5, p.y); g.lineTo(p.x, p.y + r * 2); g.lineTo(p.x - r * 0.5, p.y); g.fill(); g.shadowBlur = 0; break; }
+        case 'dust': p.y += 0.25 * p.v; p.x += Math.sin(t / 1500 + p.a) * 0.2; g.fillStyle = light; g.fillRect(p.x, p.y, 1.5, 1.5); break;
+      }
+      if (p.y > H + 20) { p.y = -20; p.x = R0() * W; } if (p.y < -20) { p.y = H + 20; p.x = R0() * W; }
+      if (p.x > W + 20) p.x = -20; if (p.x < -20) p.x = W + 20;
+    }
+    g.globalAlpha = 1;
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) requestAnimationFrame(draw);
+  };
+  requestAnimationFrame(draw);
+}
+
+/* B: a place under "Missing nearby" lights its pin on the map, and the other way round. */
+document.addEventListener('pointerover', (e) => {
+  const b = e.target.closest('[data-i]'); document.querySelectorAll('.is-lit').forEach((x) => x.classList.remove('is-lit'));
+  if (b && has('b')) document.querySelectorAll(`[data-i="${b.dataset.i}"]`).forEach((x) => x.classList.add('is-lit'));
+});
+
+function paintBar() {
+  const btn = (k, v, lbl) => `<button type="button" data-k="${k}" data-v="${v}" aria-pressed="${String(st[k]) === String(v)}">${lbl}</button>`;
+  document.getElementById('bar').innerHTML = `<b>Variant</b>${Object.entries(VARIANTS).map(([k, [l]]) => btn('v', k, l)).join('')}
+    <span class="mk-sep"></span><b>Area</b><select id="area">${AREAS.map((a) => `<option value="${a}"${a === st.area ? ' selected' : ''}>${es(R.AREAS[a])}</option>`).join('')}</select>
+    <span class="mk-sep"></span>${btn('shade', !st.shade, st.shade ? 'Shade: yes' : 'Shade: none')}
+    ${btn('phone', !st.phone, st.phone ? '390 px' : 'Desktop')}
+    <span class="mk-sep"></span><button type="button" data-k="replay">Replay arrival</button>`;
+}
+document.getElementById('bar').addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.k === 'replay') { render(); return; }
+  const v = b.dataset.v; st[b.dataset.k] = v === 'true' ? true : v === 'false' ? false : v; render();
+});
+document.getElementById('bar').addEventListener('change', (e) => { if (e.target.id === 'area') { st.area = e.target.value; render(); } });
+render();
+</script>
+</body>
+</html>

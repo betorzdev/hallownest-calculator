@@ -200,6 +200,8 @@
       { es: 'Impacto', en: 'Slam' },
       { es: 'Impacto falso', en: 'Fake Out Slam' },
       { es: 'Impactos alterados', en: 'Altered Slams' },
+      // The Spanish wiki doesn't name it.
+      { es: 'Fake Out Altered Slams', en: 'Fake Out Altered Slams' },
       { es: 'Orbes alterados', en: 'Altered Orb', proj: 'block' }
     ] },
   { id: 'dung-defender', kind: 'boss', name: { es: 'Defensor del Estiércol', en: 'Dung Defender' },
@@ -303,14 +305,15 @@
       { es: 'Tormenta de telaraña', en: 'Thread Storm' },
       { es: 'Lanzamiento', en: 'Needle Throw', proj: 'pierce' },
       { es: 'Parada', en: 'Parry', warn: { es: 'golpear aquí no le hace daño', en: 'hitting here deals no damage' } },
-      { es: 'Trampas de púas', en: 'Spike Traps', proj: 'pierce' }
+      { es: 'Trampas de púas', en: 'Spike Traps', proj: 'block' }   // "destroyed by Nail attacks, Spells, Grimmchild, or Dreamshield" (wiki)
     ] },
   { id: 'traitor-lord', kind: 'boss', name: { es: 'Señor desleal', en: 'Traitor Lord' },
     zone: { es: 'Jardines de la Reina', en: 'Queen’s Gardens' }, hp: 800, at: 800, asra: 1300, dmg: 2,
     attacks: [
       { es: 'Picado', en: 'Dive' },
       { es: 'Avance', en: 'Dash' },
-      { es: 'Guadañas bailarinas', en: 'Dancing Glaive', proj: 'block' },
+      // "All attacks except the Dancing Glaive deal two Masks" (wiki).
+      { es: 'Guadañas bailarinas', en: 'Dancing Glaive', proj: 'block', dmg: 1 },
       { es: 'Triturador de tierra', en: 'Ground Pound' }
     ] },
   { id: 'hollow-knight', kind: 'boss', dreamNail: { fromPhase: 3 }, noFlukes: true, name: { es: 'Hollow Knight', en: 'The Hollow Knight' },
@@ -328,11 +331,13 @@
       { es: 'Triple corte', en: 'Triple Slash' },
       { es: 'Estocada', en: 'Lunge' },
       { es: 'Parada', en: 'Parry', warn: { es: 'golpear aquí no le hace daño', en: 'hitting here deals no damage' } },
-      { es: 'Pilar llameante en picada', en: 'Diving Flame Pillar' },
+      { es: 'Pilar llameante en picada', en: 'Diving Flame Pillar', dmg: 2 },   // "deals two Masks" (wiki)
       { es: 'Bombardeo', en: 'Barrage', proj: 'block' },
       { es: 'Brote', en: 'Outbreak' },
       { es: 'Globo rebotador', en: 'Bouncing Balloon' },
-      { es: 'Arrepentimiento', en: 'Self Stab', warn: { es: 'mientras dura, todo tu daño baja a 1', en: 'while it lasts, all your damage drops to 1' } }
+      { es: 'Arrepentimiento', en: 'Self Stab', warn: { es: 'mientras dura, todo tu daño baja a 1', en: 'while it lasts, all your damage drops to 1' } },
+      // Phase 4 only: one swing of the Triple Slash and it collapses. The Spanish wiki doesn't name it.
+      { es: 'Deterioration', en: 'Deterioration' }
     ] },
   { id: 'the-radiance', kind: 'boss', name: { es: 'El Destello', en: 'The Radiance' },
     zone: { es: 'No más sueños', en: 'Dream No More' }, hp: 1700, at: null, asra: null, dmg: 2,
@@ -348,8 +353,8 @@
       { es: 'Lluvia de espadas', en: 'Sword Rain', proj: 'pierce' },
       { es: 'Pared de espadas', en: 'Sword Wall', proj: 'pierce' },
       { es: 'Pared de luz', en: 'Wall of Light' },
-      { es: 'Orbe', en: 'Orb', proj: 'pierce' },
-      { es: 'Suelo espinoso', en: 'Spike Floor' },
+      { es: 'Orbe', en: 'Orb' },   // on neither of the "Dreamshield" page's lists
+      { es: 'Suelo espinoso', en: 'Spike Floor', dmg: 1 },
       { es: 'Gran haz', en: 'Big Beam' }
     ] },
   { id: 'massive-moss-charger', kind: 'boss', name: { es: 'Musgoagresor gigante', en: 'Massive Moss Charger' },
@@ -387,6 +392,7 @@
     summons: [
       { id: 'hiveling', note: { es: '7 al empezar y 7 por Cañón de abejas; el aguijón no las daña', en: '7 at the start and 7 per Swarm Release; the nail does not hurt them' } }
     ],
+    notes: [{ es: 'El Cañón de abejas solo desde 549 de vida; la Granada abeja, desde 779', en: 'Swarm Release only from 549 health; Honey Spikes, from 779' }],
     attacks: [
       { es: 'Estocada', en: 'Lunge' },
       { es: 'Salto', en: 'Leap' },
@@ -470,7 +476,8 @@
       { es: 'Avance uppercut', en: 'Dash Uppercut' },
       { es: 'Espinas de capa', en: 'Cloak Spikes' },
       { es: 'Pilares de llamas', en: 'Flame Pillars' },
-      { es: 'Pez globo', en: 'Pufferfish', proj: 'pierce' }
+      { es: 'Pez globo', en: 'Pufferfish', proj: 'pierce' },
+      { es: 'Teletransporte', en: 'Teleport' }
     ] },
   { id: 'xero', kind: 'boss', dream: true, spellTwice: true, name: { es: 'Xero', en: 'Xero' },
     zone: { es: 'Tierras de Reposo', en: 'Resting Grounds' }, hp: [200, 320, 416, 500, 570], at: 650, asra: 900, dmg: 1,
@@ -555,10 +562,16 @@
         { parts: [{ name: { es: 'Tirano de Almas', en: 'Soul Tyrant' }, hp: 900, at: 900, asra: 1200 }] },
         { parts: [{ name: { es: 'Tirano de Almas', en: 'Soul Tyrant' }, hp: 350, at: 350, asra: 650 }] }
       ],
+    // "Soul Tyrant uses all the same attacks as Soul Master" (wiki), faster; the only one he
+    // doesn't do is the Fake Out Altered Slam. Same names as Soul Master's.
     attacks: [
+      { es: 'Embestida', en: 'Dash' },
+      { es: 'Orbe', en: 'Orb', proj: 'block' },
       { es: 'Reloj', en: 'Clock' },
       { es: 'Impacto', en: 'Slam' },
-      { es: 'Impacto alterado', en: 'Altered Slam' }
+      { es: 'Impacto falso', en: 'Fake Out Slam' },
+      { es: 'Impacto alterado', en: 'Altered Slam' },
+      { es: 'Orbes alterados', en: 'Altered Orb', proj: 'block' }
     ] },
   { id: 'lost-kin', kind: 'boss', dream: true, spellTwice: true, name: { es: 'Familiar Perdido', en: 'Lost Kin' },
     stagger: { hits: 13, combo: 7, window: 2 },
@@ -574,7 +587,8 @@
     ] },
   { id: 'white-defender', kind: 'boss', dream: true, name: { es: 'Defensor Blanco', en: 'White Defender' },
     zone: { es: 'Canales Reales', en: 'Royal Waterways' }, hp: 1600, at: 1600, asra: 1600, dmg: 1,
-    notes: [{ es: 'No se aturde', en: 'Cannot be staggered' }],
+    notes: [{ es: 'No se aturde', en: 'Cannot be staggered' },
+            { es: 'Cada victoria previa le suma una máscara de daño: 1 la primera pelea, 2 la segunda… hasta 5', en: 'Each earlier victory adds a mask to his damage: 1 on the first fight, 2 on the second… up to 5' }],
     attacks: [
       { es: 'Lanzamiento', en: 'Dung Toss', proj: 'block' },
       { es: 'Buceo', en: 'Dive' },
@@ -592,7 +606,8 @@
       { id: 'hopping-zoteling', note: { es: 'desde la 2.ª pelea', en: 'from the 2nd fight on' } },
       { id: 'volatile-zoteling', note: { es: '3–4 bombas, desde la 3.ª pelea', en: '3–4 bombs, from the 3rd fight on' } }
     ],
-    notes: [{ es: '1200 la primera pelea, +100 cada una hasta 1500; en Hogar de Dioses, 1400 fijo', en: '1200 on the first fight, +100 each up to 1500; a flat 1400 in Godhome' }],
+    notes: [{ es: '1200 la primera pelea, +100 cada una hasta 1500; en Hogar de Dioses, 1400 fijo', en: '1200 on the first fight, +100 each up to 1500; a flat 1400 in Godhome' },
+            { es: 'Desde la 4.ª pelea quita una máscara más por cada derrota: 2, 3… hasta 8 en la 10.ª', en: 'From the 4th fight on he takes one more mask per defeat: 2, 3… up to 8 on the 10th' }],
     attacks: [
       { es: 'Molinete', en: 'Flail' },
       { es: 'Escupir Zotitos', en: 'Zoteling Spit', proj: 'pierce' },
@@ -646,7 +661,9 @@
       { es: 'Gran corte', en: 'Great Slash', dmg: 2 },
       { es: 'Corte veloz', en: 'Dash Slash' },
       { es: 'Corte ciclón', en: 'Cyclone Slash' },
-      { es: 'Avance', en: 'Sprint' }
+      { es: 'Avance', en: 'Sprint' },
+      // 2nd phase. The Spanish wiki doesn't name it: the Oblobbles' "Frenzy" is «Frenesí» there.
+      { es: 'Frenesí', en: 'Frenzy' }
     ] },
   { id: 'pure-vessel', kind: 'boss', dreamNail: false, noFlukes: true, name: { es: 'Vasija Pura', en: 'Pure Vessel' },
     stagger: { hits: 12, combo: 9, window: 1 },
@@ -674,7 +691,12 @@
           { name: { es: 'Hermana', en: 'Sister' }, hp: 750, at: 750, asra: 950, art: 'mantis-lord' },
           { name: { es: 'Hermana', en: 'Sister' }, hp: 750, at: 750, asra: 950, art: 'mantis-lord' }] }
       ],
+    // "The Sisters of Battle use all attacks of the 2nd Phase of the Mantis Lords" (wiki), plus
+    // the two the third Sister brings. The Mantis Lords' names for the shared ones.
     attacks: [
+      { es: 'Embestida de lanza', en: 'Lance Dash' },
+      { es: 'Caída de lanza', en: 'Lance Drop' },
+      { es: 'Bumerán de hoja', en: 'Blade Boomerang', proj: 'block' },
       { es: 'Embestida y caída', en: 'Dash & Drop' },
       { es: 'Bumerán', en: 'Boomerang', proj: 'block' }
     ] },
@@ -695,10 +717,10 @@
       { es: 'Lluvia de espadas', en: 'Sword Rain', proj: 'pierce' },
       { es: 'Pared de espadas', en: 'Sword Wall', proj: 'pierce' },
       { es: 'Pared de luz', en: 'Wall of Light' },
-      { es: 'Orbe', en: 'Orb', proj: 'pierce' },
-      { es: 'Suelo espinoso', en: 'Spike Floor' },
+      { es: 'Orbe', en: 'Orb' },   // on neither of the "Dreamshield" page's lists
+      { es: 'Suelo espinoso', en: 'Spike Floor', dmg: 1 },
       { es: 'Gran haz', en: 'Big Beam' },
-      { es: 'Bombardeo de orbes', en: 'Orb Barrage', proj: 'pierce' }
+      { es: 'Bombardeo de orbes', en: 'Orb Barrage' }   // on neither of the "Dreamshield" page's lists
     ] },
   { id: 'aluba', kind: 'enemy', name: { es: 'Aluba', en: 'Aluba' },
     zone: { es: 'Sendero Verde', en: 'Greenpath' }, hp: 1, dmg: 1 },

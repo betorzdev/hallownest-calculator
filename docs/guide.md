@@ -93,12 +93,17 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   easter egg: he focuses soul as the game heals, standing still while the Focus's white light
   (`--focus-glow`) swells around him and fades, then sits again (counted as `knight`).
 - **Your game**, the start screen (`view=home`, `js/app-home.js`; variant C, *the bench*, of
-  `design/10-home-variants.html`): your real game at a glance, in the map's green like Progress.
+  `design/10-home-variants.html`): your real game at a glance.
   - **The area's title card**: *Resting at* over the name of the area of your bench, large, on
     that area's own light (`--area-*-mid/deep`), as the game shows an area's name on entering
-    it; under it the bench, a silhouette of the game's drawn by the site (the wiki's picture
-    comes on Godhome's gold and can't be cut out cleanly), with the Knight sitting on it, lit in
-    the area's colour: a picture of him resting there (css `.hmC-kn`), still, while the Knight
+    it: with a game, **the whole screen's frame takes the area of your bench** (`.hm.has-area`:
+    its line, curls and plaque, from the area's light as any section's lamp; chosen in
+    `design/15-tab-colours.html`), so it changes when you rest elsewhere; with no game (free mode) it's the Inventory's lavender.
+    The card has no light of its own (nor does the invitation's example: it shows your game as
+    it will look, on the frame's black); under it the bench you rest at, as the game draws it (`js/benches.js`: the Salubra's,
+    the toll bench, the Nailmasters', the Mantis Village's, Godhome's…; the town bench when no
+    bench is known), with the Knight sitting on its seat at the game's scale (a bench taller
+    than `--kn-bench-max` shrinks, him with it), lit in the area's colour: a picture of him resting there (css `.hmC-kn`), still, while the Knight
     who marks the tab stays on the bar ("The Knight" above).
   - **The link to the game's file**: *Live*, *Paused* with its *Resume* button (after a reload the
     browser asks for a click; the notice above the screen says so too, here as on the rest), *File
@@ -133,9 +138,26 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
     it's the game's and isn't changed here ([Saves](#saves)). The steps (the folder, the file) are
     the import view's. It replaced the import notice that used to sit above every screen.
   - The **Inventory** is its own screen (`view=game`, `#gear`, `js/app-game.js`), next in the bar (below).
+- **The screens' frame** (every screen: `brackets` and `screenHead` in `js/app.js`, `.frame-line`,
+  `.bk` and `.screen-head` in `css/app.css`), the sister site's (`../pharloom-calculator`; chosen
+  30 Sep in `design/14-sister-variants.html`): a hairline inset all round the panel, a curl in each
+  corner, and **the screen's title in a plaque** astride the top line (a double outline with pointed
+  ends, filled with the plate's black, so the line goes behind it; Godhome's two tabs sit in it).
+  Inside the line, the plate is plain black.
+  The colours are the sections' map tints (Charms, Inventory and Saves City of Tears' lavender;
+  Progress and Map green; the Journal turquoise; Combat pink; Godhome gold), all but Your game's,
+  which follows your bench (below). The Map lies on that black with no box of its own (the large
+  map, over the page, keeps a plate).
+  What went under the title (the Inventory's starting points, the import's lead) opens the screen
+  under the plaque (`.screen-lead`). A band that runs edge to edge (the Charms' band, Your game's
+  title card) stops at the line (`--bleed`). A card inside a screen (the Hall's plaque, the arena's
+  Journal page) has the curls alone, small (`corners`).
+- **Block headings** (`.block-head`, every screen): «◇ SPELLS ———— 5/6»: a hollow diamond in the
+  section's lamp, the heading in Cinzel capitals and a rule running to what follows it (a count, a
+  note, All · None), at the end.
 - **Charms**, the first of the tools: **the sheet, which is the game's Inventory screen** (the mould is the wiki's
   `Inventory_Godseeker_Mode.png`; the mockup, `design/06-sheet-variants.html`): almost pure
-  black, corner brackets, the screen's title, "Charms", and, from top to bottom, **the status
+  black, the screens' frame (below), the screen's title, "Charms", and, from top to bottom, **the status
   block** —everything that matters, above the charm grid and in one row, so that on an 800 px
   tall screen the figures and the grid can be seen at once (`renderStatus`)— and then the
   charm band:
@@ -183,8 +205,12 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
     it, what would remain on removing it); on the six it takes the place of its note, so nothing
     changes height. No green, since a hypothesis isn't an advantage; what gets worse, in red.
     It goes out on click —the figure flashes with its chip— until the pointer moves to another
-    charm, and it doesn't show if the effect depends on health (Fury, Elegy) or if the charm
-    doesn't fit (`paintPreview`).
+    charm, and it doesn't show if the effect depends on health (Fury, Elegy) (`paintPreview`).
+    With no free notch for it, it shows what it would do if you had them, and the Notches row
+    what's missing: the dots it would need as dashed red rings and "0 free → 2 short" (the game
+    wouldn't let it on, so no overcharm magenta). **In a save from the game too**: nothing is equipped there, but
+    hovering still shows what it would change (the grid's note says so: *hover one to see what it
+    would change*); only a pantheon's lock, outside its benches, takes the preview away.
     The **Notches** row too: the ones it would take come out as a lit ring with the centre at
     half tone, breathing —between the used one's full dot and the free one's dark ring, in the
     same slot—, in magenta and lengthening the row if it would overcharm you; over one you
@@ -467,7 +493,7 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
 
 ## Files
 
-- `index.html` — the page; thirty-two classic scripts (it works over `file://`) and GoatCounter's,
+- `index.html` — the page; thirty-five classic scripts (it works over `file://`) and GoatCounter's,
   the visit counter: no cookies, one visit per page load and, as events, the screen switches
   (`screen-*`), the language (`lang-*`), *Share* and the way into a save, as a funnel: the import
   opened (`import-open`), a file read (`import-read`) or refused (`import-bad`), the game imported
@@ -487,7 +513,9 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   with its questions and, below the home, its breadcrumb), `<base href>` back to the root so it
   loads the same files, `<html data-view>` with its screen, and its **About block** under the
   screens: the text search engines read (a heading with the query, two paragraphs, the questions
-  and links to the other pages), in the page's language, shown only on its own screen (Your game on the homes) and language; the
+  and links to the other pages), in the page's language, shown only on its own screen (Your game on the homes) and language, and folded into «About
+  this site» while a save is loaded (its button opens it and folds it again; open without one, as
+  search engines read it); the
   language selector goes to the other language's page ("Languages" below).
   On its own screen and language a page keeps its title and description; elsewhere the site
   writes them as always. A bare hash there means that page's screen (Charms on the homes), and
@@ -545,6 +573,21 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   And `DOORS`: each room's doors, both ways, from the randomizer's `transitions.json` (the
   commit `tools/extract-map.py` reads), each with the room and the door it leads to; a door's
   name says its side of the room (`left1`, `top1`…): the Knight walks them on the map.
+- `js/benches.js` — generated by `tools/extract-benches.py` from the game's own files, not edited
+  by hand: each scene with a bench (the save's `respawnScene`) → its picture in `assets/benches/`,
+  the pieces its scene draws it with laid together (the Nailmasters' back, the toll bench's
+  front…), unflipped, and where the Knight sits on it in each scene: over the floor its collider
+  marks, as high as the game raises him there (its Bench Control FSM's `Adjust Vector`: 0.1 on
+  most town benches, 1.0 on the Nailmasters').
+- `js/scene-objects.js` — generated by `tools/extract-scenes.py` from the game's own scenes, not
+  edited by hand: each scene's tile map size (to place a point in its room, as the game does) and
+  what it holds for the Map: enemies per Journal entry, what breaks and stays broken (by the
+  name the save keeps it under), geo rocks, and ItemChanger's geo chests, soul totems and lore
+  tablets (their text from the game's, both languages). Also the totem's and the tablet's
+  pictures, `assets/world/`.
+- `js/people.js` — the characters you meet again and again (Quirrel, Zote, Cloth, Tiso,
+  Hornet…): each meeting's scene and position and the playerData bool the game sets, read by hand
+  from the game's scenes.
 - `js/map.js` — generated by `tools/extract-map.py` from the game's own files, not edited by
   hand: the game's map (its `Game_Map` in `resources.assets`), each room's centre and size in
   the map's units and where its two drawings are (the rough one, Cornifer's, and the full one
@@ -576,7 +619,8 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   come from the community's ItemChanger (`locations.json`, `items.json`, pinned to a commit);
   what isn't picked up from the floor (the shops, the rewards, the Colosseum…) is set by hand
   from the wiki.
-- `js/completion.js` — your game's completion, the 112%: the wiki's fifteen categories and
+- `js/completion.js` — your game's completion, the 112%: the wiki's worth for each thing, in
+  fourteen categories by what things are (the wiki's fifteen group some by content pack), and
   what each item is read from. Most of it is already in the slot (the build, the charms found,
   the Journal: the game marks the bosses with the same `killed<X>` the Journal reads); the rest
   (equipment, Dreamers, Colosseum, Hornet Sentinel, pantheons cleared, a fragile charm with the
@@ -955,7 +999,7 @@ belongs to. **Spore Shroom** releases its cloud when you focus. With
 Crest on its own) are named under "Your attacks" and aren't simulated. **Dreamshield** comes in
 with the two lists on the wiki's "Dreamshield" page: each enemy attack that's a projectile says
 whether "the Dreamshield blocks it" or "it pierces the Dreamshield" (`proj` in `js/enemies.js`:
-68 attacks from 38 bosses), the blockable ones carry a "Blocked" button that negates it without
+68 attacks from 39 bosses), the blockable ones carry a "Blocked" button that negates it without
 touching you —the heal isn't interrupted, it doesn't count for Carefree Melody, and it doesn't
 kill you on Radiant— and breaks the shield for 2 s on the clock, and "Dreamshield" among your
 attacks hits for base nail by hand, with no soul, and also breaks it. Your header says whether
@@ -1334,16 +1378,22 @@ on Cornifer's map). It's the tablet chosen among three variants in
   in bone over 112. It's the figure the game's map shows with World Sense, counted by
   `js/completion.js` from what the site keeps, and it was checked against the game's own in 51
   real saves: all match. The screen bar's tab carries it too.
-- **One row per category**, the wiki's fifteen in its order (bosses 14, warrior dreams 7,
-  Colosseum 3, charms 36, equipment 14, spells 6, nail arts 3, mask shards 4, vessel fragments 3,
-  nail upgrades 4, Dream Nail and essence 3, Dreamers 3, the Grimm Troupe 6, Lifeblood 1,
-  Godmaster 5): its name, **its things as small pips** —their picture, lit if you have it,
+- **One row per category**, fourteen (bosses 15, warrior dreams 7, Colosseum 3, charms 39,
+  equipment 14, spells 6, nail arts 3, mask shards 4, vessel fragments 3, nail upgrades 4, Dream
+  Nail and essence 3, Dreamers 3, the Grimm Troupe 3, Godmaster 5). The wiki's are fifteen, by
+  content pack: here the things go by what they are and where a game finds them, so the Troupe's
+  other three charms (Dreamshield, Weaversong, Sprintmaster, found outside its ritual) are with the
+  charms, the Hive Knight (Lifeblood's) with the bosses, and the Troupe is its ritual: Grimmchild
+  (or Carefree Melody), its master and its king. Each thing is worth the same, so it's 112 either
+  way. Each row: its name, **its things as small pips** —their picture, lit if you have it,
   dimmed if half done (a spell with one level of two), in shadow if not— and its points, which
-  turn green when the category is complete. Where there's no picture (the Dreamers, the trials,
-  the pantheons), the rule's diamond.
+  turn green when the category is complete. Every thing has its picture: the Dreamers and the
+  trials the game's own pins for them on its map, each pantheon the Hall's statue of its last fight
+  (Oro & Mato, Sheo, Sly, the Pure Vessel). The bosses go in the order a usual playthrough meets
+  them, the warrior dreams in the Hunter's Journal's.
 - **A row opens** (one at a time, remembered in `pgOpen`) to show its things as the Inventory's
   plates. **A tap marks one where the site already keeps it** (not in a save,
-  where the plates are inert and the lead says only to look: the lock, in [Saves](#saves)), so
+  where the plates are inert: the lock, in [Saves](#saves)), so
   no two screens disagree: a
   boss or a warrior dream is its Hunter's Journal entry (as its first defeat; unmarking clears
   it), a charm is your collection (a two-version one, as its first version), and the rest
@@ -1351,12 +1401,16 @@ on Cornifer's map). It's the tablet chosen among three variants in
   Godtuner, the pantheons cleared— is `hollow.progress`. Nightmare King Grimm is its Journal
   entry *or* the banishment; unmarking takes both away. What changes your figures —the masks,
   the vessels, the nail, spells, arts, the cloaks, the Dream Nail— isn't marked here: its plate
-  says *On the Inventory* and takes you there.
-- Hornet's two fights are one Journal entry, so they're told apart by where they happen:
-  *Hornet · Greenpath* (the Journal's entry) and *Hornet · Kingdom's Edge* (the Sentinel).
+  says *On the Inventory* and takes you there (with a save from the game, where nothing's marked
+  by hand, just *Not found*). The masks' plate says the masks you have (5 to 9); their points are
+  the ones past the first five.
+- The names are the game's: Hornet's two fights by their titles, *Hornet Protector* and *Hornet
+  Sentinel* (one Journal entry, its picture); the Seer's point, *Ascension* (its achievement);
+  *Troupe Master Grimm* and *Nightmare King Grimm*, whose plate says *Troupe banished* when that's
+  how you got its point.
 - With a save linked to the game, the screen follows it: each bench repaints it.
 - **The Map is a screen of its own** (`view=map`), the bar's third, in the same section and green;
-  Progress is the figure and the fifteen categories, and nothing else.
+  Progress is the figure and the fourteen categories, and nothing else.
 - **The Map** is the game's own, drawn from its files (its
   `Game_Map`, the one its inventory shows): 344 rooms in 14 areas, each in its area's tint.
   The rooms are as your game draws them (`GameMap.SetupMap`, `RoughMapRoom`): nothing of an area
@@ -1370,17 +1424,39 @@ on Cornifer's map). It's the tablet chosen among three variants in
   The same button, now ⤡ and lit, brings it back. On a phone it already has the whole width, and
   there's no button.
 - **Everything the map can show is a layer**, and the filter, **under the map**, lists them in
-  four groups, each a chip with its picture that shows or hides it; **Show all** and **Hide all**
-  above them. All show at first; which are hidden is remembered (`pgMapOff`).
+  **seven sections, by what things are for** (30 Sep 2026). Each section **folds** (its caret, its
+  title, how many of its things you have, and its own **All / None**; all open at first, and which
+  are open is remembered, `pgMapOpen`), and each layer in it is its picture, its
+  name in the plural and its count: **the picture is the switch**, grey when the layer is off
+  (design/16, the sister site's look). Above the sections, the three choices as **switches**
+  (always the whole map, also what you have, area names) and **Show all** / **Hide all**:
+  **Towards 112%** (charms, equipment, spells and arts, bosses and trials, warriors' graves,
+  Dreamers, mask shards, vessel fragments, pale ore: the masks, vessels and nail it counts) ·
+  **Collectibles** (grubs, charm notches, simple keys, key items, rancid eggs, **relics** —the four
+  in one layer—, maps) · **Quests** (whispering roots, Grimmkin flames, meetings with characters) ·
+  **Enemies and bosses** (enemies, other bosses) · **Secrets and geo** (walls and floors, hidden places, geo chests, geo
+  rocks) · **Places** (benches, stag stations, trams, lifts, shops and characters, hot springs,
+  cocoons, soul totems, lore tablets) · **Your game** (only with a save: your bench, shade,
+  Dreamgate, markers). What each holds, below. **What a new user sees** (no prefs yet, `DEFAULT_ON`): the 112%'s things (charms,
+  equipment, bosses, graves, Dreamers, mask shards, vessel fragments, pale ore), the other bosses, grubs, benches,
+  stag stations, trams, shops and characters, your game's own and the area names, about 250 pins;
+  the rest starts off, to switch on. Which are hidden is remembered (`pgMapOff`). With no save
+  (free mode, everything unlocked) the map is a reference: the 112%'s things show, not hidden or
+  dimmed as had, though the filter counts them as the sandbox has them.
   - **Collectibles** (the stag stations always on the map, each saying whether it's open yet in
     your game; the game's own purple pin for them): the 202 —Captive Grub 46, Mask Shard 16, Vessel Fragment 9, Pale Ore 6,
     Charm Notch 8, Simple Key 4, Rancid Egg 21, the four relics (14, 17, 8, 4), Whispering Root
-    15, the Grimmkin flames 10, Map 13 and Stag Station 11—, each kind named as the game names
-    it, each with **how many of it you have** («Captive Grub 23/46», in green when complete).
+    15, the Grimmkin flames 10, Map 13 and Stag Station 11—, each with **how many of it you have**
+    («Captive Grubs 23/46», in green when complete); each thing's card names it as the game does.
+    And the **key items** (Lumafly Lantern, City Crest, Shopkeeper's Key, Elegant Key, Love Key,
+    Tram Pass, Godtuner, and two the Inventory doesn't list: Collector's Map and Hunter's Journal),
+    where you pick them up or buy them (ItemChanger's place; Sly's for the lantern, 1800 geo, and
+    the Elegant Key, 800), marked on the Inventory; the two only here just say whether you have them.
   - **Towards 112%**: the charms (the 36 of the category and the Troupe's four), the equipment,
     the spells (a pin per level: Vengeful Spirit and Shade Soul are two), the nail arts and the
     Dream Nail's three steps, the bosses and the Colosseum's trials, the warrior dreams on the
-    game's pins for their graves, and the three Dreamers on theirs. Each is where it's found (the
+    game's pins for their graves, and the three Dreamers on theirs: only what the 112% counts
+    (*Bosses and trials* is 20: the 15 bosses, the 3 trials, Grimm and the Nightmare King). Each is where it's found (the
     room ItemChanger's `locations.json` gives it, the shop for what's bought, the fight's room for
     a boss) and counts as the 112% tablet counts it; its card marks it as the tablet does, or, for
     what's marked on the Inventory (spells, arts, cloaks, the Dream Nail), takes you there.
@@ -1390,6 +1466,34 @@ on Cornifer's map). It's the tablet chosen among three variants in
     springs and cocoons (the game's pins, named by its map key); and **shops and characters**
     (Sly, Iselda, Salubra, Leg Eater, Lemm, Jiji, the Nailsmith, the Seer, the Grubfather, the
     Colosseum of Fools and the Black Egg Temple).
+  - **Enemies and bosses** (was *Journal enemies*): **other bosses**, every boss the 112% doesn't
+    count (30 Sep 2026): the five dream bosses the Journal counts (Failed Champion, Soul Tyrant,
+    Lost Kin, White Defender, Grey Prince Zote) in the room of their waking fight (Zote's, Bretta's
+    house), beaten once the Journal has them complete, and the bosses placed in the rooms
+    (`kind: 'boss'` in `js/enemies.js`: Vengefly King, Massive Moss Charger, Flukemarm, Oblobbles,
+    Crystal Guardian, Pale Lurker, God Tamer, Soul Warrior…), which leave *enemies*; a 112% boss
+    placed in a room isn't pinned twice. Two fights load their own copy of a room the map doesn't
+    draw: the Crystal Guardian goes on its bench room and Flukemarm where she leaves Flukenest; the
+    Crystal Guardian's second fight, at the top of the Peak, is named *Enraged Guardian* (same
+    Journal entry). The bosses no room places go on the game's pin for their fight: the nine
+    Grimmkin on the flames of Grimm's ritual (Novice: Greenpath, Crystal Peak, City of Tears;
+    Master: King's Pass, Resting Grounds, Kingdom's Edge; Nightmare: Fungal Core, Royal Waterways,
+    the Hive; the wiki's pages), and the Hollow Knight and the Radiance on the Black Egg. The
+    Godhome-only bosses have no place on the map. The **enemies**, each entry where it lives, one pin per room with how many
+    there are (`js/scene-objects.js`, read from the game's scenes: every object with the game's
+    `EnemyDeathEffects` counts for the entry its `playerDataName` names), saying what's left of it
+    in your Journal and with *See in the Journal*; complete entries hide like what you have. And
+    **meetings with characters** (`js/people.js`): Quirrel, Sly, Bretta, Zote, Cloth, Tiso,
+    Hornet and the Nailsmith, at each place the game puts them to talk (their object in the
+    scene), in the story's order («Meeting 3 of 10»), met once the save has the bool the game sets.
+  - **Geo and secrets**: **walls and floors that break** (breakable walls, floors to dive
+    through or that give way, one-way walls), **hidden places** (the masks over them lift once
+    found), **geo chests** and **geo rocks**, each where it is and marked by the save's own record
+    (`sceneData`: `persistentBoolItems`, `geoRocks` with no hits left). Those in a room the map
+    doesn't draw (the White Palace, Godhome, a house) aren't shown: they'd pile on its door.
+    Places also gets **soul totems** and **lore tablets**, whose card shows the tablet's text as
+    the game writes it. The enemies, the hidden places, the geo rocks and the totems (hundreds
+    of pins) start hidden (`pgMapSeen`), then are yours to show.
   - **Your game**: your bench (a ring, on its bench's pin), your shade, your Dreamgate, and **the
     markers you've placed** in the game (`placedMarkers_r/b/y/w`, in the map's frame), each with
     the game's picture. The save has no position of the Knight's own: the game saves at a bench
@@ -1401,6 +1505,26 @@ on Cornifer's map). It's the tablet chosen among three variants in
     *Show the area names*, beside the other two choices.
   A place has no state; the rest hides once you have it, unless *Also show what you have* brings
   it back, dimmed.
+- **See it on the map, from the other screens**: a pin (a small ring with the map's pin, beside
+  what's already clickable, never inside it) on each **Progress** plate, on the **Inventory**'s
+  equipment, key items, spells, arts, abilities, what you carry, masks, vessels, notches and the
+  nail, a *See on the map* link on each **Hunter's Journal** page, and on **Your game** the
+  *Since last time* rows and the *Missing nearby* cells (the cell itself). What has no place on
+  the map (a pantheon's door, geo, essence) has no pin. One place: the map centres on it and
+  opens its card, its layer shown if you'd hidden it. Several (a Mask Shard's sixteen, an
+  enemy's rooms): **focus** — only those on the map, fitted to them, and a bar at the box's foot
+  with its name, how many and how many you're missing, ‹ i of n › (the missing first, the
+  nearest to your bench first) and *Exit*. Either way, the pins you came to see ring out three
+  times as you arrive (a ring in the pins' bone swelling out and fading, `--dur-arrive` each; with
+  reduced motion, just the ring). Focus isn't saved (`js/app-map.js`: `mapTargets`,
+  `showOnMap`, `mapPinHtml`).
+- **How to get there** (hidden for now, `ROUTES` in `js/app-map.js`, until the way-finding knows
+  abilities, stags and trams): a pin's card, with a save's bench, has *How to get there*: the way from
+  your bench to it, drawn on the map (a dashed line in the pins' bone, under them) and the map
+  fitted to it, until the card closes or *Hide the way*. It's the shortest way on foot through the
+  game's doors, the same the Knight walks from bench to bench (`js/app-knight.js`, `doorsRoute`):
+  it doesn't know your abilities (a way can need the Mantis Claw) and takes no stag or tram, and
+  the card says so. No way on foot (the White Palace, Godhome): the card says that instead.
 - **Each thing is where it is in the game**, not on its room's centre: its object in its scene
   (ItemChanger's place for it: the grub's bottle, the charm's shiny, the Seer…), turned into the
   map with the game's own formula for a point in a room (`GameMap.PositionCompass`: the room's
@@ -1511,7 +1635,9 @@ masks, the nails and the buttons line up from one slot to the next.
 - **Import from the game**, on each of the four, opens **the import view** in the list's place
   (*Saves* at its top, or Esc, goes back). It reads the game's own save file and puts that game in
   the slot. Left, three steps on medallions joined by a thread: **copy the saves folder** (tabs
-  for Windows, macOS and Linux, the one you're on chosen by itself, and *Copy*), **open the picker
+  for Windows, macOS and Linux, the one you're on chosen by itself, and *Copy*; Linux shows two
+  folders, *Steam with Proton* first, since Steam runs the game through Proton more often than
+  not, and the native version's below), **open the picker
   and paste it** (the keys each system's picker takes: the name box and Enter on Windows,
   ⇧⌘G on macOS, Ctrl+L on Linux) and **pick the file** (the game keeps save *n* as
   `user<n>.dat`; the `.bak` ones are backups). Right, **the drop zone**: the Knight floating
@@ -1684,7 +1810,8 @@ linking to the repo), in the footer under every screen
   [RandomizerMod](https://github.com/homothetyhk/RandomizerMod) (LGPL-2.1); only those facts are taken.
 - **The map** (`js/map.js`, `assets/map/`): the game's own, read from its files with
   [UnityPy](https://github.com/K0lb3/UnityPy) (`tools/extract-map.py`). © Team Cherry, like the
-  rest of the artwork. Which room you enter an undrawn one from comes from the randomizer's
+  rest of the artwork. The benches of Your game (`js/benches.js`, `assets/benches/`) too
+  (`tools/extract-benches.py`). Which room you enter an undrawn one from comes from the randomizer's
   `transitions.json` (LGPL-2.1), only that fact.
 - **Where each collectible is and how the game marks it** (`js/collectibles.js`): from the
   `locations.json` and `items.json` of the community's
@@ -1699,6 +1826,25 @@ linking to the repo), in the footer under every screen
 
 If you hold rights over something here and want it removed, open an issue or write to
 [betorzdev@gmail.com](mailto:betorzdev@gmail.com).
+
+## Privacy
+
+The footer carries a folded **Privacy** notice. The site sets **no cookies**, so it shows no
+cookie banner: what it keeps on the device is strictly necessary for the service the visitor asks
+for (LSSI art. 22.2, ePrivacy art. 5.3), and never leaves it:
+
+- `localStorage`: the `hollow.*` keys (saves, charms, journal, progress, preferences).
+- `sessionStorage`: `hollow.cleared` and `hollow.entered`, for the screen transitions.
+- IndexedDB: the save-file handle, only after "Follow the game" (`js/live.js`).
+- Save files are read in the browser; nothing is uploaded.
+
+The visit counter is GoatCounter (`track()` in `js/app.js`). It sets no cookies, keeps no IP and
+only aggregates pages, referrer, browser/screen and country. That fits the AEPD's exemption for
+audience measurement ("Guía uso de cookies para herramientas de medición de audiencia", January
+2024), whose one condition that falls on the site is to **inform** visitors: that's what the
+notice is for. GitHub Pages, the host, keeps technical logs (GDPR art. 13), which the notice also
+says. If the site ever adds ads, donations or a counter that stores something, this changes: a
+legal notice (LSSI art. 10) and, for ads, a consent banner.
 
 ## Contact
 

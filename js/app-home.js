@@ -11,7 +11,7 @@
 (() => {
   'use strict';
   const HK = globalThis.HK;
-  const D = HK.data, HJ = HK.hunter, F = HK.foes, R = HK.rooms, CO = HK.collectibles, CP = HK.completion, CH = HK.changes, L = HK.live, I = HK.i18n;
+  const D = HK.data, HJ = HK.hunter, F = HK.foes, R = HK.rooms, CO = HK.collectibles, CP = HK.completion, CH = HK.changes, L = HK.live, I = HK.i18n, BE = HK.benches;
   const App = HK.app;
   const { t, pick, el, NT, esc, load, brackets, screenHead, actions, prefs, pctSpace } = App;
 
@@ -81,13 +81,15 @@
   /* ── Pieces ── */
   /* The bench under the area's name, with the Knight sitting on it (css .hmC-kn, the sit strip):
      a picture of him resting there, still; the Knight who moves, and marks the tab you're on,
-     stays on the screen bar (js/app-knight.js). The game's bench as a silhouette drawn by the
-     site (the wiki's picture comes on Godhome's gold, which can't be cut out cleanly), on the
-     area's light like the Hall's statues: the seat with its two round ends and its two feet. */
-  const BENCH = `<div class="hmC-bench" aria-hidden="true"><svg class="hmC-seat" viewBox="0 0 360 124">
-    <path d="M40 60 H320 a16 16 0 0 1 0 32 H40 a16 16 0 0 1 0 -32 Z M96 92 h28 l12 24 h-52 Z M236 92 h28 l12 24 h-52 Z"/>
-    <circle cx="36" cy="76" r="21"/><circle cx="324" cy="76" r="21"/>
-    <rect x="72" y="112" width="76" height="8" rx="4"/><rect x="212" y="112" width="76" height="8" rx="4"/></svg><span class="hmC-kn"></span></div>`;
+     stays on the screen bar (js/app-knight.js). The bench is the one you rest at, as the game
+     draws it (js/benches.js, from its files), at the Knight's scale and where the game sits him.
+     With no bench known (a slot with no save's bench), the town bench, the most common one. */
+  function benchHtml(scene) {
+    const [key, y] = BE.SCENES[scene] || BE.SCENES.Crossroads_30;
+    const [w, h, x] = BE.ART[key];
+    return `<div class="hmC-bench" aria-hidden="true" style="--bw: ${w}; --bh: ${h}; --bx: ${x}; --by: ${y};">
+      <img class="hmC-seat" src="assets/benches/${key}.png" alt="" width="${w}" height="${h}"><span class="hmC-kn"></span></div>`;
+  }
   const fig = (k, v, big) => `<div class="hm-fig${big ? ' is-big' : ''}"><span class="hm-fig-k">${esc(k)}</span><span class="hm-fig-v">${v}</span></div>`;
   const played = (s) => (s >= 3600 ? `${num(Math.floor(s / 3600))}<span class="u">h</span> ` : '') + `${num(Math.floor(s / 60) % 60)}<span class="u">min</span>`;
   function ago(ms) {
@@ -114,6 +116,21 @@
       ${L.canLive() ? `<button type="button" class="text-btn" data-act="liveFollow" data-value="${n}">${esc(t('liveFollow'))}</button>` : ''}`;
   }
 
+  /* Where a change is on the Map (js/app-map.js, mapTargets): its target, or '' (a statue: Godhome). */
+  function targetOf(c) {
+    switch (c.kind) {
+      case 'journal': return 'foe:' + c.id;
+      case 'charm': return 'c112:charms:' + c.id;
+      case 'item': { const cat = catOf(c.id); return cat ? `c112:${cat}:${c.id}` : ''; }
+      case 'upgrade': return c.id === 'nail' ? 'c112:nail:nail' : 'collect:' + ({ masks: 'mask-shard', vessels: 'vessel-fragment', notches: 'charm-notch' }[c.id] || '');
+      case 'spell': return 'c112:spells:' + c.id;
+      case 'art': return 'c112:arts:' + c.id;
+      case 'cloak': return 'cloak';
+      case 'dream': return 'c112:dreamNail:dream-nail';
+      case 'found': return 'collect:' + c.id;
+      default: return '';
+    }
+  }
   function changesBlock() {
     const g = gained();
     const rows = g.list.map((c) => {
@@ -122,7 +139,7 @@
       const m = describe(c);
       return `<li class="hm-item"><span class="hm-item-art">${m.art ? `<img src="${m.art}" alt="" loading="lazy">` : ''}</span>
         <span class="hm-item-name"${NT}>${esc(m.name)}${m.sub ? `<small>${esc(m.sub)}</small>` : ''}</span>
-        ${m.value ? `<span class="hm-item-v">${esc(m.value)}</span>` : m.note ? `<span class="tag hm-item-k">${esc(m.note)}</span>` : ''}</li>`;
+        ${m.value ? `<span class="hm-item-v">${esc(m.value)}</span>` : m.note ? `<span class="tag hm-item-k">${esc(m.note)}</span>` : ''}${targetOf(c) ? App.mapPinHtml(targetOf(c), m.name) : ''}</li>`;
     }).join('');
     const when = g.saved && g.list.length ? `<span class="block-note">${esc(t('homeSinceNote', { when: ago(g.saved) }))}</span>` : '';
     return `<section class="hm-block"><h3 class="block-head">${esc(t('homeSince'))}${when}</h3>
@@ -145,7 +162,8 @@
     const left = CO.ITEMS.filter((it) => R.areaOf(it.scene) === area && !found.has(it.id));
     const cells = left.slice(0, 12).map((it) => {
       const k = D.COLLECTIBLE_KINDS[it.kind];
-      return `<span title="${esc(pick(k))}"><img src="${D.art(k.art[0], k.art[1])}" alt="${esc(pick(k))}" loading="lazy">${esc(placeName(it.scene))}</span>`;
+      // Each takes you to it on the Map.
+      return `<button type="button" class="hm-near-cell" data-act="toMap" data-target="collect:${it.id}" data-name="${esc(pick(k))}" title="${esc(pick(k) + ' · ' + t('seeOnMap'))}"><img src="${D.art(k.art[0], k.art[1])}" alt="${esc(pick(k))}" loading="lazy">${esc(placeName(it.scene))}</button>`;
     }).join('');
     return `<section class="hm-block"><h3 class="block-head">${esc(t('homeNear'))}<span class="block-note"${NT}>${esc(pick(R.AREAS[area]))} · ${num(left.length)}</span></h3>
       ${left.length ? `<div class="hm-near">${cells}</div>` : App.emptyHtml(esc(t('homeNearNone')))}
@@ -165,7 +183,7 @@
       : `<h3 class="hmC-area">${esc(slot)}</h3>`;
     return `<div class="hmC-hero" style="${areaVars(area)}">
         ${title}
-        ${BENCH}
+        ${benchHtml(App.progress.bench)}
         <div class="hm-link-row">${linkLine(n)}</div>
         ${area ? `<span class="hm-when">${esc(slot)}${when}</span>` : ''}
         <div class="hm-figs hmC-figs">
@@ -183,7 +201,7 @@
      what the site keeps of it, each opening its screen, and the other way in: just trying builds
      (a save is never made by hand: it's the game's, read here). The steps (the folder, the file)
      are the import sheet's: js/app-saves.js. */
-  const DEMO = { area: 'city', pct: 87, time: 41 * 3600 + 12 * 60, geo: 2350, journal: [131, 146],
+  const DEMO = { area: 'city', bench: 'Ruins1_29', pct: 87, time: 41 * 3600 + 12 * 60, geo: 2350, journal: [131, 146],
     gained: [{ kind: 'spell', id: 'dd', to: 1 }, { kind: 'charm', id: 'twister' }, { kind: 'journal', id: 'soul-master', done: true }] };
   const FEATS = [
     { view: 'progress', title: 'navProgress', text: 'homeFeatPct', art: D.art('effects', 'grub') },
@@ -205,7 +223,7 @@
         <div class="hmC-hero" style="${areaVars(DEMO.area)}">
           <span class="tag hmI-tag">${esc(t('homeExample'))}</span>
           <span class="hmC-sup">${esc(t('homeRestingAt'))}</span><h3 class="hmC-area"${NT}>${esc(pick(R.AREAS[DEMO.area]))}</h3>
-          ${BENCH}
+          ${benchHtml(DEMO.bench)}
           <div class="hm-figs hmC-figs">
             ${fig(t('pgCompletion'), `${num(DEMO.pct)}<span class="u">${esc(pctSpace())} / ${num(112)}</span>`, true)}
             ${fig(t('homeTime'), played(DEMO.time))}
@@ -232,7 +250,10 @@
   function renderHome() {
     if (prefs.view !== 'home') return;
     const n = App.activeSlot();
-    el.home.innerHTML = `<div class="gear-body hm">${brackets}${screenHead(esc(t('navHome')))}${n ? gameHtml(n) : inviteHtml()}</div>`;
+    /* With a game, the screen's light is the area of your bench (css: .hm.has-area): one light, the
+       frame's, where the title card used to paint its own over the section's. */
+    const lit = n ? ` has-area" style="${areaVars(R.areaOf(App.progress.bench))}` : '';
+    el.home.innerHTML = `<div class="gear-body hm${lit}">${brackets}${screenHead(esc(t('navHome')))}${n ? gameHtml(n) : inviteHtml()}</div>`;
   }
 
   /* The bar's tab: its name alone. The link's state isn't here (it was, as a diamond, and it
