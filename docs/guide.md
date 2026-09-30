@@ -93,14 +93,14 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   easter egg: he focuses soul as the game heals, standing still while the Focus's white light
   (`--focus-glow`) swells around him and fades, then sits again (counted as `knight`).
 - **Your game**, the start screen (`view=home`, `js/app-home.js`; variant C, *the bench*, of
-  `design/10-home-variants.html`): your real game at a glance, in the map's green like Progress.
+  `design/10-home-variants.html`): your real game at a glance.
   - **The area's title card**: *Resting at* over the name of the area of your bench, large, on
     that area's own light (`--area-*-mid/deep`), as the game shows an area's name on entering
     it: with a game, **the whole screen's frame takes the area of your bench** (`.hm.has-area`:
-    its line, curls, plaque and light, from the area's light as any section's lamp; chosen in
-    `design/15-tab-colours.html`), so it changes when you rest elsewhere; with no game it's green.
+    its line, curls and plaque, from the area's light as any section's lamp; chosen in
+    `design/15-tab-colours.html`), so it changes when you rest elsewhere; with no game (free mode) it's the Inventory's lavender.
     The card has no light of its own (nor does the invitation's example: it shows your game as
-    it will look, on the frame's light); under it the bench you rest at, as the game draws it (`js/benches.js`: the Salubra's,
+    it will look, on the frame's black); under it the bench you rest at, as the game draws it (`js/benches.js`: the Salubra's,
     the toll bench, the Nailmasters', the Mantis Village's, Godhome's…; the town bench when no
     bench is known), with the Knight sitting on its seat at the game's scale (a bench taller
     than `--kn-bench-max` shrinks, him with it), lit in the area's colour: a picture of him resting there (css `.hmC-kn`), still, while the Knight
@@ -143,10 +143,10 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   30 Sep in `design/14-sister-variants.html`): a hairline inset all round the panel, a curl in each
   corner, and **the screen's title in a plaque** astride the top line (a double outline with pointed
   ends, filled with the plate's black, so the line goes behind it; Godhome's two tabs sit in it).
-  Inside the line, the plate is lit from the top in its section's colour, with a glow around it.
+  Inside the line, the plate is plain black.
   The colours are the sections' map tints (Charms, Inventory and Saves City of Tears' lavender;
   Progress and Map green; the Journal turquoise; Combat pink; Godhome gold), all but Your game's,
-  which follows your bench (below). The Map lies on that light with no box of its own (the large
+  which follows your bench (below). The Map lies on that black with no box of its own (the large
   map, over the page, keeps a plate).
   What went under the title (the Inventory's starting points, the import's lead) opens the screen
   under the plaque (`.screen-lead`). A band that runs edge to edge (the Charms' band, Your game's
@@ -1424,13 +1424,30 @@ on Cornifer's map). It's the tablet chosen among three variants in
   The same button, now ⤡ and lit, brings it back. On a phone it already has the whole width, and
   there's no button.
 - **Everything the map can show is a layer**, and the filter, **under the map**, lists them in
-  four groups, each a chip with its picture that shows or hides it; **Show all** and **Hide all**
-  above them. All show at first; which are hidden is remembered (`pgMapOff`).
+  **seven sections, by what things are for** (30 Sep 2026). Each section **folds** (its caret, its
+  title, how many of its things you have, and its own **All / None**; all open at first, and which
+  are open is remembered, `pgMapOpen`), and each layer in it is its picture, its
+  name in the plural and its count: **the picture is the switch**, grey when the layer is off
+  (design/16, the sister site's look). Above the sections, the three choices as **switches**
+  (always the whole map, also what you have, area names) and **Show all** / **Hide all**:
+  **Towards 112%** (charms, equipment, spells and arts, bosses and trials, warriors' graves,
+  Dreamers, mask shards, vessel fragments, pale ore: the masks, vessels and nail it counts) ·
+  **Collectibles** (grubs, charm notches, simple keys, key items, rancid eggs, **relics** —the four
+  in one layer—, maps) · **Quests** (whispering roots, Grimmkin flames, meetings with characters) ·
+  **Enemies and bosses** (enemies, other bosses) · **Secrets and geo** (walls and floors, hidden places, geo chests, geo
+  rocks) · **Places** (benches, stag stations, trams, lifts, shops and characters, hot springs,
+  cocoons, soul totems, lore tablets) · **Your game** (only with a save: your bench, shade,
+  Dreamgate, markers). What each holds, below. **What a new user sees** (no prefs yet, `DEFAULT_ON`): the 112%'s things (charms,
+  equipment, bosses, graves, Dreamers, mask shards, vessel fragments, pale ore), the other bosses, grubs, benches,
+  stag stations, trams, shops and characters, your game's own and the area names, about 250 pins;
+  the rest starts off, to switch on. Which are hidden is remembered (`pgMapOff`). With no save
+  (free mode, everything unlocked) the map is a reference: the 112%'s things show, not hidden or
+  dimmed as had, though the filter counts them as the sandbox has them.
   - **Collectibles** (the stag stations always on the map, each saying whether it's open yet in
     your game; the game's own purple pin for them): the 202 —Captive Grub 46, Mask Shard 16, Vessel Fragment 9, Pale Ore 6,
     Charm Notch 8, Simple Key 4, Rancid Egg 21, the four relics (14, 17, 8, 4), Whispering Root
-    15, the Grimmkin flames 10, Map 13 and Stag Station 11—, each kind named as the game names
-    it, each with **how many of it you have** («Captive Grub 23/46», in green when complete).
+    15, the Grimmkin flames 10, Map 13 and Stag Station 11—, each with **how many of it you have**
+    («Captive Grubs 23/46», in green when complete); each thing's card names it as the game does.
     And the **key items** (Lumafly Lantern, City Crest, Shopkeeper's Key, Elegant Key, Love Key,
     Tram Pass, Godtuner, and two the Inventory doesn't list: Collector's Map and Hunter's Journal),
     where you pick them up or buy them (ItemChanger's place; Sly's for the lantern, 1800 geo, and
@@ -1438,10 +1455,8 @@ on Cornifer's map). It's the tablet chosen among three variants in
   - **Towards 112%**: the charms (the 36 of the category and the Troupe's four), the equipment,
     the spells (a pin per level: Vengeful Spirit and Shade Soul are two), the nail arts and the
     Dream Nail's three steps, the bosses and the Colosseum's trials, the warrior dreams on the
-    game's pins for their graves, and the three Dreamers on theirs. With the bosses, the five
-    dream bosses the Journal counts (Failed Champion, Soul Tyrant, Lost Kin, White Defender, Grey
-    Prince Zote), in the room of their waking fight (Zote's, Bretta's house), beaten once the
-    Journal has them complete; they aren't part of the 112%. Each is where it's found (the
+    game's pins for their graves, and the three Dreamers on theirs: only what the 112% counts
+    (*Bosses and trials* is 20: the 15 bosses, the 3 trials, Grimm and the Nightmare King). Each is where it's found (the
     room ItemChanger's `locations.json` gives it, the shop for what's bought, the fight's room for
     a boss) and counts as the 112% tablet counts it; its card marks it as the tablet does, or, for
     what's marked on the Inventory (spells, arts, cloaks, the Dream Nail), takes you there.
@@ -1451,7 +1466,20 @@ on Cornifer's map). It's the tablet chosen among three variants in
     springs and cocoons (the game's pins, named by its map key); and **shops and characters**
     (Sly, Iselda, Salubra, Leg Eater, Lemm, Jiji, the Nailsmith, the Seer, the Grubfather, the
     Colosseum of Fools and the Black Egg Temple).
-  - **Hunter's Journal**: **enemies**, each entry where it lives, one pin per room with how many
+  - **Enemies and bosses** (was *Journal enemies*): **other bosses**, every boss the 112% doesn't
+    count (30 Sep 2026): the five dream bosses the Journal counts (Failed Champion, Soul Tyrant,
+    Lost Kin, White Defender, Grey Prince Zote) in the room of their waking fight (Zote's, Bretta's
+    house), beaten once the Journal has them complete, and the bosses placed in the rooms
+    (`kind: 'boss'` in `js/enemies.js`: Vengefly King, Massive Moss Charger, Flukemarm, Oblobbles,
+    Crystal Guardian, Pale Lurker, God Tamer, Soul Warrior…), which leave *enemies*; a 112% boss
+    placed in a room isn't pinned twice. Two fights load their own copy of a room the map doesn't
+    draw: the Crystal Guardian goes on its bench room and Flukemarm where she leaves Flukenest; the
+    Crystal Guardian's second fight, at the top of the Peak, is named *Enraged Guardian* (same
+    Journal entry). The bosses no room places go on the game's pin for their fight: the nine
+    Grimmkin on the flames of Grimm's ritual (Novice: Greenpath, Crystal Peak, City of Tears;
+    Master: King's Pass, Resting Grounds, Kingdom's Edge; Nightmare: Fungal Core, Royal Waterways,
+    the Hive; the wiki's pages), and the Hollow Knight and the Radiance on the Black Egg. The
+    Godhome-only bosses have no place on the map. The **enemies**, each entry where it lives, one pin per room with how many
     there are (`js/scene-objects.js`, read from the game's scenes: every object with the game's
     `EnemyDeathEffects` counts for the entry its `playerDataName` names), saying what's left of it
     in your Journal and with *See in the Journal*; complete entries hide like what you have. And

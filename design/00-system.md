@@ -196,7 +196,9 @@ when refactoring.
   (`../pharloom-calculator`), chosen in `design/14-sister-variants.html`: a hairline inset all round,
   corner curls, the title in a plaque on the top line, the plate lit from the top in the section's
   colour with a glow, and the block headings «◇ NAME —— count». It is a closed line now, by his
-  choice over §2.3's "never a box". Cards inside a screen keep the curls alone: `corners`.)*
+  choice over §2.3's "never a box". Cards inside a screen keep the curls alone: `corners`. Later
+  the same day the light from the top and the glow read as too loud: `design/16-calm-frames.html`'s
+  A, the plate plain black inside the line, curls and plaque.)*
 - **The palette passes AA almost entirely.** Twelve of the fourteen ink colours reach 4.5:1 on
   every surface; eight reach AAA.
 - **Data in `.js` and not in `.json`.** It's what allows opening `index.html` with a double

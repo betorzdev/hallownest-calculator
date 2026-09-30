@@ -93,7 +93,7 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 .block-head { margin: 0 0 var(--sp-3); }
 
 /* The screens' frame (js/app.js, brackets; the sister site's, design/14-sister-variants.html):
-   a hairline inset all round the panel that also carries the section's light (.frame-line), a
+   a hairline inset all round the panel in the section's lamp (.frame-line), a
    curl in each corner (drawn once for the top left, mirrored), and the title's plaque astride the
    top line (.screen-head). Behind the plate, the page shows through the inset. */
 .bk { position: absolute; z-index: 1; width: var(--frame-corner); height: var(--frame-corner); color: var(--bracket); pointer-events: none; }
@@ -104,13 +104,12 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 .bk.br { bottom: calc(var(--sp-1) * -1); right: calc(var(--sp-1) * -1); scale: -1 -1; }
 .bk.is-small { width: var(--sp-8); height: var(--sp-8); }
 @media (max-width: 599px) { .bk:not(.is-small) { width: var(--sp-8); height: var(--sp-8); } }
-/* The line, and inside it the plate's black lit from the top in the section's colour, with a
-   glow around: the light is the frame's, so nothing black shows past the line. */
+/* The line, and inside it the plate's plain black: nothing black shows past the line. The light
+   from the top and the glow around it went on 30 Sep (design/16-calm-frames.html, A): too loud. */
 .frame-line {
   position: absolute; inset: var(--frame-inset); z-index: -1; pointer-events: none;
   border: 1px solid color-mix(in oklab, var(--lamp) var(--lamp-frame), transparent);
-  background: radial-gradient(ellipse 80% 320px at 50% 0%, color-mix(in oklab, var(--lamp-light) var(--frame-light), transparent), transparent), var(--inv-bg);
-  box-shadow: 0 0 40px -10px color-mix(in oklab, var(--lamp-light) var(--frame-glow), transparent);
+  background: var(--inv-bg);
 }
 /* The title on the top line, centred on it, in its plaque (a thin double outline with pointed ends,
    filled with the plate's black so the line goes behind it); it reaches a little above the plate. */
@@ -137,13 +136,13 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 
 /* ── Tinted sections ─────────────────────────────────────────────────────
    Each section carries the pale tint of its area on the game's map (tokens.css): the sheet
-   and Your game, City of Tears'; combat, Crystal Peak's; the Hall and the
+   and Your game with no game loaded (free mode), City of Tears'; combat, Crystal Peak's; the Hall and the
    Pantheons, Godhome's; the Journal, Fungal Wastes'. The title goes in the tint; the corner
    brackets, the rule under the title and the lights (the spotlight, the plates' halo) in its lamp,
    below. The figures and what responds to the finger don't change. */
 .panel, .gear { --tint: var(--tint-sheet); }
 .fight { --tint: var(--tint-combat); }
-.gear.pg, .gear.home { --tint: var(--tint-progress); }
+.gear.pg { --tint: var(--tint-progress); }
 .fight.is-godhome { --tint: var(--tint-godhome); }
 /* The page's chrome (the screen bar's rule, what sits outside a section) takes the tint of the
    screen in view. */
@@ -151,7 +150,7 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 .page:has(.fight:not([hidden])) { --tint: var(--tint-combat); }
 .page:has(.fight.is-godhome:not([hidden])) { --tint: var(--tint-godhome); }
 .page:has(.hj-sec:not([hidden])) { --tint: var(--tint-journal); }
-.page:has(.pg:not([hidden])), .page:has(.home:not([hidden])) { --tint: var(--tint-progress); }
+.page:has(.pg:not([hidden])) { --tint: var(--tint-progress); }
 /* The pale tints are all close to bone: on the lights they're carried by the section's lamp, the
    tint's hue with a little more chroma (tokens.css). Declared again on every element that sets
    --tint, because a custom property is resolved where it's declared: the lamp, the brackets, the
@@ -298,6 +297,28 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 .check input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .check-box > svg { opacity: 0; }
 :is([aria-checked="true"], [aria-pressed="true"]) > .check-box > svg { opacity: 1; }
+/* A switch (.switch): a button with role="switch" for a choice that changes how a screen shows
+   (the Map's whole map, what you have, area names): a track with a knob, the accent when on. */
+.switch {
+  display: inline-flex; align-items: center; gap: var(--sp-2); min-height: var(--ctl-sm); padding: 0;
+  font-family: var(--font-body); font-size: var(--fs-sm); color: var(--ink-2); cursor: pointer;
+  transition: color var(--dur) var(--ease);
+}
+.switch:hover, .switch[aria-checked="true"] { color: var(--ink-strong); }
+.switch-track {
+  position: relative; flex: none; width: 30px; height: 16px; border-radius: 8px;
+  border: 1px solid color-mix(in oklab, var(--accent-line) 80%, transparent); background: var(--card);
+  transition: background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+.switch-track::after {
+  content: ''; position: absolute; top: 2px; left: 2px; width: 10px; height: 10px; border-radius: 50%;
+  background: var(--muted); transition: translate var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+.switch:hover .switch-track { border-color: var(--accent); }
+.switch[aria-checked="true"] .switch-track { background: var(--accent-soft); border-color: var(--accent); }
+.switch[aria-checked="true"] .switch-track::after { translate: 14px 0; background: var(--accent); }
+.switch:focus-visible { outline: none; }
+.switch:focus-visible .switch-track { outline: 2px solid var(--accent); outline-offset: 2px; }
 /* Search (.search): a sunken well with its rule and the lens in front, the well of the steppers'
    number, so it's plain that it takes typing. The rule takes the accent under the pointer and,
    doubled, while typing (the focus mark: the input itself draws no ring). */
@@ -1490,6 +1511,9 @@ button.gplate:is(:hover, :focus-visible) .gplate-art::before, .gplate:has(.lvlpi
 .nav-num { white-space: nowrap; }
 @media (min-width: 900px) and (max-width: 1239px) {
   .nav:has(#minihud:not([hidden])) { flex-direction: column; align-items: stretch; gap: 0; }
+  /* The tabs' row fills what the mini-bar leaves, so its bottom edge is the mini-bar's rule and
+     the Knight sits on it (with only its own 44 px he sat on air, over the titles). */
+  .nav:has(#minihud:not([hidden])) .nav-tabs { flex: 1 0 auto; }
   .nav:has(#minihud:not([hidden])) .minihud { flex: none; justify-content: flex-end; padding: var(--sp-2) 0; border-top: 1px solid var(--line-row); }
   :root:has(#minihud:not([hidden])) { --sticky-h: 110px; }
 }
@@ -4075,30 +4099,43 @@ kbd {
    own tint (baked into the drawings). Whole what the Quill drew, rough what you only bought,
    barely there what you don't know. The pins keep their size on screen (--k). ── */
 .pgm { display: flex; flex-direction: column; gap: var(--sp-3); }
-.pgm-kinds .pg-area img, .pgm-ico { width: 18px; height: 18px; object-fit: contain; flex: none; }
+.pgm-ico { width: 18px; height: 18px; object-fit: contain; flex: none; }
 /* The area names' layer has no picture: a letter in the titles' face stands for it. */
 .pgm-ico.is-name { display: inline-grid; place-items: center; font-family: var(--font-display); font-style: normal; font-size: var(--fs-sm); line-height: 1; color: var(--ink-2); }
 /* How many of each kind you have: the figures in the sans, in bone; a kind complete, in --good. */
-.pgm-kind-n { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-xs); color: var(--muted); }
+.pgm-kind-n { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-xs); color: var(--muted); white-space: nowrap; }
 .pgm-kind-n b { font-weight: 700; color: var(--ink-strong); }
 .pgm-kind-n .u { font-style: normal; }
-.pgm-kind.is-full .pgm-kind-n b { color: var(--good); }
-/* A layer is an on/off: the box in front (.check-box); off, its icon in grey. */
-.pg-area.pgm-kind { border-bottom: 0; }
-.pg-area.pgm-kind.is-on { color: var(--ink); background: none; }
-.pg-area.pgm-kind:hover { color: var(--ink-strong); }
-.pgm-kind:hover .check-box { border-color: var(--accent); }
-.pgm-kind:not(.is-on) :is(img, .pgm-ico) { filter: var(--missing-art); }
-/* The filter, under the map: a title with show all · hide all, the two choices, and the layers
-   in four groups (collectibles, the 112%, places, yours), each a row of chips that wraps. */
-.pgm-filter { display: flex; flex-direction: column; gap: var(--sp-3); padding-top: var(--sp-3); border-top: 1px solid var(--inv-line); }
-.pgm-filter-bar { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--sp-2) var(--sp-6); }
-.pgm-filter-t { margin: 0; font-family: var(--font-display); font-size: var(--fs-md); font-weight: 400; color: var(--ink-strong); }
+.pgm-kind-n.is-full b { color: var(--good); }
+/* The filter, under the map (design/16, the sister's): a head with the title, the three choices
+   as switches and show all · hide all; then the groups, each a row that folds (caret in the
+   section's lamp, the title in Cinzel caps, its total, its own all · none) over its layers. */
+.pgm-filter { display: flex; flex-direction: column; gap: var(--sp-3); }
+.pgm-filter-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-6); }
+.pgm-filter-t { margin: 0; font-family: var(--font-display); font-size: var(--fs-sm); font-weight: 600; letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--ink-strong); }
+.pgm-opts { display: flex; flex-wrap: wrap; flex: 1; gap: var(--sp-1) var(--sp-6); }
 .pgm-all { display: inline-flex; gap: var(--sp-4); }
-.pgm-opts { display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-6); }
-.pgm-group { display: flex; flex-direction: column; gap: var(--sp-1); }
-.pgm-group-t { margin: 0; font-family: var(--font-body); font-size: var(--fs-xs); font-weight: 400; letter-spacing: var(--track-label); text-transform: uppercase; color: var(--muted); }
-.pgm-filter .pg-areas { max-width: none; margin: 0; flex-wrap: wrap; overflow: visible; padding-bottom: 0; }
+.pgm-sec { border-top: 1px solid var(--inv-line); }
+.pgm-sec:last-child { border-bottom: 1px solid var(--inv-line); }
+.pgm-sec-h { display: flex; align-items: center; gap: var(--sp-3); }
+.pgm-fold { display: flex; flex: 1; align-items: center; gap: var(--sp-3); min-height: var(--ctl); padding: 0; text-align: left; color: var(--ink-strong); }
+.pgm-fold:hover .pgm-sec-t { color: var(--accent); }
+.pgm-caret { flex: none; width: 10px; height: 10px; color: var(--lamp, var(--accent)); transition: rotate var(--dur) var(--ease); }
+.pgm-sec.is-open .pgm-caret { rotate: 90deg; }
+.pgm-sec-t { font-family: var(--font-display); font-size: var(--fs-sm); font-weight: 600; letter-spacing: var(--track-caps); text-transform: uppercase; transition: color var(--dur) var(--ease); }
+.pgm-kinds { display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-6); padding: 0 0 var(--sp-3) var(--sp-6); }
+/* A layer: its picture is the switch; off, the picture in grey and the name muted. */
+.pgm-kind { display: inline-flex; align-items: center; gap: var(--sp-2); min-height: var(--ctl-sm); padding: 0; font-size: var(--fs-sm); color: var(--ink); }
+.pgm-kind-art { flex: none; display: inline-block; overflow: hidden; width: 28px; height: 28px; }
+.pgm-kind-art > :is(img, .pgm-ico) { display: block; width: 100%; height: 100%; max-width: none; object-fit: contain; transition: filter var(--dur) var(--ease), opacity var(--dur) var(--ease); }
+.pgm-kind:hover .pgm-kind-t { color: var(--accent); }
+.pgm-kind:not(.is-on) .pgm-kind-art > * { filter: var(--missing-art); }
+.pgm-kind:not(.is-on) :is(.pgm-kind-t, .pgm-kind-n b) { color: var(--muted); }
+@media (max-width: 599px) {
+  .pgm-filter-bar { flex-direction: column; align-items: flex-start; }
+  .pgm-opts { flex-direction: column; }
+  .pgm-kinds { padding-left: 0; }
+}
 .pgm-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-6); }
 /* The zoom, over the map's top right corner, as maps have it: always in sight, the large map too. */
 .pgm-zoom { position: absolute; z-index: 3; top: var(--sp-3); right: var(--sp-3); display: inline-flex; border: 1px solid var(--line-ctl); background: var(--card); box-shadow: var(--shadow-md); }

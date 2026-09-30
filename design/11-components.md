@@ -84,7 +84,8 @@ words with the chosen one underlined, so the others read as text; there were six
 | Component | Class | Look | Used by |
 |---|---|---|---|
 | Choose one | `.seg` (`.seg.sm`) | each word on a faint line of the accent (40%); the chosen one in bone on the accent's line, doubled with a shadow so nothing moves; a count in `<i>` | compare with, the import's systems, the Journal's filters (`.hj-tabs`) and an entry's state (`.hj-state`, its `·` separators gone), the enemy picker's kinds, the language (`.langsel`, its `·` gone), a spell's side (`.sd-side`) |
-| On/off | `.check` + `.check-box` | a 16 px square on the accent's line; on, filled with the accent and a dark tick | the map's layers (native checkbox), the Journal's row picks (`.hj-pick`, was `.hj-box`), following the game (`.imp-sync-v`, was a `.btn` with a diamond) |
+| On/off | `.check` + `.check-box` | a 16 px square on the accent's line; on, filled with the accent and a dark tick | the Journal's row picks (`.hj-pick`, was `.hj-box`), following the game (`.imp-sync-v`, was a `.btn` with a diamond) |
+| Switch | `.switch` + `.switch-track` | a button with role="switch": a small track with a knob; on, the knob slides right in the accent (30 Sep, design/16) | a choice about how a screen shows: the map's whole map, what you have, area names |
 | Search | `.search` | a sunken well with its rule and the lens in front (the steppers' number well); the rule takes the accent under the pointer and, doubled, while typing | the Journal (`.hj-search`), the enemy picker (`.jr-search`), the map (`.pgm-q`) |
 | Mark in bulk | `.text-btn.bulk-toggle` | a text button with the chevron; open, in bone on the accent's whole line | the Hall and the Journal |
 
@@ -100,7 +101,7 @@ The rule round 2 left: **a frame says "press me"**, so what only informs carries
 |---|---|---|---|
 | Tag | `.tag` | small capitals in the secondary ink after the game's hollow diamond (`--diamond`, 5 px); no box | "Example" on Your game (`.hmI-tag`), the kind of a change (`.hm-item-k`), Steam on the import (`.imp-steel`) |
 | Chip | `.chip` | the tag without the capitals (it carries charm names and values), after the same diamond; `.chip-charm` takes the accent under the pointer, `.syn` the conditions' ochre | the full sheet's rows |
-| Filter | `.pg-area.pgm-kind` + `.check-box` | an on/off: the round 3 box in front, its icon (grey when off) and its count | the map's layers |
+| Filter | `.pgm-kind` | an on/off with no box: its picture is the switch (grey when off), its name and its count (30 Sep, design/16) | the map's layers |
 | Notice | `.banner` (`.is-run`, `.is-hint`) | the level's 2 px rule on the left and a breath of its colour (7%) behind; tag and text in the level's inks | overcharm (danger, magenta, the default), in a pantheon (a condition, ochre), your real game (information, bone) |
 
 Unchanged: the floating notice (`.toast`, the game's on-screen message), the overcharm note inside

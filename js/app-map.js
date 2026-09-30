@@ -140,6 +140,21 @@
      in Bretta's house): not part of the 112%, but the Journal's; beaten once it has them complete. */
   const DREAM_BOSS_AT = { 'failed-champion': 'Crossroads_10', 'soul-tyrant': 'Ruins1_24', 'lost-kin': 'Abyss_19',
     'white-defender': 'Waterways_15', 'grey-prince-zote': 'Room_Bretta' };
+  /* Bosses no room places (js/scene-objects.js reads what a scene holds; these come some other way),
+     on the game's pin for where they're fought: the Grimmkin, called by the flames of Grimm's ritual
+     (the wiki's page for each; Distant Village's flame is Brumm's), and the Hollow Knight and the
+     Radiance, behind the Black Egg. */
+  const SPAWNED_BOSS_AT = [
+    ['grimmkin-novice', 'flame', 'Fungus1_10'], ['grimmkin-novice', 'flame', 'Mines_10'], ['grimmkin-novice', 'flame', 'Ruins1_28'],
+    ['grimmkin-master', 'flame', 'Tutorial_01'], ['grimmkin-master', 'flame', 'RestingGrounds_06'], ['grimmkin-master', 'flame', 'Deepnest_East_03'],
+    ['grimmkin-nightmare', 'flame', 'Fungus2_30'], ['grimmkin-nightmare', 'flame', 'Abyss_02'], ['grimmkin-nightmare', 'flame', 'Hive_03'],
+    ['hollow-knight', 'blackegg', 'Crossroads_02'], ['the-radiance', 'blackegg', 'Crossroads_02'],
+  ];
+  /* Two fights load their own copy of a room the map doesn't draw: the Crystal Guardian's, on its
+     bench room, and Flukemarm's, where she leaves Flukenest. */
+  const BOSS_SCENE = { Mines_18_boss: () => ({ p: roomPoint('Mines_18'), scene: 'Mines_18' }), Waterways_12_boss: () => spotOf('Flukenest') };
+  // A second fight that counts for another's Journal entry (killedMegaBeamMiner): named by its room.
+  const FOE_IN = { Mines_32: { 'crystal-guardian': 'enraged-guardian' } };
   // Three the site has no Journal medal for (assets/journal): their Journal picture instead.
   const NO_MEDAL = ['failed-champion', 'soul-tyrant', 'lost-kin'];
   // The warrior dreams, each on the game's pin for its grave.
@@ -164,13 +179,20 @@
 
   /* ── The layers, in the filter's four groups ── */
   const PLACE_PINS = { benches: 'bench', trams: 'tram', lifts: 'lift', springs: 'spa', cocoons: 'cocoon' };
+  /* Seven sections, by what things are for (30 Sep 2026): what counts for the 112% (the shards and
+     the ore too: they're the masks, vessels and nail it counts), what's picked up and doesn't, what
+     moves a story on, the Journal's enemies, secrets and geo, places, and your game's own (only with
+     a save). The four relics are one layer. */
+  const RELICS = ['wanderers-journal', 'hallownest-seal', 'kings-idol', 'arcane-egg'];
+  const layerOfKind = (k) => (RELICS.includes(k) ? 'relics' : k);
   const GROUPS = [
-    { id: 'collect', layers: [...CO.KINDS, 'keys'] },
-    { id: 'c112', layers: ['charms', 'equip', 'bosses', 'graves', 'dreamers'] },
-    { id: 'hunt', layers: ['foes', 'npcs'] },
+    { id: 'c112', layers: ['charms', 'equip', 'bosses', 'graves', 'dreamers', 'mask-shard', 'vessel-fragment', 'pale-ore'] },
+    { id: 'collect', layers: ['grub', 'charm-notch', 'simple-key', 'keys', 'rancid-egg', 'relics', 'map'] },
+    { id: 'quests', layers: ['whispering-root', 'grimmkin-flame', 'npcs'] },
+    { id: 'hunt', layers: ['foes', 'other-bosses'] },
     { id: 'secrets', layers: ['walls', 'hidden', 'chests', 'rocks'] },
-    { id: 'places', layers: ['benches', 'trams', 'lifts', 'people', 'springs', 'cocoons', 'totems', 'tablets'] },
-    { id: 'mine', layers: ['my-bench', 'shade', 'gate', 'markers'] },
+    { id: 'places', layers: ['benches', 'stag', 'trams', 'lifts', 'people', 'springs', 'cocoons', 'totems', 'tablets'] },
+    { id: 'mine', layers: ['my-bench', 'shade', 'gate', 'markers'], save: true },
   ];
   // The areas' names are a layer too, switched by their own box beside the filter's two choices.
   const LAYERS = [...GROUPS.flatMap((g) => g.layers), 'names'];
@@ -178,21 +200,37 @@
      the geo rocks, the totems. Once: a layer that came later (prefs.pgMapSeen) starts so, then it's
      yours to show or hide. */
   const LATE_OFF = ['foes', 'hidden', 'rocks', 'totems'];
+  /* What a new user sees (no prefs yet): the 112%'s things and the key places, about 250 pins; the
+     rest (the other collectibles, enemies, meetings, secrets, geo, the lesser places) is theirs to
+     switch on. */
+  const REF_LAYERS = new Set(['charms', 'equip', 'bosses', 'graves', 'dreamers']);
+  const DEFAULT_ON = new Set(['charms', 'equip', 'bosses', 'graves', 'dreamers', 'mask-shard', 'vessel-fragment', 'pale-ore',
+    'other-bosses', 'grub', 'benches', 'stag', 'trams', 'people', 'my-bench', 'shade', 'gate', 'markers', 'names']);
   // A layer's picture in the filter: a collectible's, or one of the game's pins.
   const LAYER_ART = {
-    keys: { src: D.art('items', 'city-crest') }, foes: { src: D.art('journal', 'crawlid') }, npcs: { glyph: 'npc' },
+    keys: { src: D.art('items', 'city-crest') }, relics: { src: D.art('items', 'kings-idol') }, foes: { src: D.art('journal', 'crawlid') }, 'other-bosses': { src: D.art('journal', 'vengefly-king') }, npcs: { glyph: 'npc' },
     walls: { glyph: 'wall' }, hidden: { glyph: 'hidden' }, chests: { glyph: 'chest' }, rocks: { src: D.art('items', 'geo') },
     totems: { src: 'assets/world/totem.png' }, tablets: { src: 'assets/world/tablet.png' }, charms: { src: 'assets/charms/compass.png' }, equip: { src: D.art('items', 'mantis-claw') }, bosses: { src: D.art('journal', 'false-knight') },
     graves: { pin: 'grave' }, dreamers: { pin: 'dreamer-monomon' }, benches: { pin: 'bench' }, people: { pin: 'vendor' },
     trams: { pin: 'tram' }, lifts: { glyph: 'lift' }, springs: { pin: 'spa' }, cocoons: { pin: 'cocoon' }, 'my-bench': { pin: 'bench' },
     shade: { pin: 'shade' }, gate: { pin: 'dreamgate' }, markers: { pin: 'marker-y' },
   };
-  const layerName = (id) => (D.COLLECTIBLE_KINDS[id] ? pick(D.COLLECTIBLE_KINDS[id]) : t('pgmL_' + id));
+  // A layer's name in the filter, in the plural (a thing's own name is on its card).
+  const layerName = (id) => t('pgmL_' + id);
   const shownLayers = () => {
-    // Before the layers, the map kept the kinds shown (pgMapKinds): the rest were hidden.
+    // Before the layers, the map kept the kinds shown (pgMapKinds): the rest were hidden. Someone
+    // new gets the defaults.
     if (!Array.isArray(prefs.pgMapOff)) {
-      prefs.pgMapOff = Array.isArray(prefs.pgMapKinds) ? CO.KINDS.filter((k) => !prefs.pgMapKinds.includes(k)) : [];
+      const fresh = !Array.isArray(prefs.pgMapKinds);
+      prefs.pgMapOff = fresh ? LAYERS.filter((l) => !DEFAULT_ON.has(l)) : CO.KINDS.filter((k) => !prefs.pgMapKinds.includes(k));
+      if (fresh) prefs.pgMapSeen = 1;
       delete prefs.pgMapKinds;
+      savePrefs();
+    }
+    // The four relics were four layers: one hidden then hides the one they are now.
+    if (prefs.pgMapOff.some((l) => RELICS.includes(l))) {
+      prefs.pgMapOff = [...new Set(prefs.pgMapOff.map(layerOfKind))];
+      savePrefs();
     }
     if (prefs.pgMapSeen !== 1) {
       prefs.pgMapOff = [...new Set([...prefs.pgMapOff, ...LATE_OFF])];
@@ -234,19 +272,33 @@
   const FOE_OF = { ...Object.fromEntries(Object.entries(HK.savefile.JOURNAL_PD).map(([id, x]) => [x, id])), Crawler: 'crawlid' };
   const foeName = (id) => { const r = HJ.ROW[id]; return pick((r && r.name) || (HJ.EXTRAS[id] || F.FOE_BY_ID[id] || {}).name) || id; };
   const SECRET_LAYER = { wall: 'walls', floor: 'walls', oneway: 'walls', hidden: 'hidden' };
+  /* The bosses the 112% counts are its own layer's (the Journal's entries its categories read);
+     every other boss goes on 'other-bosses' with the dream bosses, the rest of the enemies on 'foes'. */
+  let bosses112 = null;
+  const is112Boss = (id) => (bosses112 || (bosses112 = new Set(HK.completion.CATEGORIES
+    .filter((c) => ['bosses', 'dreams', 'colosseum', 'grimm'].includes(c.id)).flatMap((c) => c.items.map((it) => it[0]))))).has(id);
   function worldThings() {
     const out = [], pr = App.progress, book = App.hjBook();
     const opened = new Set(pr.opened), rocks = new Set(pr.rocks), met = new Set(pr.met);
     // No save: nothing's known broken or opened, but nothing's known either way; shown as not yet.
     for (const [scene, rows] of Object.entries(SO.ENEMIES)) {
       for (const [pd, n, x, y] of rows) {
-        const id = FOE_OF[pd], p = id && scenePoint(scene, x, y);
-        if (!p) continue;
-        const s = HJ.stateOf(book, id);
-        out.push({ id: `f:${scene}:${id}`, layer: 'foes', p, scene, art: { src: D.art('journal', id) }, name: foeName(id), where: where(scene),
+        const id = FOE_OF[pd], at = id && (BOSS_SCENE[scene] ? BOSS_SCENE[scene]() : { p: scenePoint(scene, x, y), scene });
+        if (!at || !at.p) continue;
+        const boss = (F.FOE_BY_ID[id] || {}).kind === 'boss';
+        // A 112% boss is on its layer already, and a dream boss has its pin in its dream's room.
+        if (boss && (is112Boss(id) || DREAM_BOSS_AT[id])) continue;
+        const s = HJ.stateOf(book, id), shown = (FOE_IN[scene] || {})[id], p = at.p;
+        out.push({ id: `f:${scene}:${id}`, layer: boss ? 'other-bosses' : 'foes', p, scene: at.scene, art: { src: D.art('journal', id) },
+          name: shown ? pick(F.FOE_BY_ID[shown].name) : foeName(id), where: where(at.scene),
           on: s.done, note: [n > 1 ? t('pgmFoeHere', { n: App.NF[0].format(n) }) : '', t(s.done ? 'hjDone' : s.seen ? 'pgmFoeLeft' : 'hjUnseen', { n: App.NF[0].format(s.left || 0) })].filter(Boolean).join(' · '),
           act: { journal: id } });
       }
+    }
+    for (const [id, kind, scene] of SPAWNED_BOSS_AT) {
+      const p = gamePin(kind, scene), s = HJ.stateOf(book, id);
+      if (p) out.push({ id: `f:${scene}:${id}`, layer: 'other-bosses', p, scene, art: { src: D.art('journal', id) }, name: foeName(id), where: where(scene),
+        on: s.done, note: t(s.done ? 'hjDone' : s.seen ? 'pgmFoeLeft' : 'hjUnseen', { n: App.NF[0].format(s.left || 0) }), act: { journal: id } });
     }
     /* A wall, a hidden place or a rock in a room the map doesn't draw (the White Palace, Godhome,
        a house) has no place of its own: they'd pile up on its door. Those aren't shown. */
@@ -262,7 +314,7 @@
     for (const [scene, rows] of Object.entries(SO.CHESTS)) {
       for (const [name, x, y] of rows) {
         const p = scenePoint(scene, x, y);
-        if (p) out.push({ id: `ch:${scene}|${name}`, layer: 'chests', p, scene, art: { glyph: 'chest' }, name: t('pgmL_chests'), where: where(scene),
+        if (p) out.push({ id: `ch:${scene}|${name}`, layer: 'chests', p, scene, art: { glyph: 'chest' }, name: t('pgmN_chest'), where: where(scene),
           on: opened.has(scene + '|' + name), act: { state: true } });
       }
     }
@@ -270,20 +322,20 @@
       if (!drawn(scene)) continue;
       for (const [name, x, y] of rows) {
         const p = scenePoint(scene, x, y);
-        if (p) out.push({ id: `r:${scene}|${name}`, layer: 'rocks', p, scene, art: { src: D.art('items', 'geo') }, name: t('pgmL_rocks'), where: where(scene),
+        if (p) out.push({ id: `r:${scene}|${name}`, layer: 'rocks', p, scene, art: { src: D.art('items', 'geo') }, name: t('pgmN_rock'), where: where(scene),
           on: rocks.has(scene + '|' + name), act: { state: true } });
       }
     }
     for (const [scene, rows] of Object.entries(SO.TOTEMS)) {
       rows.forEach(([, x, y], i) => {
         const p = scenePoint(scene, x, y);
-        if (p) out.push({ id: `to:${scene}:${i}`, layer: 'totems', p, scene, art: { src: 'assets/world/totem.png' }, name: t('pgmL_totems'), where: where(scene), on: null });
+        if (p) out.push({ id: `to:${scene}:${i}`, layer: 'totems', p, scene, art: { src: 'assets/world/totem.png' }, name: t('pgmN_totem'), where: where(scene), on: null });
       });
     }
     for (const [scene, rows] of Object.entries(SO.TABLETS)) {
       rows.forEach(([, , x, y, text], i) => {
         const p = scenePoint(scene, x, y);
-        if (p) out.push({ id: `tb:${scene}:${i}`, layer: 'tablets', p, scene, art: { src: 'assets/world/tablet.png' }, name: t('pgmL_tablets'), where: where(scene),
+        if (p) out.push({ id: `tb:${scene}:${i}`, layer: 'tablets', p, scene, art: { src: 'assets/world/tablet.png' }, name: t('pgmN_tablet'), where: where(scene),
           on: null, text: pick(text) });
       });
     }
@@ -300,7 +352,7 @@
     const out = [];
     for (const it of CO.ITEMS) {
       if (!COL_POS[it.id]) continue;
-      out.push({ id: it.id, layer: it.kind, p: COL_POS[it.id], scene: it.scene, art: kindArt(it.kind),
+      out.push({ id: it.id, layer: layerOfKind(it.kind), p: COL_POS[it.id], scene: it.scene, art: kindArt(it.kind),
         name: pick(D.COLLECTIBLE_KINDS[it.kind]), where: where(it.scene), act: { find: it.id },
         // A stag station is a place too: always on the map, saying whether it's open yet.
         ...(it.kind === 'stag' ? { on: null, closed: !P.hasFound(App.progress, it.id) && !!App.progress.mapped.length, found: P.hasFound(App.progress, it.id),
@@ -346,7 +398,7 @@
     }
     for (const [id, scene] of Object.entries(DREAM_BOSS_AT)) {
       const p = roomPoint(scene), foe = F.FOE_BY_ID[id];
-      if (p && foe) out.push({ id: 'd:' + id, layer: 'bosses', p, scene, art: { src: D.art(NO_MEDAL.includes(id) ? 'enemies' : 'journal', id) }, name: pick(foe.name), where: where(scene),
+      if (p && foe) out.push({ id: 'd:' + id, layer: 'other-bosses', p, scene, art: { src: D.art(NO_MEDAL.includes(id) ? 'enemies' : 'journal', id) }, name: pick(foe.name), where: where(scene),
         on: HJ.stateOf(App.hjBook(), id).done, act: { state: true } });
     }
     for (const it of cats.bosses.items) add112('bosses', 'bosses', it.id, BOSS_AT[it.id]);
@@ -507,9 +559,13 @@
 
   function pinsSvg(layers) {
     const showFound = !!prefs.pgMapFound;
+    /* With no save (free mode, everything unlocked) the map is a reference: the 112%'s things show,
+       not hidden nor dimmed as had (th.ref); the filter still counts them as the sandbox has them. */
+    const ref = !App.activeSlot();
+    const all = allThings().map((th) => (ref && REF_LAYERS.has(th.layer) ? { ...th, ref: true } : th));
     // In focus, only its things, whatever the filter (what you have, dimmed as always).
-    const list = focus ? allThings().filter((th) => focus.ids.includes(th.id))
-      : allThings().filter((th) => layers.has(th.layer) && (th.on !== true || showFound || th.id === selected));
+    const list = focus ? all.filter((th) => focus.ids.includes(th.id))
+      : all.filter((th) => layers.has(th.layer) && (th.on !== true || th.ref || showFound || th.id === selected));
     arrange(list);
     const mine = mineThings().filter((th) => layers.has(th.layer));
     shown = new Map([...list, ...mine].map((th) => [th.id, th]));
@@ -519,7 +575,7 @@
     const pin = (th) => {
       const label = th.name + (th.where ? ' · ' + th.where : '');
       const at = th.at || th.p, o = th.off || [0, 0];
-      return `<g class="pgm-pin${th.on || th.closed ? ' is-on' : ''}${th.id === selected ? ' is-sel' : ''}" style="--px:${at[0].toFixed(3)}px;--py:${(-at[1]).toFixed(3)}px;--ox:${o[0].toFixed(2)}px;--oy:${o[1].toFixed(2)}px"
+      return `<g class="pgm-pin${(th.on && !th.ref) || th.closed ? ' is-on' : ''}${th.id === selected ? ' is-sel' : ''}" style="--px:${at[0].toFixed(3)}px;--py:${(-at[1]).toFixed(3)}px;--ox:${o[0].toFixed(2)}px;--oy:${o[1].toFixed(2)}px"
         data-act="pgmPick" data-id="${esc(th.id)}" role="button" tabindex="0" aria-label="${esc(label)}">
         <title>${esc(label)}</title>
         ${ring(th)}<circle r="0.5"/>${artSvg(th.art)}
@@ -683,33 +739,48 @@
   }
   const MINE = { 'my-bench': 1, shade: 1, gate: 1, markers: 1 };
 
-  /* ── The filter, under the map: every layer in its group, each with how many of its things
-     you have where that's counted; show all, hide all; what you have too; the whole map ── */
+  /* ── The filter, under the map (design/16, the sister's): its head with the three choices as
+     switches and show all · hide all; then the groups, each folding (prefs.pgMapOpen, all open
+     at first) with its total and its own all · none; a layer's picture is its switch, off in
+     grey, with its name and how many of its things you have where that's counted ── */
+  const openGroups = () => (Array.isArray(prefs.pgMapOpen) ? prefs.pgMapOpen : GROUPS.map((g) => g.id));
+  const switchHtml = (value, on, text) =>
+    `<button type="button" class="switch" role="switch" aria-checked="${on}" data-act="pgmOpt" data-value="${value}"><span class="switch-track" aria-hidden="true"></span>${esc(text)}</button>`;
   function filterHtml(layers, things) {
-    const chip = (l) => {
+    const count = (l) => {
       const of = things.filter((th) => th.layer === l && (th.on !== null || th.found !== undefined));
-      const got = of.filter(hasIt).length;
-      const n = of.length ? `<span class="pgm-kind-n"><b>${App.NF[0].format(got)}</b><i class="u">/${App.NF[0].format(of.length)}</i></span>` : '';
+      return [of.filter(hasIt).length, of.length];
+    };
+    const n = (got, max) => (max ? `<span class="pgm-kind-n${got === max ? ' is-full' : ''}"><b>${App.NF[0].format(got)}</b><i class="u">/${App.NF[0].format(max)}</i></span>` : '');
+    const chip = (l) => {
       const art = D.COLLECTIBLE_KINDS[l] ? kindArt(l) : LAYER_ART[l];
-      return `<button type="button" class="pg-area pgm-kind${layers.has(l) ? ' is-on' : ''}${of.length && got === of.length ? ' is-full' : ''}" data-act="pgmLayer" data-value="${l}" aria-pressed="${layers.has(l)}">
-        <span class="check-box" aria-hidden="true">${App.tick}</span>${art ? artHtml(art) : '<i class="pgm-ico is-name" aria-hidden="true">A</i>'}<span${NT}>${esc(layerName(l))}</span>${n}</button>`;
+      return `<button type="button" class="pgm-kind${layers.has(l) ? ' is-on' : ''}" data-act="pgmLayer" data-value="${l}" aria-pressed="${layers.has(l)}">
+        <span class="pgm-kind-art">${art ? artHtml(art) : '<i class="pgm-ico is-name" aria-hidden="true">A</i>'}</span><span class="pgm-kind-t"${NT}>${esc(layerName(l))}</span>${n(...count(l))}</button>`;
     };
     const title = (g) => (g === 'c112' ? t('pgmG_c112', { pct: pctSpace() }) : t('pgmG_' + g));
+    const open = openGroups();
+    const group = (g) => {
+      const tot = g.layers.map(count).reduce((a, c) => [a[0] + c[0], a[1] + c[1]], [0, 0]);
+      const isOpen = open.includes(g.id), all = g.layers.every((l) => layers.has(l));
+      return `<section class="pgm-sec${isOpen ? ' is-open' : ''}">
+        <div class="pgm-sec-h">
+          <button type="button" class="pgm-fold" data-act="pgmFold" data-value="${g.id}" aria-expanded="${isOpen}">
+            <svg class="pgm-caret" viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1 L8 5 L3 9 Z" fill="currentColor"/></svg><span class="pgm-sec-t">${esc(title(g.id))}</span>${n(...tot)}</button>
+          <button type="button" class="text-btn" data-act="pgmGroup" data-value="${g.id}">${esc(t(all ? 'pgmGrpNone' : 'pgmGrpAll'))}</button>
+        </div>
+        ${isOpen ? `<div class="pgm-kinds" role="group" aria-label="${esc(title(g.id))}">${g.layers.map(chip).join('')}</div>` : ''}
+      </section>`;
+    };
     return `<section class="pgm-filter" aria-label="${esc(t('pgMapKinds'))}">
       <div class="pgm-filter-bar">
         <h3 class="pgm-filter-t">${esc(t('pgMapKinds'))}</h3>
+        <div class="pgm-opts">${switchHtml('whole', !!prefs.pgMapWhole, t('pgMapWhole'))}${switchHtml('found', !!prefs.pgMapFound, t('pgMapShowFound'))}${switchHtml('names', layers.has('names'), t('pgMapNames'))}</div>
         <span class="pgm-all">
           <button type="button" class="text-btn" data-act="pgmAll" data-value="show">${esc(t('pgmShowAll'))}</button>
           <button type="button" class="text-btn" data-act="pgmAll" data-value="hide">${esc(t('pgmHideAll'))}</button>
         </span>
       </div>
-      <div class="pgm-opts">
-        <label class="check"><input type="checkbox" data-change="pgmWhole" ${prefs.pgMapWhole ? 'checked' : ''}> ${esc(t('pgMapWhole'))}</label>
-        <label class="check"><input type="checkbox" data-change="pgmFound" ${prefs.pgMapFound ? 'checked' : ''}> ${esc(t('pgMapShowFound'))}</label>
-        <label class="check"><input type="checkbox" data-change="pgmNames" ${layers.has('names') ? 'checked' : ''}> ${esc(t('pgMapNames'))}</label>
-      </div>
-      ${GROUPS.map((g) => `<div class="pgm-group"><h4 class="pgm-group-t">${esc(title(g.id))}</h4>
-        <div class="pg-areas pgm-kinds" role="group" aria-label="${esc(title(g.id))}">${g.layers.map(chip).join('')}</div></div>`).join('')}
+      <div class="pgm-secs">${GROUPS.filter((g) => !g.save || App.activeSlot()).map(group).join('')}</div>
     </section>`;
   }
 
@@ -1002,17 +1073,6 @@
     const pin = e.target.closest && e.target.closest('.pgm-pin[data-id]');
     if (pin && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); actions.pgmPick(pin); }
   });
-  el.pg.addEventListener('change', (e) => {
-    if (e.target.closest('[data-change="pgmFound"]')) { prefs.pgMapFound = e.target.checked; savePrefs(); render(); }
-    // A choice of yours, not the save's: a bench doesn't undo it.
-    if (e.target.closest('[data-change="pgmWhole"]')) { prefs.pgMapWhole = e.target.checked; savePrefs(); render(); }
-    if (e.target.closest('[data-change="pgmNames"]')) {
-      shownLayers();
-      prefs.pgMapOff = e.target.checked ? prefs.pgMapOff.filter((x) => x !== 'names') : [...prefs.pgMapOff, 'names'];
-      savePrefs();
-      render();
-    }
-  });
   /* The large Map leaves the page's column for the window's whole width (css: .pg.is-big). 100vw would
      count the scrollbar, so the page's real width goes to CSS as --page-w. */
   const pageWidth = () => document.documentElement.style.setProperty('--page-w', document.documentElement.clientWidth + 'px');
@@ -1044,6 +1104,34 @@
       const l = node.dataset.value;
       const on = shownLayers().has(l);
       prefs.pgMapOff = on ? [...prefs.pgMapOff, l] : prefs.pgMapOff.filter((x) => x !== l);
+      savePrefs();
+      render();
+    },
+    // The three choices under the map. The whole map and what you have are choices of yours, not
+    // the save's: a bench doesn't undo them. The area names are a layer.
+    pgmOpt(node) {
+      const v = node.dataset.value;
+      if (v === 'whole') prefs.pgMapWhole = !prefs.pgMapWhole;
+      else if (v === 'found') prefs.pgMapFound = !prefs.pgMapFound;
+      else if (v === 'names') {
+        const on = shownLayers().has('names');
+        prefs.pgMapOff = on ? [...prefs.pgMapOff, 'names'] : prefs.pgMapOff.filter((x) => x !== 'names');
+      }
+      savePrefs();
+      render();
+    },
+    pgmFold(node) {
+      const id = node.dataset.value, open = openGroups();
+      prefs.pgMapOpen = open.includes(id) ? open.filter((x) => x !== id) : [...open, id];
+      savePrefs();
+      render();
+    },
+    // A group's all · none: none when every layer in it is shown, all otherwise.
+    pgmGroup(node) {
+      const g = GROUPS.find((x) => x.id === node.dataset.value);
+      if (!g) return;
+      const shown = shownLayers(), all = g.layers.every((l) => shown.has(l));
+      prefs.pgMapOff = all ? [...new Set([...prefs.pgMapOff, ...g.layers])] : prefs.pgMapOff.filter((x) => !g.layers.includes(x));
       savePrefs();
       render();
     },

@@ -349,7 +349,7 @@
       { es: 'Pared de espadas', en: 'Sword Wall', proj: 'pierce' },
       { es: 'Pared de luz', en: 'Wall of Light' },
       { es: 'Orbe', en: 'Orb', proj: 'pierce' },
-      { es: 'Suelo espinoso', en: 'Spike Floor' },
+      { es: 'Suelo espinoso', en: 'Spike Floor', dmg: 1 },
       { es: 'Gran haz', en: 'Big Beam' }
     ] },
   { id: 'massive-moss-charger', kind: 'boss', name: { es: 'Musgoagresor gigante', en: 'Massive Moss Charger' },
@@ -696,7 +696,7 @@
       { es: 'Pared de espadas', en: 'Sword Wall', proj: 'pierce' },
       { es: 'Pared de luz', en: 'Wall of Light' },
       { es: 'Orbe', en: 'Orb', proj: 'pierce' },
-      { es: 'Suelo espinoso', en: 'Spike Floor' },
+      { es: 'Suelo espinoso', en: 'Spike Floor', dmg: 1 },
       { es: 'Gran haz', en: 'Big Beam' },
       { es: 'Bombardeo de orbes', en: 'Orb Barrage', proj: 'pierce' }
     ] },

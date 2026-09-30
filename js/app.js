@@ -476,9 +476,9 @@
 
   /* ── Mockup ornaments ────────────────────────────────────────────────── */
   /* The screens' frame, the sister site's (../pharloom-calculator; design/14-sister-variants.html,
-     chosen 30 Sep): a hairline inset all round the panel (.frame-line, which also carries the
-     section's light), a curl in each corner (one drawing, mirrored by CSS), and the screen's title
-     in a plaque astride the top line (screenHead). */
+     chosen 30 Sep): a hairline inset all round the panel (.frame-line, in the section's lamp), a curl in
+     each corner (one drawing, mirrored by CSS), and the screen's title in a plaque astride the top
+     line (screenHead). */
   const CORNER = '<svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg>';
   const bkCorners = (cls) => ['tl', 'tr', 'bl', 'br'].map((c) => `<span class="bk ${c}${cls}" aria-hidden="true">${CORNER}</span>`).join('');
   const brackets = '<span class="frame-line" aria-hidden="true"></span>' + bkCorners('');
