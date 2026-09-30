@@ -325,6 +325,7 @@
     pgmG_mine:      { es: 'Tu partida', en: 'Your game' },
     pgmL_charms:    { es: 'Amuletos', en: 'Charms' },          // PANE_CHARMS
     pgmL_equip:     { es: 'Equipo, hechizos y artes', en: 'Equipment, spells and arts' },
+    pgmL_keys:      { es: 'Objetos clave', en: 'Key items' },   // no game text: the Inventory's key items, and two more
     pgmL_bosses:    { es: 'Jefes y pruebas', en: 'Bosses and trials' },
     pgmL_graves:    { es: 'Tumba de Guerrero', en: 'Warrior\'s Grave' },   // KEY_GHOST
     pgmL_dreamers:  { es: 'Soñador', en: 'Dreamer' },   // KEY_DREAMER

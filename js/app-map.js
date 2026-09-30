@@ -17,7 +17,7 @@
 (() => {
   'use strict';
   const HK = globalThis.HK;
-  const D = HK.data, P = HK.progress, R = HK.rooms, CO = HK.collectibles, M = HK.map;
+  const D = HK.data, P = HK.progress, R = HK.rooms, CO = HK.collectibles, M = HK.map, F = HK.foes, HJ = HK.hunter;
   const App = HK.app;
   const { t, pick, el, esc, NT, actions, prefs, savePrefs, render, pctSpace } = App;
 
@@ -107,6 +107,13 @@
     'hw-1': 'Howling_Wraiths', 'hw-2': 'Abyss_Shriek', cyclone: 'Cyclone_Slash', great: 'Great_Slash', dash: 'Dash_Slash',
     'dream-nail': 'RestingGrounds_04', 'dream-awakened': 'Awoken_Dream_Nail', 'seer-ascended': 'Seer',
   };
+  /* The key items, the Inventory's and the two only on the map, where you pick them up (or buy
+     them: Sly sells the lantern, and the Elegant Key once he has his key back). */
+  const KEY_AT = {
+    'lumafly-lantern': 'Sly', 'city-crest': 'City_Crest', 'shopkeepers-key': "Shopkeeper's_Key", 'elegant-key': 'Sly_(Key)',
+    'love-key': 'Love_Key', 'tram-pass': 'Tram_Pass', godtuner: 'Godtuner', 'collectors-map': "Collector's_Map",
+    'hunters-journal': "Hunter's_Journal",
+  };
   // An ItemChanger place, or a room's name when there's none (the Dream Nail's is a dream).
   const placeAt = (key) => spotOf(key) || (roomPoint(key) && { p: roomPoint(key), scene: key });
   const BOSS_AT = {
@@ -117,6 +124,12 @@
     'trial-warrior': 'Room_Colosseum_Bronze', 'trial-conqueror': 'Room_Colosseum_Silver', 'trial-fool': 'Room_Colosseum_Gold',
     'troupe-master-grimm': 'Grimm_Main_Tent', nkg: 'Grimm_Main_Tent',
   };
+  /* The dream bosses, fought with the Dream Nail where their waking self fell (Grey Prince Zote,
+     in Bretta's house): not part of the 112%, but the Journal's; beaten once it has them complete. */
+  const DREAM_BOSS_AT = { 'failed-champion': 'Crossroads_10', 'soul-tyrant': 'Ruins1_24', 'lost-kin': 'Abyss_19',
+    'white-defender': 'Waterways_15', 'grey-prince-zote': 'Room_Bretta' };
+  // Three the site has no Journal medal for (assets/journal): their Journal picture instead.
+  const NO_MEDAL = ['failed-champion', 'soul-tyrant', 'lost-kin'];
   // The warrior dreams, each on the game's pin for its grave.
   const GRAVE_AT = { gorb: 'Cliffs_02', markoth: 'Deepnest_East_10', 'no-eyes': 'Fungus1_34', 'elder-hu': 'Fungus2_32',
     marmu: 'Fungus3_40', galien: 'Deepnest_40', xero: 'RestingGrounds_02' };
@@ -140,7 +153,7 @@
   /* ── The layers, in the filter's four groups ── */
   const PLACE_PINS = { benches: 'bench', trams: 'tram', lifts: 'lift', springs: 'spa', cocoons: 'cocoon' };
   const GROUPS = [
-    { id: 'collect', layers: CO.KINDS },
+    { id: 'collect', layers: [...CO.KINDS, 'keys'] },
     { id: 'c112', layers: ['charms', 'equip', 'bosses', 'graves', 'dreamers'] },
     { id: 'places', layers: ['benches', 'trams', 'lifts', 'people', 'springs', 'cocoons'] },
     { id: 'mine', layers: ['my-bench', 'shade', 'gate', 'markers'] },
@@ -149,7 +162,7 @@
   const LAYERS = [...GROUPS.flatMap((g) => g.layers), 'names'];
   // A layer's picture in the filter: a collectible's, or one of the game's pins.
   const LAYER_ART = {
-    charms: { src: 'assets/charms/compass.png' }, equip: { src: D.art('items', 'mantis-claw') }, bosses: { src: D.art('journal', 'false-knight') },
+    keys: { src: D.art('items', 'city-crest') }, charms: { src: 'assets/charms/compass.png' }, equip: { src: D.art('items', 'mantis-claw') }, bosses: { src: D.art('journal', 'false-knight') },
     graves: { pin: 'grave' }, dreamers: { pin: 'dreamer-monomon' }, benches: { pin: 'bench' }, people: { pin: 'vendor' },
     trams: { pin: 'tram' }, lifts: { glyph: 'lift' }, springs: { pin: 'spa' }, cocoons: { pin: 'cocoon' }, 'my-bench': { pin: 'bench' },
     shade: { pin: 'shade' }, gate: { pin: 'dreamgate' }, markers: { pin: 'marker-y' },
@@ -226,6 +239,21 @@
         out.push({ id: 'c:' + it.id + lvl, layer: 'equip', p: pt, art: { src: D.art('spells', lvl === 2 ? it.id + '2' : it.id) },
           name: pick(D.SPELLS[it.id].levels[lvl]), where: where(scene), on: it.got >= lvl, act: { game: true } });
       }
+    }
+    // The key items: marked on the Inventory; the two it doesn't list only say whether you have them.
+    for (const it of [...D.KEY_ITEMS, ...D.MAP_ITEMS]) {
+      const at = placeAt(KEY_AT[it.id]);
+      if (!at) continue;
+      const inInv = D.KEY_ITEMS.includes(it);
+      out.push({ id: 'k:' + it.id, layer: 'keys', p: at.p, art: { src: D.art('items', it.id) }, name: pick(it), where: where(at.scene),
+        // Sly's prices (wiki, each item's page).
+        on: P.has(App.progress, it.id), note: it.id === 'lumafly-lantern' ? '1800 geo' : it.id === 'elegant-key' ? '800 geo' : '',
+        act: inInv ? { game: true } : { state: true } });
+    }
+    for (const [id, scene] of Object.entries(DREAM_BOSS_AT)) {
+      const p = roomPoint(scene), foe = F.FOE_BY_ID[id];
+      if (p && foe) out.push({ id: 'd:' + id, layer: 'bosses', p, art: { src: D.art(NO_MEDAL.includes(id) ? 'enemies' : 'journal', id) }, name: pick(foe.name), where: where(scene),
+        on: HJ.stateOf(App.hjBook(), id).done, act: { state: true } });
     }
     for (const it of [...cats.bosses.items, ...cats.hive.items]) add112('bosses', it.id === 'hive-knight' ? 'hive' : 'bosses', it.id, BOSS_AT[it.id]);
     for (const it of cats.colosseum.items) add112('bosses', 'colosseum', it.id, BOSS_AT[it.id]);
@@ -478,6 +506,7 @@
   function btnHtml(th) {
     const a = th.act;
     return !a ? ''
+      : a.state ? `<span class="pgm-card-state">${esc(t(hasIt(th) ? 'pgmGot' : 'notFound'))}</span>`
       : a.game ? `<button type="button" class="text-btn" data-act="view" data-value="game" title="${esc(t('pgInGameHint'))}">${esc(t('pgmGoInv'))}</button>`
         // In a save from the game (App.saveLock, js/app.js) the card says whether you have it, and marks nothing.
         : App.saveLock() ? `<span class="pgm-card-state">${esc(t(hasIt(th) ? 'pgmGot' : 'notFound'))}</span>`

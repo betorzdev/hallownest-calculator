@@ -46,6 +46,8 @@
     'city-crest': (pd) => !!pd.hasCityKey || !!pd.openedCityGate, 'shopkeepers-key': (pd) => !!pd.hasSlykey || !!pd.gaveSlykey,
     'elegant-key': (pd) => !!pd.hasWhiteKey || !!pd.usedWhiteKey, 'love-key': (pd) => !!pd.hasLoveKey || !!pd.openedLoveDoor,
     'tram-pass': 'hasTramPass',
+    // Picked up, and only on the Map: the Collector's Map puts the grubs' pins on the game's map.
+    'collectors-map': 'hasPinGrub', 'hunters-journal': 'hasJournal',
     // The Dream Nail's two steps after finding it.
     'dream-awakened': 'dreamNailUpgraded', 'seer-ascended': 'mothDeparted',
     // Bosses the Journal can't tell apart: it has one Hornet for her two fights.

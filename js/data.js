@@ -69,6 +69,12 @@
     { id: 'tram-pass', es: 'Pase para el tranvía', en: 'Tram Pass' },             // INV_NAME_TRAM_PASS
     { id: 'godtuner', es: 'Afinador de Dioses', en: 'Godtuner' },                 // INV_NAME_GODFINDER
   ];
+  /* Two more you pick up that the Inventory doesn't list among the key items: they're only on the
+     Map (js/app-map.js), with the key items. */
+  const MAP_ITEMS = [
+    { id: 'collectors-map', es: 'Mapa del coleccionista', en: "Collector's Map" }, // COLLECTOR_MAP
+    { id: 'hunters-journal', es: 'Diario del Cazador', en: "Hunter's Journal" },    // INV_NAME_JOURNAL
+  ];
   /* What you carry, in the Inventory's order: max is the most there can be (js/progress.js),
      sell what Relic Seeker Lemm pays for one (wiki, each relic's page). */
   const CARRIED = [
@@ -272,6 +278,8 @@
       'love-key':          'Love_Key.png',
       'tram-pass':         'Tram_Pass.png',
       'godtuner':          'Godtuner.png',
+      'collectors-map':    "Collector's_Map.png",
+      'hunters-journal':   "Hunter's_Journal.png",
       'geo':               'Geo.png',
       'essence':           'Essence.png',
       'pale-ore':          'Pale_Ore.png',
@@ -818,7 +826,7 @@
   const STAT_BY_ID = Object.fromEntries(STAT_DEFS.map((d) => [d.id, d]));
 
   HK.data = {
-    NAILS, NAIL, ARTS, ABILITIES, EQUIPMENT, KEY_ITEMS, CARRIED, SHARDS, FRAGMENTS, COMPLETION_NAMES, COLLECTIBLE_KINDS, SPELLS, SPELL_COST, SPELL_COST_TWISTER,
+    NAILS, NAIL, ARTS, ABILITIES, EQUIPMENT, KEY_ITEMS, MAP_ITEMS, CARRIED, SHARDS, FRAGMENTS, COMPLETION_NAMES, COLLECTIBLE_KINDS, SPELLS, SPELL_COST, SPELL_COST_TWISTER,
     SOUL, HEALTH, FOCUS, MOVE, PETS, CHARM_NOTCHES,
     CHARMS, CHARM_BY_ID, EFFECT_WHEN, CHARM_EFFECTS, GROUPS, STAT_DEFS, STAT_BY_ID, ART, art,
   };

@@ -1384,10 +1384,17 @@ on Cornifer's map). It's the tablet chosen among three variants in
     Charm Notch 8, Simple Key 4, Rancid Egg 21, the four relics (14, 17, 8, 4), Whispering Root
     15, the Grimmkin flames 10, Map 13 and Stag Station 11—, each kind named as the game names
     it, each with **how many of it you have** («Captive Grub 23/46», in green when complete).
+    And the **key items** (Lumafly Lantern, City Crest, Shopkeeper's Key, Elegant Key, Love Key,
+    Tram Pass, Godtuner, and two the Inventory doesn't list: Collector's Map and Hunter's Journal),
+    where you pick them up or buy them (ItemChanger's place; Sly's for the lantern, 1800 geo, and
+    the Elegant Key, 800), marked on the Inventory; the two only here just say whether you have them.
   - **Towards 112%**: the charms (the 36 of the category and the Troupe's four), the equipment,
     the spells (a pin per level: Vengeful Spirit and Shade Soul are two), the nail arts and the
     Dream Nail's three steps, the bosses and the Colosseum's trials, the warrior dreams on the
-    game's pins for their graves, and the three Dreamers on theirs. Each is where it's found (the
+    game's pins for their graves, and the three Dreamers on theirs. With the bosses, the five
+    dream bosses the Journal counts (Failed Champion, Soul Tyrant, Lost Kin, White Defender, Grey
+    Prince Zote), in the room of their waking fight (Zote's, Bretta's house), beaten once the
+    Journal has them complete; they aren't part of the 112%. Each is where it's found (the
     room ItemChanger's `locations.json` gives it, the shop for what's bought, the fight's room for
     a boss) and counts as the 112% tablet counts it; its card marks it as the tablet does, or, for
     what's marked on the Inventory (spells, arts, cloaks, the Dream Nail), takes you there.
