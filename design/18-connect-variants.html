@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Connect your game</title>
+<!-- Design material, not part of the site. Your game in free mode (the invitation, js/app-home.js
+     inviteHtml): on 30 Sep 2026 the "Connect your game" block read as ugly next to the example,
+     which had just come alive (design/17-home-alive.html). Measured on the site at 1440 px: the
+     call sits top-left, left-aligned on a screen where everything else is centred, plain text on
+     black; the left column stretches to the example's height, leaving ~180 px of nothing between
+     the button and the four pieces; and the example, with its scene and map, now draws the eye
+     away from the only thing the screen asks for. Three ways out, over the site's real CSS and art:
+       A · the call as a title card on top, centred, then the example across the width (as your
+           game will look, map beside), then the four pieces in one row.
+       B · the two columns kept, balanced: the call centred against the example's bench, with the
+           game's ornament, and the four pieces right under it, no hole.
+       C · the empty bench: the screen opens on the area's scene with its bench empty, the call
+           as its title card ("your Knight hasn't sat down yet") and the button under the bench;
+           the example follows, dimmed, as "this is how it will look".
+     Chosen on 30 Sep 2026: A (built: js/app-home.js inviteHtml, css/app.css; docs/guide.md).
+     ?v=now|a|b|c&w=390&lang=es|en. The <base> points at the root so "assets/…" works. -->
+<base href="../">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+/* ════ The mockup's chrome: none of this goes into the site ══════════════════════════════ */
+body { background: var(--page-bg); background-attachment: fixed; margin: 0; }
+.mk { max-width: 1180px; margin: 0 auto; padding: var(--sp-6) var(--page-pad) var(--sp-16); }
+.mk-h1 { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-xl); letter-spacing: var(--track-title); color: var(--ink-strong); margin: 0 0 var(--sp-2); }
+.mk-lead { max-width: var(--measure); color: var(--ink-2); font-size: var(--fs-sm); margin: 0 0 var(--sp-4); }
+.mk-bar { position: sticky; top: 0; z-index: 50; display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-4);
+  padding: var(--sp-2) 0; margin-bottom: var(--sp-6); background: var(--scene-bg); border-bottom: 1px solid var(--line); font-size: var(--fs-sm); color: var(--muted); }
+.mk-bar b { font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); font-weight: 600; }
+.mk-bar button { background: none; border: 0; padding: var(--sp-1) 0; font: inherit; color: var(--muted); cursor: pointer; }
+.mk-bar button[aria-pressed="true"] { color: var(--accent); box-shadow: inset 0 -1px 0 var(--accent-line); }
+.mk-sep { width: 1px; align-self: stretch; background: var(--line); }
+.mk-note { max-width: var(--measure); margin: 0 auto var(--sp-6); color: var(--ink-2); font-size: var(--fs-sm); text-align: center; min-height: 3em; }
+.mk-frame { display: block; width: 390px; height: 2000px; margin: 0 auto; border: 1px solid var(--line); }
+.is-embed .mk-h1, .is-embed .mk-lead, .is-embed .mk-bar, .is-embed .mk-note { display: none; }
+.is-embed .mk { padding: 0 var(--page-pad); }
+.hmA-scene { --area-m: var(--area-city-mid); --area-d: var(--area-city-deep); }
+
+/* ════ → css/app.css if chosen ═══════════════════════════════════════════════════════════ */
+
+/* Shared by A, B, C: the call gets the game's title ornament and the one strong button. */
+.cx-orn { display: block; width: min(237px, 60%); height: auto; opacity: 0.8; }
+.cx-orn.is-top { transform: scaleY(-1); }
+.cx .hmI-cta .btn { min-height: calc(var(--ctl) + var(--sp-2)); }
+
+/* ── A · the call as a title card on top ── */
+.v-a .hmI { display: flex; flex-direction: column; align-items: stretch; gap: var(--sp-10, var(--sp-8)); max-width: 1100px; }
+.v-a .hmI-cta { order: 0; margin: 0; padding-top: var(--sp-4); text-align: center; align-items: center; }
+.v-a .hmI-cta h3 { font-size: var(--fs-2xl); }
+.v-a .hmI-cta p { font-size: var(--fs-lg); }
+.v-a .hmI-demo { order: 1; -webkit-mask: linear-gradient(to bottom, #000 70%, transparent); mask: linear-gradient(to bottom, #000 70%, transparent); }
+.v-a .hmI-demo .hmC-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: var(--sp-8); margin-inline: 0; }
+.v-a .hmI-demo .hmC-card { display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); }
+.v-a .hmI-feats { order: 2; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.v-a .hmI-or { order: 3; }
+.v-a .hmI-tag { grid-column: 1 / -1; justify-self: center; }
+
+/* ── B · two columns, balanced ── */
+.v-b .hmI { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--sp-8) var(--sp-12); align-items: center; }
+.v-b .hmI-demo { grid-column: 2; grid-row: 1 / span 2; -webkit-mask: linear-gradient(to bottom, #000 75%, transparent); mask: linear-gradient(to bottom, #000 75%, transparent); }
+.v-b .hmI-demo .hmC-hero { margin-inline: 0; }
+.v-b .hmI-cta { grid-column: 1; grid-row: 1; align-self: end; margin: 0; text-align: center; align-items: center; }
+.v-b .hmI-cta h3 { font-size: var(--fs-2xl); }
+.v-b .hmI-cta p { font-size: var(--fs-lg); }
+.v-b .hmI-feats { grid-column: 1; grid-row: 2; align-self: start; }
+.v-b .hmI-or { grid-column: 1 / -1; }
+
+/* ── C · the empty bench ── */
+.v-c .hmI { display: flex; flex-direction: column; align-items: stretch; gap: var(--sp-8); max-width: 1100px; }
+.cx-wait { position: relative; isolation: isolate; display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); text-align: center; padding: var(--sp-8) var(--sp-4) var(--sp-4); }
+.cx-wait .hmC-sup { color: var(--ink-2); }
+.cx-wait h3 { font-family: var(--font-display); font-size: clamp(1.8rem, 5vw, 3.2rem); font-weight: 400; letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--ink-strong); line-height: 1.1; margin: 0; }
+.cx-wait p { margin: var(--sp-2) 0; max-width: 46ch; color: var(--ink-2); font-size: var(--fs-lg); line-height: 1.45; }
+.cx-wait .btn { min-height: calc(var(--ctl) + var(--sp-2)); padding-inline: var(--sp-8); }
+.cx-wait .hmC-bench { margin-top: var(--sp-4); }
+.cx-wait .hmC-seat { filter: drop-shadow(0 0 14px color-mix(in oklab, var(--area-city-light) 45%, transparent)); }
+.v-c .hmI-demo { opacity: 0.55; -webkit-mask: linear-gradient(to bottom, #000 55%, transparent); mask: linear-gradient(to bottom, #000 55%, transparent); }
+.v-c .hmI-demo .hmC-hero { margin-inline: 0; }
+.v-c .hmI-feats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.cx-soon { text-align: center; font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); margin: 0 0 calc(-1 * var(--sp-6)); }
+
+/* The phone: all three are one column; the four pieces two by two. */
+@media (max-width: 899px) {
+  .v-a .hmI-demo .hmC-hero { grid-template-columns: minmax(0, 1fr); }
+  .v-a .hmI-demo .hmB-map { display: none; }
+  .v-b .hmI { display: flex; flex-direction: column; }
+  .v-b .hmI-cta { order: 0; } .v-b .hmI-demo { order: 1; } .v-b .hmI-feats { order: 2; } .v-b .hmI-or { order: 3; }
+  :is(.v-a, .v-c) .hmI-feats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .v-c .hmI-demo .hmB-map { display: none; }
+}
+</style>
+</head>
+<body>
+<script src="js/i18n.js"></script>
+<script src="js/data.js"></script>
+<script src="js/rooms.js"></script>
+<script src="js/collectibles.js"></script>
+<script src="js/map.js"></script>
+<script src="js/benches.js"></script>
+
+<div class="mk">
+  <h1 class="mk-h1">Connect your game</h1>
+  <p class="mk-lead">Your game in free mode: the call to import and the example beside it. Three ways to make the call the
+    first thing you see and close the hole under it.</p>
+  <div class="mk-bar" id="bar"></div>
+  <p class="mk-note" id="note"></p>
+  <div id="stage"></div>
+</div>
+
+<script>
+'use strict';
+const HK = globalThis.HK, D = HK.data, R = HK.rooms, M = HK.map, BE = HK.benches, CO = HK.collectibles, I = HK.i18n;
+const q = new URLSearchParams(location.search);
+const embed = q.get('embed') === '1';
+if (embed) document.documentElement.classList.add('is-embed');
+const st = { v: q.get('v') || 'c', phone: q.get('w') === '390', lang: q.get('lang') || 'es' };
+I.setLang(st.lang);
+const t = I.t, L = (o) => (o && (o[st.lang] || o.en)) || '';
+const CORNER = '<svg class="bk-art" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M4 46 V18 C4 10 10 4 18 4 H46"/><path d="M10 30 C10 16 16 10 30 10"/><path d="M18 18 C21 14 26 15 25 19 C24 22 20 21 21 18.5"/><path d="M4 4 L8 8"/></svg>';
+const brackets = '<span class="frame-line" aria-hidden="true"></span>' + ['tl', 'tr', 'bl', 'br'].map((c) => `<span class="bk ${c}" aria-hidden="true">${CORNER}</span>`).join('');
+const PLAQUE = '<svg class="screen-plaque" viewBox="0 0 100 30" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><polygon class="is-outer" points="6,1 94,1 99.5,15 94,29 6,29 0.5,15" vector-effect="non-scaling-stroke"/><polygon class="is-inner" points="8,4 92,4 96.5,15 92,26 8,26 3.5,15" vector-effect="non-scaling-stroke"/></svg>';
+const VARIANTS = {
+  now: ['Now', 'As it is: the call top-left, a hole under it, the example taking the eye.'],
+  a: ['A · Title card on top', 'The call centred on top, as the screen\'s title card, with the one strong button. Then the example across the width, the way your game will look (map beside), and the four pieces in one row.'],
+  b: ['B · Two columns, balanced', 'The same two columns, but the call centred on its side, level with the example\'s bench, with the game\'s ornament; the four pieces right under it: no hole.'],
+  c: ['C · The empty bench', 'The screen opens on the City\'s scene with its bench empty: the call is the title card ("your Knight hasn\'t sat down yet"), the button under the bench. Then the example, dimmed, as how it will look, and the four pieces in one row.'],
+};
+const DEMO = { area: 'city', bench: 'Ruins1_29', pct: 87, time: '41<span class="u">h</span> 12<span class="u">min</span>', geo: '2350', journal: [131, 146] };
+const areaVars = (a) => { const lt = (R.AREAS[a] || {}).light;
+  return `--area-l: var(--area-${lt}-light); --area-m: var(--area-${lt}-mid); --area-d: var(--area-${lt}-deep);`; };
+function benchHtml(scene, knight = true) {
+  const [key, y] = BE.SCENES[scene];
+  const [w, h, x] = BE.ART[key];
+  return `<div class="hmC-bench" aria-hidden="true" style="--bw: ${w}; --bh: ${h}; --bx: ${x}; --by: ${y};">
+    <img class="hmC-seat" src="assets/benches/${key}.png" alt="" width="${w}" height="${h}">${knight ? '<span class="hmC-kn"></span>' : ''}</div>`;
+}
+const fig = (k, v, big) => `<div class="hm-fig${big ? ' is-big' : ''}"><span class="hm-fig-k">${k}</span><span class="hm-fig-v">${v}</span></div>`;
+const orn = (cls = '') => `<img class="cx-orn hmA-orn${cls}" src="${D.art('hunter', 'fleur')}" alt="">`;
+const scene = '<div class="hmA-scene" aria-hidden="true"></div>';
+
+function mapHtml() {
+  const ai = M.AREA_IDS.indexOf(DEMO.area), rooms = Object.entries(M.ROOMS).filter(([, r]) => r[0] === ai);
+  let x0 = Infinity, y0 = -Infinity, x1 = -Infinity, y1 = Infinity;
+  for (const [, r] of rooms) { x0 = Math.min(x0, r[1] - r[3] / 2); x1 = Math.max(x1, r[1] + r[3] / 2); y0 = Math.max(y0, r[2] + r[4] / 2); y1 = Math.min(y1, r[2] - r[4] / 2); }
+  const [aw, ah] = M.ATLAS.full;
+  const svgRooms = rooms.map(([, r]) => { const [sx, sy, sw, sh] = r[7];
+    return `<svg x="${r[1] - r[3] / 2}" y="${-r[2] - r[4] / 2}" width="${r[3]}" height="${r[4]}" viewBox="${sx} ${sy} ${sw} ${sh}" preserveAspectRatio="none"><image href="assets/map/rooms-full.png" width="${aw}" height="${ah}"/></svg>`; }).join('');
+  return `<figure class="hmB-map"><svg class="hmB-svg" viewBox="${x0 - 0.4} ${-y0 - 0.4} ${x1 - x0 + 0.8} ${y0 - y1 + 0.8}">${svgRooms}</svg>
+    <figcaption class="hmB-cap">${L(R.AREAS[DEMO.area])} · ${t('homeMapLeft', { n: 24 })}</figcaption></figure>`;
+}
+
+function demoHtml(withMap) {
+  const card = `${orn(' is-top')}<span class="hmC-sup">${t('homeRestingAt')}</span><h3 class="hmC-area">${L(R.AREAS[DEMO.area])}</h3>${orn()}
+    ${benchHtml(DEMO.bench)}
+    <div class="hm-figs hmC-figs">${fig(t('pgCompletion'), `${DEMO.pct}<span class="u">${st.lang === 'es' ? ' %' : '%'} / 112</span>`, true)}${fig(t('homeTime'), DEMO.time)}${fig('Geo', DEMO.geo)}${fig(t('navJournal'), `${DEMO.journal[0]}<span class="u">/ ${DEMO.journal[1]}</span>`)}</div>
+    <div class="hmC-bar"><i class="is-had" style="width:75.9%"></i><i class="is-new" style="width:1.8%"></i></div>`;
+  const tag = `<span class="tag hmI-tag">${t('homeExample')}</span>`;
+  if (st.v === 'a') return `<div class="hmI-demo" aria-hidden="true" inert><div class="hmC-hero" style="${areaVars(DEMO.area)}">${scene}${tag}<div class="hmC-card">${card}</div>${mapHtml()}</div></div>`;
+  return `<div class="hmI-demo" aria-hidden="true" inert><div class="hmC-hero" style="${areaVars(DEMO.area)}">${scene}${tag}${card}${withMap ? mapHtml() : ''}</div></div>`;
+}
+const FEATS = [['navProgress', 'homeFeatPct', D.art('effects', 'grub')], ['navMap', 'homeFeatMap', D.art('effects', 'map')],
+  ['shadeTag', 'homeFeatShade', D.art('knight', 'shade')], ['navJournal', 'homeFeatJournal', D.art('hunter', 'book')]];
+const feats = () => `<div class="hmI-feats">${FEATS.map(([a, b, img]) => `<button type="button" class="hmI-feat"><img src="${img}" alt=""><b>${t(a)}</b><span>${t(b)}</span></button>`).join('')}</div>`;
+const or = () => `<div class="hmI-or"><button type="button" class="hmI-way"><img src="assets/charms/quickslash.png" alt=""><b>${t('homeBuildsTitle')}</b><span>${t('homeBuildsText')}</span></button></div>`;
+const cta = (ornament) => `<div class="hmI-cta">${ornament ? orn(' is-top') : ''}<h3>${t('homeConnect')}</h3><p>${t('homeConnectLine')}</p>
+  <button type="button" class="btn btn-primary${st.v === 'now' ? '' : ' btn-lg'}">${t('saveImport')}</button><span class="hmI-drop">${t('homeDrop')}</span></div>`;
+
+function body() {
+  switch (st.v) {
+    case 'a': return `<div class="hmI">${cta(true)}${demoHtml()}${feats()}${or()}</div>`;
+    case 'b': return `<div class="hmI">${cta(true)}${demoHtml(false)}${feats()}${or()}</div>`;
+    case 'c': {
+      const wait = `<div class="cx-wait" style="${areaVars(DEMO.area)}">${scene}${orn(' is-top')}
+        <span class="hmC-sup">${st.lang === 'es' ? 'Tu Caballero aún no se ha sentado' : 'Your Knight hasn\'t sat down yet'}</span>
+        <h3>${t('homeConnect')}</h3>${orn()}${benchHtml(DEMO.bench, false)}
+        <p>${t('homeConnectLine')}</p><button type="button" class="btn btn-primary btn-lg">${t('saveImport')}</button><span class="hmI-drop">${t('homeDrop')}</span></div>`;
+      return `<div class="hmI">${wait}<p class="cx-soon">${st.lang === 'es' ? 'Así se verá tu partida' : 'This is how your game will look'}</p>${demoHtml(true)}${feats()}${or()}</div>`;
+    }
+    default: return `<div class="hmI">${demoHtml(true)}${cta(false)}${feats()}${or()}</div>`;
+  }
+}
+
+function render() {
+  const stage = document.getElementById('stage');
+  document.getElementById('note').textContent = VARIANTS[st.v][1];
+  paintBar();
+  const qs = `?v=${st.v}&lang=${st.lang}`;
+  if (st.phone && !embed) { stage.innerHTML = `<iframe class="mk-frame" title="390 px" src="design/18-connect-variants.html${qs}&embed=1"></iframe>`; history.replaceState(null, '', qs + '&w=390'); return; }
+  stage.innerHTML = `<div class="gear-body hm cx v-${st.v}">${brackets}<header class="inv-head screen-head">${PLAQUE}<h2 class="sec-title screen-title">${t('navHome')}</h2></header>${body()}</div>`;
+  if (!embed) history.replaceState(null, '', qs + (st.phone ? '&w=390' : ''));
+}
+function paintBar() {
+  const btn = (k, v, lbl) => `<button type="button" data-k="${k}" data-v="${v}" aria-pressed="${String(st[k]) === String(v)}">${lbl}</button>`;
+  document.getElementById('bar').innerHTML = `<b>Variant</b>${Object.entries(VARIANTS).map(([k, [l]]) => btn('v', k, l)).join('')}
+    <span class="mk-sep"></span>${btn('phone', !st.phone, st.phone ? '390 px' : 'Desktop')}<span class="mk-sep"></span>${btn('lang', st.lang === 'es' ? 'en' : 'es', st.lang.toUpperCase())}`;
+}
+document.getElementById('bar').addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  const v = b.dataset.v; st[b.dataset.k] = v === 'true' ? true : v === 'false' ? false : v;
+  if (b.dataset.k === 'lang') I.setLang(st.lang);
+  render();
+});
+render();
+</script>
+</body>
+</html>
