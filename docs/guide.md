@@ -999,7 +999,7 @@ belongs to. **Spore Shroom** releases its cloud when you focus. With
 Crest on its own) are named under "Your attacks" and aren't simulated. **Dreamshield** comes in
 with the two lists on the wiki's "Dreamshield" page: each enemy attack that's a projectile says
 whether "the Dreamshield blocks it" or "it pierces the Dreamshield" (`proj` in `js/enemies.js`:
-68 attacks from 38 bosses), the blockable ones carry a "Blocked" button that negates it without
+68 attacks from 39 bosses), the blockable ones carry a "Blocked" button that negates it without
 touching you —the heal isn't interrupted, it doesn't count for Carefree Melody, and it doesn't
 kill you on Radiant— and breaks the shield for 2 s on the clock, and "Dreamshield" among your
 attacks hits for base nail by hand, with no soul, and also breaks it. Your header says whether

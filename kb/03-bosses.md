@@ -633,7 +633,7 @@ The same attacks as Soul Master, much faster:
 - **Clock** (*Reloj*): now **6 orbs** (two rows of three).
 - **Slam** (*Impacto*): taller, bigger and faster shockwaves.
 - Phase 2: the explosion radius of each **Altered Slam** is much larger, and **he doesn't do the
-  Fake Out Slam**.
+  Fake Out Altered Slam** (the plain Fake Out Slam he does).
 
 He teleports so much that building up soul is hard → *Soul Catcher* and above all *Soul Eater*.
 The best moment to heal is still when he disappears in the Clock, in the centre of the arena.

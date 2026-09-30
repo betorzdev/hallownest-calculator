@@ -390,7 +390,7 @@ test("entries: proj marks the projectiles for Dreamshield with the wiki's two li
     assert.equal(x.kind, 'boss', x.id);
     n += 1; bosses.add(x.id);
   }
-  assert.equal(n, 68); assert.equal(bosses.size, 38);
+  assert.equal(n, 68); assert.equal(bosses.size, 39);
   const proj = (id, en) => F.FOE_BY_ID[id].attacks.find((a) => a.en === en).proj;
   assert.equal(proj('grimm', 'Fire Bats'), 'block');
   assert.equal(proj('grimm', 'Pufferfish'), 'pierce', "the fireballs pierce; the bats don't");
@@ -398,6 +398,9 @@ test("entries: proj marks the projectiles for Dreamshield with the wiki's two li
   assert.equal(proj('dung-defender', 'Dung Toss'), 'block');
   assert.equal(proj('pure-vessel', 'Soul Daggers'), 'pierce');
   assert.equal(proj('xero', 'Nail Cast'), 'pierce', "everything from the Dream Warriors pierces");
+  assert.equal(proj('hornet-sentinel', 'Spike Traps'), 'block', 'the Dreamshield destroys the traps');
+  assert.equal(proj('soul-tyrant', 'Orb'), 'block', 'the same attacks as Soul Master');
+  assert.equal(proj('the-radiance', 'Orb'), undefined, 'on neither list');
   assert.equal(proj('false-knight', 'Slam'), undefined, "the slam isn't a projectile");
 });
 
