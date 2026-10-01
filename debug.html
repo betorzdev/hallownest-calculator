@@ -253,6 +253,43 @@ f.addEventListener('load', () => {
       document.body.appendChild(pre);
     }, 500);
   }
+  /* &way=1, with &view=map and &walk=<scene>: draws the way the Knight takes from that bench to
+     the save's (js/walk.js, by kind: a walk in white, a stag ride in gold, a tram in cyan, a lift
+     in magenta), fits the map to it and keeps it so while he walks; and after &wayat=<ms> writes
+     where his pin is into a pre#way (for --dump-dom with --virtual-time-budget). */
+  if (q.get('way') === '1' && q.get('walk')) {
+    const W = f.contentWindow, A = W.HK.app, d = f.contentDocument;
+    const legs = A.knight.way(q.get('walk'), A.progress.bench);
+    const svg = d.querySelector('.pgm-svg');
+    if (legs && svg) {
+      const COL = { walk: '#fff', stag: '#ffdc00', tram: '#00dcff', lift: '#ff00ff' };
+      const g = d.createElementNS('http://www.w3.org/2000/svg', 'g'); g.id = 'dbg-way';
+      g.innerHTML = legs.map((l) => `<polyline points="${l.pts.map(([x, y]) => `${x},${-y}`).join(' ')}" fill="none" stroke="${COL[l.kind]}" stroke-width="0.06" stroke-dasharray="${l.kind === 'walk' ? '' : '0.1 0.1'}"/>`).join('');
+      svg.appendChild(g);
+      const pts = legs.flatMap((l) => l.pts), pad = 0.8;
+      const x0 = Math.min(...pts.map((p) => p[0])) - pad, x1 = Math.max(...pts.map((p) => p[0])) + pad;
+      const y0 = Math.min(...pts.map((p) => -p[1])) - pad, y1 = Math.max(...pts.map((p) => -p[1])) + pad;
+      const fit = () => {
+        const s = d.querySelector('.pgm-svg'), r = s && s.getBoundingClientRect();
+        if (!r || !r.width) return;
+        let w = x1 - x0, h = y1 - y0;
+        if (w / h < r.width / r.height) w = h * (r.width / r.height); else h = w * (r.height / r.width);
+        s.setAttribute('viewBox', `${(x0 + x1) / 2 - w / 2} ${(y0 + y1) / 2 - h / 2} ${w} ${h}`);
+        if (!s.querySelector('#dbg-way')) s.appendChild(g);
+        W.requestAnimationFrame(fit);
+      };
+      fit();
+    }
+    const pre = document.createElement('pre'); pre.id = 'way'; document.body.appendChild(pre);
+    // His track, a sample every 250 ms: the time, his pin's point, its opacity, his frame and his facing.
+    const track = [];
+    const sample = () => { const pin = d.querySelector('.pgm-you'); track.push([Math.round(W.performance.now()), pin && pin.style.getPropertyValue('--px'), pin && pin.style.getPropertyValue('--py'), pin && pin.style.opacity, pin && pin.querySelector('svg').getAttribute('viewBox').split(' ')[0], pin && pin.querySelector('.pgm-you-art').getAttribute('transform') ? 'L' : 'R']); };
+    const iv = setInterval(sample, 250);
+    setTimeout(() => {
+      clearInterval(iv); sample();
+      pre.textContent = JSON.stringify({ legs: legs && legs.map((l) => [l.kind, l.pts.length]), walking: !!A.knight.state().walking, track });
+    }, Number(q.get('wayat') || 1500));
+  }
   // The Knight (js/app-knight.js) fades in with a CSS transition, which headless Chrome doesn't
   // tick once the page is idle: he'd be captured half seen. Cut, he's always whole.
   { const st = f.contentDocument.createElement('style'); st.textContent = '.kn { transition: none !important; }'; f.contentDocument.head.appendChild(st); }

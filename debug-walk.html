@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>debug: the Knight's walk</title>
+<style>
+  html, body { margin: 0; background: #07090e; color: #d8d4c8; font: 14px/1.4 system-ui, sans-serif; }
+  .bar { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; padding: 8px 12px; background: #0f131c; border-bottom: 1px solid #2a3040; }
+  .bar label { display: inline-flex; gap: 4px; align-items: center; }
+  select, button { font: inherit; background: #1a2030; color: inherit; border: 1px solid #3a4258; border-radius: 4px; padding: 2px 8px; }
+  button { cursor: pointer; } button:disabled { opacity: 0.5; cursor: default; }
+  .legs { color: #9aa3b8; } .legs b { color: #fff; } .legs .stag { color: #ffdc00; } .legs .tram { color: #00dcff; } .legs .lift { color: #ff00ff; }
+  .hint { color: #8891a6; }
+  iframe { border: 0; display: block; width: 100%; height: calc(100vh - 92px); }
+</style></head><body>
+<!-- debug-walk.html — a page to watch the Knight's walk between any two benches on the Map
+     (js/walk.js, js/app-knight.js), not part of the site. The site opens in an iframe on the Map,
+     whole, in free mode (every ride open, unless unticked): a tap on a bench's pin is the start,
+     the next the end (a third starts over); or pick them in the two lists. Then the way is drawn
+     by leg (a walk in white, a stag ride in gold, a tram in cyan, a lift in magenta), the map
+     fitted to it, and the Knight's pin walks it. "Again" replays the walk; "Fit" refits the map
+     to the way; the ride boxes say which the way may take. Needs --allow-file-access-from-files
+     in headless Chrome, like debug.html. -->
+<div class="bar">
+  <label>From <select id="from"><option value="">(tap a bench)</option></select></label>
+  <label>To <select id="to"><option value="">(tap a bench)</option></select></label>
+  <button id="go" disabled>Go</button>
+  <button id="again" disabled>Again</button>
+  <button id="fit" disabled>Fit</button>
+  <button id="clear">Clear</button>
+  <label><input type="checkbox" id="stags" checked> stags</label>
+  <label><input type="checkbox" id="trams" checked> trams</label>
+  <label><input type="checkbox" id="lifts" checked> lifts</label>
+  <span class="legs" id="legs"></span>
+  <span class="hint" id="hint">Tap a bench on the map for the start, another for the end.</span>
+</div>
+<script>
+'use strict';
+// The site's state before it loads: the Map, whole and large, Spanish, free mode (no slot), no bench yet.
+localStorage.setItem('hollow.prefs', JSON.stringify({ lang: 'es', langChosen: true, view: 'map', pgMapWhole: true, pgMapBig: true, open: [], compare: 'base' }));
+localStorage.removeItem('hollow.progress');
+localStorage.removeItem('hollow.prev');
+try { sessionStorage.setItem('hollow.entered', '1'); } catch (e) { /* no veil anyway */ }
+
+const $ = (id) => document.getElementById(id);
+const COL = { walk: '#fff', stag: '#ffdc00', tram: '#00dcff', lift: '#ff00ff' };
+const f = document.createElement('iframe');
+f.src = 'index.html#view=map';
+document.body.appendChild(f);
+
+let W, A, HK, d, from = '', to = '', legs = null, overlay = null;
+const sceneOf = (name) => name.replace(/_(b|c|d|part_b|left|right)$/, '');
+const dist = (p, q) => Math.hypot(p[0] - q[0], p[1] - q[1]);
+
+f.addEventListener('load', () => {
+  W = f.contentWindow; A = W.HK.app; HK = W.HK; d = f.contentDocument;
+  // The benches, by name, in the two lists: every one the map pins (Godhome's and the Palace's have no way).
+  const benches = [...new Set(HK.map.PINS.filter((p) => p[0] === 'bench').map((p) => sceneOf(p[1])))];
+  benches.sort((a, b) => label(a).localeCompare(label(b)));
+  for (const sel of [$('from'), $('to')]) for (const sc of benches) { const o = document.createElement('option'); o.value = sc; o.textContent = label(sc); sel.appendChild(o); }
+  // A tap on a bench's pin picks it, instead of opening its card.
+  d.addEventListener('click', (e) => {
+    const g = e.target.closest && e.target.closest('.pgm-pin[data-id^="benches:"]');
+    if (!g) return;
+    e.preventDefault(); e.stopPropagation();
+    const i = Number(g.dataset.id.slice('benches:'.length)), pin = HK.map.PINS.filter((p) => p[0] === 'bench')[i];
+    if (pin) pick(sceneOf(pin[1]));
+  }, true);
+  // The overlay goes again after each repaint.
+  const keep = () => { const s = d.querySelector('.pgm-svg'); if (overlay && s && !s.contains(overlay)) s.appendChild(overlay); W.requestAnimationFrame(keep); };
+  keep();
+  rides();
+});
+
+function label(sc) { const w = A.placeName(sc); return (w ? w + ' · ' : '') + sc; }
+function pick(sc) {
+  if (!from || (from && to)) { from = sc; to = ''; } else if (sc !== from) to = sc; else return;
+  $('from').value = from; $('to').value = to;
+  state();
+  if (from && to) go();
+}
+function state() {
+  $('go').disabled = !(from && to);
+  $('again').disabled = $('fit').disabled = !legs;
+  $('hint').textContent = !from ? 'Tap a bench on the map for the start, another for the end.' : !to ? 'Now tap the bench to walk to.' : '';
+}
+function rides() {
+  const R = HK.walk.RIDES;
+  A.knight.setRides({ stags: $('stags').checked ? R.stag.stops : [], trams: $('trams').checked ? Object.values(R.tram.lines) : [], lifts: $('lifts').checked ? Object.values(R.lift.lines) : [] });
+}
+// The way drawn, the map fitted to it, and the walk played.
+function go() {
+  rides();
+  legs = A.knight.way(from, to);
+  draw();
+  $('legs').innerHTML = !legs ? '<b>no way</b> (entered by dream, or a bench with no point)'
+    : legs.map((l) => `<span class="${l.kind}">${l.kind}</span> ${l.pts.reduce((s, p, i) => s + (i ? dist(p, l.pts[i - 1]) : 0), 0).toFixed(1)} u`).join(' · ');
+  if (legs) fit();
+  play();
+  state();
+}
+function draw() {
+  if (overlay) overlay.remove();
+  overlay = null;
+  const s = d.querySelector('.pgm-svg');
+  if (!s) return;
+  overlay = d.createElementNS('http://www.w3.org/2000/svg', 'g');
+  overlay.id = 'dbg-way';
+  overlay.setAttribute('pointer-events', 'none');
+  const ring = (sc, col) => { const p = A.pgmBenchPoint(sc); return p ? `<circle cx="${p[0]}" cy="${-p[1]}" r="0.5" fill="none" stroke="${col}" stroke-width="0.06"/>` : ''; };
+  overlay.innerHTML = (legs || []).map((l) => `<polyline points="${l.pts.map(([x, y]) => `${x},${-y}`).join(' ')}" fill="none" stroke="${COL[l.kind]}" stroke-width="0.06" stroke-linejoin="round" stroke-dasharray="${l.kind === 'walk' ? '' : '0.1 0.1'}"/>`).join('')
+    + ring(from, '#8f8') + ring(to, '#f88');
+  s.appendChild(overlay);
+}
+function fit() { if (legs) A.pgmFitTo(legs.flatMap((l) => l.pts)); }
+// The walk: the save's bench becomes the end, and the Knight comes from the start.
+function play() {
+  if (!from || !to) return;
+  A.knight.cancel();
+  A.progress = HK.progress.normalize({ ...A.progress, bench: to });
+  A.render();
+  A.knight.onSave(from);
+  A.knight.sync();
+}
+$('from').addEventListener('change', () => { from = $('from').value; to = $('to').value && $('to').value !== from ? $('to').value : ''; $('to').value = to; state(); if (from && to) go(); });
+$('to').addEventListener('change', () => { to = $('to').value !== from ? $('to').value : ''; $('to').value = to; state(); if (from && to) go(); });
+$('go').addEventListener('click', go);
+$('again').addEventListener('click', play);
+$('fit').addEventListener('click', fit);
+$('clear').addEventListener('click', () => { from = to = ''; legs = null; if (overlay) overlay.remove(); overlay = null; $('from').value = $('to').value = ''; $('legs').textContent = ''; A.knight.cancel(); state(); });
+for (const id of ['stags', 'trams', 'lifts']) $(id).addEventListener('change', () => { rides(); if (from && to) go(); });
+</script>
+</body></html>

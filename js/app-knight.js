@@ -5,9 +5,10 @@
    rule under it). When you change screens he gets up and runs along the bar to the new one, at a
    steady pace (design/00-system.md, Motion): never a slide; he only fades in on arriving, and out
    where the bar has no room for him (a phone). On the Map his pin stands by your bench
-   (js/app-map.js draws that one) and, when a save moves the bench, the pin walks from the old
-   one to the new one door to door, the shortest way through the game's doors (js/rooms.js,
-   DOORS), while the map is in view; and Your game's bench carries a still picture of him sitting (js/app-home.js,
+   (js/app-map.js draws that one) and, when a save moves the bench, the pin goes from the old
+   one to the new one the way js/walk.js finds: on foot along the corridors the map draws, room
+   to room through the game's doors, and by stag, tram or lift where the save has them and
+   they're shorter, while the map is in view; and Your game's bench carries a still picture of him sitting (js/app-home.js,
    css .hmC-kn). With reduced motion he only stands or sits. Decorative for the page: hidden from screen
    readers and out of the tab order; the click (he focuses soul) is an easter egg.
    Shares HK.app (see js/app.js): App.knight.sync() after every render, App.knight.onSave()
@@ -17,7 +18,7 @@
   const HK = globalThis.HK;
   const App = HK.app;
   const { el, track, prefs, savePrefs, load } = App;
-  const R = HK.rooms, CH = HK.changes;
+  const CH = HK.changes, WK = HK.walk, P = HK.progress;
 
   const still = matchMedia('(prefers-reduced-motion: reduce)');
   // Below 900 px the bar spreads six tabs over the width: no gap for him beside a tab (css).
@@ -153,79 +154,82 @@
     }
     svg.setAttribute('viewBox', `${run ? i * 104 : 0} 0 104 140`);
   }
-  /* The shortest way from one bench to the other, by the map's distance, through the doors
-     (js/rooms.js, DOORS; each on its room's edge, js/app-map.js): from the bench to a door of its
-     room, across it (its two sides are one point, or near enough), door to door inside each room,
-     and from a door of the other room to its bench. Dijkstra over the doors (under 900; a plain
-     scan for the nearest is enough). A door with no point on the map (the White Palace, which the
-     map doesn't draw) is never nearer than one with. → the way's points, both benches included,
-     the two sides of each door as one; or null (no way, or a bench with no point). The Map's
-     "How to get there" (js/app-map.js) asks it for a way to a point in a room (end), not a bench. */
-  function doorsRoute(from, to, end) {
-    const pa = App.pgmBenchPoint(from), pb = end || App.pgmBenchPoint(to);
-    if (!pa || !pb || !R.DOORS[from] || !R.DOORS[to]) return null;
-    if (from === to) return [pa, pb];
-    const split = (n) => { const i = n.indexOf('['); return [n.slice(0, i), n.slice(i + 1, -1)]; };
-    const at = { S: pa, E: pb };                       // a node's point: 'S', 'E', or 'scene[door]'
-    const point = (n) => (n in at ? at[n] : (at[n] = (([sc, d]) => App.pgmDoorPoint(sc, d, R.DOORS[sc][d][0]))(split(n))));
-    const dist = (p, q) => (p && q ? Math.hypot(p[0] - q[0], p[1] - q[1]) : Infinity);
-    const next = (n) => {
-      if (n === 'S') return Object.keys(R.DOORS[from]).map((d) => `${from}[${d}]`);
-      if (n === 'E') return [];
-      const [sc, d] = split(n), [b, e] = R.DOORS[sc][d], out = [`${b}[${e}]`];
-      for (const x of Object.keys(R.DOORS[sc])) if (x !== d) out.push(`${sc}[${x}]`);
-      if (sc === to) out.push('E');
-      return out;
-    };
-    const cost = { S: 0 }, back = {}, seen = new Set(), open = ['S'];
-    while (open.length) {
-      let k = 0;
-      for (let i = 1; i < open.length; i++) if (cost[open[i]] < cost[open[k]]) k = i;
-      const n = open.splice(k, 1)[0];
-      if (seen.has(n)) continue;
-      seen.add(n);
-      if (n === 'E') break;
-      for (const m of next(n)) {
-        if (seen.has(m)) continue;
-        const c = cost[n] + dist(point(n), point(m));
-        if (!(m in cost) || c < cost[m]) { cost[m] = c; back[m] = n; open.push(m); }
-      }
-    }
-    if (!('E' in back) || cost.E === Infinity) return null;
-    const pts = [];
-    for (let n = 'E'; n !== undefined; n = back[n]) { const p = point(n); if (p && !(pts.length && dist(p, pts[0]) < 0.02)) pts.unshift(p); }
-    return pts;
+  /* The way from one bench to the other: js/walk.js (find), on the ground the map draws, through
+     the game's doors, and by the rides the save has: the stag stations it has opened (the Stag
+     Nest's and the Hidden Station's the site doesn't follow: only with no save), the tram lines
+     it has ridden (with the Tram Pass) and the City's two lifts, always; with no save (free
+     mode, everything open) every ride. The Map's "How to get there" (js/app-map.js) asks for the
+     way to a point in a room (end), not a bench, as one line of points (route). */
+  const STAG_ID = { Town: 'dirtmouth-stag', Crossroads_47: 'crossroads-stag', Fungus1_16_alt: 'greenpath-stag', Fungus2_02: 'queens-station-stag',
+    Fungus3_40: 'queens-gardens-stag', Ruins1_29: 'city-storerooms-stag', Ruins2_08: 'kings-station-stag', RestingGrounds_09: 'resting-grounds-stag',
+    Deepnest_09: 'distant-village-stag' };
+  let ridesSet = null;   // debug-walk.html picks the rides by hand (setRides); null, the save's
+  function rides() {
+    if (ridesSet) return ridesSet;
+    const free = !App.activeSlot(), pr = App.progress;
+    const stags = WK.RIDES.stag.stops.filter((pin) => free || (STAG_ID[pin] && P.hasFound(pr, STAG_ID[pin])));
+    const trams = Object.entries(WK.RIDES.tram.lines).filter(([line]) => free || P.has(pr, 'tram-' + line)).map(([, stops]) => stops);
+    return { stags, trams, lifts: Object.values(WK.RIDES.lift.lines) };
   }
-  /* From the old bench to the new one along doorsRoute, at a steady pace (the whole way in 2 to
-     8 s), stepping his frames at --dur-step and turning where the way turns. The view stays as
-     you have it (never zoomed or moved for him): out of it, he walks unseen. The pin is repainted
-     with every render, so it's looked up again at every step; it's already painted at the new
-     bench, where the walk ends. No way (Godhome, the White Palace: entered by dream), or reduced
-     motion: he's simply there. Seen once per bench (prefs.walked). */
+  const wayTo = (from, to, end) => WK.find(from, to, { point: App.pgmBenchPoint, end, ...rides() });
+  const route = (from, to, end) => { const legs = wayTo(from, to, end); return legs ? legs.flatMap((l) => l.pts) : null; };
+  /* From the old bench to the new one along the way, leg by leg: on foot at PACE map units a
+     second, stepping his run's frames at --dur-step and turning where the way turns; on the tram
+     or the lift standing still, carried at the ride's own speed (RIDE: units a second) with a
+     stop at each end; by stag, fading out at the one station and in at the other (STAG_S in
+     all, and no way between: the game's ride is instant). The whole way is fitted to 2 to 8 s,
+     every leg alike. The view stays as you have it (never zoomed or moved for him): out of it,
+     he goes unseen. The pin is repainted with every render, so it's looked up again at every
+     step; it's already painted at the new bench, where the walk ends. No way (Godhome, the White
+     Palace: entered by dream), or reduced motion: he's simply there. Seen once per bench
+     (prefs.walked). */
+  const PACE = 4;
+  const RIDE = { tram: { v: 8, stop: 0.5 }, lift: { v: 3, stop: 0.3 } };
+  const STAG_S = 1.4;
   function mapWalk(from, to) {
-    walking = { from, to, pts: null };
-    const done = () => { walking = null; prefs.walked = to; savePrefs(); const pin = youPin(); if (pin) frame(pin, -1); };
-    const pts = walking.pts = doorsRoute(from, to);
-    if (!pts || pts.length < 2 || still.matches) { done(); return; }
-    const segs = []; let len = 0;
-    for (let i = 1; i < pts.length; i++) { const d = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); segs.push(d); len += d; }
-    const dur = Math.min(8000, Math.max(2000, (len / 4) * 1000)), t0 = performance.now();
+    walking = { from, to, legs: null };
+    const done = () => { walking = null; prefs.walked = to; savePrefs(); const pin = youPin(); if (pin) { frame(pin, -1); pin.style.opacity = ''; } };
+    const legs = walking.legs = wayTo(from, to);
+    if (!legs || still.matches) { done(); return; }
+    for (const l of legs) {
+      l.segs = []; l.len = 0;
+      for (let i = 1; i < l.pts.length; i++) { const d = Math.hypot(l.pts[i][0] - l.pts[i - 1][0], l.pts[i][1] - l.pts[i - 1][1]); l.segs.push(d); l.len += d; }
+      l.dur = Math.max(0.001, l.kind === 'walk' ? l.len / PACE : l.kind === 'stag' ? STAG_S : l.len / RIDE[l.kind].v + RIDE[l.kind].stop);
+    }
+    const total = legs.reduce((s, l) => s + l.dur, 0), k = (Math.min(8, Math.max(2, total)) / total) * 1000;   // ms a second of the way
+    let end = 0;
+    for (const l of legs) { l.t0 = end; l.ms = l.dur * k; end += l.ms; }
+    const t0 = performance.now();
+    const lerp = (a, b, f) => [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f];
     const step = (now) => {
       if (!walking || walking.to !== to) return;          // a newer walk took over
       const gone = Math.max(0, now - t0);                  // a frame's time can precede the walk's start
-      const u = Math.min(1, gone / dur);
-      let dist = u * len, i = 0;
-      while (i < segs.length - 1 && dist > segs[i]) { dist -= segs[i]; i++; }
-      const f = segs[i] ? Math.min(1, dist / segs[i]) : 1;
-      const x = pts[i][0] + (pts[i + 1][0] - pts[i][0]) * f, y = pts[i][1] + (pts[i + 1][1] - pts[i][1]) * f;
+      const l = legs.find((x) => gone < x.t0 + x.ms) || legs[legs.length - 1];
+      const f = Math.min(1, (gone - l.t0) / l.ms);         // how far along the leg
+      let at, dx = 0, run = -1, opacity = 1;
+      if (l.kind === 'walk') {
+        let d = f * l.len, i = 0;
+        while (i < l.segs.length - 1 && d > l.segs[i]) { d -= l.segs[i]; i++; }
+        at = lerp(l.pts[i], l.pts[i + 1], l.segs[i] ? Math.min(1, d / l.segs[i]) : 1);
+        dx = l.pts[i + 1][0] - l.pts[i][0];
+        run = Math.floor(gone / ms('--dur-step')) % 6;
+      } else if (l.kind === 'stag') {
+        at = l.pts[f < 0.5 ? 0 : 1];
+        opacity = f < 0.3 ? 1 - f / 0.3 : f < 0.7 ? 0 : (f - 0.7) / 0.3;
+      } else {
+        const stop = RIDE[l.kind].stop / l.dur;            // the stop at each end, as a share of the leg
+        at = lerp(l.pts[0], l.pts[1], Math.min(1, Math.max(0, (f - stop / 2) / (1 - stop))));
+        if (l.kind === 'tram') dx = l.pts[1][0] - l.pts[0][0];
+      }
       const pin = youPin();
       if (pin) {
-        pin.style.setProperty('--px', x.toFixed(3) + 'px'); pin.style.setProperty('--py', (-y).toFixed(3) + 'px');
+        pin.style.setProperty('--px', at[0].toFixed(3) + 'px'); pin.style.setProperty('--py', (-at[1]).toFixed(3) + 'px');
+        pin.style.opacity = opacity < 1 ? opacity.toFixed(2) : '';
         const art = pin.querySelector('.pgm-you-art');
-        if (art) art.setAttribute('transform', pts[i + 1][0] < pts[i][0] ? 'scale(-1 1)' : '');
-        frame(pin, Math.floor(gone / ms('--dur-step')) % 6);
+        if (art && dx) art.setAttribute('transform', dx < 0 ? 'scale(-1 1)' : '');
+        frame(pin, run);
       }
-      if (u < 1 && !document.hidden) requestAnimationFrame(step); else done();
+      if (gone < end && !document.hidden) requestAnimationFrame(step); else done();
     };
     requestAnimationFrame(step);
   }
@@ -272,5 +276,8 @@
 
   // Where he is and whether the map is in view, for the smoke test and the debug pages.
   const state = () => ({ perch, tabId, mapSeen, mapOn, cls: kn.className, walking });
-  App.knight = { start, sync, onSave, state, route: doorsRoute };
+  // For debug-walk.html: a walk under way called off (the pin stays where it is until a repaint), and the rides chosen by hand.
+  const cancel = () => { walking = null; toWalk = null; };
+  const setRides = (r) => { ridesSet = r; };
+  App.knight = { start, sync, onSave, state, route, way: wayTo, cancel, setRides };
 })();

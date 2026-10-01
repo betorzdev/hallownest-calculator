@@ -29,6 +29,9 @@ Before touching anything, check whether it's already solved:
   game patch). The same goes for `js/benches.js` with `assets/benches/`, each bench as the game
   draws it (`tools/extract-benches.py`), and `js/scene-objects.js` with `assets/world/`, what
   each room holds for the Map: enemies, secrets, geo, totems, tablets (`tools/extract-scenes.py`).
+  And `js/map-walk.js` (`npm run walk`, `tools/extract-walk.js`, from `assets/map/rooms-full.png`):
+  the ground each room's drawing covers and what crossing it costs, which `js/walk.js` walks
+  (the Knight's way from bench to bench: corridors, doors, stags, trams and lifts).
   `js/hornet-moves.js` with `assets/hornet/` too: Hornet's moves from Silksong's own sprites
   (`tools/extract-hornet.py`), for the sister site's link, `js/app-sister.js` (hidden until the
   sister is published: `SISTER = false`; `#…&sister=1` shows it).
@@ -41,7 +44,7 @@ Neither folder is part of the page: `index.html` doesn't load them.
 
 ## Hard constraints
 
-- **No framework and no build.** `index.html` loads **thirty-eight classic scripts**, not modules.
+- **No framework and no build.** `index.html` loads **forty classic scripts**, not modules.
   The page is `js/app.js` (the core) and one script per screen (`js/app-*.js`), sharing the
   `HK.app` object, and `js/app-boot.js` starts it; the rules for sharing are in `js/app.js`'s header.
   Plus GoatCounter's (`async`, external), the visit counter: the site has to work the same
@@ -110,6 +113,7 @@ what the game says.
 - To look at the page: `debug-smoke.html` drives the site and writes the result; `debug.html`
   sets the preferences for screenshots; `debug-overflow.html` lists what spills past the width; `debug-benches.html` shows every bench
   of Your game with the Knight on it (`?seat=1` marks the seat);
+  `debug-walk.html` plays the Knight's walk between two benches you tap, with the way drawn;
   `debug-hover.html` tests the mouse behaviour, and has to be run with
   `--blink-settings=primaryHoverType=2,primaryPointerType=4,availableHoverTypes=2,availablePointerTypes=4`
   (without it, headless Chrome behaves as touch).
