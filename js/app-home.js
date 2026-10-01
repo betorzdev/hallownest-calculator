@@ -3,15 +3,15 @@
    at" over the area's name, on the area's own light), the state of the link to the game's file
    and the figures the game's profile screen shows (completion, time, geo) with the Journal's.
    Under it, three columns: what you got since the last save (js/changes.js, over the game as it
-   was before the last sync, hollow.prev), your shade and what's missing in the area of your
-   bench. The Inventory (js/app-game.js) is its own screen, next in the bar.
+   was before the last sync, hollow.prev), what you carry (the charms worn and what they give) and
+   what's missing in the area of your bench; your shade, a line under the area's map. The Inventory (js/app-game.js) is its own screen, next in the bar.
    In free mode (nobody's game) the screen is an invitation instead: an example game, connect
    yours (a button, or dropping the file on the screen), or just try builds.
    Shares HK.app with js/app.js (see there). */
 (() => {
   'use strict';
   const HK = globalThis.HK;
-  const D = HK.data, M = HK.map, HJ = HK.hunter, F = HK.foes, R = HK.rooms, CO = HK.collectibles, CP = HK.completion, CH = HK.changes, L = HK.live, I = HK.i18n, BE = HK.benches;
+  const D = HK.data, C = HK.codec, M = HK.map, HJ = HK.hunter, F = HK.foes, R = HK.rooms, CO = HK.collectibles, CP = HK.completion, CH = HK.changes, L = HK.live, I = HK.i18n, BE = HK.benches;
   const App = HK.app;
   const { t, pick, el, NT, esc, load, brackets, screenHead, actions, prefs, pctSpace } = App;
 
@@ -148,14 +148,22 @@
       ${rows ? `<ul class="hm-list">${rows}</ul>` : App.emptyHtml(esc(t('homeSinceNone')))}</section>`;
   }
 
-  /* Your shade, drawn as the game draws it, floating; with none, its place stays, dim. */
-  function shadeBlock() {
-    const sh = App.progress.shade;
-    const area = sh && pick(R.AREAS[R.areaOf(sh.scene)]);
-    const line = sh ? t('shadeBanner', { area: area || '?', geo: num(sh.geo) }) : t(App.progress.bench ? 'homeNoShade' : 'homeShadeUnknown');
-    return `<section class="hm-block"><h3 class="block-head">${esc(t('shadeTag'))}</h3>
-      <div class="hm-shade${sh ? '' : ' is-none'}"><img class="hm-shade-art" src="${D.art('knight', 'shade')}" alt=""><p>${esc(line)}</p></div>
-      ${sh ? `<button type="button" class="text-btn" data-act="view" data-value="map">${esc(t('homeOnMap'))}</button>` : ''}</section>`;
+  /* What you carry (design/23, A; it took your shade's place on 1 Oct 2026, now a line under the
+     area's map): the charms worn and the two figures they move most, the nail's damage per second
+     and the hits until you die, to the Charms screen. */
+  function buildBlock() {
+    const b = App.state, s = App.sheet.stats, n = b.charms.length;
+    const note = t(n === 1 ? 'homeBuildNoteOne' : 'homeBuildNote', { n: num(n), used: num(C.notchesUsed(b.charms)), max: num(b.notches) });
+    const worn = n ? `<div class="hm-worn">${b.charms.map((id) => `<img src="assets/charms/${id}.png" alt="${esc(pick(D.CHARM_BY_ID[id]))}" title="${esc(pick(D.CHARM_BY_ID[id]))}" loading="lazy">`).join('')}</div>`
+      : App.emptyHtml(esc(t('homeBuildNone')));
+    const fig = (label, v, sub) => `<div><dt>${esc(label)}</dt><dd>${esc(v)}<small>${esc(sub)}</small></dd></div>`;
+    return `<section class="hm-block"><h3 class="block-head">${esc(t('homeBuild'))}<span class="block-note">${esc(note)}</span></h3>
+      ${worn}
+      <dl class="hm-build">
+        ${fig(t('dps'), App.fmtStat(s['nail.dps']), t('homeBuildNail', { nail: pick(D.NAILS[b.nail]), n: App.fmtStat(s['nail.damage']) }))}
+        ${fig(t('hitsToDie'), App.fmtStat(s['health.hitsToDie']), t('homeBuildBody', { masks: num(b.masks), soul: App.fmtStat(s['soul.total']) }))}
+      </dl>
+      <button type="button" class="text-btn" data-act="view" data-value="charms">${esc(t('homeToCharms'))}</button></section>`;
   }
 
   // What you're missing in the area of your bench: the list under "Missing nearby" and the map's pins.
@@ -168,10 +176,10 @@
     const area = R.areaOf(App.progress.bench);
     if (!area) return `<section class="hm-block"><h3 class="block-head">${esc(t('homeNear'))}</h3>${App.emptyHtml(esc(t('homeNearUnknown')))}</section>`;
     const left = nearLeft(area);
-    const cells = left.slice(0, NEAR_MAX).map((it, i) => {
+    const cells = left.slice(0, NEAR_MAX).map((it) => {
       const k = D.COLLECTIBLE_KINDS[it.kind];
       // Each takes you to it on the Map; hovered, it lights its pin on the area's map (data-near).
-      return `<button type="button" class="hm-near-cell" data-near="${i}" data-act="toMap" data-target="collect:${it.id}" data-name="${esc(pick(k))}" title="${esc(pick(k) + ' · ' + t('seeOnMap'))}"><img src="${D.art(k.art[0], k.art[1])}" alt="${esc(pick(k))}" loading="lazy">${esc(placeName(it.scene))}</button>`;
+      return `<button type="button" class="hm-near-cell" data-near="${it.id}" data-act="toMap" data-target="collect:${it.id}" data-name="${esc(pick(k))}" title="${esc(pick(k) + ' · ' + t('seeOnMap'))}"><img src="${D.art(k.art[0], k.art[1])}" alt="${esc(pick(k))}" loading="lazy">${esc(placeName(it.scene))}</button>`;
     }).join('');
     return `<section class="hm-block"><h3 class="block-head">${esc(t('homeNear'))}<span class="block-note"${NT}>${esc(pick(R.AREAS[area]))} · ${num(left.length)}</span></h3>
       ${left.length ? `<div class="hm-near">${cells}</div>` : App.emptyHtml(esc(t('homeNearNone')))}
@@ -192,23 +200,29 @@
     const y0 = Math.min(...rs.map((r) => r[2] - r[4] / 2)), y1 = Math.max(...rs.map((r) => r[2] + r[4] / 2));
     return (AREA_BOX[i] = [x0, y0, x1 - x0, y1 - y0]);
   }
+  // Your shade, where it waits and with how much: a line under the area's map (its pin is on it when it's there).
+  function shadeLine() {
+    const sh = App.progress.shade, area = sh && R.AREAS[R.areaOf(sh.scene)];
+    return sh ? `<span class="hmB-shade">${esc(t('homeShadeLine', { area: area ? pick(area) : '?', geo: num(sh.geo) }))}</span>` : '';
+  }
   function areaMapHtml(area, benchScene) {
     const i = M.AREA_IDS.indexOf(area), box = i >= 0 && areaBox(i);
     if (!box || !App.pgmRoomsSvg) return '';
     const [x, y, w, h] = box, pad = 0.4;
     const at = (p, body, cls = '', attrs = '') => `<g class="hmB-pin${cls}"${attrs} transform="translate(${p[0].toFixed(3)} ${(-p[1]).toFixed(3)})">${body}</g>`;
     const pr = App.progress, bench = benchScene && App.pgmBenchPoint(benchScene);
-    const near = nearLeft(area).slice(0, NEAR_MAX).map((it, n) => {
+    // Only the kinds the Map's filter shows; the pin and its cell under Missing nearby share data-near.
+    const left = nearLeft(area).filter((it) => App.pgmKindShown(it.kind));
+    const near = left.slice(0, NEAR_MAX).map((it) => {
       const p = App.pgmItemPoint(it.id), k = D.COLLECTIBLE_KINDS[it.kind];
-      return p ? at(p, `<image href="${D.art(k.art[0], k.art[1])}" x="-0.3" y="-0.3" width="0.6" height="0.6"/>`, '', ` data-near="${n}" data-act="toMap" data-target="collect:${it.id}" data-name="${esc(pick(k))}"`) : '';
+      return p ? at(p, `<image href="${D.art(k.art[0], k.art[1])}" x="-0.3" y="-0.3" width="0.6" height="0.6"/>`, '', ` data-near="${it.id}" data-act="toMap" data-target="collect:${it.id}" data-name="${esc(pick(k))}"`) : '';
     }).join('');
     const shade = pr.shade && pr.shade.x !== undefined && R.areaOf(pr.shade.scene) === area ? at([pr.shade.x, pr.shade.y], App.pgmAtlasSvg('shade', 0.8)) : '';
     const here = bench ? at(bench, `<circle class="hmB-ring" r="0.4"/>${App.pgmAtlasSvg('bench', 0.8)}<image href="${D.art('hud', 'knight')}" x="-0.3" y="-1.25" width="0.6" height="0.7"/>`, ' is-here') : '';
-    const left = nearLeft(area).length;
     return `<figure class="hmB-map">
       <svg class="hmB-svg" viewBox="${(x - pad).toFixed(3)} ${(-y - h - pad).toFixed(3)} ${(w + 2 * pad).toFixed(3)} ${(h + 2 * pad).toFixed(3)}" role="img" aria-label="${esc(t('homeMapLabel', { area: pick(R.AREAS[area]) }))}">
         <g>${App.pgmRoomsSvg(i)}</g>${near}${shade}${here}</svg>
-      <figcaption class="hmB-cap"${NT}>${esc(pick(R.AREAS[area]))} · ${esc(t('homeMapLeft', { n: num(left) }))}</figcaption></figure>`;
+      <figcaption class="hmB-cap"${NT}>${esc(pick(R.AREAS[area]))} · ${esc(t('homeMapLeft', { n: num(left.length) }))}${shadeLine()}</figcaption></figure>`;
   }
 
   /* ── The arrival (design/17-home-alive.html, C) ──
@@ -266,7 +280,7 @@
         ${area ? SCENE : ''}
         ${card}${map}
       </div>
-      <div class="hmC-cols">${changesBlock()}${shadeBlock()}${nearBlock()}</div>`;
+      <div class="hmC-cols">${changesBlock()}${buildBlock()}${nearBlock()}</div>`;
   }
 
   /* Nobody's game: the invitation shows what a game looks like here (an example bench, its

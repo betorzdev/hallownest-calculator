@@ -17,6 +17,7 @@
     "pages": "node tools/pages.js",
     "check-pack": "node tools/check-pack.js",
     "rooms": "node tools/fetch-rooms.js",
-    "collectibles": "node tools/fetch-collectibles.js"
+    "collectibles": "node tools/fetch-collectibles.js",
+    "admin": "node tools/admin.js"
   }
 }

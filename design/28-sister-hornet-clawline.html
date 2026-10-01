@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hornet's Clawline</title>
+<!-- Design material, not part of the site. Round 3 of the sister link (design/26, design/27).
+   Albert (1 Oct 2026) on round 2: no running arrivals; loves the cloak descent (Drifter's Cloak);
+   the effect on the link (thread woven through the word, cinched into an underline) cool; the throw
+   I drew was ugly → use the game's own ability that throws the needle and pulls her to it: Clawline
+   («Garra elongada», INV_NAME_SKILL_HARPOON). Its path is horizontal (the wiki), and the link and
+   your save's Knight share the masthead's row: a Clawline from the Knight to the link is the game's,
+   crossing the title behind its letters. Its needle and thread are the game's sprites
+   (tools/extract-hornet.py: harpoon-needle, harpoon-thread, needle-hit), and she arrives at the link
+   as at a ledge (Mantle Cling → Vault → Land).
+     A · Cloak, Knight, Clawline: down on her cloak beside your Knight, a flourish of the needle at
+         him, then Clawline to the link, the thread left as its underline, and up onto it.
+     B · Cloak, Clawline: the same from the title's right end, without the Knight.
+     C · Cloak onto the link: straight down onto it, and a sweep of the needle stitches the underline.
+   Chosen on 1 Oct 2026: C, the thread staying as underline (built: js/app-sister.js, css/app.css
+   .mh-sister/.sis-*, js/app.js renderMasthead, hidden by SISTER = false; docs/guide.md).
+   On a phone the link has a line of its own under the masthead, not on the Knight's row: A and B
+   play as C there (a Clawline is horizontal).
+   ?a=a|b|c &ul=0 (the thread fades instead of staying) &depth=front (over the title, not behind)
+   &life=0 &hover=0 &exit=soar|leap|none &size=s|m &still=1 &end=1 &do=flourish|look|needolin|sit
+   &click=ms &w=phone &tick=1 (as design/27). -->
+<base href="../">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+body { background: var(--page-bg); background-attachment: fixed; margin: 0; }
+.mk { max-width: 1180px; margin: 0 auto; padding: var(--sp-6) var(--page-pad) var(--sp-16); }
+.mk-h1 { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-xl); letter-spacing: var(--track-title); color: var(--ink-strong); margin: 0 0 var(--sp-2); }
+.mk-lead { max-width: var(--measure); color: var(--ink-2); font-size: var(--fs-sm); margin: 0 0 var(--sp-4); }
+.mk-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-4); padding: var(--sp-2) 0; border-bottom: 1px solid var(--line); font-size: var(--fs-sm); color: var(--muted); }
+.mk-bar:last-of-type { margin-bottom: var(--sp-6); }
+.mk-bar b { min-width: 5.5em; font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); font-weight: 600; }
+.mk-bar button { background: none; border: 0; padding: var(--sp-1) 0; font: inherit; color: var(--muted); cursor: pointer; }
+.mk-bar button[aria-pressed="true"] { color: var(--accent); box-shadow: inset 0 -1px 0 var(--accent-line); }
+.mk-note { max-width: var(--measure); margin: 0 auto var(--sp-6); color: var(--ink-2); font-size: var(--fs-sm); text-align: center; min-height: 4.5em; }
+.mk-stage { position: relative; overflow: hidden; border: 1px dashed var(--line); padding: 0 var(--sp-6) var(--sp-12); }
+.mk-stage .seg.langsel { flex-wrap: nowrap; }
+.mk-fake { margin-top: var(--sp-8); height: 160px; border-top: 1px solid var(--line); color: var(--muted); font-size: var(--fs-sm); padding-top: var(--sp-3); }
+.mk-frame { display: block; margin: 0 auto; border: 1px solid var(--line); background: var(--page-bg); }
+body.is-embed .mk { padding: 0; }
+body.is-embed .mk > :not(.mk-stage) { display: none; }
+body.is-embed .mk-stage { border: 0; padding-inline: var(--page-pad); }
+
+/* ════ What would go into the site ════ */
+/* The link: one more loose word in the masthead's tools, after Share; on a phone, a line of its own
+   under the masthead, on the right. Once she has called it, bone with a white glow that breathes. */
+.mh-sister { position: relative; display: inline-flex; align-items: center; gap: var(--sp-1); min-height: var(--ctl-sm); color: var(--ink-2); text-decoration: none; font-size: var(--fs-sm); letter-spacing: var(--track-label); transition: color var(--dur) var(--ease); }
+.mh-sister:hover { color: var(--accent-ink); }
+.mh-sister .arr { font-size: var(--fs-2xs); }
+.mh-sister.is-called { color: var(--ink-strong); animation: sister-call 1.6s var(--ease-fade) 3; }
+.mh-sister.is-struck { animation: sister-struck var(--dur-slow) var(--ease-fade); }
+@keyframes sister-call { 50% { text-shadow: 0 0 6px var(--focus-glow), 0 0 14px color-mix(in oklab, var(--ink-strong) 40%, transparent); } }
+@keyframes sister-struck { 0% { text-shadow: 0 0 2px var(--focus-glow), 0 0 18px var(--focus-glow); transform: translateX(-3px); } 100% { transform: none; } }
+.mh-sister-row { display: none; justify-content: flex-end; padding-top: var(--sp-6); }
+@media (max-width: 599px) {
+  .mh-tools > .mh-sister { display: none; }
+  .mh-sister-row { display: flex; }
+}
+
+/* The masthead over the back layer: what crosses the title behind it passes under its letters. */
+.mk-stage .masthead, .mk-stage .mh-sister-row { position: relative; z-index: 1; }
+.lay { position: absolute; inset: 0; pointer-events: none; }
+.lay-back { z-index: 0; }
+.lay-front { z-index: 3; }
+/* Hornet and Clawline's needle and thread: strips stepped by JS (js/hornet-moves.js). */
+.hx, .hfx { position: absolute; left: 0; top: 0; background-repeat: no-repeat; pointer-events: none; }
+.hx { will-change: transform; }
+.fx { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.fx .silk { fill: none; stroke: var(--ink-strong); stroke-width: 1; stroke-linecap: round; opacity: 0.85; }
+.fx .silk.is-glint { filter: drop-shadow(0 0 3px var(--focus-glow)); }
+.dust, .note { position: absolute; z-index: 4; pointer-events: none; }
+.dust { width: 3px; height: 3px; border-radius: 50%; background: var(--ink-strong); box-shadow: 0 0 4px var(--focus-glow); }
+.note { font-size: var(--fs-md); color: var(--ink-strong); text-shadow: 0 0 6px var(--focus-glow); }
+</style>
+</head>
+<body>
+<div class="mk">
+  <h1 class="mk-h1">Hornet's Clawline</h1>
+  <p class="mk-lead">Round 3: she comes down on her cloak and reaches the link with Clawline, the game's own needle and thread. Hover the link, move the mouse, click it.</p>
+  <div class="mk-bar" id="bar-a"></div>
+  <div class="mk-bar" id="bar-b"></div>
+  <div class="mk-bar" id="bar-c"></div>
+  <p class="mk-note" id="note"></p>
+  <div class="mk-stage" id="stage"></div>
+</div>
+<script src="js/hornet-moves.js"></script>
+<script>
+'use strict';
+const q = new URLSearchParams(location.search);
+const opt = {
+  a: q.get('a') || 'a', ul: q.get('ul') !== '0', depth: q.get('depth') || 'back',
+  life: q.get('life') !== '0', hover: q.get('hover') !== '0', exit: q.get('exit') || 'soar',
+  size: q.get('size') || 'm', still: q.get('still') === '1' || matchMedia('(prefers-reduced-motion: reduce)').matches,
+  end: q.has('end'), w: q.get('w') || 'desk',
+};
+const EMBED = q.has('embed');
+const ARRIVALS = {
+  a: ['A · Cloak, Knight, Clawline', 'She floats down on her cloak beside your save\'s Knight and sweeps her needle at him; he startles. She turns and fires Clawline: the needle flies behind the title and sticks into «Silksong», she charges along the thread behind the letters, catches it, the thread whips loose and settles as the word\'s underline, and she hoists herself onto the link.'],
+  b: ['B · Cloak, Clawline', 'The same without the Knight: she floats down at the title\'s right end and fires Clawline from there.'],
+  c: ['C · Cloak onto the link', 'Calm and short: she floats straight down onto «Silksong», closes her cloak, and a sweep of her needle stitches the thread through the word and cinches it into its underline.'],
+};
+const EXITS = { soar: 'Silk Soar', leap: 'Leap', none: 'Stays' };
+const H = HK.HORNET, M = H.MOVES;
+const K = opt.size === 's' ? 0.42 : 0.5;
+const FLOOR = H.FLOOR * K;
+
+/* ── The bars ── */
+function link(over, label, on) {
+  const p = new URLSearchParams(location.search);
+  for (const [k, v] of Object.entries(over)) p.set(k, v);
+  p.delete('end'); p.delete('embed');
+  return `<button type="button" data-href="?${p}" aria-pressed="${on}">${label}</button>`;
+}
+document.getElementById('bar-a').innerHTML = '<b>Arrival</b>' + Object.entries(ARRIVALS).map(([k, [n]]) => link({ a: k }, n, opt.a === k)).join('')
+  + '<b>Thread</b>' + link({ ul: opt.ul ? 0 : 1 }, 'Stays as underline', opt.ul) + link({ depth: opt.depth === 'back' ? 'front' : 'back' }, 'Behind the title', opt.depth === 'back');
+document.getElementById('bar-b').innerHTML = '<b>Then</b>'
+  + link({ life: opt.life ? 0 : 1 }, 'Life of her own', opt.life) + link({ hover: opt.hover ? 0 : 1 }, 'Reacts to the mouse', opt.hover)
+  + '<b>On click</b>' + Object.entries(EXITS).map(([k, n]) => link({ exit: k }, n, opt.exit === k)).join('');
+document.getElementById('bar-c').innerHTML = '<b>Size</b>' + link({ size: 'm' }, 'M · 36 px', opt.size === 'm') + link({ size: 's' }, 'S · 30 px', opt.size === 's')
+  + '<b>Motion</b>' + link({ still: 0 }, 'Full', !opt.still) + link({ still: 1 }, 'Reduced', opt.still)
+  + '<b>Width</b>' + link({ w: 'desk' }, 'Computer', opt.w === 'desk') + link({ w: 'phone' }, 'Phone (390)', opt.w === 'phone')
+  + '<b>·</b><button type="button" data-href="' + location.search + '">Replay ↻</button>';
+document.addEventListener('click', (e) => { const b = e.target.closest('[data-href]'); if (b) location.search = b.dataset.href.slice(1); });
+document.getElementById('note').textContent = ARRIVALS[opt.a][1];
+if (EMBED) document.body.classList.add('is-embed');
+
+const stage = document.getElementById('stage');
+if (opt.w === 'phone' && !EMBED) {
+  const p = new URLSearchParams(location.search); p.set('embed', 1);
+  stage.outerHTML = `<iframe class="mk-frame" width="390" height="360" src="design/28-sister-hornet-clawline.html?${p}"></iframe>`;
+  throw 0;
+}
+const SISTER = `href="https://betorzdev.github.io/pharloom-calculator/" target="_blank" rel="noopener" title="Calculadora de Telalejana: tu partida de Silksong"`;
+stage.innerHTML = `<div class="lay lay-back" id="back"><svg class="fx" id="fx" aria-hidden="true"></svg></div>
+<header class="masthead">
+  <div class="mh-tools">
+    <div class="seg langsel" role="group"><button type="button" aria-pressed="false">EN</button><button type="button" aria-pressed="true">ES</button></div>
+    <button type="button" class="text-btn mh-link">Compartir</button>
+    <a class="mh-sister" ${SISTER}>Silksong <span class="arr">↗</span></a>
+  </div>
+  <a class="brand" href="#"><img class="mh-hdr" src="assets/hall/tablet-hdr.png" alt="" width="862" height="111"><p class="title">Calculadora de Hallownest</p></a>
+  <a class="mh-save" href="#"><span class="mh-save-fig"><span class="mh-save-light"></span><img src="assets/hud/knight.png" alt=""></span><span class="mh-save-lbl">Partida 4</span><span class="mh-save-short" aria-hidden="true">Partida 4</span></a>
+</header>
+<div class="mh-sister-row"><a class="mh-sister" ${SISTER}>Silksong <span class="arr">↗</span></a></div>
+<div class="mk-fake">(the screen bar and the page below)</div>
+<div class="lay lay-front" id="front"></div>`;
+const back = document.getElementById('back'), front = document.getElementById('front'), fx = document.getElementById('fx');
+const sister = [...stage.querySelectorAll('.mh-sister')].find((a) => a.offsetParent);
+const PHONE = !stage.querySelector('.mh-tools > .mh-sister').offsetParent;
+const arrival = PHONE ? 'c' : opt.a;
+
+/* ── The clock ── */
+const tasks = new Set();
+const sched = q.has('tick') ? (f) => setTimeout(() => f(performance.now()), 16) : requestAnimationFrame;
+(function loop(t) { for (const f of [...tasks]) f(t); sched(loop); })(performance.now());
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const lin = (p) => p, easeIn = (p) => p * p, easeOut = (p) => 1 - (1 - p) * (1 - p), easeInOut = (p) => p < 0.5 ? 2 * p * p : 1 - 2 * (1 - p) * (1 - p);
+function tween(ms, fn, ease = lin) {
+  return new Promise((res) => {
+    const t0 = performance.now();
+    const f = (t) => { const p = Math.min(1, (t - t0) / ms); fn(ease(p)); if (p >= 1) { tasks.delete(f); res(); } };
+    tasks.add(f); f(t0);
+  });
+}
+const box = (el) => {
+  const r = el.getBoundingClientRect(), s = stage.getBoundingClientRect();
+  return { l: r.left - s.left, t: r.top - s.top, r: r.right - s.left, b: r.bottom - s.top, w: r.width, h: r.height, cx: r.left - s.left + r.width / 2, cy: r.top - s.top + r.height / 2 };
+};
+
+/* ── Hornet ── */
+const hx = {
+  el: Object.assign(document.createElement('div'), { className: 'hx' }),
+  x: 0, y: 0, dir: -1, name: '', i: 0, anim: null, done: null, state: 'arriving',
+  at(x, y) { this.x = x; this.y = y; this.place(); },
+  feet(x, f) { this.at(x, f - FLOOR); },
+  face(d) { this.dir = d; this.place(); },
+  behind(b) { (b ? back : front).append(this.el); },
+  place() {
+    const m = M[this.name]; if (!m) return;
+    const s = this.el.style;
+    s.transform = `translate(${this.x - m.px * K}px, ${this.y - m.py * K}px)` + (this.dir > 0 ? ' scaleX(-1)' : '');
+    s.transformOrigin = `${m.px * K}px ${m.py * K}px`;
+  },
+  show(name, i) {
+    const m = M[name];
+    if (name !== this.name) {
+      this.name = name;
+      Object.assign(this.el.style, { width: m.w * K + 'px', height: m.h * K + 'px', backgroundImage: `url(assets/hornet/${name}.png)`, backgroundSize: `${m.w * K * m.n}px ${m.h * K}px` });
+      this.place();
+    }
+    this.i = i; this.el.style.backgroundPosition = `${-i * m.w * K}px 0`;
+  },
+  play(name, { loop = false, speed = 1, from = 0 } = {}) {
+    if (this.anim) { tasks.delete(this.anim); this.anim = null; }
+    if (this.done) { const d = this.done; this.done = null; d(); }
+    const m = M[name];
+    this.show(name, from);
+    if (opt.still) return Promise.resolve();
+    return new Promise((res) => {
+      const t0 = performance.now();
+      const f = (t) => {
+        let i = from + Math.floor((t - t0) / 1000 * m.fps * speed);
+        if (loop) { if (i >= m.n) i = m.loop + (i - m.n) % (m.n - m.loop); }
+        else if (i >= m.n - 1) { i = m.n - 1; tasks.delete(f); this.anim = null; this.done = null; res(); }
+        if (i !== this.i || name !== this.name) this.show(name, i);
+      };
+      this.anim = f; tasks.add(f);
+      if (loop) res(); else this.done = res;
+    });
+  },
+  idle() { this.state = 'idle'; return this.play('idle', { loop: true }); },
+  go(x, y, ms, ease = lin) {
+    const x0 = this.x, y0 = this.y, x1 = x ?? x0, y1 = y ?? y0;
+    return tween(ms, (p) => this.at(x0 + (x1 - x0) * p, y0 + (y1 - y0) * p), ease);
+  },
+};
+front.append(hx.el);
+const hand = () => ({ x: hx.x + hx.dir * 9 * K / 0.5, y: hx.y + 3 * K / 0.5 });
+
+/* ── Clawline's needle and thread: a frame of an effect strip, its drawn box laid from x, centred
+   on y, stretched to `width` if given (the thread). ── */
+function effect(layer) {
+  const el = Object.assign(document.createElement('div'), { className: 'hfx' }); layer.append(el);
+  return {
+    el,
+    draw(name, i, x, y, width) {
+      const m = M[name], b = m.boxes[i];
+      if (!b) { el.style.display = 'none'; return 0; }
+      const sx = width ? Math.max(0.02, width / (b[2] * K)) : 1;
+      Object.assign(el.style, {
+        display: '', transform: `translate(${x}px, ${y - b[3] * K / 2}px)`, width: b[2] * K * sx + 'px', height: b[3] * K + 'px',
+        backgroundImage: `url(assets/hornet/${name}.png)`, backgroundSize: `${m.n * m.w * K * sx}px ${m.h * K}px`,
+        backgroundPosition: `${-(i * m.w + b[0]) * K * sx}px ${-b[1] * K}px`,
+      });
+      return b[2] * K * sx;
+    },
+    remove() { el.remove(); },
+  };
+}
+
+/* ── What she leaves ── */
+const svg = (tag, attrs) => { const e = document.createElementNS('http://www.w3.org/2000/svg', tag); for (const k in attrs) e.setAttribute(k, attrs[k]); fx.append(e); return e; };
+function dust(x, y, n = 12) {
+  for (let i = 0; i < n; i++) {
+    const d = Object.assign(document.createElement('span'), { className: 'dust' });
+    d.style.left = x + 'px'; d.style.top = y + 'px'; stage.append(d);
+    const a = Math.PI * (1 + Math.random()), r = 8 + Math.random() * 18;
+    d.animate([{ transform: 'translate(-50%, -50%)', opacity: 1 }, { transform: `translate(calc(-50% + ${Math.cos(a) * r}px), calc(-50% + ${Math.sin(a) * r * 0.5}px)) scale(0.4)`, opacity: 0 }],
+      { duration: 500 + Math.random() * 400, easing: 'cubic-bezier(0.2, 0.8, 0.3, 1)' }).onfinish = () => d.remove();
+  }
+}
+function float(text, cls, x, y, rise = 26, ms = 1400) {
+  const n = Object.assign(document.createElement('span'), { className: cls, textContent: text });
+  n.style.left = x + 'px'; n.style.top = y + 'px'; stage.append(n);
+  n.animate([{ transform: 'translate(-50%, 0) scale(0.8)', opacity: 0 }, { opacity: 1, offset: 0.2 }, { transform: `translate(-50%, ${-rise}px) scale(1)`, opacity: 0 }], { duration: ms, easing: 'ease-out' }).onfinish = () => n.remove();
+}
+const call = () => { sister.classList.remove('is-struck'); sister.classList.add('is-called'); };
+
+/* The thread through the word: woven from right to left as `p` goes 0 → 1, then cinched (`c` 0 → 1)
+   into a straight underline under it. */
+function weaver() {
+  const L = box(sister), x0 = L.r - 2, x1 = L.l + 1, mid = L.cy + 1, A = 5;
+  const path = svg('path', { class: 'silk' });
+  const draw = (p, c = 0) => {
+    const xe = x0 + (x1 - x0) * p, m = mid + (L.b + 1 - mid) * c, amp = A * (1 - c);
+    let d = `M${x0},${m}`;
+    for (let x = x0; x >= xe; x -= 2) d += ` L${x},${m + amp * Math.sin((x0 - x) / 7)}`;
+    path.setAttribute('d', d);
+  };
+  return {
+    async weave(ms) { await tween(ms, (p) => draw(p), easeOut); },
+    async cinch(ms) { await tween(ms, (c) => draw(1, c), easeInOut); path.classList.add('is-glint'); },
+    async settle() { if (opt.ul) await tween(1200, (p) => { path.style.opacity = 0.85 - p * 0.4; }); else { await tween(900, (p) => { path.style.opacity = 0.85 * (1 - p); }); path.remove(); } },
+  };
+}
+
+/* ── The cloak: down from above the window to her feet on line f, swaying, then closed ── */
+async function cloakDown(x, f, ms = 2000) {
+  hx.at(x, -70);
+  await hx.play('float-open');
+  hx.play('float', { loop: true });
+  await tween(ms, (p) => hx.at(x + Math.sin(p * Math.PI * 3) * 8 * (1 - p), -70 + (f - FLOOR + 70) * p), easeOut);
+  dust(hx.x, f, 5);
+  await hx.play('float-close');
+  await hx.play('land', { from: 6 });
+}
+
+/* ── Clawline, from where she stands to the link's right end, horizontal ── */
+async function clawline() {
+  const L = box(sister), T = box(stage.querySelector('.title'));
+  hx.face(-1);
+  await hx.play('throw-antic');
+  hx.play('throw');
+  const lay = opt.depth === 'back' ? back : front;
+  const needle = effect(lay), thread = effect(lay);
+  const y = hand().y, tip = L.r - 6;                        // her hand's height: the line's
+  // The needle flies, blurred, the thread unspooling behind it from her hand.
+  let nx = hand().x;
+  await tween(Math.max(160, (nx - tip) / 2.2), (p) => {
+    nx = hand().x + (tip - hand().x) * p;
+    const len = needle.draw('harpoon-needle', p < 0.6 ? 0 : 1, nx, y);
+    thread.draw('harpoon-thread', 3, nx + len * 0.6, y, hand().x - nx - len * 0.6);
+  });
+  // It sticks, quivering; the word flinches.
+  sister.classList.add('is-struck');
+  hx.play('throw-antic', { from: 2 });
+  for (let i = 0; i < 4; i++) { const len = needle.draw('needle-hit', i, tip, y); thread.draw('harpoon-thread', 3, tip + len * 0.85, y, hand().x - tip - len * 0.85); await wait(45); }
+  // She charges along it, behind the letters.
+  if (opt.depth === 'back') hx.behind(true);
+  hx.play('pull');
+  const len = needle.draw('needle-hit', 5, tip, y), end = tip + len * 0.85 + 10 * K / 0.5;
+  await tween(Math.max(220, (hx.x - end) / 1.6), (p) => {
+    hx.at(hx.x + (end - hx.x) * p, hx.y);
+    thread.draw('harpoon-thread', 4, tip + len * 0.85, y, Math.max(1, hand().x - tip - len * 0.85));
+  }, easeIn);
+  hx.behind(false);
+  needle.remove();
+  // The catch; the thread whips loose over the word.
+  hx.play('catch');
+  for (const i of [4, 5]) { thread.draw('harpoon-thread', i, L.l, L.cy, L.w); await wait(70); }
+  thread.el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 260, fill: 'forwards' });
+  setTimeout(() => thread.remove(), 300);
+  return end;
+}
+
+/* ── Up onto the link, as onto a ledge ── */
+async function mantle() {
+  const s = spot();
+  hx.face(-1);
+  hx.play('mantle-cling');
+  await hx.go(s.x + 6 * K / 0.5, s.f - FLOOR - 4, 200, easeOut);
+  await hx.play('mantle-vault');
+  hx.feet(s.x, s.f);
+  await hx.play('mantle-land');
+  await hx.play('mantle-stand');
+}
+
+const spot = () => { const L = box(sister); return { x: L.cx, f: L.t + 1 }; };
+
+/* ── The arrivals ── */
+const ARRIVE = {
+  async a() {
+    const L = box(sister), kn = stage.querySelector('.mh-save-fig img'), Kb = box(kn);
+    const f = L.cy - 3 * K / 0.5 + FLOOR;                       // her hand at the link's height
+    hx.face(1);
+    await cloakDown(Kb.l - 26 * K / 0.5, f);
+    hx.play('idle', { loop: true });
+    kn.animate([{ transform: 'none' }, { transform: 'translateY(-5px)' }, { transform: 'none' }], { duration: 320, easing: 'ease-out' });   // he startles
+    await wait(380);
+    // Challenge Strong is drawn sweeping the needle out behind her drawn facing: unmirrored, at him.
+    hx.face(-1);
+    const sweep = hx.play('challenge');
+    await wait(260);
+    kn.animate([{ transform: 'none' }, { transform: 'translateX(3px) rotate(4deg)' }, { transform: 'translateX(-2px)' }, { transform: 'none' }], { duration: 420, easing: 'ease-out' });
+    await sweep; await wait(200);
+    await clawline();
+    await threadAndUp();
+  },
+  async b() {
+    const L = box(sister), T = box(stage.querySelector('.title'));
+    const f = L.cy - 3 * K / 0.5 + FLOOR;
+    hx.face(-1);
+    await cloakDown(T.r + 26 * K / 0.5, f);
+    hx.play('idle', { loop: true }); await wait(300);
+    await clawline();
+    await threadAndUp();
+  },
+  async c() {
+    const s = spot();
+    hx.face(-1);
+    await cloakDown(s.x, s.f);
+    hx.play('idle', { loop: true }); await wait(250);
+    const w = weaver();
+    hx.play('challenge');
+    await wait(200);
+    sister.classList.add('is-struck');
+    await w.weave(420);
+    await w.cinch(380);
+    call();
+    await hx.play('challenge', { from: 7 });
+    w.settle();
+  },
+};
+async function threadAndUp() {
+  const w = weaver();
+  await w.weave(260);
+  const up = mantle();
+  await w.cinch(420); call();
+  await up;
+  w.settle();
+}
+
+/* ── While she waits: one move every 15–25 s ── */
+const LIFE_NAMES = ['flourish', 'look', 'needolin', 'sit'];
+const LIFE = [
+  async () => { await hx.play('flourish'); },
+  async () => { await hx.play('look-up'); await wait(700); },
+  async () => {
+    await hx.play('needolin-start'); hx.play('needolin', { loop: true });
+    for (let i = 0; i < 5; i++) { float('♪', 'note', hx.x + hx.dir * 8 + (Math.random() * 10 - 5), hx.y - 20, 30, 1600); await wait(600); }
+  },
+  async () => { await hx.play('sit'); await wait(4000); },
+];
+let lifeTimer = 0;
+function life() {
+  clearTimeout(lifeTimer);
+  if (!opt.life || opt.still) return;
+  lifeTimer = setTimeout(async () => {
+    if (hx.state !== 'idle') return life();
+    hx.state = 'busy';
+    await LIFE[Math.floor(Math.random() * LIFE.length)]();
+    if (hx.state === 'busy') hx.idle();
+    life();
+  }, 15000 + Math.random() * 10000);
+}
+
+/* ── The mouse ── */
+if (opt.hover) {
+  stage.addEventListener('mousemove', (e) => {
+    if (hx.state !== 'idle' && hx.state !== 'guard') return;
+    const x = e.clientX - stage.getBoundingClientRect().left;
+    if (Math.abs(x - hx.x) > 12) hx.face(x > hx.x ? 1 : -1);
+  });
+  sister.addEventListener('mouseenter', () => { if (hx.state !== 'idle' || opt.still) return; hx.state = 'guard'; hx.play('parry'); });
+  sister.addEventListener('mouseleave', () => { if (hx.state === 'guard') hx.idle(); });
+}
+
+/* ── The click: she leaves on Silk Soar; the link stays ── */
+sister.addEventListener('click', async (e) => {
+  e.preventDefault();
+  if (hx.state === 'gone' || hx.state === 'arriving') return;
+  hx.state = 'gone'; clearTimeout(lifeTimer);
+  sister.classList.remove('is-called');
+  if (opt.exit === 'none') return;
+  if (opt.still) { hx.el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: 'forwards' }); return; }
+  if (opt.exit === 'soar') {
+    await hx.play('soar-antic');
+    hx.play('soar-throw');
+    const thread = svg('line', { class: 'silk', x1: hx.x, y1: hx.y - 20, x2: hx.x, y2: hx.y - 20 });
+    await tween(140, (p) => thread.setAttribute('y2', (hx.y - 20) * (1 - p) - 20 * p), easeOut);
+    hx.play('soar', { loop: true });
+    await hx.go(null, -90, 380, easeIn);
+    tween(400, (p) => { thread.style.opacity = 0.85 * (1 - p); }).then(() => thread.remove());
+  } else {
+    hx.play('leap');
+    await wait(260);
+    const x0 = hx.x, y0 = hx.y;
+    await tween(700, (p) => hx.at(x0 + 160 * hx.dir * p, y0 + (-40 - y0) * p - 70 * 4 * p * (1 - p)));
+  }
+  hx.el.remove();
+});
+
+/* ── Go ── */
+(async () => {
+  await document.fonts.ready;
+  const s = spot();
+  const after = async () => {
+    hx.idle(); life();
+    if (q.has('do')) { hx.state = 'busy'; await LIFE[LIFE_NAMES.indexOf(q.get('do'))](); hx.idle(); }
+    if (q.has('click')) { await wait(+q.get('click')); sister.click(); }
+  };
+  if (opt.end || opt.still) {
+    hx.feet(s.x, s.f); hx.face(-1); call();
+    if (opt.ul) { const w = weaver(); await w.weave(1); await w.cinch(1); w.settle(); }
+    return after();
+  }
+  await wait(400);
+  await ARRIVE[arrival]();
+  after();
+})();
+</script>
+</body>
+</html>

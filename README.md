@@ -29,7 +29,8 @@ where you are, walks the map from your old bench to the new one. Then try builds
 Import your save file (`user1.dat`…) and **the site follows it**: with Chrome or Edge, every time
 the game saves at a bench the page catches up by itself and says what changed. The start screen
 is your game at a glance: the area you rest in, your completion, the time played, **what you got
-since last time**, your shade and **what's still missing around your bench**. Four save slots,
+since last time**, **what you carry** (the charms worn and what they give) and **what's still
+missing around your bench**. Four save slots,
 like the game's: a save is your game as its file says it, read and never changed here (builds
 are tried in free mode).
 

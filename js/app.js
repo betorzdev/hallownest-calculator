@@ -246,14 +246,16 @@
   function splitHash(hash) {
     const text = String(hash || '').replace(/^#/, '');
     const keep = [];
-    let lang = null, view = null;
+    let lang = null, view = null, admin = false, sister = false;
     for (const pair of text.split('&')) {
       if (/^lang=/.test(pair)) lang = pair.slice(5);
       else if (/^view=/.test(pair)) view = pair.slice(5);
+      else if (pair === 'admin=1') admin = true;   // the Map's admin mode (js/app-map.js)
+      else if (pair === 'sister=1') sister = true; // the sister site's link, before it's published (js/app-sister.js)
       else if (pair) keep.push(pair);
     }
     view = OLD_VIEWS[view] || view;
-    return { build: keep.join('&'), lang: ['es', 'en'].includes(lang) ? lang : null, view: VIEWS.includes(view) ? view : null };
+    return { build: keep.join('&'), lang: ['es', 'en'].includes(lang) ? lang : null, view: VIEWS.includes(view) ? view : null, admin, sister };
   }
 
   function loadState() {
@@ -269,7 +271,7 @@
      and the screen if it isn't the one a bare hash means (BARE_VIEW). Share leaves it out: the fight doesn't
      travel in the link, so opening it on Combat would show the recipient's own fight. */
   const hashFor = (view = prefs.view) => '#' + C.encode(App.state) + (prefs.lang !== PAGE_LANG ? '&lang=' + prefs.lang : '')
-    + (view && view !== BARE_VIEW ? '&view=' + view : '');
+    + (view && view !== BARE_VIEW ? '&view=' + view : '') + (App.admin ? '&admin=1' : '') + (App.sisterPreview ? '&sister=1' : '');   // the admin mode and the sister preview survive a reload
   /* The same, as a path to this page. es/index.html carries <base href="../">, and against it a
      bare "#…" would point at the English page. */
   const here = (hash) => location.pathname + location.search + hash;
@@ -411,6 +413,8 @@
      whatever reaches them another way; and a link's build doesn't come in (loadState,
      onHistory). The charm grid isn't in EDITS: its click reaches the detail and says why not
      (doCharm). */
+  // A sprite dark by nature (D.DARK_ART) carries a rim of light and a faint halo (css .is-dark, design/21).
+  const darkCls = (src) => (src && D.DARK_ART.has(src) ? ' is-dark' : '');
   const saveLock = () => { const n = App.activeSlot(); return n ? t('saveLock', { n }) : ''; };
   const EDITS = new Set();
   const edits = (...names) => { for (const n of names) EDITS.add(n); };
@@ -573,16 +577,20 @@
     el.saves.setAttribute('aria-label', t('savesTitle'));
     // In the corner, as text: the abbreviation in view and the full name for screen readers and the mouse.
     const langBtn = (code, label) => `<button type="button" lang="${code}" data-act="lang" data-value="${code}" aria-pressed="${prefs.lang === code}" aria-label="${label}" title="${label}">${code.toUpperCase()}</button>`;
+    // The sister site's link (js/app-sister.js): after Share, and on a phone on a line of its own.
+    const sister = !!(App.sister && App.sister.on());
+    el.masthead.classList.toggle('has-sister', sister);
     el.masthead.innerHTML = `
       <div class="mh-tools">
         <div class="seg langsel" role="group" aria-label="${esc(t('langGroup'))}">${langBtn('en', 'English')}${langBtn('es', 'Español')}</div>
         <button type="button" class="text-btn mh-link" data-act="share" title="${esc(t('shareHint'))}">${esc(t('share'))}</button>
+        ${sister ? App.sister.linkHtml(false) : ''}
       </div>
       <a class="brand" href="${here(hashFor('home'))}" data-act="view" data-value="home" title="${esc(t('goHome'))}">
         <img class="mh-hdr" src="assets/hall/tablet-hdr.png" alt="" width="862" height="111">
         <p class="title">${esc(t('title'))}</p>
       </a>
-      ${saveLink()}`;
+      ${saveLink()}${sister ? App.sister.linkHtml(true) : ''}`;
   }
 
   /* The About block (tools/pages.js writes it into each page): the page's text for search
@@ -948,6 +956,7 @@
     if (App.detailHover) App.highlightRows(App.detailHover);
     if (App.previewId) App.paintPreview();
     if (App.knight) App.knight.sync();      // the Knight takes his place on what was just painted (js/app-knight.js)
+    if (App.sister) App.sister.sync();      // and Hornet on the sister site's link (js/app-sister.js)
   }
 
   /* ── Switching screens ───────────────────────────────────────────────── */
@@ -1274,6 +1283,6 @@
     masksText, notchText, spellArt, shortOf, badgeText, goodClass, deltaChip, changeChip, prefs, loadPrefs,
     savePrefs, justWorn, justFound, splitHash, here, loadState, persist, compareLabel, compute, impact, recompute, commit, bindAllFx,
     brackets, corners, PLAQUE, chevron, cross, lens, tick, FLEURS, rule, emptyHtml, screenHead, hudHtml, restoreFocus, focusDescriptor, render, go, navTo, screenOf,
-    underNav, toast, track, actions, isMaxOwned, loadOwned, saveOwned, isOwned, fragileAway, withFixed, isFixed, setOwned, loadProgress, saveProgress, setProgress, reloadGame,
+    darkCls, underNav, toast, track, actions, isMaxOwned, loadOwned, saveOwned, isOwned, fragileAway, withFixed, isFixed, setOwned, loadProgress, saveProgress, setProgress, reloadGame,
     saveLock, edits });
 })();

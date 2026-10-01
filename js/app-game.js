@@ -69,7 +69,7 @@
      Soul, the two cloaks) and, first, the dimmed "not learnt" one. The chosen one carries the
      accent's veil, like the nail picks. */
   function levelPick(key, value, levels, label, act = 'seg') {
-    return `<span class="lvlpick" role="group" aria-label="${esc(label)}">${levels.map((l, i) => `<button type="button" class="lvl${i === value ? ' is-on' : ''}${l.art ? '' : ' is-none'}"
+    return `<span class="lvlpick" role="group" aria-label="${esc(label)}">${levels.map((l, i) => `<button type="button" class="lvl${i === value ? ' is-on' : ''}${l.art ? App.darkCls(l.art) : ' is-none'}"
         data-act="${act}" data-key="${key}" data-value="${i}" aria-pressed="${i === value}" title="${esc(l.title)}" aria-label="${esc(l.title)}">
         ${l.art ? `<img src="${l.art}" alt="">` : '<span aria-hidden="true">—</span>'}</button>`).join('')}</span>`;
   }
@@ -100,7 +100,7 @@
     const plates = ART_KEYS.map((k) => {
       const on = !!App.state.arts[k];
       return App.pinned(`<button type="button" class="gplate${on ? ' is-on' : ''}${fx(on, was((st) => !!st.arts[k]))}" data-act="art" data-key="${k}" aria-pressed="${on}" title="${esc(D.ARTS[k].en)}">
-        <span class="gplate-art"><img src="${D.art('arts', k)}" alt=""></span>
+        <span class="gplate-art${App.darkCls(D.art('arts', k))}"><img src="${D.art('arts', k)}" alt=""></span>
         <span class="gplate-name"${NT}>${esc(pick(D.ARTS[k]))}</span>
         <span class="gplate-val${on ? '' : ' is-none'}">${on ? fmtStatRich(App.sheet.stats[ART_STAT[k]]) : esc(t('notLearned'))}</span>
       </button>`, 'c112:arts:' + k, pick(D.ARTS[k]));
@@ -117,8 +117,9 @@
       // A new level (Vengeful Spirit → Shade Soul) lights up too: it's another spell.
       const lvlWas = was((st) => st.spells[k]);
       const lit = lvl && lvlWas && lvl !== lvlWas ? ' is-lit' : fx(!!lvl, !!lvlWas);
+      const art = spellArt(k, lvl, has);
       const plate = `<div class="gplate${lvl ? ' is-on' : ''}${lit}">
-        <span class="gplate-art"><img src="${spellArt(k, lvl, (id) => App.state.charms.includes(id))}" alt=""></span>
+        <span class="gplate-art${App.darkCls(art)}"><img src="${art}" alt=""></span>
         <span class="gplate-name"${NT}>${esc(lvl ? pick(sp.levels[lvl]) : pick(sp.slot))}</span>
         <span class="gplate-val${lvl ? '' : ' is-none'}">${lvl ? fmtStatRich(App.sheet.stats['spell.' + k]) : esc(t('notLearned'))}</span>
         ${levelPick('spells.' + k, lvl, levels, pick(sp.slot))}
@@ -146,7 +147,7 @@
     const dvWas = !was((st) => st.dream) ? 0 : wasP('dream-awakened') ? 2 : 1;
     const dreamShown = dv === 2 ? A.awoken : A.dream;
     const dream = `<div class="gplate${dv ? ' is-on' : ''}${dv && dvWas && dv !== dvWas ? ' is-lit' : fx(!!dv, !!dvWas)}">
-        <span class="gplate-art"><img src="${D.art('abilities', dreamShown.art)}" alt=""></span>
+        <span class="gplate-art${App.darkCls(D.art('abilities', dreamShown.art))}"><img src="${D.art('abilities', dreamShown.art)}" alt=""></span>
         <span class="gplate-name"${NT}>${esc(pick(dreamShown))}</span>
         <span class="gplate-val${dv ? '' : ' is-none'}">${dv ? fmtStatRich(App.sheet.stats['soul.dreamNail']) : esc(t('notFound'))}</span>
         ${levelPick('dream', dv, [{ title: t('notFound') }, { art: D.art('abilities', A.dream.art), title: pick(A.dream) },
@@ -154,8 +155,9 @@
       </div>`;
     const cloak = A.cloaks[App.state.cloak];
     const cloakWas = was((st) => st.cloak);
+    const cloakArt = D.art('abilities', (cloak || A.cloaks[1]).art);
     const cloakPlate = `<div class="gplate${cloak ? ' is-on' : ''}${cloak && cloakWas && cloak !== A.cloaks[cloakWas] ? ' is-lit' : fx(!!cloak, !!cloakWas)}">
-        <span class="gplate-art"><img src="${D.art('abilities', (cloak || A.cloaks[1]).art)}" alt=""></span>
+        <span class="gplate-art${App.darkCls(cloakArt)}"><img src="${cloakArt}" alt=""></span>
         <span class="gplate-name"${NT}>${esc(pick(cloak || A.cloaks[1]))}</span>
         <span class="gplate-val${cloak ? '' : ' is-none'}">${cloak ? fmtStatRich(App.sheet.stats['move.dashCooldown']) : esc(t('notFound'))}</span>
         ${levelPick('cloak', App.state.cloak, [{ title: t('notFound') }, { art: D.art('abilities', A.cloaks[1].art), title: pick(A.cloaks[1]) },
@@ -165,7 +167,7 @@
     // the troupe has Carefree Melody in its place). Phase IV needs the Dream Nail.
     const gdmg = D.PETS.grimmchildByPhase[App.state.grimm];
     const grimm = !isOwned('grimmchild') ? '' : `<div class="gplate is-on">
-        <span class="gplate-art"><img src="${D.art('effects', 'grimmchild')}" alt=""></span>
+        <span class="gplate-art${App.darkCls(D.art('effects', 'grimmchild'))}"><img src="${D.art('effects', 'grimmchild')}" alt=""></span>
         <span class="gplate-name"${NT}>${esc(pick(D.CHARM_BY_ID.grimmchild))}</span>
         <span class="gplate-val${gdmg ? '' : ' is-none'}">${gdmg ? esc(String(gdmg)) : esc(t('grimmNoAttack'))}</span>
         ${phases('grimm', App.state.grimm, ['I', 'II', 'III', 'IV'].map((text, i) => ({ text, from: 1,
@@ -183,7 +185,7 @@
     // Each with its pin to the Map: the equipment as the 112%'s, the key items as themselves.
     const target = D.KEY_ITEMS.includes(it) ? 'key:' + it.id : 'c112:equipment:' + it.id;
     return App.pinned(`<button type="button" class="gplate${on ? ' is-on' : ''}${fx(on, wasP(it.id))}" data-act="progToggle" data-id="${it.id}" aria-pressed="${on}" title="${esc(it.en)}">
-        <span class="gplate-art"><img src="${D.art('items', it.id)}" alt=""></span>
+        <span class="gplate-art${App.darkCls(D.art('items', it.id))}"><img src="${D.art('items', it.id)}" alt=""></span>
         <span class="gplate-name"${NT}>${esc(pick(it))}</span>
         <span class="gplate-val is-none">${on ? '' : esc(t('notFound'))}</span>
       </button>`, target, pick(it));
@@ -206,7 +208,7 @@
     // In a save from the game (App.saveLock) the number alone, in its box: nothing steps it.
     const held = !!App.saveLock();
     return App.pinned(`<div class="gplate is-count${v ? ' is-on' : ''}${lit}">
-        <span class="gplate-art"><img src="${D.art('items', it.id)}" alt=""></span>
+        <span class="gplate-art${App.darkCls(D.art('items', it.id))}"><img src="${D.art('items', it.id)}" alt=""></span>
         <span class="gplate-name"${NT}>${esc(name)}</span>
         <span class="gcount">
           <span class="stepper">
@@ -255,7 +257,7 @@
     const n = QUICK_SLOTS.filter((sl) => sl.some((c) => isOwned(c.id))).length;
     const tile = (c) => {
       const on = isOwned(c.id);
-      return `<button type="button" class="qc${on ? '' : ' is-missing'}${justFound(c.id) ? ' is-new' : ''}" data-act="own" data-id="${c.id}" aria-pressed="${on}" title="${esc(pick(c) + (on ? '' : ' · ' + t('notFound')))}">
+      return `<button type="button" class="qc${on ? '' : ' is-missing'}${App.darkCls(`assets/charms/${c.id}.png`)}${justFound(c.id) ? ' is-new' : ''}" data-act="own" data-id="${c.id}" aria-pressed="${on}" title="${esc(pick(c) + (on ? '' : ' · ' + t('notFound')))}">
         <img src="assets/charms/${c.id}.png" alt="${esc(pick(c))}" loading="lazy">
       </button>`;
     };

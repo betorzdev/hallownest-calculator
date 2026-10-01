@@ -333,6 +333,21 @@
      Artifact doesn't fit in its 255 files and carries portraits and medallions packed into
      js/artpack.js (`npm run artpack`); locally that script isn't loaded and the file is used. */
   const art = (group, key) => (HK.artpack && HK.artpack[`${group}/${key}`]) || `assets/${group}/${key}.png`;
+  /* The sprites dark by nature: on the site's black they hardly show even when had, so they carry
+     a rim of light and a faint halo (css .is-dark, design/21). Measured on Progress (1 Oct 2026,
+     each sprite's 95th-percentile luminance over its background, of 255): the pantheons' statues
+     3 to 14, Shade Soul as a pip 7, Sharp Shadow 26, Descending Dark 38, Abyss Shriek and the Shade
+     Cloak as dark, and the nails, thin as pips; on Inventory, the Love Key 33, the Arcane Egg 37
+     and Baldur Shell 42; on Charms, Void Heart 30; on the Map's filter, the lore tablet 10 and the
+     Simple Key 20; on Godhome, the door's four bindings (black discs). Grows screen by screen. */
+  const DARK_ART = new Set([
+    ...['oro-mato', 'sheo', 'sly', 'pure-vessel'].map((k) => art('hall', k)),
+    art('spells', 'vs2'), art('spells', 'dd2'), art('spells', 'hw2'), art('abilities', 'cloak2'),
+    ...['sharpshadow', 'baldur', 'voidheart'].map((c) => `assets/charms/${c}.png`), art('items', 'love-key'), art('items', 'arcane-egg'),
+    ...['nail', 'shell', 'charms', 'soul'].map((k) => `assets/pantheon/bind-${k}.png`),
+    'assets/world/tablet.png', art('items', 'simple-key'),
+    ...[1, 2, 3, 4].map((l) => art('nails', l)),
+  ]);
 
   /* ── Charms (in the game's inventory order) ───────────────────────────
      The order and numbering of the slots come from the wiki's list:
@@ -831,7 +846,7 @@
   const STAT_BY_ID = Object.fromEntries(STAT_DEFS.map((d) => [d.id, d]));
 
   HK.data = {
-    NAILS, NAIL, ARTS, ABILITIES, EQUIPMENT, KEY_ITEMS, MAP_ITEMS, CARRIED, SHARDS, FRAGMENTS, COMPLETION_NAMES, COLLECTIBLE_KINDS, SPELLS, SPELL_COST, SPELL_COST_TWISTER,
+    DARK_ART, NAILS, NAIL, ARTS, ABILITIES, EQUIPMENT, KEY_ITEMS, MAP_ITEMS, CARRIED, SHARDS, FRAGMENTS, COMPLETION_NAMES, COLLECTIBLE_KINDS, SPELLS, SPELL_COST, SPELL_COST_TWISTER,
     SOUL, HEALTH, FOCUS, MOVE, PETS, CHARM_NOTCHES,
     CHARMS, CHARM_BY_ID, EFFECT_WHEN, CHARM_EFFECTS, GROUPS, STAT_DEFS, STAT_BY_ID, ART, art,
   };

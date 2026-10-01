@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Map filter sets</title>
+<!-- Design material, not part of the site. The Map's filter (js/app-map.js GROUPS, filterHtml): some
+   layers are sets (1 Oct 2026, Albert: tidy and nice, but you can't tell what you're switching on,
+   or which to switch to see one thing). The sets, read from js/app-map.js:
+     Equipment, spells and arts ~19 (7 equipment, 6 spells, 3 arts, 3 Dream Nail steps) ·
+     Bosses and trials 20 (15 bosses, 3 Colosseum trials, Grimm, Nightmare King) ·
+     Key items 9 · Relics 4 kinds · Other bosses (dream, room, Hollow Knight, Radiance) ·
+     Meetings with characters 8 people (31 meetings) · Shops and characters 11 ·
+     Walls and floors 3 kinds · Markers 4 colours. The rest are one thing each.
+   Over the site's real filter markup (save 4) and CSS:
+     Now · as it is.
+     A · What's inside: a set says it's a set (a caret by its name) and, tapped there, lists what
+         it holds, with pictures; the switch stays the whole set's.
+     B · Sub-filters: the caret opens the set into its members as small switches of their own; the
+         set's switch turns all on or off, and says "some" when they differ.
+     C · Split what mixes kinds + A: the sets of different things become one layer each
+         (Equipment · Spells · Nail arts · Dream Nail; Bosses · Colosseum trials · Grimm Troupe),
+         and the sets of one kind (key items, relics, people…) keep A's "what's inside".
+   Chosen on 1 Oct 2026: C (built: js/app-map.js GROUPS, INSIDE, insideHtml; css/app.css; js/i18n.js;
+   docs/guide.md). The same day, the groups' "All / None" went: the group's title is its switch,
+   its caret alone folds it. And Albert asked for B's sub-filters in the sets of one kind: the
+   caret's list became switches (prefs.pgMapSubOff).
+   ?v=now|a|b|c. -->
+<base href="../">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+body { background: var(--page-bg); background-attachment: fixed; margin: 0; }
+.mk { max-width: 1100px; margin: 0 auto; padding: var(--sp-6) var(--page-pad) var(--sp-16); }
+.mk-h1 { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-xl); letter-spacing: var(--track-title); color: var(--ink-strong); margin: 0 0 var(--sp-2); }
+.mk-lead { max-width: var(--measure); color: var(--ink-2); font-size: var(--fs-sm); margin: 0 0 var(--sp-4); }
+.mk-bar { position: sticky; top: 0; z-index: 50; display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-4); padding: var(--sp-2) 0; margin-bottom: var(--sp-6); background: var(--scene-bg); border-bottom: 1px solid var(--line); font-size: var(--fs-sm); color: var(--muted); }
+.mk-bar b { font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); font-weight: 600; }
+.mk-bar button { background: none; border: 0; padding: var(--sp-1) 0; font: inherit; color: var(--muted); cursor: pointer; }
+.mk-bar button[aria-pressed="true"] { color: var(--accent); box-shadow: inset 0 -1px 0 var(--accent-line); }
+.mk-note { max-width: var(--measure); margin: 0 auto var(--sp-6); color: var(--ink-2); font-size: var(--fs-sm); text-align: center; min-height: 3em; }
+
+/* ════ What would go into the site ════ */
+.fs-set { display: inline-flex; align-items: center; gap: var(--sp-1); }
+.fs-more { display: inline-grid; place-items: center; width: 24px; height: 24px; border: 1px solid var(--line-ctl); border-radius: 50%; background: none; color: var(--ink-2); cursor: pointer; padding: 0; }
+.fs-more svg { width: 9px; height: 9px; transition: transform var(--dur) var(--ease); }
+.fs-more[aria-expanded="true"] { border-color: var(--accent); color: var(--accent); }
+.fs-more[aria-expanded="true"] svg { transform: rotate(90deg); }
+/* A: what's inside, listed under the set's row. */
+.fs-pop { flex-basis: 100%; margin: var(--sp-1) 0 var(--sp-2) var(--sp-8); padding: var(--sp-2) var(--sp-4); border-left: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-4); font-size: var(--fs-xs); color: var(--ink-2); }
+.fs-pop span { display: inline-flex; align-items: center; gap: var(--sp-1); }
+.fs-pop img { width: 20px; height: 20px; object-fit: contain; }
+/* B: the members as small switches. */
+.fs-subs { flex-basis: 100%; margin: var(--sp-1) 0 var(--sp-2) var(--sp-8); padding-left: var(--sp-4); border-left: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-4); }
+.fs-sub { display: inline-flex; align-items: center; gap: var(--sp-1); background: none; border: 0; padding: 0; min-height: var(--ctl-sm); font: inherit; font-size: var(--fs-xs); color: var(--ink); cursor: pointer; }
+.fs-sub img { width: 20px; height: 20px; object-fit: contain; }
+.fs-sub:not(.is-on) { color: var(--muted); }
+.fs-sub:not(.is-on) img { filter: var(--missing-art); }
+.pgm-kind.is-some .pgm-kind-art > * { filter: grayscale(0.5) brightness(0.75); }
+.pgm-kind.is-some .pgm-kind-t::after { content: ' · algunos'; color: var(--muted); }
+.pgm-kinds { flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div class="mk">
+  <h1 class="mk-h1">Map filter sets</h1>
+  <p class="mk-lead">The Map's filter, with save 4. The sets carry a caret: tap it.</p>
+  <div class="mk-bar" id="bar"></div>
+  <p class="mk-note" id="note"></p>
+  <div id="stage"></div>
+</div>
+<template id="filter"><div class="pgm-secs"><section class="pgm-sec is-open">
+        <div class="pgm-sec-h">
+          <button type="button" class="pgm-fold" data-act="pgmFold" data-value="c112" aria-expanded="true">
+            <svg class="pgm-caret" viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1 L8 5 L3 9 Z" fill="currentColor"></path></svg><span class="pgm-sec-t">Para el 112 %</span><span class="pgm-kind-n"><b>52</b><i class="u">/120</i></span></button>
+          <button type="button" class="text-btn" data-act="pgmGroup" data-value="c112">Ninguno</button>
+        </div>
+        <div class="pgm-kinds" role="group" aria-label="Para el 112 %"><button type="button" class="pgm-kind is-on" data-act="pgmLayer" data-value="charms" aria-pressed="true">
+        <span class="pgm-kind-art"><img src="assets/charms/compass.png" alt=""></span><span class="pgm-kind-t" translate="no">Amuletos</span><span class="pgm-kind-n"><b>18</b><i class="u">/40</i></span></button><button type="button" class="pgm-kind is-on" data-act="pgmLayer" data-value="equip" aria-pressed="true">
+        <span class="pgm-kind-art"><img src="assets/items/mantis-claw.png" alt=""></span><span class="pgm-kind-t" translate="no">Equipo, hechizos y artes</span><span class="pgm-kind-n"><b>12</b><i class="u">/19</i></span></button><button type="button" class="pgm-kind is-on" data-act="pgmLayer" data-value="bosses" aria-pressed="true">
+        <span class="pgm-kind-art"><img src="assets/journal/false-knight.png" alt=""></span><span class="pgm-kind-t" translate="no">Jefes y pruebas</span><span class="pgm-kind-n"><b>10</b><i class="u">/20</i></span></button><button type="button" class="pgm-kind is-on" data-act="pgmLayer" data-value="graves" aria-pressed="true">
+        <span class="pgm-kind-art"><svg class="pgm-atlas pgm-ico" viewBox="77 297 75 75" aria-hidden="true"><image href="assets/map/pins.png" width="512" height="449"></image></svg></span><span class="pgm-kind-t" translate="no">Tumbas de guerreros</span><span class="pgm-kind-n"><b>1</b><i class="u">/7</i></span></button><button type="button" class="pgm-kind is-on" data-act="pgmLayer" data-value="dreamers" aria-pressed="true">
+        <span class="pgm-kind-art"><svg class="pgm-atlas pgm-ico" viewBox="283 0 79 98" aria-hidden="true"><image href="assets/map/pins.png" width="512" height="449"></image></svg></span><span class="pgm-kind-t" translate="no">Soñadores</span><span class="pgm-kind-n"><b>1</b><i class="u">/3</i></span></button><button type="button" class="pgm-kind is-on" data-act="pgmLayer" data-value="mask-shard" aria-pressed="true">
+        <span class="pgm-kind-art"><img src="assets/hud/mask-shard.png" alt=""></span><span class="pgm-kind-t" translate="no">Fragmentos de máscara</span><span class="pgm-kind-n"><b>7</b><i class="u">/16</i></span></button><button type="button" class="pgm-kind is-on" data-act="pgmLayer" data-value="vessel-fragment" aria-pressed="true">
+        <span class="pgm-kind-art"><img src="assets/hud/vessel-frag.png" alt=""></span><span class="pgm-kind-t" translate="no">Fragmentos de vasija</span><span class="pgm-kind-n"><b>3</b><i class="u">/9</i></span></button><button type="button" class="pgm-kind is-on" data-act="pgmLayer" data-value="pale-ore" aria-pressed="true">
+        <span class="pgm-kind-art"><img src="assets/items/pale-ore.png" alt=""></span><span class="pgm-kind-t" translate="no">Mineral Pálido</span><span class="pgm-kind-n"><b>0</b><i class="u">/6</i></span></button></div>
+      </section><section class="pgm-sec is-open">
+        <div class="pgm-sec-h">
+          <button type="button" class="pgm-fold" data-act="pgmFold" data-value="collect" aria-expanded="true">
+            <svg class="pgm-caret" viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1 L8 5 L3 9 Z" fill="currentColor"></path></svg><span class="pgm-sec-t">Coleccionables</span><span class="pgm-kind-n"><b>69</b><i class="u">/144</i></span></button>
+          <button type="button" class="text-btn" data-act="pgmGroup" data-value="collect">Todos</button>
+        </div>
+        <div class="pgm-kinds" role="group" aria-label="Coleccionables"><button type="button" class="pgm-kind is-on" data-act="pgmLayer" data-value="grub" aria-pressed="true">
+        <span class="pgm-kind-art"><img src="assets/effects/grub.png" alt=""></span><span class="pgm-kind-t" translate="no">Larvas cautivas</span><span class="pgm-kind-n"><b>26</b><i class="u">/46</i></span></button><button type="button" class="pgm-kind" data-act="pgmLayer" data-value="charm-notch" aria-pressed="false">
+        <span class="pgm-kind-art"><img src="assets/hud/notch.png" alt=""></span><span class="pgm-kind-t" translate="no">Muescas de amuleto</span><span class="pgm-kind-n"><b>3</b><i class="u">/8</i></span></button><button type="button" class="pgm-kind" data-act="pgmLayer" data-value="simple-key" aria-pressed="false">
+        <span class="pgm-kind-art is-dark"><img src="assets/items/simple-key.png" alt=""></span><span class="pgm-kind-t" translate="no">Llaves simples</span><span class="pgm-kind-n"><b>3</b><i class="u">/4</i></span></button><button type="button" class="pgm-kind" data-act="pgmLayer" data-value="keys" aria-pressed="false">
+        <span class="pgm-kind-art"><img src="assets/items/city-crest.png" alt=""></span><span class="pgm-kind-t" translate="no">Objetos clave</span><span class="pgm-kind-n"><b>4</b><i class="u">/9</i></span></button><button type="button" class="pgm-kind" data-act="pgmLayer" data-value="rancid-egg" aria-pressed="false">
+        <span class="pgm-kind-art"><img src="assets/items/rancid-egg.png" alt=""></span><span class="pgm-kind-t" translate="no">Huevos podridos</span><span class="pgm-kind-n"><b>4</b><i class="u">/21</i></span></button><button type="button" class="pgm-kind" data-act="pgmLayer" data-value="relics" aria-pressed="false">
+        <span class="pgm-kind-art"><img src="assets/items/kings-idol.png" alt=""></span><span class="pgm-kind-t" translate="no">Reliquias</span><span class="pgm-kind-n"><b>19</b><i class="u">/43</i></span></button><button type="button" class="pgm-kind" data-act="pgmLayer" data-value="map" aria-pressed="false">
+        <span class="pgm-kind-art"><img src="assets/effects/map.png" alt=""></span><span class="pgm-kind-t" translate="no">Mapas</span><span class="pgm-kind-n"><b>10</b><i class="u">/13</i></span></button></div>
+      </section><section class="pgm-sec is-open">
+        <div class="pgm-sec-h">
+          <button type="button" class="pgm-fold" data-act="pgmFold" data-value="quests" aria-expanded="true">
+            <svg class="pgm-caret" viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1 L8 5 L3 9 Z" fill="currentColor"></path></svg><span class="pgm-sec-t">Misiones</span><span class="pgm-kind-n"><b>12</b><i class="u">/65</i></span></button>
+          <button type="button" class="text-btn" data-act="pgmGroup" data-value="quests">Todos</button>
+        </div>
+        <div class="pgm-kinds" role="group" aria-label="Misiones"><button type="button" class="pgm-kind" data-act="pgmLayer" data-value="whispering-root" aria-pressed="false">
+        <span class="pgm-kind-art"><img src="assets/items/whispering-root.png" alt=""></span><span class="pgm-kind-t" translate="no">Raíces susurrantes</span><span class="pgm-kind-n"><b>1</b><i class="u">/15</i></span></button><button type="button" class="pgm-kind" data-act="pgmLayer" data-value="grimmkin-flame" aria-pressed="false">
+        <span class="pgm-kind-art"><img src="assets/items/grimmkin-flame.png" alt=""></span><span class="pgm-kind-t" translate="no">Llamas de los Grimarios</span><span class="pgm-kind-n"><b>0</b><i class="u">/10</i></span></button><button type="button" class="pgm-kind" data-act="pgmLayer" data-value="grimmkin" aria-pressed="false">
+        <span class="pgm-kind-art"><img src="assets/journal/grimmkin-novice.png" alt=""></span><span class="pgm-kind-t" translate="no">Grimarios</span><span class="pgm-kind-n"><b>0</b><i class="u">/9</i></span></button><button type="button" class="pgm-kind" data-act="pgmLayer" data-value="npcs" aria-pressed="false">
+        <span class="pgm-kind-art"><svg class="pgm-ico" viewBox="-0.5 -0.5 1 1" aria-hidden="true"><g class="pgm-glyph"><path d="M-0.3 -0.24 H0.3 V0.12 H-0.04 L-0.18 0.26 V0.12 H-0.3 Z"></path></g></svg></span><span class="pgm-kind-t" translate="no">Encuentros con personajes</span><span class="pgm-kind-n"><b>11</b><i class="u">/31</i></span></button></div>
+      </section><section class="pgm-sec is-open">
+        <div class="pgm-sec-h">
+          <button type="button" class="pgm-fold" data-act="pgmFold" data-value="hunt" aria-expanded="true">
+            <svg class="pgm-caret" viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1 L8 5 L3 9 Z" fill="currentColor"></path></svg><span class="pgm-sec-t">Enemigos y jefes</span><span class="pgm-kind-n"><b>64</b><i class="u">/614</i></span></button>
+          <button type="button" class="text-btn" data-act="pgmGroup" data-value="hunt">Todos</button>
+        </div>
+        <div class="pgm-kinds" role="group" aria-label="Enemigos y jefes"><button type="button" class="pgm-kind" data-act="pgmLayer" data-value="foes" aria-pressed="false">
+        <span class="pgm-kind-art"><img src="assets/journal/crawlid.png" alt=""></span><span class="pgm-kind-t" translate="no">Enemigos</span><span class="pgm-kind-n"><b>63</b><i class="u">/595</i></span></button><button type="button" class="pgm-kind is-on" data-act="pgmLayer" data-value="other-bosses" aria-pressed="true">
+        <span class="pgm-kind-art"><img src="assets/journal/vengefly-king.png" alt=""></span><span class="pgm-kind-t" translate="no">Otros jefes</span><span class="pgm-kind-n"><b>1</b><i class="u">/19</i></span></button></div>
+      </section><section class="pgm-sec is-open">
+        <div class="pgm-sec-h">
+          <button type="button" class="pgm-fold" data-act="pgmFold" data-value="secrets" aria-expanded="true">
+            <svg class="pgm-caret" viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1 L8 5 L3 9 Z" fill="currentColor"></path></svg><span class="pgm-sec-t">Secretos y geo</span><span class="pgm-kind-n"><b>210</b><i class="u">/486</i></span></button>
+          <button type="button" class="text-btn" data-act="pgmGroup" data-value="secrets">Todos</button>
+        </div>
+        <div class="pgm-kinds" role="group" aria-label="Secretos y geo"><button type="button" class="pgm-kind" data-act="pgmLayer" data-value="walls" aria-pressed="false">
+        <span class="pgm-kind-art"><svg class="pgm-ico" viewBox="-0.5 -0.5 1 1" aria-hidden="true"><g class="pgm-glyph"><rect x="-0.3" y="-0.26" width="0.28" height="0.14"></rect><rect x="0.02" y="-0.26" width="0.28" height="0.14"></rect><rect x="-0.14" y="-0.07" width="0.28" height="0.14"></rect><path d="M-0.3 0.12 H-0.02 V0.26 H-0.3 Z M0.02 0.12 L0.12 0.2 L0.08 0.26 H0.3 V0.12 Z"></path></g></svg></span><span class="pgm-kind-t" translate="no">Muros y suelos que se rompen</span><span class="pgm-kind-n"><b>79</b><i class="u">/174</i></span></button><button type="button" class="pgm-kind" data-act="pgmLayer" data-value="hidden" aria-pressed="false">
+        <span class="pgm-kind-art"><svg class="pgm-ico" viewBox="-0.5 -0.5 1 1" aria-hidden="true"><g class="pgm-glyph is-line"><path d="M-0.2 0.28 V-0.08 A0.2 0.2 0 0 1 0.2 -0.08 V0.28 Z" stroke-dasharray="0.08 0.06"></path></g></svg></span><span class="pgm-kind-t" translate="no">Zonas ocultas</span><span class="pgm-kind-n"><b>40</b><i class="u">/111</i></span></button><button type="button" class="pgm-kind" data-act="pgmLayer" data-value="chests" aria-pressed="false">
+        <span class="pgm-kind-art"><svg class="pgm-ico" viewBox="-0.5 -0.5 1 1" aria-hidden="true"><g class="pgm-glyph"><path d="M-0.3 -0.04 V-0.12 A0.3 0.14 0 0 1 0.3 -0.12 V-0.04 Z M-0.3 0 H0.3 V0.24 H-0.3 Z"></path></g></svg></span><span class="pgm-kind-t" translate="no">Cofres de geo</span><span class="pgm-kind-n"><b>6</b><i class="u">/12</i></span></button><button type="button" class="pgm-kind" data-act="pgmLayer" data-value="rocks" aria-pressed="false">
+        <span class="pgm-kind-art"><img src="assets/items/geo.png" alt=""></span><span class="pgm-kind-t" translate="no">Rocas de geo</span><span class="pgm-kind-n"><b>85</b><i class="u">/189</i></span></button></div>
+      </section><section class="pgm-sec is-open">
+        <div class="pgm-sec-h">
+          <button type="button" class="pgm-fold" data-act="pgmFold" data-value="places" aria-expanded="true">
+            <svg class="pgm-caret" viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1 L8 5 L3 9 Z" fill="currentColor"></path></svg><span class="pgm-sec-t">Lugares</span><span class="pgm-kind-n"><b>8</b><i class="u">/11</i></span></button>
+          <button type="button" class="text-btn" data-act="pgmGroup" data-value="places">Todos</button>
+        </div>
+        <div class="pgm-kinds" role="group" aria-label="Lugares"><button type="button" class="pgm-kind is-on" data-act="pgmLayer" data-value="benches" aria-pressed="true">
+        <span class="pgm-kind-art"><svg class="pgm-atlas pgm-ico" viewBox="0 220 75 75" aria-hidden="true"><image href="assets/map/pins.png" width="512" height="449"></image></svg></span><span class="pgm-kind-t" translate="no">Bancos</span></button><button type="button" class="pgm-kind is-on" data-act="pgmLayer" data-value="stag" aria-pressed="true">
+        <span class="pgm-kind-art"><svg class="pgm-atlas pgm-ico" viewBox="0 297 75 75" aria-hidden="true"><image href="assets/map/pins.png" width="512" height="449"></image></svg></span><span class="pgm-kind-t" translate="no">Estaciones de ciervo</span><span class="pgm-kind-n"><b>8</b><i class="u">/11</i></span></button><button type="button" class="pgm-kind is-on" data-act="pgmLayer" data-value="trams" aria-pressed="true">
+        <span class="pgm-kind-art"><svg class="pgm-atlas pgm-ico" viewBox="385 220 75 75" aria-hidden="true"><image href="assets/map/pins.png" width="512" height="449"></image></svg></span><span class="pgm-kind-t" translate="no">Estaciones de tranvía</span></button><button type="button" class="pgm-kind" data-act="pgmLayer" data-value="lifts" aria-pressed="false">
+        <span class="pgm-kind-art"><svg class="pgm-ico" viewBox="-0.5 -0.5 1 1" aria-hidden="true"><g class="pgm-glyph"><rect x="-0.2" y="-0.16" width="0.4" height="0.32" rx="0.04"></rect><path d="M0 -0.4 L0.13 -0.24 L-0.13 -0.24 Z M0 0.4 L0.13 0.24 L-0.13 0.24 Z"></path></g></svg></span><span class="pgm-kind-t" translate="no">Ascensores</span></button><button type="button" class="pgm-kind is-on" data-act="pgmLayer" data-value="people" aria-pressed="true">
+        <span class="pgm-kind-art"><svg class="pgm-atlas pgm-ico" viewBox="77 220 75 75" aria-hidden="true"><image href="assets/map/pins.png" width="512" height="449"></image></svg></span><span class="pgm-kind-t" translate="no">Tiendas y personajes</span></button><button type="button" class="pgm-kind" data-act="pgmLayer" data-value="springs" aria-pressed="false">
+        <span class="pgm-kind-art"><svg class="pgm-atlas pgm-ico" viewBox="231 220 75 75" aria-hidden="true"><image href="assets/map/pins.png" width="512" height="449"></image></svg></span><span class="pgm-kind-t" translate="no">Aguas termales</span></button><button type="button" class="pgm-kind" data-act="pgmLayer" data-value="cocoons" aria-pressed="false">
+        <span class="pgm-kind-art"><svg class="pgm-atlas pgm-ico" viewBox="154 297 75 75" aria-hidden="true"><image href="assets/map/pins.png" width="512" height="449"></image></svg></span><span class="pgm-kind-t" translate="no">Capullos</span></button><button type="button" class="pgm-kind" data-act="pgmLayer" data-value="totems" aria-pressed="false">
+        <span class="pgm-kind-art"><img src="assets/world/totem.png" alt=""></span><span class="pgm-kind-t" translate="no">Tótems de alma</span></button><button type="button" class="pgm-kind" data-act="pgmLayer" data-value="tablets" aria-pressed="false">
+        <span class="pgm-kind-art is-dark"><img src="assets/world/tablet.png" alt=""></span><span class="pgm-kind-t" translate="no">Tablillas</span></button></div>
+      </section><section class="pgm-sec is-open">
+        <div class="pgm-sec-h">
+          <button type="button" class="pgm-fold" data-act="pgmFold" data-value="mine" aria-expanded="true">
+            <svg class="pgm-caret" viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1 L8 5 L3 9 Z" fill="currentColor"></path></svg><span class="pgm-sec-t">Tu partida</span></button>
+          <button type="button" class="text-btn" data-act="pgmGroup" data-value="mine">Ninguno</button>
+        </div>
+        <div class="pgm-kinds" role="group" aria-label="Tu partida"><button type="button" class="pgm-kind is-on" data-act="pgmLayer" data-value="my-bench" aria-pressed="true">
+        <span class="pgm-kind-art"><svg class="pgm-atlas pgm-ico" viewBox="0 220 75 75" aria-hidden="true"><image href="assets/map/pins.png" width="512" height="449"></image></svg></span><span class="pgm-kind-t" translate="no">Tu banco</span></button><button type="button" class="pgm-kind is-on" data-act="pgmLayer" data-value="shade" aria-pressed="true">
+        <span class="pgm-kind-art"><svg class="pgm-atlas pgm-ico" viewBox="0 122 90 96" aria-hidden="true"><image href="assets/map/pins.png" width="512" height="449"></image></svg></span><span class="pgm-kind-t" translate="no">Tu sombra</span></button><button type="button" class="pgm-kind is-on" data-act="pgmLayer" data-value="gate" aria-pressed="true">
+        <span class="pgm-kind-art"><svg class="pgm-atlas pgm-ico" viewBox="428 122 79 79" aria-hidden="true"><image href="assets/map/pins.png" width="512" height="449"></image></svg></span><span class="pgm-kind-t" translate="no">Portal Onírico</span></button><button type="button" class="pgm-kind is-on" data-act="pgmLayer" data-value="markers" aria-pressed="true">
+        <span class="pgm-kind-art"><svg class="pgm-atlas pgm-ico" viewBox="260 122 82 83" aria-hidden="true"><image href="assets/map/pins.png" width="512" height="449"></image></svg></span><span class="pgm-kind-t" translate="no">Marcadores</span></button></div>
+      </section></div></template>
+<script>
+'use strict';
+const q = new URLSearchParams(location.search);
+const st = { v: q.get('v') || 'c', open: new Set(), off: new Set() };
+const V = {
+  now: ['Now', 'As it is: one switch per set, and nothing says what a set holds.'],
+  a: ['A · What\'s inside', 'A set carries a caret: tapped, it lists what it holds, with pictures. The switch stays the whole set\'s.'],
+  b: ['B · Sub-filters', 'The caret opens the set into its members, each its own switch; the set\'s switch turns all on or off, and says "some" when they differ.'],
+  c: ['C · Split + what\'s inside', 'The sets of different kinds become one layer each (Equipment · Spells · Nail arts · Dream Nail; Bosses · Colosseum trials · Grimm Troupe); the sets of one kind keep A\'s list.'],
+};
+const a = (p) => 'assets/' + p + '.png';
+const SETS = {
+  equip: [['Capa de polilla', a('abilities/cloak1')], ['Garra de mantis', a('items/mantis-claw')], ['Corazón de cristal', a('items/crystal-heart')], ['Alas de monarca', a('items/monarch-wings')], ['Lágrima de Isma', a('items/isma-tear')], ['Capa sombría', a('abilities/cloak2')], ['Marca del rey', a('items/kings-brand')], ['Espíritu vengativo', a('spells/vs')], ['Alma sombría', a('spells/vs2')], ['Salto desolador', a('spells/dd')], ['Oscuridad descendente', a('spells/dd2')], ['Espectros aulladores', a('spells/hw')], ['Chillido del Abismo', a('spells/hw2')], ['Corte ciclón', a('arts/cyclone')], ['Gran corte', a('arts/great')], ['Corte veloz', a('arts/dash')], ['Aguijón Onírico', a('abilities/dream1')], ['Aguijón Onírico despierto', a('abilities/awoken')], ['Ascensión', a('items/essence')]],
+  bosses: [['15 jefes', a('journal/false-knight')], ['3 pruebas del Coliseo', ''], ['Grimm', a('journal/grimm')], ['Rey Pesadilla Grimm', a('journal/nkg')]],
+  keys: [['Linterna de lumélula', a('items/lumafly-lantern')], ['Emblema de la ciudad', a('items/city-crest')], ['Llave del comerciante', a('items/shopkeepers-key')], ['Llave elegante', a('items/elegant-key')], ['Llave del amor', a('items/love-key')], ['Pase para el tranvía', a('items/tram-pass')], ['Afinador de Dioses', a('items/godtuner')], ['Mapa del coleccionista', a('items/collectors-map')], ['Diario del Cazador', a('items/hunters-journal')]],
+  relics: [['Diario del errante', a('items/wanderers-journal')], ['Sello de Hallownest', a('items/hallownest-seal')], ['Ídolo del rey', a('items/kings-idol')], ['Huevo arcano', a('items/arcane-egg')]],
+  'other-bosses': [['Jefes de sueño (5)', a('journal/grey-prince-zote')], ['Jefes de sala', a('journal/vengefly-king')], ['Caballero Hueco', a('journal/hollow-knight')], ['Radiancia', a('journal/the-radiance')]],
+  npcs: [['Quirrel', ''], ['Sly', ''], ['Bretta', ''], ['Zote', ''], ['Cloth', ''], ['Tiso', ''], ['Hornet', ''], ['Forjaguijones', '']],
+  people: [['Sly', ''], ['Iselda', ''], ['Salubra', ''], ['Comepiernas', ''], ['Lemm', ''], ['Jiji', ''], ['Herrero', ''], ['Vidente', ''], ['Padre Larva', ''], ['Coliseo de los Insensatos', ''], ['Templo del Huevo Negro', '']],
+  walls: [['Muros', ''], ['Suelos', ''], ['Paredes de un solo sentido', '']],
+  markers: [['Rojos', ''], ['Azules', ''], ['Amarillos', ''], ['Blancos', '']],
+};
+// C: the sets of different kinds, split into layers of their own (name, picture).
+const SPLIT = {
+  equip: [['Equipo', a('items/mantis-claw')], ['Hechizos', a('spells/vs')], ['Artes del aguijón', a('arts/cyclone')], ['Aguijón Onírico', a('abilities/dream1')]],
+  bosses: [['Jefes', a('journal/false-knight')], ['Pruebas del Coliseo', ''], ['Compañía de Grimm', a('journal/grimm')]],
+};
+const CARET = '<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1 L8 5 L3 9 Z" fill="currentColor"/></svg>';
+const item = ([n, p]) => `<span>${p ? `<img src="${p}" alt="">` : ''}${n}</span>`;
+function paint() {
+  document.getElementById('bar').innerHTML = '<b>Variant</b>' + Object.entries(V).map(([v, [n]]) => `<button type="button" data-v="${v}" aria-pressed="${st.v === v}">${n}</button>`).join('');
+  document.getElementById('note').textContent = V[st.v][1];
+  const stage = document.getElementById('stage');
+  stage.innerHTML = document.getElementById('filter').innerHTML;
+  if (st.v === 'now') return;
+  stage.querySelectorAll('.pgm-kind').forEach((chip) => {
+    const id = chip.dataset.value;
+    if (st.v === 'c' && SPLIT[id]) {
+      chip.outerHTML = SPLIT[id].map(([n, p]) => `<button type="button" class="pgm-kind is-on"><span class="pgm-kind-art">${p ? `<img src="${p}" alt="">` : '<i class="pgm-ico is-name">·</i>'}</span><span class="pgm-kind-t">${n}</span></button>`).join('');
+      return;
+    }
+    const list = SETS[id];
+    if (!list) return;
+    const open = st.open.has(id);
+    const wrap = document.createElement('span');
+    wrap.className = 'fs-set';
+    chip.replaceWith(wrap);
+    wrap.appendChild(chip);
+    wrap.insertAdjacentHTML('beforeend', `<button type="button" class="fs-more" data-open="${id}" aria-expanded="${open}" title="${st.v === 'b' ? 'Elegir cuáles' : 'Qué incluye'}">${CARET}</button>`);
+    if (st.v === 'b') {
+      const offs = list.filter((m) => st.off.has(id + '|' + m[0])).length;
+      if (offs && offs < list.length) chip.classList.add('is-some');
+    }
+    if (!open) return;
+    const body = st.v === 'b'
+      ? `<div class="fs-subs">${list.map((m) => `<button type="button" class="fs-sub${st.off.has(id + '|' + m[0]) ? '' : ' is-on'}" data-sub="${id}|${m[0]}">${m[1] ? `<img src="${m[1]}" alt="">` : ''}${m[0]}</button>`).join('')}</div>`
+      : `<div class="fs-pop">${list.map(item).join('')}</div>`;
+    wrap.parentElement.insertAdjacentHTML('beforeend', body);
+  });
+}
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  if (b.dataset.v) st.v = b.dataset.v;
+  else if (b.dataset.open) st.open.has(b.dataset.open) ? st.open.delete(b.dataset.open) : st.open.add(b.dataset.open);
+  else if (b.dataset.sub) st.off.has(b.dataset.sub) ? st.off.delete(b.dataset.sub) : st.off.add(b.dataset.sub);
+  else return;
+  paint();
+});
+paint();
+</script>
+</body>
+</html>

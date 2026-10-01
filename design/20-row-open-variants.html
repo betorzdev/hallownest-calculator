@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Opening rows</title>
+<!-- Design material, not part of the site. Progress's rows (js/app-progress.js row()) open with a
+     jump (1 Oct 2026): one opens at a time, so tapping a row below an open one closes that one and
+     the row you tapped leaps up the page; the plates appear all at once. Over the site's real CSS:
+       Now · as it is.
+       A · Fade: the opened panel fades in and drops 6 px, its plates one after another; the one that
+           closes, at once. The row you tapped stays under your finger.
+       B · Unfold: the panel grows from nothing while the other folds away at the same time, so the
+           page barely moves; the plates fade in as it opens.
+       C · Lit, as the game: the panel unfolds as B, and its plates light up one by one from the
+           dark, with Focus's white (the site's lit-in, as on Your game).
+     All of them: nothing moves with prefers-reduced-motion.
+     Chosen on 1 Oct 2026: B (built: js/app-progress.js unfold, css/app.css; docs/guide.md).
+     ?v=now|a|b|c. -->
+<base href="../">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+/* ════ The mockup's chrome ════ */
+body { background: var(--page-bg); background-attachment: fixed; margin: 0; }
+.mk { max-width: 1000px; margin: 0 auto; padding: var(--sp-6) var(--page-pad) 60vh; }
+.mk-h1 { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-xl); letter-spacing: var(--track-title); color: var(--ink-strong); margin: 0 0 var(--sp-2); }
+.mk-lead { max-width: var(--measure); color: var(--ink-2); font-size: var(--fs-sm); margin: 0 0 var(--sp-4); }
+.mk-bar { position: sticky; top: 0; z-index: 50; display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-4);
+  padding: var(--sp-2) 0; margin-bottom: var(--sp-6); background: var(--scene-bg); border-bottom: 1px solid var(--line); font-size: var(--fs-sm); color: var(--muted); }
+.mk-bar b { font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); font-weight: 600; }
+.mk-bar button { background: none; border: 0; padding: var(--sp-1) 0; font: inherit; color: var(--muted); cursor: pointer; }
+.mk-bar button[aria-pressed="true"] { color: var(--accent); box-shadow: inset 0 -1px 0 var(--accent-line); }
+.mk-note { max-width: var(--measure); margin: 0 auto var(--sp-6); color: var(--ink-2); font-size: var(--fs-sm); text-align: center; min-height: 3em; }
+
+/* ════ What would go into the site ════ */
+@media (prefers-reduced-motion: no-preference) {
+  /* A: the panel fades and drops; the plates one after another (--i). */
+  .v-a .pg-open.is-in { animation: row-in var(--dur) var(--ease) both; }
+  .v-a .pg-open.is-in .gplate { animation: row-in var(--dur) var(--ease) both; animation-delay: calc(min(var(--i), 12) * 20ms); }
+  /* B and C: the height is animated from JS (measured); the plates fade (B) or light up (C). */
+  .pg-open.is-folding { overflow: hidden; transition: height var(--dur-slow) var(--ease); }
+  .v-b .pg-open.is-in .gplate { animation: fade-in var(--dur-slow) var(--ease) both; animation-delay: calc(min(var(--i), 12) * 15ms + 80ms); }
+  .v-c .pg-open.is-in .gplate-art img { animation: lit-in var(--dur-flash) var(--ease) both; animation-delay: calc(min(var(--i), 16) * 45ms + 120ms); }
+  .v-c .pg-open.is-in .gplate-name, .v-c .pg-open.is-in .gplate-val { animation: fade-in var(--dur-slow) var(--ease) both; animation-delay: calc(min(var(--i), 16) * 45ms + 120ms); }
+}
+@keyframes row-in { from { opacity: 0; transform: translateY(-6px); } }
+@keyframes fade-in { from { opacity: 0; } }
+</style>
+</head>
+<body>
+<script src="js/i18n.js"></script>
+<script src="js/data.js"></script>
+<div class="mk">
+  <h1 class="mk-h1">Opening rows</h1>
+  <p class="mk-lead">Progress's rows, opening. One is open at a time: open one, then one further down, and watch where the row you tapped ends up.</p>
+  <div class="mk-bar" id="bar"></div>
+  <p class="mk-note" id="note"></p>
+  <div class="gear-body pg-body" id="body"><ol class="pg-rows" id="rows"></ol></div>
+</div>
+<script>
+'use strict';
+const D = HK.data;
+const q = new URLSearchParams(location.search);
+const st = { v: q.get('v') || 'b', open: 'charms' };
+const VARIANTS = {
+  now: ['Now', 'As it is: the panel appears at once, and a row below an open one jumps up when that one closes.'],
+  a: ['A · Fade', 'The panel fades in and drops a little; its plates one after another. The other closes at once, and the page scrolls so the row you tapped stays under your finger.'],
+  b: ['B · Unfold', 'The panel grows from nothing while the other folds away, at the same time and speed: the row you tapped glides up instead of jumping. The plates fade in as it opens.'],
+  c: ['C · Lit, as the game', 'It unfolds as B, and the plates light up one by one from the dark with Focus\'s white, as what you just got does on Your game.'],
+};
+const CH = ['compass', 'swarm', 'stalwart', 'catcher', 'shaman', 'eater', 'dashmaster', 'thorns', 'fury', 'fheart', 'fgreed', 'fstrength',
+  'twister', 'steady', 'heavy', 'quickslash', 'longnail', 'pride', 'baldur', 'flukenest', 'crest', 'womb', 'quickfocus', 'deepfocus',
+  'lbheart', 'lbcore', 'joni', 'grubsong', 'elegy', 'hiveblood', 'spore', 'sharpshadow', 'unn', 'glory', 'wielder', 'kingsoul', 'dreamshield', 'sprintmaster', 'weaversong'];
+const FOES = ['false-knight', 'brooding-mawlek', 'gruz-mother', 'broken-vessel', 'crystal-guardian', 'baldur', 'crawlid', 'aluba', 'ambloom', 'belfly', 'bluggsac', 'boofly', 'aspid-hunter', 'aspid-mother', 'battle-obble'];
+const ROWS = [
+  { id: 'bosses', name: 'Jefes', arts: FOES.map((f) => `assets/journal/${f}.png`), got: 9 },
+  { id: 'charms', name: 'Amuletos', arts: CH.map((c) => `assets/charms/${c}.png`), got: 22 },
+  { id: 'spells', name: 'Hechizos', arts: ['vs', 'vs2', 'dd', 'dd2', 'hw', 'hw2'].map((k) => D.art('spells', k)), got: 4 },
+  { id: 'masks', name: 'Fragmentos de máscara', arts: Array(16).fill(D.art('hud', 'mask-shard')), got: 7 },
+  { id: 'nail', name: 'Mejoras del aguijón', arts: [1, 2, 3, 4].map((l) => D.art('nails', l)), got: 1 },
+  { id: 'dreamers', name: 'Soñadores', arts: Array(3).fill(D.art('hud', 'mask')), got: 1 },
+];
+const chevron = (up) => `<svg class="ic chev ${up ? 'up' : ''}" width="12" height="8" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1.5 L6 6 L11 1.5"/></svg>`;
+const openHtml = (r) => `<div class="pg-open"><div class="pg-plates">${r.arts.map((a, i) => `<button type="button" class="gplate${i < r.got ? ' is-on' : ''}" style="--i:${i}">
+    <span class="gplate-art"><img src="${a}" alt=""></span><span class="gplate-name">${r.name.split(' ')[0]} ${i + 1}</span><span class="gplate-val is-none">${i < r.got ? '' : 'Sin conseguir'}</span></button>`).join('')}</div></div>`;
+function paint() {
+  document.getElementById('bar').innerHTML = '<b>Variant</b>' + Object.entries(VARIANTS).map(([v, [n]]) => `<button type="button" data-v="${v}" aria-pressed="${st.v === v}">${n}</button>`).join('');
+  document.getElementById('note').textContent = VARIANTS[st.v][1];
+  document.getElementById('body').className = 'gear-body pg-body v-' + st.v;
+  document.getElementById('rows').innerHTML = ROWS.map((r) => {
+    const open = st.open === r.id;
+    return `<li class="pg-row${open ? ' is-open' : ''}" data-id="${r.id}"><button type="button" class="pg-head" data-row="${r.id}" aria-expanded="${open}">
+      <span class="pg-name">${r.name}</span><span class="pg-pips" aria-hidden="true">${r.arts.map((a, i) => `<span class="pg-pip${i < r.got ? ' is-on' : ''}"><img src="${a}" alt=""></span>`).join('')}</span>
+      <span class="pg-pts"><b>${r.got}</b><i class="u">/${r.arts.length}</i></span><span class="disc-ring" aria-hidden="true">${chevron(open)}</span></button>${open ? openHtml(r) : ''}</li>`;
+  }).join('');
+}
+const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* The site repaints the whole screen (render()): the same here. What's animated is worked out
+   around that repaint: where the tapped head was, and how tall the panel that closes was. */
+function toggle(id) {
+  const rowsEl = document.getElementById('rows');
+  const headTop = rowsEl.querySelector(`[data-row="${id}"]`).getBoundingClientRect().top;
+  const oldPanel = rowsEl.querySelector('.pg-open'), oldId = st.open, oldH = oldPanel ? oldPanel.offsetHeight : 0;
+  st.open = st.open === id ? '' : id;
+  paint();
+  const panel = rowsEl.querySelector('.pg-open');
+  if (st.v === 'now' || still()) return;
+  if (st.v === 'a') {
+    if (panel) panel.classList.add('is-in');
+    // The tapped row stays where it was on screen.
+    window.scrollBy(0, rowsEl.querySelector(`[data-row="${id}"]`).getBoundingClientRect().top - headTop);
+    return;
+  }
+  // B and C: the closing one is put back at its height, and both fold and unfold together.
+  let ghost = null;
+  if (oldId && oldId !== st.open) {
+    ghost = document.createElement('div');
+    ghost.className = 'pg-open is-folding';
+    ghost.style.height = oldH + 'px';
+    rowsEl.querySelector(`[data-id="${oldId}"]`).appendChild(ghost);
+  }
+  if (panel) { panel.classList.add('is-in', 'is-folding'); panel.style.height = '0px'; }
+  const full = panel ? panel.scrollHeight : 0;
+  // Keep the tapped row put while the one above folds: it'll move up exactly as it shrinks.
+  window.scrollBy(0, rowsEl.querySelector(`[data-row="${id}"]`).getBoundingClientRect().top - headTop);
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    if (ghost) ghost.style.height = '0px';
+    if (panel) panel.style.height = full + 'px';
+  }));
+  const done = () => { if (ghost) ghost.remove(); if (panel) { panel.style.height = ''; panel.classList.remove('is-folding'); } };
+  setTimeout(done, 450);
+}
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  if (b.dataset.v) { st.v = b.dataset.v; paint(); }
+  else if (b.dataset.row) toggle(b.dataset.row);
+});
+paint();
+</script>
+</body>
+</html>

@@ -4,15 +4,17 @@
    its points. A row opens to show its things as plates, and a tap marks one.
    A thing is marked where the site already keeps it, so no two screens disagree: a boss is its
    Hunter's Journal entry, a charm is your collection, and the rest (equipment, Dreamers,
-   Colosseum…) is hollow.progress. What changes your figures (masks, vessels, the nail, spells,
-   arts, the cloaks, the Dream Nail) is marked on Your game: its plate takes you there.
+   Colosseum…) is hollow.progress. What changes your figures (arts, the cloaks, the Dream Nail) is
+   marked on Your game: its plate takes you there. Masks, vessels and the nail open on their pieces
+   instead (design/19): the shards and fragments mark Your game's figure; the spells, each level
+   on its own, and the nail's upgrades set it.
    Its second tab is the Map (js/app-map.js), with the collectibles on it; pgFind, their marking,
    is here.
    Shares HK.app with js/app.js (see there). */
 (() => {
   'use strict';
   const HK = globalThis.HK;
-  const D = HK.data, HJ = HK.hunter, F = HK.foes, PN = HK.pantheons, P = HK.progress, CP = HK.completion;
+  const D = HK.data, HJ = HK.hunter, F = HK.foes, PN = HK.pantheons, P = HK.progress, CP = HK.completion, CO = HK.collectibles, C = HK.codec;
   const App = HK.app;
   const { t, pick, el, NT, esc, brackets, screenHead, render, actions, prefs, savePrefs, setProgress, setOwned, pctSpace } = App;
 
@@ -79,6 +81,7 @@
 
   /* ── The tablet ── */
   // A thing's picture, or the rule's diamond where there's none (the Dreamers, the trials, the pantheons).
+  const darkCls = App.darkCls;
   const artHtml = (m) => (m.art ? `<img src="${m.art}" alt="" loading="lazy">` : m.pin && App.pinArtHtml ? App.pinArtHtml(m.pin) : '<i class="pg-glyph" aria-hidden="true"></i>');
   const stateOf = (it) => (it.got >= it.max ? 'is-on' : it.got > 0 ? 'is-part' : '');
   // Several steps (a spell's two levels, the nail's four upgrades…) say how many; a piece of
@@ -92,8 +95,8 @@
     // The masks as you have them (5 to 9): their points are the ones past the first five.
     // What's marked on the Inventory says so, unless the save is the game's (nothing's marked by hand).
     const val = cat === 'masks' ? `${App.state.masks}/${D.HEALTH.maxMasks}` : STEPPED.includes(cat) ? `${it.got}/${it.max}`
-      : on ? (m.note || '') : where === 'game' && !App.saveLock() ? t('pgInGame') : t('notFound');
-    const body = `<span class="gplate-art">${artHtml(m)}</span>
+      : on ? (m.note || '') : where === 'game' && !App.saveLock() ? t('pgInGame') : '';   // missing: its shadow says it
+    const body = `<span class="gplate-art${darkCls(m.art)}">${artHtml(m)}</span>
         <span class="gplate-name"${NT}>${esc(m.name)}</span>
         <span class="gplate-val${on && !STEPPED.includes(cat) ? ' is-text' : ' is-none'}">${esc(val)}</span>`;
     // The build's things aren't marked here: the plate takes you to Your game.
@@ -108,12 +111,101 @@
         title="${esc(held ? m.name : m.name + ' · ' + t(on ? 'pgUnmark' : 'pgMark'))}">${body}</button>`, target, m.name);
   }
 
+  /* ── The rows that count pieces (design/19, variant A): masks, vessels and the nail ──
+     The head draws what the 112% counts (4 masks, 3 vessels, 4 nails), each filling with the
+     pieces Your game has; open, every piece with its place and its pin, grouped by how you get
+     it, and a link to see them all on the Map. In free mode the pieces lead (pieceStep). */
+  const PIECES = {
+    masks: { kind: 'mask-shard', key: 'masks', base: D.HEALTH.baseMasks, max: D.HEALTH.maxMasks, loose: 'shards', per: 4, art: ['hud', 'mask'], piece: ['hud', 'mask-shard'] },
+    vessels: { kind: 'vessel-fragment', key: 'vessels', base: 0, max: D.SOUL.maxVessels, loose: 'fragments', per: 3, art: ['hud', 'vessel'], piece: ['hud', 'vessel-frag'] },
+  };
+  const PIECE_OF = { 'mask-shard': PIECES.masks, 'vessel-fragment': PIECES.vessels };
+  // The pieces Your game has: the whole ones' and the loose ones.
+  const piecesHad = (pc) => (App.state[pc.key] - pc.base) * pc.per + P.count(App.progress, pc.loose);
+  // The Nailsmith's prices (kb/02-arsenal.md): geo and Pale Ore for each upgrade.
+  const NAIL_COST = [null, [250, 0], [800, 1], [2000, 2], [4000, 3]];
+  const itemsOf = (kind) => CO.ITEMS.filter((it) => it.kind === kind);
+  // A pip lit by a fraction (0 to 1): the shadowed picture, and the lit one cut from the bottom up.
+  const fillPip = (src, f) => (f >= 1 ? `<span class="pg-pip is-on${darkCls(src)}"><img src="${src}" alt=""></span>`
+    : f <= 0 ? `<span class="pg-pip${darkCls(src)}"><img src="${src}" alt=""></span>`
+    : `<span class="pg-pip is-fill" style="--f:${f.toFixed(3)}"><img src="${src}" alt=""><img src="${src}" alt=""></span>`);
+  // The spells, each level its own thing (its name, picture and pin), in the game's order.
+  const SPELL_LEVELS = ['vs', 'dd', 'hw'].flatMap((k) => [[k, 1], [k, 2]]);
+  const spellArt = (k, l) => D.art('spells', l === 2 ? k + '2' : k);
+  function piecePips(cat) {
+    if (cat === 'spells') return SPELL_LEVELS.map(([k, l]) => fillPip(spellArt(k, l), App.state.spells[k] >= l ? 1 : 0)).join('');
+    if (cat === 'nail') return [1, 2, 3, 4].map((l) => fillPip(D.art('nails', l), App.state.nail >= l ? 1 : 0)).join('');
+    const pc = PIECES[cat], had = piecesHad(pc);
+    return Array.from({ length: pc.max - pc.base }, (_, i) => fillPip(D.art(...pc.art), Math.min(1, Math.max(0, (had - i * pc.per) / pc.per)))).join('');
+  }
+  // A piece: where it is, and what it asks for while you don't have it; a tap marks it.
+  function piecePlate(it, art) {
+    const on = P.hasFound(App.progress, it.id), name = App.placeName(it.scene) || pick(D.COLLECTIBLE_KINDS[it.kind]);
+    const held = !!App.saveLock();
+    const plate = `<button type="button" class="gplate${on ? ' is-on' : ''}" data-act="pgFind" data-id="${it.id}" aria-pressed="${on}" ${held ? 'disabled' : ''}
+        title="${esc(held ? name : name + ' · ' + t(on ? 'pgUnmark' : 'pgMark'))}">
+        <span class="gplate-art"><img src="${art}" alt="" loading="lazy"></span>
+        <span class="gplate-name"${NT}>${esc(name)}</span>
+        <span class="gplate-val is-none">${esc(on ? '' : App.priceOf(it))}</span></button>`;
+    return App.pinned(plate, 'collect:' + it.id, name);
+  }
+  const group = (label, list, plates) => `<div class="pg-group"><p class="pg-sub">${esc(label)}<span>${num(list.filter((it) => P.hasFound(App.progress, it.id)).length)}/${num(list.length)}</span></p>
+    <div class="pg-plates">${plates}</div></div>`;
+  function piecesOpen(cat) {
+    if (cat === 'spells') {
+      /* A tap sets the spell's level (as Your game's picker): marking an upgrade brings the first
+         level with it, as in the game; unmarking the first takes the upgrade too. */
+      const held = !!App.saveLock();
+      return `<div class="pg-plates">${SPELL_LEVELS.map(([k, l]) => {
+        const on = App.state.spells[k] >= l, name = pick(D.SPELLS[k].levels[l]);
+        return App.pinned(`<button type="button" class="gplate${on ? ' is-on' : ''}" data-act="seg" data-key="spells.${k}" data-value="${on ? l - 1 : l}" aria-pressed="${on}" ${held ? 'disabled' : ''}
+          title="${esc(held ? name : name + ' · ' + t(on ? 'pgUnmark' : 'pgMark'))}"><span class="gplate-art${darkCls(spellArt(k, l))}"><img src="${spellArt(k, l)}" alt="" loading="lazy"></span>
+          <span class="gplate-name"${NT}>${esc(name)}</span>
+          <span class="gplate-val is-none"></span></button>`, `c112:spells:${k}${l}`, name);
+      }).join('')}</div>`;
+    }
+    const all = (target, n) => `<p class="pg-all">${App.mapLinkHtml(target, t('pgCat_' + cat), t('pgSeeAll', { n: num(n) }))}</p>`;
+    if (cat === 'nail') {
+      const ores = itemsOf('pale-ore'), held = !!App.saveLock();
+      const nails = [1, 2, 3, 4].map((l) => {
+        const on = App.state.nail >= l, name = pick(D.NAILS[l]), [geo, ore] = NAIL_COST[l];
+        return `<button type="button" class="gplate${on ? ' is-on' : ''}" data-act="seg" data-key="nail" data-value="${on ? l - 1 : l}" aria-pressed="${on}" ${held ? 'disabled' : ''}
+          title="${esc(name)}"><span class="gplate-art${darkCls(D.art('nails', l))}"><img src="${D.art('nails', l)}" alt="" loading="lazy"></span>
+          <span class="gplate-name"${NT}>${esc(name)}</span>
+          <span class="gplate-val is-none">${esc(ore ? t('pgNailCost', { geo: num(geo), ore: num(ore) }) : `${num(geo)} geo`)}</span></button>`;
+      }).join('');
+      // The upgrades aren't collectibles: their group counts your nail.
+      return all('c112:nail:nail', ores.length + 1)
+        + `<div class="pg-group"><p class="pg-sub">${esc(t('pgUpgrades'))}<span>${num(App.state.nail)}/4</span></p><div class="pg-plates">${nails}</div></div>`
+        + group(pick(D.COLLECTIBLE_KINDS['pale-ore']), ores, ores.map((it) => piecePlate(it, D.art('items', 'pale-ore'))).join(''));
+    }
+    const pc = PIECES[cat], list = itemsOf(pc.kind), art = D.art(...pc.piece);
+    const how = (it) => (!it.src ? 'world' : it.src[0] === 'sly' ? 'sly' : 'rewards');
+    const LABEL = { world: t('pgByWorld'), sly: t('pgmW_sly'), rewards: t('pgByRewards') };
+    return all(`c112:${cat}:${cat}`, list.length) + ['world', 'sly', 'rewards'].map((g) => {
+      const of = list.filter((it) => how(it) === g);
+      return of.length ? group(LABEL[g], of, of.map((it) => piecePlate(it, art)).join('')) : '';
+    }).join('');
+  }
+  /* The pieces lead: Your game's figure is never below the pieces marked (here or on the Map).
+     Marking one past it adds a piece, the fourth loose shard making a mask; unmarking one when
+     the figure was just the marks takes one away. A figure set higher on Your game (free mode
+     starts with everything) stays: which pieces it counts beyond the marks isn't known. */
+  const marked = (prog, pc) => itemsOf(pc.kind).filter((it) => P.hasFound(prog, it.id)).length;
+  function pieceStep(prog, pc, on) {
+    const top = (pc.max - pc.base) * pc.per, had = piecesHad(pc), m = marked(prog, pc);
+    const n = Math.max(0, Math.min(top, on ? Math.max(had, m) : had === m + 1 ? m : had));
+    const whole = pc.base + Math.floor(n / pc.per);
+    return { state: whole !== App.state[pc.key] ? C.set(App.state, pc.key, whole) : null, progress: P.setCount(prog, pc.loose, n % pc.per) };
+  }
+
   function row(c) {
     const open = prefs.pgOpen === c.id;
     const name = t('pgCat_' + c.id);
-    const pips = c.items.map((it) => {
+    const pieces = c.id === 'nail' || c.id === 'spells' || PIECES[c.id];
+    const pips = pieces ? piecePips(c.id) : c.items.map((it) => {
       const m = meta(c.id, it.id);
-      return `<span class="pg-pip ${stateOf(it)}">${artHtml(m)}</span>`;
+      return `<span class="pg-pip ${stateOf(it)}${darkCls(m.art)}">${artHtml(m)}</span>`;
     }).join('');
     const full = c.got === c.max;
     return `<li class="pg-row${open ? ' is-open' : ''}${full ? ' is-full' : ''}">
@@ -124,7 +216,8 @@
         <span class="pg-pts"><b>${num(c.got)}</b><i class="u">/${num(c.max)}</i></span>
         <span class="disc-ring" aria-hidden="true">${App.chevron(open)}</span>
       </button>
-      ${open ? `<div class="pg-open"><div class="pg-plates${App.saveLock() ? ' is-held' : ''}">${c.items.map((it) => plate(c.id, it)).join('')}</div></div>` : ''}
+      ${!open ? '' : pieces ? `<div class="pg-open${App.saveLock() ? ' is-held' : ''}">${piecesOpen(c.id)}</div>`
+        : `<div class="pg-open"><div class="pg-plates${App.saveLock() ? ' is-held' : ''}">${c.items.map((it) => plate(c.id, it)).join('')}</div></div>`}
     </li>`;
   }
 
@@ -160,6 +253,53 @@
     a.title = lbl;
   }
 
+  /* ── A row unfolding (design/20, variant B): the screen is repainted whole, so around that
+     repaint the panel that opens grows from nothing while the one that closed (a stand-in at its
+     height) folds away, at once: the row you tapped glides instead of jumping. Its plates fade in,
+     one after another. Only on opening or closing a row; with reduced motion, nothing moves. ── */
+  const FOLD_MS = 400;   // --dur-slow
+  function foldBefore(id) {
+    const head = el.pg.querySelector(`.pg-head[data-value="${id}"]`), open = el.pg.querySelector('.pg-row.is-open');
+    return { top: head ? head.getBoundingClientRect().top : 0, was: prefs.pgOpen, h: open ? open.querySelector('.pg-open').offsetHeight : 0 };
+  }
+  function unfold(id, before) {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const headOf = (x) => el.pg.querySelector(`.pg-head[data-value="${x}"]`);
+    const panel = el.pg.querySelector('.pg-row.is-open .pg-open');
+    const oldHead = before.was && before.was !== prefs.pgOpen && headOf(before.was);
+    let ghost = null;
+    if (oldHead && before.h) {
+      ghost = document.createElement('div');
+      ghost.className = 'pg-open is-folding';
+      ghost.style.cssText = `height: ${before.h}px; padding: 0`;   // empty: all its height is the panel's
+      oldHead.parentNode.appendChild(ghost);
+    }
+    let full = 0;
+    if (panel) {
+      panel.querySelectorAll('.gplate').forEach((g, i) => g.style.setProperty('--i', i));
+      // Its whole height measured as it'll unfold (clipped, so its margins stay inside); then from
+      // nothing, its padding too, or the rows under it would jump by it before it starts. The
+      // transition comes after (is-folding), or it would ease the padding away instead.
+      panel.style.overflow = 'hidden';
+      full = panel.getBoundingClientRect().height;
+      panel.style.cssText = 'height: 0; padding-block: 0; overflow: hidden';
+      void panel.offsetHeight;
+      panel.classList.add('is-in', 'is-folding');
+      getComputedStyle(panel).height;
+    }
+    // The row you tapped starts where it was on screen.
+    const head = headOf(id);
+    if (head) window.scrollBy(0, head.getBoundingClientRect().top - before.top);
+    // Both start from where they are now (the style flushed with the transition on), then go.
+    void el.pg.offsetHeight;
+    if (ghost) ghost.style.height = '0px';
+    if (panel) panel.style.cssText = `height: ${full}px`;
+    setTimeout(() => {
+      if (ghost) ghost.remove();
+      if (panel) { panel.style.cssText = ''; panel.classList.remove('is-folding'); }
+    }, FOLD_MS + 50);
+  }
+
   /* ── Marking ── */
   function markCharm(base) {
     const vs = VERSIONS[base] || [base];
@@ -169,11 +309,23 @@
   // What writes your game's record: refused in a save from the game (App.saveLock, js/app.js).
   App.edits('pgFind', 'pgMark');
   Object.assign(actions, {
-    pgFind(node) { setProgress(P.toggleFound(App.progress, node.dataset.id)); },
+    pgFind(node) {
+      const id = node.dataset.id, next = P.toggleFound(App.progress, id);
+      const it = CO.ITEMS.find((x) => x.id === id), pc = it && PIECE_OF[it.kind];
+      if (!pc || App.saveLock()) { setProgress(next); return; }
+      const step = pieceStep(next, pc, P.hasFound(next, id));
+      if (!step.state) { setProgress(step.progress); return; }
+      // A whole one more or less: both stores, one repaint (commit's).
+      App.progress = P.normalize(step.progress);
+      App.saveProgress();
+      App.commit(step.state);
+    },
     pgRow(node) {
+      const before = foldBefore(node.dataset.value);
       prefs.pgOpen = prefs.pgOpen === node.dataset.value ? '' : node.dataset.value;
       savePrefs();
       render();
+      unfold(node.dataset.value, before);
     },
     pgMark(node) {
       const cat = node.dataset.key, id = node.dataset.id;

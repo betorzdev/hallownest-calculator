@@ -13,12 +13,15 @@
    mark it as the tablet does.
    It's an SVG in the map's own units (y flipped: the game's grows upwards). Dragging moves it,
    the wheel or a pinch zooms, and three buttons zoom in, out and back to the whole map; the view
-   isn't saved. The pins keep about the same size on screen (--k), and close up carry their names. */
+   isn't saved. The pins keep about the same size on screen (--k), and close up carry their names.
+   With #…&admin=1 (App.admin) the pins can be dragged to where they really go, and the moves
+   are saved to js/map-fixes.js through `npm run admin` (see "The admin mode" below). */
 (() => {
   'use strict';
   const HK = globalThis.HK;
   const D = HK.data, P = HK.progress, R = HK.rooms, CO = HK.collectibles, M = HK.map, F = HK.foes, HJ = HK.hunter;
   const SO = HK.sceneObjects, PE = HK.people;
+  const FIXES = (HK.mapFixes || {}).FIXES || {};   // js/map-fixes.js: where a pin really goes, over what the data says
   const App = HK.app;
   const { t, pick, el, esc, NT, actions, prefs, savePrefs, render, pctSpace } = App;
 
@@ -142,15 +145,16 @@
      in Bretta's house): not part of the 112%, but the Journal's; beaten once it has them complete. */
   const DREAM_BOSS_AT = { 'failed-champion': 'Crossroads_10', 'soul-tyrant': 'Ruins1_24', 'lost-kin': 'Abyss_19',
     'white-defender': 'Waterways_15', 'grey-prince-zote': 'Room_Bretta' };
-  /* Bosses no room places (js/scene-objects.js reads what a scene holds; these come some other way),
-     on the game's pin for where they're fought: the Grimmkin, called by the flames of Grimm's ritual
-     (the wiki's page for each; Distant Village's flame is Brumm's), and the Hollow Knight and the
-     Radiance, behind the Black Egg. */
+  /* Foes no room places (js/scene-objects.js reads what a scene holds; these come some other way),
+     on the game's pin for where they're fought, with their layer: the Grimmkin, called by the
+     flames of Grimm's ritual (the wiki's page for each; Distant Village's flame is Brumm's), are
+     the ritual's, beside their flames; the Hollow Knight and the Radiance, behind the Black Egg,
+     are other bosses. */
   const SPAWNED_BOSS_AT = [
-    ['grimmkin-novice', 'flame', 'Fungus1_10'], ['grimmkin-novice', 'flame', 'Mines_10'], ['grimmkin-novice', 'flame', 'Ruins1_28'],
-    ['grimmkin-master', 'flame', 'Tutorial_01'], ['grimmkin-master', 'flame', 'RestingGrounds_06'], ['grimmkin-master', 'flame', 'Deepnest_East_03'],
-    ['grimmkin-nightmare', 'flame', 'Fungus2_30'], ['grimmkin-nightmare', 'flame', 'Abyss_02'], ['grimmkin-nightmare', 'flame', 'Hive_03'],
-    ['hollow-knight', 'blackegg', 'Crossroads_02'], ['the-radiance', 'blackegg', 'Crossroads_02'],
+    ['grimmkin-novice', 'flame', 'Fungus1_10', 'grimmkin'], ['grimmkin-novice', 'flame', 'Mines_10', 'grimmkin'], ['grimmkin-novice', 'flame', 'Ruins1_28', 'grimmkin'],
+    ['grimmkin-master', 'flame', 'Tutorial_01', 'grimmkin'], ['grimmkin-master', 'flame', 'RestingGrounds_06', 'grimmkin'], ['grimmkin-master', 'flame', 'Deepnest_East_03', 'grimmkin'],
+    ['grimmkin-nightmare', 'flame', 'Fungus2_30', 'grimmkin'], ['grimmkin-nightmare', 'flame', 'Abyss_02', 'grimmkin'], ['grimmkin-nightmare', 'flame', 'Hive_03', 'grimmkin'],
+    ['hollow-knight', 'blackegg', 'Crossroads_02', 'other-bosses'], ['the-radiance', 'blackegg', 'Crossroads_02', 'other-bosses'],
   ];
   /* Two fights load their own copy of a room the map doesn't draw: the Crystal Guardian's, on its
      bench room, and Flukemarm's, where she leaves Flukenest. */
@@ -188,9 +192,10 @@
   const RELICS = ['wanderers-journal', 'hallownest-seal', 'kings-idol', 'arcane-egg'];
   const layerOfKind = (k) => (RELICS.includes(k) ? 'relics' : k);
   const GROUPS = [
-    { id: 'c112', layers: ['charms', 'equip', 'bosses', 'graves', 'dreamers', 'mask-shard', 'vessel-fragment', 'pale-ore'] },
+    // One layer per kind of thing (design/24, C: Equipment, spells and arts and Bosses and trials were two).
+    { id: 'c112', layers: ['charms', 'equipment', 'spells', 'arts', 'dream-nail', 'bosses', 'trials', 'grimm-troupe', 'graves', 'dreamers', 'mask-shard', 'vessel-fragment', 'pale-ore'] },
     { id: 'collect', layers: ['grub', 'charm-notch', 'simple-key', 'keys', 'rancid-egg', 'relics', 'map'] },
-    { id: 'quests', layers: ['whispering-root', 'grimmkin-flame', 'npcs'] },
+    { id: 'quests', layers: ['whispering-root', 'grimmkin-flame', 'grimmkin', 'npcs'] },
     { id: 'hunt', layers: ['foes', 'other-bosses'] },
     { id: 'secrets', layers: ['walls', 'hidden', 'chests', 'rocks'] },
     { id: 'places', layers: ['benches', 'stag', 'trams', 'lifts', 'people', 'springs', 'cocoons', 'totems', 'tablets'] },
@@ -205,14 +210,17 @@
   /* What a new user sees (no prefs yet): the 112%'s things and the key places, about 250 pins; the
      rest (the other collectibles, enemies, meetings, secrets, geo, the lesser places) is theirs to
      switch on. */
-  const REF_LAYERS = new Set(['charms', 'equip', 'bosses', 'graves', 'dreamers']);
-  const DEFAULT_ON = new Set(['charms', 'equip', 'bosses', 'graves', 'dreamers', 'mask-shard', 'vessel-fragment', 'pale-ore',
+  const C112_REF = ['charms', 'equipment', 'spells', 'arts', 'dream-nail', 'bosses', 'trials', 'grimm-troupe', 'graves', 'dreamers'];
+  const REF_LAYERS = new Set(C112_REF);
+  const DEFAULT_ON = new Set([...C112_REF, 'mask-shard', 'vessel-fragment', 'pale-ore',
     'other-bosses', 'grub', 'benches', 'stag', 'trams', 'people', 'my-bench', 'shade', 'gate', 'markers', 'names']);
   // A layer's picture in the filter: a collectible's, or one of the game's pins.
   const LAYER_ART = {
-    keys: { src: D.art('items', 'city-crest') }, relics: { src: D.art('items', 'kings-idol') }, foes: { src: D.art('journal', 'crawlid') }, 'other-bosses': { src: D.art('journal', 'vengefly-king') }, npcs: { glyph: 'npc' },
-    walls: { glyph: 'wall' }, hidden: { glyph: 'hidden' }, chests: { glyph: 'chest' }, rocks: { src: D.art('items', 'geo') },
-    totems: { src: 'assets/world/totem.png' }, tablets: { src: 'assets/world/tablet.png' }, charms: { src: 'assets/charms/compass.png' }, equip: { src: D.art('items', 'mantis-claw') }, bosses: { src: D.art('journal', 'false-knight') },
+    equipment: { src: D.art('items', 'mantis-claw') }, spells: { src: D.art('spells', 'vs') }, arts: { src: D.art('arts', 'cyclone') },
+    'dream-nail': { src: D.art('abilities', 'dream1') }, trials: { pin: 'colosseum' }, 'grimm-troupe': { src: D.art('journal', 'grimm') },
+    keys: { src: D.art('items', 'city-crest') }, relics: { src: D.art('items', 'kings-idol') }, foes: { src: D.art('journal', 'crawlid') }, 'other-bosses': { src: D.art('journal', 'vengefly-king') }, grimmkin: { src: D.art('journal', 'grimmkin-novice') }, npcs: { glyph: 'npc' },
+    walls: { glyph: 'wall' }, hidden: { glyph: 'hidden' }, chests: { src: 'assets/world/chest.png' }, rocks: { src: D.art('items', 'geo') },
+    totems: { src: 'assets/world/totem.png' }, tablets: { src: 'assets/world/tablet.png' }, charms: { src: 'assets/charms/compass.png' }, bosses: { src: D.art('journal', 'false-knight') },
     graves: { pin: 'grave' }, dreamers: { pin: 'dreamer-monomon' }, benches: { pin: 'bench' }, people: { pin: 'vendor' },
     trams: { pin: 'tram' }, lifts: { glyph: 'lift' }, springs: { pin: 'spa' }, cocoons: { pin: 'cocoon' }, 'my-bench': { pin: 'bench' },
     shade: { pin: 'shade' }, gate: { pin: 'dreamgate' }, markers: { pin: 'marker-y' },
@@ -229,6 +237,15 @@
       delete prefs.pgMapKinds;
       savePrefs();
     }
+    /* Equipment, spells and arts was one layer (equip), and Bosses and trials one (bosses, which keeps
+       its id): hidden then, its new layers are hidden too (design/24, 1 Oct 2026). */
+    if (prefs.pgMapOff.includes('equip') || (prefs.pgMapOff.includes('bosses') && !prefs.pgMapSplit)) {
+      const off = new Set(prefs.pgMapOff.filter((l) => l !== 'equip'));
+      if (prefs.pgMapOff.includes('equip')) ['equipment', 'spells', 'arts', 'dream-nail'].forEach((l) => off.add(l));
+      if (off.has('bosses')) ['trials', 'grimm-troupe'].forEach((l) => off.add(l));
+      prefs.pgMapOff = [...off];
+    }
+    if (!prefs.pgMapSplit) { prefs.pgMapSplit = 1; savePrefs(); }
     // The four relics were four layers: one hidden then hides the one they are now.
     if (prefs.pgMapOff.some((l) => RELICS.includes(l))) {
       prefs.pgMapOff = [...new Set(prefs.pgMapOff.map(layerOfKind))];
@@ -297,9 +314,9 @@
           act: { journal: id } });
       }
     }
-    for (const [id, kind, scene] of SPAWNED_BOSS_AT) {
+    for (const [id, kind, scene, layer] of SPAWNED_BOSS_AT) {
       const p = gamePin(kind, scene), s = HJ.stateOf(book, id);
-      if (p) out.push({ id: `f:${scene}:${id}`, layer: 'other-bosses', p, scene, art: { src: D.art('journal', id) }, name: foeName(id), where: where(scene),
+      if (p) out.push({ id: `f:${scene}:${id}`, layer, p, scene, art: { src: D.art('journal', id) }, name: foeName(id), where: where(scene),
         on: s.done, note: t(s.done ? 'hjDone' : s.seen ? 'pgmFoeLeft' : 'hjUnseen', { n: App.NF[0].format(s.left || 0) }), act: { journal: id } });
     }
     /* A wall, a hidden place or a rock in a room the map doesn't draw (the White Palace, Godhome,
@@ -309,14 +326,14 @@
       if (!drawn(scene)) continue;
       for (const [kind, name, x, y] of rows) {
         const p = scenePoint(scene, x, y);
-        if (p) out.push({ id: `s:${scene}|${name}`, layer: SECRET_LAYER[kind], p, scene, art: { glyph: kind === 'hidden' ? 'hidden' : 'wall' },
+        if (p) out.push({ id: `s:${scene}|${name}`, layer: SECRET_LAYER[kind], sub: kind, p, scene, art: { glyph: kind === 'hidden' ? 'hidden' : 'wall' },
           name: t('pgmS_' + kind), where: where(scene), on: opened.has(scene + '|' + name), act: { state: true } });
       }
     }
     for (const [scene, rows] of Object.entries(SO.CHESTS)) {
       for (const [name, x, y] of rows) {
         const p = scenePoint(scene, x, y);
-        if (p) out.push({ id: `ch:${scene}|${name}`, layer: 'chests', p, scene, art: { glyph: 'chest' }, name: t('pgmN_chest'), where: where(scene),
+        if (p) out.push({ id: `ch:${scene}|${name}`, layer: 'chests', p, scene, art: { src: 'assets/world/chest.png' }, name: t('pgmN_chest'), where: where(scene),
           on: opened.has(scene + '|' + name), act: { state: true } });
       }
     }
@@ -344,7 +361,7 @@
     for (const who of PE.PEOPLE) {
       who.stops.forEach(([scene, x, y, flag], i) => {
         const p = scenePoint(scene, x, y);
-        if (p) out.push({ id: `n:${who.id}:${i}`, layer: 'npcs', p, scene, art: { glyph: 'npc' }, name: pick(who), where: where(scene),
+        if (p) out.push({ id: `n:${who.id}:${i}`, layer: 'npcs', sub: who.id, p, scene, art: { glyph: 'npc' }, name: pick(who), where: where(scene),
           on: met.has(flag), note: t('pgmMeet', { i: App.NF[0].format(i + 1), n: App.NF[0].format(who.stops.length) }), act: { state: true } });
       });
     }
@@ -354,7 +371,7 @@
     const out = [];
     for (const it of CO.ITEMS) {
       if (!COL_POS[it.id]) continue;
-      out.push({ id: it.id, layer: layerOfKind(it.kind), p: COL_POS[it.id], scene: it.scene, art: kindArt(it.kind),
+      out.push({ id: it.id, layer: layerOfKind(it.kind), sub: it.kind, p: COL_POS[it.id], scene: it.scene, art: kindArt(it.kind),
         name: pick(D.COLLECTIBLE_KINDS[it.kind]), where: where(it.scene), act: { find: it.id },
         // A stag station is a place too: always on the map, saying whether it's open yet.
         ...(it.kind === 'stag' ? { on: null, closed: !P.hasFound(App.progress, it.id) && !!App.progress.mapped.length, found: P.hasFound(App.progress, it.id),
@@ -375,16 +392,16 @@
     };
     for (const it of cats.charms.items) add112('charms', 'charms', it.id, CHARM_AT[it.id]);
     add112('charms', 'grimm', 'grimmchild', CHARM_AT.grimmchild);
-    for (const it of cats.equipment.items) add112('equip', 'equipment', it.id, EQUIP_AT[it.id]);
-    for (const it of cats.arts.items) add112('equip', 'arts', it.id, EQUIP_AT[it.id]);
-    for (const it of cats.dreamNail.items) add112('equip', 'dreamNail', it.id, EQUIP_AT[it.id]);
+    for (const it of cats.equipment.items) add112('equipment', 'equipment', it.id, EQUIP_AT[it.id]);
+    for (const it of cats.arts.items) add112('arts', 'arts', it.id, EQUIP_AT[it.id]);
+    for (const it of cats.dreamNail.items) add112('dream-nail', 'dreamNail', it.id, EQUIP_AT[it.id]);
     // A spell, once per level: its name and picture are that level's.
     for (const it of cats.spells.items) {
       for (const lvl of [1, 2]) {
         const at = placeAt(EQUIP_AT[it.id + '-' + lvl]);
         if (!at) continue;
         const pt = at.p, scene = at.scene;
-        out.push({ id: 'c:' + it.id + lvl, layer: 'equip', p: pt, scene, art: { src: D.art('spells', lvl === 2 ? it.id + '2' : it.id) },
+        out.push({ id: 'c:' + it.id + lvl, layer: 'spells', p: pt, scene, art: { src: D.art('spells', lvl === 2 ? it.id + '2' : it.id) },
           name: pick(D.SPELLS[it.id].levels[lvl]), where: where(scene), on: it.got >= lvl, act: { game: true } });
       }
     }
@@ -404,8 +421,8 @@
         on: HJ.stateOf(App.hjBook(), id).done, act: { state: true } });
     }
     for (const it of cats.bosses.items) add112('bosses', 'bosses', it.id, BOSS_AT[it.id]);
-    for (const it of cats.colosseum.items) add112('bosses', 'colosseum', it.id, BOSS_AT[it.id]);
-    for (const id of ['troupe-master-grimm', 'nkg']) add112('bosses', 'grimm', id, BOSS_AT[id]);
+    for (const it of cats.colosseum.items) add112('trials', 'colosseum', it.id, BOSS_AT[it.id]);
+    for (const id of ['troupe-master-grimm', 'nkg']) add112('grimm-troupe', 'grimm', id, BOSS_AT[id]);
     for (const it of cats.dreams.items) add112('graves', 'dreams', it.id, GRAVE_AT[it.id], gamePin('grave', GRAVE_AT[it.id]));
     for (const it of cats.dreamers.items) {
       const pt = gamePin('dreamer', it.id), m = App.pgMeta('dreamers', it.id);
@@ -427,7 +444,8 @@
         || (PEOPLE_AT[who] && placeAt(PEOPLE_AT[who]).p) || roomPoint(scene);
       if (pt) out.push({ id: 'people:' + who, layer: 'people', p: pt, scene, art, name: t('pgmW_' + who), where: where(scene), on: null });
     }
-    return out;
+    // Last of all, the corrections (js/map-fixes.js, and the admin mode's unsaved moves).
+    return out.map(fixed);
   }
 
   /* Each pin sits on its own spot, always, whatever the zoom. Only things on the very same spot
@@ -521,6 +539,122 @@
      ARRIVE lasts: { ids, at }. A repaint meanwhile carries on the rings where they were. */
   let arrive = null;
   const ARRIVE_MS = 3000;
+
+  /* ── The admin mode (App.admin, from #…&admin=1): a pin dragged, or nudged with the arrow keys,
+     to where it really goes. The moves wait in pending (and in sessionStorage, through a reload)
+     until Guardar sends them all to `npm run admin` (tools/admin.js), which writes
+     js/map-fixes.js; with no server (file://, or the published site) Copiar puts the file's lines
+     on the clipboard instead. A saved fix can be dropped too (pending[id] = null: back to the
+     data's point). Your own marks (the save's) are never moved. ── */
+  const PENDING_KEY = 'hollow.mapPending';
+  let pending = null;     // id → [x, y] moved and unsaved (null: a saved fix to drop); read once, when asked
+  let undo = [];          // [id, what pending held before] to undo, last first
+  let server = null;      // whether `npm run admin` answers: null until asked
+  let copyText = '';      // the lines to copy by hand, when the clipboard can't be written
+  const admin = () => !!App.admin;
+  const pend = () => {
+    if (!pending) { pending = {}; if (admin()) { try { pending = JSON.parse(sessionStorage.getItem(PENDING_KEY) || '{}') || {}; } catch (e) { /* no storage */ } } }
+    return pending;
+  };
+  const savePending = () => { try { sessionStorage.setItem(PENDING_KEY, JSON.stringify(pend())); } catch (e) { /* no storage */ } };
+  // Where a thing goes: its unsaved move, else its saved fix, else nothing (the data's point).
+  const fixOf = (id) => (id in pend() ? pend()[id] : FIXES[id] || null);
+  const fixed = (th) => { const p = fixOf(th.id); return p ? { ...th, p0: th.p, p } : th; };
+  // A move: p the new point, null to drop a saved fix, undefined to forget the unsaved move.
+  function move(id, p) {
+    const was = pend();
+    undo.push([id, id in was ? was[id] : undefined]);
+    if (p === undefined) delete was[id]; else was[id] = p;
+    savePending();
+  }
+  // Every fix as it would be saved: the file's, with the moves on top (a dropped one gone).
+  function merged() {
+    const all = { ...FIXES };
+    for (const [id, p] of Object.entries(pend())) { if (p) all[id] = p; else delete all[id]; }
+    return all;
+  }
+  const fixLine = (id, p) => `    ${JSON.stringify(id)}: [${p.map((v) => Number(v).toFixed(3)).join(', ')}],`;
+  const xy = (p) => `${p[0].toFixed(3)}, ${p[1].toFixed(3)}`;
+  // Whether the server is there: asked once, the panel repainted with the answer.
+  function askServer() {
+    if (server !== null) return;
+    server = false;
+    if (location.protocol === 'file:') return;
+    fetch('/__admin/ping').then((r) => r.ok, () => false).then((ok) => { if (ok) { server = true; render(); } });
+  }
+  async function adminSave() {
+    const all = merged();
+    if (server) {
+      try {
+        const r = await fetch('/__admin/map-fixes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(all) });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(j.error || String(r.status));
+        // The file holds them now: the page's copy too, with nothing pending, and the view as it was.
+        for (const k of Object.keys(FIXES)) delete FIXES[k];
+        Object.assign(FIXES, all);
+        pending = {}; undo = []; savePending();
+        App.toast(t('admSaved'));
+      } catch (e) { App.toast(t('admFail', { e: e.message })); }
+      render();
+      return;
+    }
+    const text = Object.keys(all).sort().map((k) => fixLine(k, all[k])).join('\n');
+    const done = () => { copyText = ''; App.toast(t('admCopied')); render(); };
+    const fallback = () => { copyText = text; render(); };
+    try { navigator.clipboard.writeText(text).then(done, fallback); } catch (e) { fallback(); }
+  }
+  // The dashed way from the data's point to the fix, for every fixed pin on the map.
+  function fixLinesSvg() {
+    return [...shown.values()].filter((th) => th.p0).map((th) =>
+      `<g class="pgm-fix-line${th.id in pend() ? ' is-pending' : ''}" aria-hidden="true"><line x1="${th.p0[0].toFixed(3)}" y1="${(-th.p0[1]).toFixed(3)}" x2="${th.p[0].toFixed(3)}" y2="${(-th.p[1]).toFixed(3)}"/><circle cx="${th.p0[0].toFixed(3)}" cy="${(-th.p0[1]).toFixed(3)}" r="0.08"/></g>`).join('');
+  }
+  // The panel over the map: the count, the chosen pin's points, the buttons and the list of fixes.
+  function adminHtml() {
+    askServer();
+    const all = merged(), ids = Object.keys(all).sort(), pendIds = Object.keys(pend());
+    for (const id of pendIds) if (!ids.includes(id)) ids.push(id);   // a dropped fix, still listed until saved
+    const th = selected && shown.get(selected);
+    const sel = th && !MINE[th.layer] ? `<div class="pgm-admin-sel">
+        <code${NT}>${esc(th.id)}</code>
+        <span>${esc(t('admData'))}: <span class="pgm-admin-xy">${xy(th.p0 || th.p)}</span></span>
+        ${th.p0 ? `<span>${esc(t('admNow'))}: <span class="pgm-admin-xy">${xy(th.p)}</span> <span class="pgm-admin-xy">(${(th.p[0] - th.p0[0]) >= 0 ? '+' : ''}${(th.p[0] - th.p0[0]).toFixed(3)}, ${(th.p[1] - th.p0[1]) >= 0 ? '+' : ''}${(th.p[1] - th.p0[1]).toFixed(3)})</span></span>` : ''}
+        ${th.p0 || th.id in pend() ? `<button type="button" class="text-btn" data-act="admReset" data-id="${esc(th.id)}">${esc(t('admReset'))}</button>` : ''}
+      </div>` : `<span class="pgm-admin-hint">${esc(t('admHint'))}</span>`;
+    const item = (id) => `<li><button type="button" class="text-btn${id in pend() ? ' is-pending' : ''}" data-act="admGo" data-id="${esc(id)}"${NT}>${esc(id)}${all[id] ? '' : ' ×'}</button></li>`;
+    return `<div class="pgm-admin" role="region" aria-label="${esc(t('admTitle'))}">
+      <div class="pgm-admin-h"><b>${esc(t('admTitle'))}</b><span>${esc(t('admCount', { s: String(Object.keys(FIXES).length), p: String(pendIds.length) }))}</span></div>
+      ${sel}
+      <div class="pgm-admin-btns">
+        <button type="button" class="text-btn" data-act="admUndo"${undo.length ? '' : ' disabled'}>${esc(t('admUndo'))}</button>
+        <button type="button" class="text-btn" data-act="admSave"${pendIds.length ? '' : ' disabled'}>${esc(t(server ? 'admSave' : 'admCopy'))}</button>
+        ${server ? '' : `<span class="pgm-admin-hint">${esc(t('admNoServer'))}</span>`}
+      </div>
+      ${copyText ? `<textarea class="pgm-admin-text" readonly aria-label="${esc(t('admCopy'))}"${NT}>${esc(copyText)}</textarea>` : ''}
+      ${ids.length ? `<ul class="pgm-admin-list">${ids.map(item).join('')}</ul>` : ''}
+    </div>`;
+  }
+  // The chosen pin keeps the keyboard after a repaint, so the arrows reach it.
+  const focusPin = () => { const g = selected && svg() && svg().querySelector(`.pgm-pin[data-id="${CSS.escape(selected)}"]`); if (g) g.focus({ preventScroll: true }); };
+  Object.assign(actions, {
+    admUndo() {
+      const last = undo.pop();
+      if (!last) return;
+      const [id, was] = last;
+      if (was === undefined) delete pend()[id]; else pend()[id] = was;
+      savePending();
+      render();
+    },
+    // Back to the data's point: the unsaved move forgotten, or the saved fix marked to drop.
+    admReset(node) { const id = node.dataset.id; move(id, FIXES[id] ? null : undefined); render(); },
+    admSave() { adminSave(); },
+    admGo(node) {
+      const th = allThings().find((x) => x.id === node.dataset.id);
+      if (!th) return;
+      selected = th.id;
+      lookAt(th.p);
+      render();
+    },
+  });
   // A picture: a file, or one of the game's pins from its atlas (assets/map/pins.png).
   function atlasSvg(key, size, cls = '') {
     const [x, y, w, h] = M.PIN_ART[key], [aw, ah] = M.ATLAS.pins;
@@ -533,9 +667,12 @@
      character you meet (a speech bubble). */
   const GLYPH = {
     lift: '<g class="pgm-glyph"><rect x="-0.2" y="-0.16" width="0.4" height="0.32" rx="0.04"/><path d="M0 -0.4 L0.13 -0.24 L-0.13 -0.24 Z M0 0.4 L0.13 0.24 L-0.13 0.24 Z"/></g>',
-    wall: '<g class="pgm-glyph"><rect x="-0.3" y="-0.26" width="0.28" height="0.14"/><rect x="0.02" y="-0.26" width="0.28" height="0.14"/><rect x="-0.14" y="-0.07" width="0.28" height="0.14"/><path d="M-0.3 0.12 H-0.02 V0.26 H-0.3 Z M0.02 0.12 L0.12 0.2 L0.08 0.26 H0.3 V0.12 Z"/></g>',
-    hidden: '<g class="pgm-glyph is-line"><path d="M-0.2 0.28 V-0.08 A0.2 0.2 0 0 1 0.2 -0.08 V0.28 Z" stroke-dasharray="0.08 0.06"/></g>',
-    chest: '<g class="pgm-glyph"><path d="M-0.3 -0.04 V-0.12 A0.3 0.14 0 0 1 0.3 -0.12 V-0.04 Z M-0.3 0 H0.3 V0.24 H-0.3 Z"/></g>',
+    /* design/25 (1 Oct 2026): a brick wall with a hole knocked through (what breaks opens a way),
+       and an archway half veiled with a glint (a place that's there but hidden; the game has no
+       picture for either). The joints and the veil's edge are cuts in the page's dark (.pgm-glyph-cut).
+       The geo chest is the game's own (assets/world/chest.png). */
+    wall: '<g class="pgm-glyph"><path d="M-0.34 -0.3 H0.34 V0.3 H-0.34 Z M-0.1 -0.06 L0.04 -0.16 L0.16 -0.04 L0.12 0.14 L-0.04 0.18 L-0.16 0.06 Z" fill-rule="evenodd"/></g><g class="pgm-glyph-cut"><path d="M-0.34 -0.1 H-0.14 M0.2 -0.1 H0.34 M-0.34 0.1 H-0.18 M0.16 0.1 H0.34 M-0.06 -0.3 V-0.14 M0.18 0.1 V0.3 M-0.2 0.1 V0.3 M0.12 -0.3 V-0.12"/></g>',
+    hidden: '<g class="pgm-glyph is-line"><path d="M-0.24 0.3 V-0.04 A0.24 0.24 0 0 1 0.24 -0.04 V0.3"/></g><g class="pgm-glyph"><path class="is-veil" d="M-0.24 0.3 V0.06 Q0 -0.04 0.24 0.1 V0.3 Z"/><path d="M0.02 -0.2 L0.05 -0.1 L0.15 -0.07 L0.05 -0.04 L0.02 0.06 L-0.01 -0.04 L-0.11 -0.07 L-0.01 -0.1 Z"/></g>',
     npc: '<g class="pgm-glyph"><path d="M-0.3 -0.24 H0.3 V0.12 H-0.04 L-0.18 0.26 V0.12 H-0.3 Z"/></g>',
   };
   const artSvg = (a, size = 0.92) => (a.glyph ? GLYPH[a.glyph] : a.pin ? atlasSvg(a.pin, size) : `<image href="${a.src}" x="${-size / 2}" y="${-size / 2}" width="${size}" height="${size}"/>`);
@@ -555,7 +692,7 @@
       name: t('shadeTag'), where: [where(pr.shade.scene), `${App.NF[0].format(pr.shade.geo)} geo`].filter(Boolean).join(' · '), on: null });
     if (pr.gate && pr.gate.x !== undefined) out.push({ id: 'mine:gate', layer: 'gate', p: [pr.gate.x, pr.gate.y], scene: pr.gate.scene, art: { pin: 'dreamgate' },
       name: pick(D.EQUIPMENT.find((x) => x.id === 'dreamgate')), where: where(pr.gate.scene), on: null });
-    (pr.markers || []).forEach((m, i) => out.push({ id: 'mine:m' + i, layer: 'markers', p: [m.x, m.y], art: { pin: 'marker-' + m.c },
+    (pr.markers || []).forEach((m, i) => out.push({ id: 'mine:m' + i, layer: 'markers', sub: m.c, p: [m.x, m.y], art: { pin: 'marker-' + m.c },
       name: t('pgmM_' + m.c), where: '', on: null }));
     return out;
   }
@@ -568,9 +705,9 @@
     const all = allThings().map((th) => (ref && REF_LAYERS.has(th.layer) ? { ...th, ref: true } : th));
     // In focus, only its things, whatever the filter (what you have, dimmed as always).
     const list = focus ? all.filter((th) => focus.ids.includes(th.id))
-      : all.filter((th) => layers.has(th.layer) && (th.on !== true || th.ref || showFound || th.id === selected));
+      : all.filter((th) => layers.has(th.layer) && !subHidden(th) && (th.on !== true || th.ref || showFound || th.id === selected));
     arrange(list);
-    const mine = mineThings().filter((th) => layers.has(th.layer));
+    const mine = mineThings().filter((th) => layers.has(th.layer) && !subHidden(th));
     shown = new Map([...list, ...mine].map((th) => [th.id, th]));
     const since = arrive && performance.now() - arrive.at;
     if (arrive && since > ARRIVE_MS) arrive = null;
@@ -578,13 +715,13 @@
     const pin = (th) => {
       const label = th.name + (th.where ? ' · ' + th.where : '');
       const at = th.at || th.p, o = th.off || [0, 0];
-      return `<g class="pgm-pin${(th.on && !th.ref) || th.closed ? ' is-on' : ''}${th.id === selected ? ' is-sel' : ''}" style="--px:${at[0].toFixed(3)}px;--py:${(-at[1]).toFixed(3)}px;--ox:${o[0].toFixed(2)}px;--oy:${o[1].toFixed(2)}px"
+      return `<g class="pgm-pin${(th.on && !th.ref) || th.closed ? ' is-on' : ''}${th.id === selected ? ' is-sel' : ''}${th.p0 ? ' is-fixed' : ''}" style="--px:${at[0].toFixed(3)}px;--py:${(-at[1]).toFixed(3)}px;--ox:${o[0].toFixed(2)}px;--oy:${o[1].toFixed(2)}px"
         data-act="pgmPick" data-id="${esc(th.id)}" role="button" tabindex="0" aria-label="${esc(label)}">
         <title>${esc(label)}</title>
         ${ring(th)}<circle r="0.5"/>${artSvg(th.art)}
         <text class="pgm-lbl" y="1.02">${esc(th.name)}</text></g>`;
     };
-    // Yours go on top, where they are (not spread), a little bigger, with no disc.
+    // Yours go on top, where they are (not spread; placeMarks moves one aside if it'd cover a pin), a little bigger, with no disc.
     const mark = (th) => `<g class="pgm-pin pgm-mark is-${th.layer}${th.id === selected ? ' is-sel' : ''}" style="--px:${th.p[0].toFixed(3)}px;--py:${(-th.p[1]).toFixed(3)}px"
         data-act="pgmPick" data-id="${esc(th.id)}" role="button" tabindex="0" aria-label="${esc(th.name + (th.where ? ' · ' + th.where : ''))}">
         <title>${esc(th.name + (th.where ? ' · ' + th.where : ''))}</title>${th.layer === 'my-bench' ? '<circle r="0.62"/>' : ''}${artSvg(th.art, 1.2)}</g>`;
@@ -638,8 +775,33 @@
     s.style.setProperty('--k', String(pinK));
     s.classList.toggle('is-near', near);
     s.classList.toggle('is-mid', zoom >= 1.5);
+    placeMarks(s);
     if (near) hideCrowdedLabels(s, zoom);
     paintCard();
+  }
+  /* Yours sit where they are, on top; but your shade, your Dreamgate or a marker that would cover
+     another pin at this zoom steps aside, the nearest way that covers nothing (the pins already
+     there, your bench, those of yours placed before it). In the pins' units, as their grid. */
+  const MARK_STEPS = [[1, 0], [-1, 0], [0, -1], [0, 1], [1, -1], [-1, -1], [1, 1], [-1, 1]].map(([x, y]) => [x / Math.hypot(x, y), y / Math.hypot(x, y)]);
+  function placeMarks(s) {
+    const CLEAR = 1.1;   // a pin's radius (0.5) and a mark's (0.6)
+    const taken = [];
+    for (const th of shown.values()) {
+      if (!MINE[th.layer]) { const [x, y] = pinAt(th); taken.push([x / pinK, -y / pinK]); }
+      else if (th.layer === 'my-bench') taken.push([th.p[0] / pinK, -th.p[1] / pinK]);
+    }
+    for (const th of shown.values()) {
+      if (!MINE[th.layer] || th.layer === 'my-bench') continue;
+      const x = th.p[0] / pinK, y = -th.p[1] / pinK;
+      const free = (o) => taken.every(([tx, ty]) => Math.hypot(x + o[0] - tx, y + o[1] - ty) >= CLEAR);
+      let off = [0, 0];
+      for (let r = CLEAR; !free(off) && r <= CLEAR * 3; r += CLEAR / 2) off = MARK_STEPS.map(([dx, dy]) => [dx * r, dy * r]).find(free) || off;
+      th.at = th.p;
+      th.off = off;
+      taken.push([x + off[0], y + off[1]]);
+      const g = s.querySelector(`.pgm-mark[data-id="${CSS.escape(th.id)}"]`);
+      if (g) { g.style.setProperty('--ox', off[0].toFixed(2) + 'px'); g.style.setProperty('--oy', off[1].toFixed(2) + 'px'); }
+    }
   }
   /* Close up, a name that would run into one already shown is hidden (its pin still says it on
      hover, and its card on a tap): measured on screen, in the pins' order, the chosen one first,
@@ -749,6 +911,32 @@
   const openGroups = () => (Array.isArray(prefs.pgMapOpen) ? prefs.pgMapOpen : GROUPS.map((g) => g.id));
   const switchHtml = (value, on, text) =>
     `<button type="button" class="switch" role="switch" aria-checked="${on}" data-act="pgmOpt" data-value="${value}"><span class="switch-track" aria-hidden="true"></span>${esc(text)}</button>`;
+  /* The sets of one kind (design/24, C): a caret beside them opens what each holds, read from its
+     things on the map (one per member, with its picture), each a switch of its own, so you can
+     show just what you want (prefs.pgMapSubOff: 'layer|member' hidden). A member is a stable key,
+     not its name: the item, the relic, the foe, the character, the wall's kind, the marker's colour. */
+  const INSIDE = ['keys', 'relics', 'other-bosses', 'npcs', 'people', 'walls', 'markers'];
+  const insideOpen = new Set();
+  const CARET = '<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1 L8 5 L3 9 Z" fill="currentColor"/></svg>';
+  const subOf = (th) => th.sub || String(th.id).split(':').pop();
+  const subOff = () => (Array.isArray(prefs.pgMapSubOff) ? prefs.pgMapSubOff : []);
+  const subHidden = (th) => INSIDE.includes(th.layer) && subOff().includes(th.layer + '|' + subOf(th));
+  // A set's members: { key, name, art }, each once, in its language's order.
+  function membersOf(l, things = allThings()) {
+    const seen = new Map();
+    for (const th of [...things, ...mineThings()]) if (th.layer === l && !seen.has(subOf(th))) seen.set(subOf(th), { key: subOf(th), name: th.name, art: th.art });
+    return [...seen.values()].sort((a, b) => a.name.localeCompare(b.name, HK.i18n.current));
+  }
+  const setSubOff = (list) => { prefs.pgMapSubOff = [...new Set(list)]; };
+  function insideHtml(l, things, layerOn) {
+    const off = subOff();
+    const items = membersOf(l, things).map((m) => {
+      const on = layerOn && !off.includes(l + '|' + m.key);
+      return `<button type="button" class="pgm-sub${on ? ' is-on' : ''}" data-act="pgmSub" data-value="${esc(l + '|' + m.key)}" aria-pressed="${on}">
+        <span class="pgm-inside-art">${m.art ? artHtml(m.art) : ''}</span><span${NT}>${esc(m.name)}</span></button>`;
+    }).join('');
+    return `<div class="pgm-inside" role="group" aria-label="${esc(t('pgmChoose') + ' · ' + layerName(l))}">${items}</div>`;
+  }
   function filterHtml(layers, things) {
     const count = (l) => {
       const of = things.filter((th) => th.layer === l && (th.on !== null || th.found !== undefined));
@@ -757,19 +945,30 @@
     const n = (got, max) => (max ? `<span class="pgm-kind-n${got === max ? ' is-full' : ''}"><b>${App.NF[0].format(got)}</b><i class="u">/${App.NF[0].format(max)}</i></span>` : '');
     const chip = (l) => {
       const art = D.COLLECTIBLE_KINDS[l] ? kindArt(l) : LAYER_ART[l];
-      return `<button type="button" class="pgm-kind${layers.has(l) ? ' is-on' : ''}" data-act="pgmLayer" data-value="${l}" aria-pressed="${layers.has(l)}">
-        <span class="pgm-kind-art">${art ? artHtml(art) : '<i class="pgm-ico is-name" aria-hidden="true">A</i>'}</span><span class="pgm-kind-t"${NT}>${esc(layerName(l))}</span>${n(...count(l))}</button>`;
+      const btn = `<button type="button" class="pgm-kind${layers.has(l) ? ' is-on' : ''}" data-act="pgmLayer" data-value="${l}" aria-pressed="${layers.has(l)}">
+        <span class="pgm-kind-art${App.darkCls(art && art.src)}">${art ? artHtml(art) : '<i class="pgm-ico is-name" aria-hidden="true">A</i>'}</span><span class="pgm-kind-t"${NT}>${esc(layerName(l))}</span>${n(...count(l))}</button>`;
+      if (!INSIDE.includes(l)) return btn;
+      // A set of one kind: its caret opens its members as switches, in a row under the chips (insideHtml);
+      // with some of them hidden, the set says so (is-some).
+      const open = insideOpen.has(l), label = t('pgmChoose') + ' · ' + layerName(l);
+      const some = layers.has(l) && subOff().some((x) => x.startsWith(l + '|'));
+      return `<span class="pgm-set${some ? ' is-some' : ''}">${btn}<button type="button" class="pgm-more" data-act="pgmInside" data-value="${l}" aria-expanded="${open}" aria-label="${esc(label)}" title="${esc(label)}">${CARET}</button></span>${open ? insideHtml(l, things, layers.has(l)) : ''}`;
     };
     const title = (g) => (g === 'c112' ? t('pgmG_c112', { pct: pctSpace() }) : t('pgmG_' + g));
     const open = openGroups();
     const group = (g) => {
       const tot = g.layers.map(count).reduce((a, c) => [a[0] + c[0], a[1] + c[1]], [0, 0]);
-      const isOpen = open.includes(g.id), all = g.layers.every((l) => layers.has(l));
+      const someSub = subOff().some((x) => g.layers.includes(x.slice(0, x.indexOf('|'))));
+      const isOpen = open.includes(g.id), on = g.layers.filter((l) => layers.has(l)).length, all = on === g.layers.length && !someSub;
+      const state = all ? 'is-all' : on ? 'is-some' : 'is-none';
+      /* Its caret folds it; its title switches the whole group on or off (Albert, 1 Oct 2026: it
+         was an "All · None" button at the end of the line). */
       return `<section class="pgm-sec${isOpen ? ' is-open' : ''}">
         <div class="pgm-sec-h">
-          <button type="button" class="pgm-fold" data-act="pgmFold" data-value="${g.id}" aria-expanded="${isOpen}">
-            <svg class="pgm-caret" viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1 L8 5 L3 9 Z" fill="currentColor"/></svg><span class="pgm-sec-t">${esc(title(g.id))}</span>${n(...tot)}</button>
-          <button type="button" class="text-btn" data-act="pgmGroup" data-value="${g.id}">${esc(t(all ? 'pgmGrpNone' : 'pgmGrpAll'))}</button>
+          <button type="button" class="pgm-fold" data-act="pgmFold" data-value="${g.id}" aria-expanded="${isOpen}" aria-label="${esc(t(isOpen ? 'pgmFoldClose' : 'pgmFoldOpen', { g: title(g.id) }))}">
+            <svg class="pgm-caret" viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1 L8 5 L3 9 Z" fill="currentColor"/></svg></button>
+          <button type="button" class="pgm-sec-sw ${state}" role="switch" aria-checked="${all}" data-act="pgmGroup" data-value="${g.id}" title="${esc(t(all ? 'pgmGrpHide' : 'pgmGrpShow'))}">
+            <span class="pgm-sec-t">${esc(title(g.id))}</span>${n(...tot)}</button>
         </div>
         ${isOpen ? `<div class="pgm-kinds" role="group" aria-label="${esc(title(g.id))}">${g.layers.map(chip).join('')}</div>` : ''}
       </section>`;
@@ -797,14 +996,16 @@
       </div>
       <div class="pgm-box">
         ${focusHtml()}
+        ${admin() ? adminHtml() : ''}
         <span class="pgm-zoom">
           <button type="button" class="step" data-act="pgmZoom" data-value="in" aria-label="${esc(t('pgZoomIn'))}" title="${esc(t('pgZoomIn'))}">+</button>
           <button type="button" class="step" data-act="pgmZoom" data-value="out" aria-label="${esc(t('pgZoomOut'))}" title="${esc(t('pgZoomOut'))}">−</button>
           <button type="button" class="step pgm-big" data-act="pgmBig" aria-pressed="${!!prefs.pgMapBig}" aria-label="${esc(t('pgMapBig'))}" title="${esc(t(prefs.pgMapBig ? 'pgMapSmall' : 'pgMapBig'))}">${prefs.pgMapBig ? '⤡' : '⤢'}</button>
         </span>
-        <svg class="pgm-svg" viewBox="${vb ? `${vb.x} ${vb.y} ${vb.w} ${vb.h}` : `${FIT.x} ${FIT.y} ${FIT.w} ${FIT.h}`}" role="img" aria-label="${esc(t('pgTabMap'))}">
+        <svg class="pgm-svg${admin() ? ' is-admin' : ''}" viewBox="${vb ? `${vb.x} ${vb.y} ${vb.w} ${vb.h}` : `${FIT.x} ${FIT.y} ${FIT.w} ${FIT.h}`}" role="img" aria-label="${esc(t('pgTabMap'))}">
           <g class="pgm-rooms">${roomsSvg()}</g>
           ${routeSvg()}
+          ${admin() ? `<g class="pgm-fixes">${fixLinesSvg()}</g>` : ''}
           <g class="pgm-pins">${pins}</g>
           ${layers.has('names') ? `<g class="pgm-names">${namesSvg()}</g>` : ''}
         </svg>
@@ -830,7 +1031,7 @@
     const ofKind = (k) => CO.ITEMS.filter((it) => it.kind === k).map((it) => it.id);
     if (kind === 'collect') ids = CO.KINDS.includes(a) ? ofKind(a) : [a];
     else if (kind === 'c112') {
-      ids = a === 'spells' ? ['c:' + b + '1', 'c:' + b + '2'] : a === 'masks' ? ofKind('mask-shard') : a === 'vessels' ? ofKind('vessel-fragment')
+      ids = a === 'spells' ? (/\d$/.test(b) ? ['c:' + b] : ['c:' + b + '1', 'c:' + b + '2']) : a === 'masks' ? ofKind('mask-shard') : a === 'vessels' ? ofKind('vessel-fragment')
         : a === 'nail' ? [...ofKind('pale-ore'), 'people:nailsmith'] : b === 'godtuner' ? ['k:godtuner']
         : b === 'dreamgate' ? ['people:seer'] : ['c:' + b];   // the Seer gives the Dreamgate
     } else if (kind === 'key') ids = ['k:' + a, 'c:' + a];   // the King's Brand is the 112%'s
@@ -879,10 +1080,10 @@
     const label = t('seeOnMap') + (name ? ' · ' + name : '');
     return `<button type="button" class="icon-btn map-pin${cls ? ' ' + cls : ''}" data-act="toMap" data-target="${esc(target)}" data-name="${esc(name || '')}" aria-label="${esc(label)}" title="${esc(label)}">${PIN}</button>`;
   }
-  // The same as words, a text button with the pin before them (the Journal's page).
-  function mapLinkHtml(target, name) {
+  // The same as words, a text button with the pin before them (the Journal's page), or other words (Progress's "See all 16").
+  function mapLinkHtml(target, name, text = t('seeOnMap')) {
     if (!mapTargets(target).length) return '';
-    return `<button type="button" class="text-btn map-link" data-act="toMap" data-target="${esc(target)}" data-name="${esc(name || '')}">${PIN}${esc(t('seeOnMap'))}</button>`;
+    return `<button type="button" class="text-btn map-link" data-act="toMap" data-target="${esc(target)}" data-name="${esc(name || '')}">${PIN}${esc(text)}</button>`;
   }
   // A plate with its pin beside it (css .gplate-wrap), or the plate as it was.
   const pinned = (plate, target, name) => { const pin = mapPinHtml(target, name); return pin ? `<span class="gplate-wrap">${plate}${pin}</span>` : plate; };
@@ -1023,9 +1224,15 @@
   /* ── Moving around ── */
   const touches = new Map();
   let drag = null, pinch = null, moved = false, dragEnd = 0;
+  let pinDrag = null;   // the admin mode: { id, g, p0, from, p } while a pin is being dragged
   el.pg.addEventListener('pointerdown', (e) => {
     const s = svg();
     if (!s || !s.contains(e.target)) return;
+    // The admin mode: a pin (not one of your marks) comes along with the pointer, the map stays.
+    if (admin() && !touches.size) {
+      const g = e.target.closest('.pgm-pin[data-id]'), th = g && !g.classList.contains('pgm-mark') && shown.get(g.dataset.id);
+      if (th) { pinDrag = { id: th.id, g, p0: th.p, from: toMap(e.clientX, e.clientY), p: null }; return; }
+    }
     touches.set(e.pointerId, [e.clientX, e.clientY]);
     moved = false;
     if (touches.size === 1) drag = { x: e.clientX, y: e.clientY, vb: { ...vb } };
@@ -1036,6 +1243,16 @@
     }
   });
   window.addEventListener('pointermove', (e) => {
+    if (pinDrag) {
+      // The pin's own point follows the pointer (the SVG's y is the map's, flipped); its place in its group stays.
+      const [mx, my] = toMap(e.clientX, e.clientY);
+      const p = [pinDrag.p0[0] + (mx - pinDrag.from[0]), pinDrag.p0[1] - (my - pinDrag.from[1])];
+      if (!pinDrag.p && Math.hypot(p[0] - pinDrag.p0[0], p[1] - pinDrag.p0[1]) < pinK * 0.15) return;   // a tap, not a drag
+      pinDrag.p = p;
+      pinDrag.g.style.setProperty('--px', p[0].toFixed(3) + 'px');
+      pinDrag.g.style.setProperty('--py', (-p[1]).toFixed(3) + 'px');
+      return;
+    }
     if (!touches.has(e.pointerId)) return;
     touches.set(e.pointerId, [e.clientX, e.clientY]);
     const s = svg();
@@ -1055,6 +1272,13 @@
     }
   });
   const end = (e) => {
+    if (pinDrag) {
+      const d = pinDrag;
+      pinDrag = null;
+      // Let go after a drag: the move is kept and the pin chosen; the click that follows picks nothing.
+      if (d.p) { move(d.id, d.p); selected = d.id; dragEnd = performance.now(); render(); focusPin(); }
+      return;
+    }
     if (!touches.has(e.pointerId)) return;
     touches.delete(e.pointerId);
     if (!touches.size) { drag = null; pinch = null; if (moved) dragEnd = performance.now(); moved = false; }
@@ -1075,6 +1299,17 @@
   el.pg.addEventListener('keydown', (e) => {
     const pin = e.target.closest && e.target.closest('.pgm-pin[data-id]');
     if (pin && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); actions.pgmPick(pin); }
+    // The admin mode: the arrows nudge the pin by a fiftieth of a unit (a tenth with Shift).
+    const ARROW = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, 1], ArrowDown: [0, -1] };
+    const th = admin() && pin && ARROW[e.key] && !pin.classList.contains('pgm-mark') && shown.get(pin.dataset.id);
+    if (th) {
+      e.preventDefault();
+      const step = e.shiftKey ? 0.1 : 0.02;
+      move(th.id, [th.p[0] + ARROW[e.key][0] * step, th.p[1] + ARROW[e.key][1] * step]);
+      selected = th.id;
+      render();
+      focusPin();
+    }
   });
   /* The large Map leaves the page's column for the window's whole width (css: .pg.is-big). 100vw would
      count the scrollbar, so the page's real width goes to CSS as --page-w. */
@@ -1087,6 +1322,7 @@
       selected = node.dataset.id && node.dataset.id !== selected ? node.dataset.id : '';
       if (!route || route.id !== selected) route = null;
       render();
+      if (admin()) focusPin();
     },
     // The way to the chosen pin, or away again; drawn, the map is fitted to it.
     pgmRoute() {
@@ -1103,10 +1339,31 @@
       App.hjCursor = node.dataset.id;
       actions.view({ dataset: { value: 'journal' }, closest: () => null });
     },
+    /* A layer's switch. A set with some members hidden: showing it whole first; otherwise on or
+       off, and its members with it. */
     pgmLayer(node) {
       const l = node.dataset.value;
-      const on = shownLayers().has(l);
-      prefs.pgMapOff = on ? [...prefs.pgMapOff, l] : prefs.pgMapOff.filter((x) => x !== l);
+      const on = shownLayers().has(l), some = subOff().some((x) => x.startsWith(l + '|'));
+      setSubOff(subOff().filter((x) => !x.startsWith(l + '|')));
+      if (!(on && some)) prefs.pgMapOff = on ? [...prefs.pgMapOff, l] : prefs.pgMapOff.filter((x) => x !== l);
+      savePrefs();
+      render();
+    },
+    /* One member of a set. With the set hidden, it shows that member alone; hiding the last one
+       shown hides the set (and its members come back whole the next time it's shown). */
+    pgmSub(node) {
+      const v = node.dataset.value, l = v.slice(0, v.indexOf('|'));
+      const keys = membersOf(l).map((m) => l + '|' + m.key);
+      if (!shownLayers().has(l)) {
+        prefs.pgMapOff = prefs.pgMapOff.filter((x) => x !== l);
+        setSubOff([...subOff().filter((x) => !x.startsWith(l + '|')), ...keys.filter((k) => k !== v)]);
+      } else {
+        const off = subOff().includes(v) ? subOff().filter((x) => x !== v) : [...subOff(), v];
+        if (keys.every((k) => off.includes(k))) {
+          prefs.pgMapOff = [...prefs.pgMapOff, l];
+          setSubOff(off.filter((x) => !x.startsWith(l + '|')));
+        } else setSubOff(off);
+      }
       savePrefs();
       render();
     },
@@ -1133,13 +1390,20 @@
     pgmGroup(node) {
       const g = GROUPS.find((x) => x.id === node.dataset.value);
       if (!g) return;
-      const shown = shownLayers(), all = g.layers.every((l) => shown.has(l));
+      const shown = shownLayers(), all = g.layers.every((l) => shown.has(l)) && !subOff().some((x) => g.layers.includes(x.slice(0, x.indexOf('|'))));
       prefs.pgMapOff = all ? [...new Set([...prefs.pgMapOff, ...g.layers])] : prefs.pgMapOff.filter((x) => !g.layers.includes(x));
+      setSubOff(subOff().filter((x) => !g.layers.includes(x.slice(0, x.indexOf('|')))));
       savePrefs();
+      render();
+    },
+    pgmInside(node) {
+      const l = node.dataset.value;
+      if (insideOpen.has(l)) insideOpen.delete(l); else insideOpen.add(l);
       render();
     },
     pgmAll(node) {
       prefs.pgMapOff = node.dataset.value === 'hide' ? [...LAYERS] : [];
+      setSubOff([]);
       savePrefs();
       render();
     },
@@ -1161,8 +1425,12 @@
   });
 
   Object.assign(App, { renderPgMap, pgMapAfterPaint: afterPaint, pgmBenchPoint: benchPoint, pgmDoorPoint: doorPoint, mapTargets, mapPinHtml, mapLinkHtml, pinned, showOnMap,
+    // A room's area and place, and a collectible's price: the Progress plates of the shards say them too.
+    placeName: where, priceOf,
     // One of the game's map pins as a picture (the Progress plates of the Dreamers and the Colosseum).
     pinArtHtml: (key) => atlasSvg(key, null, ' pg-atlas'),
     // Your game's map of the area you rest in (js/app-home.js): the same rooms, pins and places.
-    pgmRoomsSvg: roomsSvg, pgmAtlasSvg: atlasSvg, pgmItemPoint: (id) => COL_POS[id] || null });
+    pgmRoomsSvg: roomsSvg, pgmAtlasSvg: atlasSvg, pgmItemPoint: (id) => fixOf(id) || COL_POS[id] || null,
+    // Whether the filter shows a collectible's kind (Your game's area map follows it).
+    pgmKindShown: (kind) => shownLayers().has(layerOfKind(kind)) });
 })();

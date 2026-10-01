@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Full notches</title>
+<!-- Design material, not part of the site. The Charms grid when your notches are full (1 Oct 2026):
+   every charm you could not equip now is "blocked" (js/codec.js), and .qc.is-locked drops it to
+   opacity 0.25; the ones you don't have add --missing-art on top. Measured with save 4 (6/6 notches
+   used, the usual state of a real game): the missing ones at 8-20 of 255 over the black, the ones
+   you have but don't wear about as dark. The game shows them as usual and only says "not enough
+   notches" when you try. The grid below is the site's own markup, copied from save 4.
+     Now · as it is.
+     A · As the game: a charm that doesn't fit looks like any you don't wear; the one you don't have,
+         in the one shadow (--missing-art) at full opacity. Not fitting is said where it's tried:
+         the cursor (not-allowed), the title and the notice, as now.
+     B · A softer step: the one that doesn't fit, a little dimmer than one that would (opacity .5);
+         the one you don't have, in the one shadow, not dimmed again.
+   Chosen on 1 Oct 2026: A (built: css/app.css .qc.is-locked; docs/guide.md). Measured after: the
+   grid's median from 39 to 95 of 255; the missing ones at the --missing-art level.
+   ?v=now|a|b. -->
+<base href="../">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+body { background: var(--page-bg); background-attachment: fixed; margin: 0; }
+.mk { max-width: 900px; margin: 0 auto; padding: var(--sp-6) var(--page-pad) var(--sp-16); }
+.mk-h1 { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-xl); letter-spacing: var(--track-title); color: var(--ink-strong); margin: 0 0 var(--sp-2); }
+.mk-lead { max-width: var(--measure); color: var(--ink-2); font-size: var(--fs-sm); margin: 0 0 var(--sp-4); }
+.mk-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-4); padding: var(--sp-2) 0; margin-bottom: var(--sp-6); border-bottom: 1px solid var(--line); font-size: var(--fs-sm); color: var(--muted); }
+.mk-bar b { font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); font-weight: 600; }
+.mk-bar button { background: none; border: 0; padding: var(--sp-1) 0; font: inherit; color: var(--muted); cursor: pointer; }
+.mk-bar button[aria-pressed="true"] { color: var(--accent); box-shadow: inset 0 -1px 0 var(--accent-line); }
+.mk-note { max-width: var(--measure); margin: 0 auto var(--sp-6); color: var(--ink-2); font-size: var(--fs-sm); text-align: center; min-height: 3em; }
+.mk-stage { max-width: 720px; }
+/* ════ The variants ════ */
+/* A: not fitting doesn't dim; missing in the one shadow at full opacity. */
+.v-a .qc.is-locked img { opacity: 0.7; filter: grayscale(0.3); }
+.v-a .qc.is-locked.is-missing:not(.is-on) img { opacity: 1; filter: var(--missing-art); }
+/* B: not fitting a little dimmer; missing not dimmed twice. */
+.v-b .qc.is-locked img { opacity: 0.5; filter: grayscale(0.5); }
+.v-b .qc.is-locked.is-missing:not(.is-on) img { opacity: 1; filter: var(--missing-art); }
+</style>
+</head>
+<body>
+<div class="mk">
+  <h1 class="mk-h1">Full notches</h1>
+  <p class="mk-lead">The Charms grid with every notch used (save 4): what doesn't fit, and what you don't have.</p>
+  <div class="mk-bar" id="bar"></div>
+  <p class="mk-note" id="note"></p>
+  <div class="mk-stage" id="stage"></div>
+</div>
+<template id="quick"><div class="quick is-held">
+      <div class="block-head">Amuletos<span class="quick-hint">bloqueados: es tu partida real</span></div>
+      <div class="quick-grid"><div class="qrow"><button type="button" class="qc is-on" data-act="quick" data-id="compass" aria-pressed="true" title="Brújula caprichosa · Equipado" aria-disabled="true">
+      <img src="assets/charms/compass.png" alt="Brújula caprichosa" loading="lazy">
+    </button><button type="button" class="qc is-on" data-act="quick" data-id="swarm" aria-pressed="true" title="Enjambre recolector · Equipado" aria-disabled="true">
+      <img src="assets/charms/swarm.png" alt="Enjambre recolector" loading="lazy">
+    </button><button type="button" class="qc is-locked" data-act="quick" data-id="stalwart" aria-pressed="false" title="Coraza robusta" aria-disabled="true">
+      <img src="assets/charms/stalwart.png" alt="Coraza robusta" loading="lazy">
+    </button><button type="button" class="qc is-locked" data-act="quick" data-id="catcher" aria-pressed="false" title="Atrapaalmas" aria-disabled="true">
+      <img src="assets/charms/catcher.png" alt="Atrapaalmas" loading="lazy">
+    </button><button type="button" class="qc is-locked" data-act="quick" data-id="shaman" aria-pressed="false" title="Piedra de chamán" aria-disabled="true">
+      <img src="assets/charms/shaman.png" alt="Piedra de chamán" loading="lazy">
+    </button><button type="button" class="qc is-locked" data-act="quick" data-id="eater" aria-pressed="false" title="Devoraalmas" aria-disabled="true">
+      <img src="assets/charms/eater.png" alt="Devoraalmas" loading="lazy">
+    </button><button type="button" class="qc is-locked" data-act="quick" data-id="dashmaster" aria-pressed="false" title="Maestro de las embestidas" aria-disabled="true">
+      <img src="assets/charms/dashmaster.png" alt="Maestro de las embestidas" loading="lazy">
+    </button><button type="button" class="qc is-locked is-missing" data-act="quick" data-id="sprintmaster" aria-pressed="false" title="Maestro de Sprints · Sin conseguir" aria-disabled="true">
+      <img src="assets/charms/sprintmaster.png" alt="Maestro de Sprints" loading="lazy">
+    </button><button type="button" class="qc is-locked" data-act="quick" data-id="grubsong" aria-pressed="false" title="Canción de larvas" aria-disabled="true">
+      <img src="assets/charms/grubsong.png" alt="Canción de larvas" loading="lazy">
+    </button><button type="button" class="qc is-locked is-missing" data-act="quick" data-id="elegy" aria-pressed="false" title="Elegía de la Larvamosca · Sin conseguir" aria-disabled="true">
+      <img src="assets/charms/elegy.png" alt="Elegía de la Larvamosca" loading="lazy">
+    </button></div><div class="qrow"><span class="qslot-pair"><button type="button" class="qc qc-half is-locked is-missing" data-act="quick" data-id="fheart" aria-pressed="false" title="Corazón frágil · Sin conseguir" aria-disabled="true">
+      <img src="assets/charms/fheart.png" alt="Corazón frágil" loading="lazy">
+    </button><button type="button" class="qc qc-half is-locked is-missing" data-act="quick" data-id="uheart" aria-pressed="false" title="Corazón irrompible · Sin conseguir" aria-disabled="true">
+      <img src="assets/charms/uheart.png" alt="Corazón irrompible" loading="lazy">
+    </button></span><span class="qslot-pair"><button type="button" class="qc qc-half is-locked is-missing" data-act="quick" data-id="fgreed" aria-pressed="false" title="Codicia frágil · Sin conseguir" aria-disabled="true">
+      <img src="assets/charms/fgreed.png" alt="Codicia frágil" loading="lazy">
+    </button><button type="button" class="qc qc-half is-locked is-missing" data-act="quick" data-id="ugreed" aria-pressed="false" title="Codicia irrompible · Sin conseguir" aria-disabled="true">
+      <img src="assets/charms/ugreed.png" alt="Codicia irrompible" loading="lazy">
+    </button></span><span class="qslot-pair"><button type="button" class="qc qc-half is-locked is-missing" data-act="quick" data-id="fstrength" aria-pressed="false" title="Fuerza frágil · Sin conseguir" aria-disabled="true">
+      <img src="assets/charms/fstrength.png" alt="Fuerza frágil" loading="lazy">
+    </button><button type="button" class="qc qc-half is-locked is-missing" data-act="quick" data-id="ustrength" aria-pressed="false" title="Fuerza irrompible · Sin conseguir" aria-disabled="true">
+      <img src="assets/charms/ustrength.png" alt="Fuerza irrompible" loading="lazy">
+    </button></span><button type="button" class="qc is-locked" data-act="quick" data-id="twister" aria-pressed="false" title="Tuercehechizos" aria-disabled="true">
+      <img src="assets/charms/twister.png" alt="Tuercehechizos" loading="lazy">
+    </button><button type="button" class="qc is-on" data-act="quick" data-id="steady" aria-pressed="true" title="Cuerpo firme · Equipado" aria-disabled="true">
+      <img src="assets/charms/steady.png" alt="Cuerpo firme" loading="lazy">
+    </button><button type="button" class="qc is-locked is-missing" data-act="quick" data-id="heavy" aria-pressed="false" title="Duro golpe · Sin conseguir" aria-disabled="true">
+      <img src="assets/charms/heavy.png" alt="Duro golpe" loading="lazy">
+    </button><button type="button" class="qc is-on" data-act="quick" data-id="quickslash" aria-pressed="true" title="Corte rápido · Equipado" aria-disabled="true">
+      <img src="assets/charms/quickslash.png" alt="Corte rápido" loading="lazy">
+    </button><button type="button" class="qc is-locked" data-act="quick" data-id="longnail" aria-pressed="false" title="Largoaguijón" aria-disabled="true">
+      <img src="assets/charms/longnail.png" alt="Largoaguijón" loading="lazy">
+    </button><button type="button" class="qc is-locked is-missing" data-act="quick" data-id="pride" aria-pressed="false" title="Marca de orgullo · Sin conseguir" aria-disabled="true">
+      <img src="assets/charms/pride.png" alt="Marca de orgullo" loading="lazy">
+    </button><button type="button" class="qc is-locked" data-act="quick" data-id="fury" aria-pressed="false" title="Furia de los caídos" aria-disabled="true">
+      <img src="assets/charms/fury.png" alt="Furia de los caídos" loading="lazy">
+    </button></div><div class="qrow"><button type="button" class="qc is-locked is-missing" data-act="quick" data-id="thorns" aria-pressed="false" title="Espinas de agonía · Sin conseguir" aria-disabled="true">
+      <img src="assets/charms/thorns.png" alt="Espinas de agonía" loading="lazy">
+    </button><button type="button" class="qc is-locked is-missing" data-act="quick" data-id="baldur" aria-pressed="false" title="Coraza de baldur · Sin conseguir" aria-disabled="true">
+      <img src="assets/charms/baldur.png" alt="Coraza de baldur" loading="lazy">
+    </button><button type="button" class="qc is-locked is-missing" data-act="quick" data-id="flukenest" aria-pressed="false" title="Tremanido · Sin conseguir" aria-disabled="true">
+      <img src="assets/charms/flukenest.png" alt="Tremanido" loading="lazy">
+    </button><button type="button" class="qc is-locked" data-act="quick" data-id="crest" aria-pressed="false" title="Blasón del defensor" aria-disabled="true">
+      <img src="assets/charms/crest.png" alt="Blasón del defensor" loading="lazy">
+    </button><button type="button" class="qc is-locked is-missing" data-act="quick" data-id="womb" aria-pressed="false" title="Útero brillante · Sin conseguir" aria-disabled="true">
+      <img src="assets/charms/womb.png" alt="Útero brillante" loading="lazy">
+    </button><button type="button" class="qc is-locked" data-act="quick" data-id="quickfocus" aria-pressed="false" title="Concentración rápida" aria-disabled="true">
+      <img src="assets/charms/quickfocus.png" alt="Concentración rápida" loading="lazy">
+    </button><button type="button" class="qc is-locked is-missing" data-act="quick" data-id="deepfocus" aria-pressed="false" title="Concentración profunda · Sin conseguir" aria-disabled="true">
+      <img src="assets/charms/deepfocus.png" alt="Concentración profunda" loading="lazy">
+    </button><button type="button" class="qc is-locked" data-act="quick" data-id="lbheart" aria-pressed="false" title="Corazón de saviavida" aria-disabled="true">
+      <img src="assets/charms/lbheart.png" alt="Corazón de saviavida" loading="lazy">
+    </button><button type="button" class="qc is-locked is-missing" data-act="quick" data-id="lbcore" aria-pressed="false" title="Núcleo de saviavida · Sin conseguir" aria-disabled="true">
+      <img src="assets/charms/lbcore.png" alt="Núcleo de saviavida" loading="lazy">
+    </button><button type="button" class="qc is-locked is-missing" data-act="quick" data-id="joni" aria-pressed="false" title="Bendición de Joni · Sin conseguir" aria-disabled="true">
+      <img src="assets/charms/joni.png" alt="Bendición de Joni" loading="lazy">
+    </button></div><div class="qrow"><button type="button" class="qc is-locked is-missing" data-act="quick" data-id="hiveblood" aria-pressed="false" title="Sangrecolmena · Sin conseguir" aria-disabled="true">
+      <img src="assets/charms/hiveblood.png" alt="Sangrecolmena" loading="lazy">
+    </button><button type="button" class="qc is-locked" data-act="quick" data-id="spore" aria-pressed="false" title="Hongo con esporas" aria-disabled="true">
+      <img src="assets/charms/spore.png" alt="Hongo con esporas" loading="lazy">
+    </button><button type="button" class="qc is-locked is-missing" data-act="quick" data-id="sharpshadow" aria-pressed="false" title="Sombra afilada · Sin conseguir" aria-disabled="true">
+      <img src="assets/charms/sharpshadow.png" alt="Sombra afilada" loading="lazy">
+    </button><button type="button" class="qc is-locked is-missing" data-act="quick" data-id="unn" aria-pressed="false" title="Forma de Unn · Sin conseguir" aria-disabled="true">
+      <img src="assets/charms/unn.png" alt="Forma de Unn" loading="lazy">
+    </button><button type="button" class="qc is-locked is-missing" data-act="quick" data-id="glory" aria-pressed="false" title="Gloria del Maestro de aguijones · Sin conseguir" aria-disabled="true">
+      <img src="assets/charms/glory.png" alt="Gloria del Maestro de aguijones" loading="lazy">
+    </button><button type="button" class="qc is-locked is-missing" data-act="quick" data-id="weaversong" aria-pressed="false" title="Canción de Tejedora · Sin conseguir" aria-disabled="true">
+      <img src="assets/charms/weaversong.png" alt="Canción de Tejedora" loading="lazy">
+    </button><button type="button" class="qc is-locked is-missing" data-act="quick" data-id="wielder" aria-pressed="false" title="Portador onírico · Sin conseguir" aria-disabled="true">
+      <img src="assets/charms/wielder.png" alt="Portador onírico" loading="lazy">
+    </button><button type="button" class="qc is-locked" data-act="quick" data-id="dreamshield" aria-pressed="false" title="Escudo Onírico" aria-disabled="true">
+      <img src="assets/charms/dreamshield.png" alt="Escudo Onírico" loading="lazy">
+    </button><span class="qslot-pair"><button type="button" class="qc qc-half is-locked is-missing" data-act="quick" data-id="grimmchild" aria-pressed="false" title="Niño de Grimm · Sin conseguir" aria-disabled="true">
+      <img src="assets/charms/grimmchild.png" alt="Niño de Grimm" loading="lazy">
+    </button><button type="button" class="qc qc-half is-locked is-missing" data-act="quick" data-id="melody" aria-pressed="false" title="Melodía Despreocupada · Sin conseguir" aria-disabled="true">
+      <img src="assets/charms/melody.png" alt="Melodía Despreocupada" loading="lazy">
+    </button></span><span class="qslot-pair"><button type="button" class="qc qc-half is-locked is-missing" data-act="quick" data-id="kingsoul" aria-pressed="false" title="Alma del Monarca · Sin conseguir" aria-disabled="true">
+      <img src="assets/charms/kingsoul.png" alt="Alma del Monarca" loading="lazy">
+    </button><button type="button" class="qc qc-half is-missing" data-act="quick" data-id="voidheart" aria-pressed="false" title="Corazón del Vacío · Sin conseguir" aria-disabled="true">
+      <img src="assets/charms/voidheart.png" alt="Corazón del Vacío" loading="lazy">
+    </button></span></div></div>
+    </div></template>
+<script>
+'use strict';
+const QUICK = document.getElementById('quick').innerHTML;
+const q = new URLSearchParams(location.search);
+const st = { v: q.get('v') || 'a' };
+const V = {
+  now: ['Now', 'As it is: what doesn\'t fit at 25%, and what you don\'t have darker still.'],
+  a: ['A · As the game', 'A charm that doesn\'t fit looks like any you don\'t wear; one you don\'t have, in the one shadow. Not fitting is said when you try it: the cursor, its title and the notice.'],
+  b: ['B · A softer step', 'What doesn\'t fit a little dimmer than what would; what you don\'t have in the one shadow, not dimmed twice.'],
+};
+function paint() {
+  document.getElementById('bar').innerHTML = '<b>Variant</b>' + Object.entries(V).map(([v, [n]]) => `<button type="button" data-v="${v}" aria-pressed="${st.v === v}">${n}</button>`).join('');
+  document.getElementById('note').textContent = V[st.v][1];
+  const s = document.getElementById('stage'); s.className = 'mk-stage v-' + st.v; s.innerHTML = QUICK;
+}
+document.addEventListener('click', (e) => { const b = e.target.closest('[data-v]'); if (b) { st.v = b.dataset.v; paint(); } });
+paint();
+</script>
+</body>
+</html>

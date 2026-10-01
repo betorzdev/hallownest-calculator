@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Your game's middle block</title>
+<!-- Design material, not part of the site. Your game's three blocks under the hero (js/app-home.js
+   gameHtml: changesBlock · shadeBlock · nearBlock). Albert (1 Oct 2026): "Your shade" isn't really
+   relevant —it's already a pin on the area's map just above, and in the game you see it anyway—.
+   What could take its place, with save 4's real figures (Deepnest, 51%, nail 1, 6 masks):
+     Now · as it is: your shade, its area and geo.
+     A · Your build: what you carry now —the charms worn, the nail, the masks and soul— and its two
+         headline figures (nail DPS, hits until you die), to Charms: the site's core, from home.
+     B · Towards 112%: the categories closest to done, each with what's left, to Progress.
+     C · Almost done in the Journal: the entries a kill or two from complete, to the Journal.
+   In A–C the shade isn't lost: a line under the area's map says where it waits and with how much.
+   Chosen on 1 Oct 2026: A (built: js/app-home.js buildBlock and shadeLine, css/app.css, js/i18n.js;
+   docs/guide.md, README.md).
+   ?v=now|a|b|c. -->
+<base href="../">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+body { background: var(--page-bg); background-attachment: fixed; margin: 0; }
+.mk { max-width: 1180px; margin: 0 auto; padding: var(--sp-6) var(--page-pad) var(--sp-16); }
+.mk-h1 { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-xl); letter-spacing: var(--track-title); color: var(--ink-strong); margin: 0 0 var(--sp-2); }
+.mk-lead { max-width: var(--measure); color: var(--ink-2); font-size: var(--fs-sm); margin: 0 0 var(--sp-4); }
+.mk-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-4); padding: var(--sp-2) 0; margin-bottom: var(--sp-6); border-bottom: 1px solid var(--line); font-size: var(--fs-sm); color: var(--muted); }
+.mk-bar b { font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); font-weight: 600; }
+.mk-bar button { background: none; border: 0; padding: var(--sp-1) 0; font: inherit; color: var(--muted); cursor: pointer; }
+.mk-bar button[aria-pressed="true"] { color: var(--accent); box-shadow: inset 0 -1px 0 var(--accent-line); }
+.mk-note { max-width: var(--measure); margin: 0 auto var(--sp-6); color: var(--ink-2); font-size: var(--fs-sm); text-align: center; min-height: 3em; }
+.mk-mapline { margin: 0 0 var(--sp-2); text-align: right; font-size: var(--fs-xs); color: var(--muted); }
+
+/* ════ What would go into the site ════ */
+/* A: the build — the charms worn in a row, then the figures. */
+.hm-worn { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+.hm-worn img { width: 40px; height: 40px; object-fit: contain; }
+.hm-build { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-3) var(--sp-6); align-self: stretch; margin: 0; }
+.hm-build dt { font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); }
+.hm-build dd { margin: 0; font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-lg); font-weight: 700; color: var(--ink-strong); }
+.hm-build dd small { display: block; font-family: var(--font-body); font-size: var(--fs-xs); font-weight: 400; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="mk">
+  <h1 class="mk-h1">Your game's middle block</h1>
+  <p class="mk-lead">The three blocks under Your game's hero, with save 4. What could take the place of "Your shade".</p>
+  <div class="mk-bar" id="bar"></div>
+  <p class="mk-note" id="note"></p>
+  <div><p class="mk-mapline" id="mapline"></p><div class="hmC-cols" id="cols"></div></div>
+</div>
+<script>
+'use strict';
+const q = new URLSearchParams(location.search);
+const st = { v: q.get('v') || 'a' };
+const V = {
+  now: ['Now', 'As it is: your shade, its area and its geo, between what you got and what you\'re missing nearby.'],
+  a: ['A · Your build', 'What you carry now and what it gives: the charms worn, the nail\'s DPS, hits until you die, masks and soul. The site\'s core, from home, to Charms.'],
+  b: ['B · Towards 112%', 'The categories closest to done, each with what\'s left, to its row on Progress.'],
+  c: ['C · Almost in the Journal', 'The entries a kill or two from complete, each to its Journal page.'],
+};
+const head = (t, note) => `<h3 class="block-head">${t}${note ? `<span class="block-note">${note}</span>` : ''}</h3>`;
+const item = (art, name, v, sub) => `<li class="hm-item"><span class="hm-item-art"><img src="${art}" alt=""></span><span class="hm-item-name">${name}${sub ? `<small>${sub}</small>` : ''}</span><span class="hm-item-v">${v}</span></li>`;
+// Save 4, 1 Oct 2026.
+const SINCE = `<section class="hm-block">${head('Desde la última vez')}<div class="empty-note"><p>Aún nada: cuando el juego vuelva a guardar con algo nuevo (al sentarte en un banco), aquí verás lo que hayas conseguido.</p></div></section>`;
+const NEAR = `<section class="hm-block">${head('Te falta cerca', 'Nido Profundo · 15')}<div class="hm-near">${[['effects/grub', 'Nido Profundo'], ['effects/grub', 'Nido Profundo'], ['hud/mask-shard', 'Nido Profundo'], ['hud/vessel-frag', 'Nido Profundo'], ['items/pale-ore', 'Nido Profundo'], ['items/rancid-egg', 'Guarida de las Bestias']].map(([a, n]) => `<button type="button" class="hm-near-cell"><img src="assets/${a}.png" alt="">${n}</button>`).join('')}</div><button type="button" class="text-btn">Verlo en el mapa</button></section>`;
+const MIDDLE = {
+  now: `<section class="hm-block">${head('Tu sombra')}<div class="hm-shade"><img class="hm-shade-art" src="assets/knight/shade.png" alt=""><p>Te espera en Bocasucia con 120 geo.</p></div><button type="button" class="text-btn">Verlo en el mapa</button></section>`,
+  a: `<section class="hm-block">${head('Lo que llevas', '4 amuletos · 6/6 muescas')}
+      <div class="hm-worn">${['compass', 'swarm', 'quickslash', 'steady'].map((c) => `<img src="assets/charms/${c}.png" alt="">`).join('')}</div>
+      <dl class="hm-build">
+        <div><dt>Daño por segundo</dt><dd>32,1<small>Aguijón afilado · 9 por golpe</small></dd></div>
+        <div><dt>Golpes hasta morir</dt><dd>6<small>6 máscaras · 132 de alma</small></dd></div>
+      </dl>
+      <button type="button" class="text-btn">Ver en Amuletos</button></section>`,
+  b: `<section class="hm-block">${head('Hacia el 112 %', '51 %')}<ul class="hm-list">
+      ${item('assets/items/mantis-claw.png', 'Equipo', 'te faltan 2', '12/14')}
+      ${item('assets/spells/dd2.png', 'Hechizos', 'te faltan 2', '4/6')}
+      ${item('assets/arts/cyclone.png', 'Artes del aguijón', 'te faltan 2', '1/3')}
+      ${item('assets/journal/false-knight.png', 'Jefes', 'te faltan 5', '10/15')}
+    </ul><button type="button" class="text-btn">Ver el progreso</button></section>`,
+  c: `<section class="hm-block">${head('Casi en el Diario', '18/146')}<ul class="hm-list">
+      ${item('assets/journal/vengefly-king.png', 'Rey vengamosca', '1 más')}
+      ${item('assets/journal/tiktik.png', 'Tiktik', '1 más')}
+      ${item('assets/journal/soul-warrior.png', 'Guerrero del alma', '1 más')}
+      ${item('assets/journal/crystal-guardian.png', 'Guardián de cristal', '1 más')}
+      ${item('assets/journal/gruz-mother.png', 'Madre Gruz', '2 más')}
+    </ul><button type="button" class="text-btn">Ver el Diario</button></section>`,
+};
+function paint() {
+  document.getElementById('bar').innerHTML = '<b>Variant</b>' + Object.entries(V).map(([v, [n]]) => `<button type="button" data-v="${v}" aria-pressed="${st.v === v}">${n}</button>`).join('');
+  document.getElementById('note').textContent = V[st.v][1];
+  document.getElementById('mapline').textContent = st.v === 'now' ? '' : 'Bajo el mapa del área: «Tu sombra te espera en Bocasucia con 120 geo»';
+  document.getElementById('cols').innerHTML = SINCE + MIDDLE[st.v] + NEAR;
+}
+document.addEventListener('click', (e) => { const b = e.target.closest('[data-v]'); if (b) { st.v = b.dataset.v; paint(); } });
+paint();
+</script>
+</body>
+</html>
