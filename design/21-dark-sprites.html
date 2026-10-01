@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dark sprites</title>
+<!-- Design material, not part of the site. Sprites that vanish on the black (1 Oct 2026), measured
+   on Progress with save 4 (each sprite's 95th-percentile luminance over its background, of 255):
+     · the head's pips you don't have: their own filter (brightness 0.3 + opacity 0.6), darker than
+       the plates' --missing-art: median 28; the Godseeker row's, 0;
+     · the pantheons' plates (the Hall's statues, dark art) under --missing-art: 3 to 14;
+     · sprites dark by nature even when had: Descending Dark 38, Abyss Shriek, the Shade Cloak
+       (17 missing), and the nails as 18 px pips (thin).
+   Four ways, over the real sprites and CSS:
+     Now · as it is.
+     A · One shadow: the pips you don't have take --missing-art, the plates' (one value for what
+         you don't have, as tokens.css says it should be).
+     B · A + a rim of light: the dark-by-nature sprites (a list, in data) get a thin pale outline,
+         as the game's inventory lights its dark icons from behind; missing, the rim dims too.
+     C · A + a halo at rest: behind the dark-by-nature sprites, the plate's soft light (the one it
+         shows on hover) stays on, faint.
+     D · A + both: the rim and the halo.
+   Chosen on 1 Oct 2026: D (built: D.DARK_ART in js/data.js, the --dark-art-* and --halo-dark tokens,
+   .is-dark in css/app.css, js/app-progress.js). Measured after: the missing pips' median rise went
+   from 28 to 66 and none is at 0; the pantheons' plates from 3–14 to 24–28.
+   Inventory, the same day: the missing body pieces into --missing-art (32–37 → its level), and
+   Love Key, Arcane Egg, Baldur Shell joined DARK_ART; App.darkCls shared (js/app.js).
+   Journal: nothing to do (the missing medals already in --missing-art, 85+; the unseen page's
+   silhouette reads on its halo). Godhome: the door's bindings you haven't won had their own
+   shadow (brightness .3 + opacity .8): --missing-art, and in DARK_ART (black discs) for the rim.
+   The Hall's locked statues stay as they are: dark silhouettes on their niche's light, on purpose.
+   Charms: the grid's blocked charms no longer dim (design/22); Void Heart joined DARK_ART, the grid's
+   tiles and the sheet's spell plates (.plate-art) carry .is-dark.
+   Combat: the attack cells (.move-art) carry .is-dark (Descending Dark 37). The HUD's empty masks,
+   vessel and broken shell keep their dark: they copy the game's HUD, where empty is dark.
+   Map: the filter's layer chips carry .is-dark (the lore tablet 10, the Simple Key 20 joined
+   DARK_ART). The pins stay as they are: each sits on its own disc, and an SVG filter's rim would
+   be in map units, not pixels.
+   ?v=now|a|b|c|d. -->
+<base href="../">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+body { background: var(--page-bg); background-attachment: fixed; margin: 0; }
+.mk { max-width: 1100px; margin: 0 auto; padding: var(--sp-6) var(--page-pad) var(--sp-16); }
+.mk-h1 { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-xl); letter-spacing: var(--track-title); color: var(--ink-strong); margin: 0 0 var(--sp-2); }
+.mk-lead { max-width: var(--measure); color: var(--ink-2); font-size: var(--fs-sm); margin: 0 0 var(--sp-4); }
+.mk-bar { position: sticky; top: 0; z-index: 50; display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-4);
+  padding: var(--sp-2) 0; margin-bottom: var(--sp-6); background: var(--scene-bg); border-bottom: 1px solid var(--line); font-size: var(--fs-sm); color: var(--muted); }
+.mk-bar b { font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); font-weight: 600; }
+.mk-bar button { background: none; border: 0; padding: var(--sp-1) 0; font: inherit; color: var(--muted); cursor: pointer; }
+.mk-bar button[aria-pressed="true"] { color: var(--accent); box-shadow: inset 0 -1px 0 var(--accent-line); }
+.mk-note { max-width: var(--measure); margin: 0 auto var(--sp-6); color: var(--ink-2); font-size: var(--fs-sm); text-align: center; min-height: 3em; }
+.mk-h2 { margin: var(--sp-8) 0 var(--sp-3); font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); }
+
+/* ════ The variants: what would go into the site ════ */
+/* A (and B, C): the pips you don't have, in the one shadow. */
+:is(.v-a, .v-b, .v-c, .v-d) .pg-pip img { filter: var(--missing-art); opacity: 1; }
+:is(.v-a, .v-b, .v-c, .v-d) .pg-pip.is-on img { filter: none; }
+/* B: a rim of light on the dark-by-nature sprites; under the missing shadow, it dims with it. */
+:is(.v-b, .v-d) .is-dark :is(img) { filter: drop-shadow(0 0 1px rgba(236, 236, 236, 0.55)) drop-shadow(0 0 5px rgba(236, 236, 236, 0.12)); }
+:is(.v-b, .v-d) .gplate:not(.is-on) .is-dark img, :is(.v-b, .v-d) .pg-pip:not(.is-on).is-dark img { filter: var(--missing-art) drop-shadow(0 0 1px rgba(236, 236, 236, 0.35)); }
+/* C: the plate's halo stays on, faint, behind the dark ones. */
+:is(.v-c, .v-d) .gplate-art.is-dark::before { opacity: 0.55; }
+:is(.v-c, .v-d) .pg-pip.is-dark { background: radial-gradient(closest-side, rgba(236, 236, 236, 0.16), transparent); border-radius: 50%; }
+</style>
+</head>
+<body>
+<script src="js/i18n.js"></script>
+<script src="js/data.js"></script>
+<script src="js/enemies.js"></script>
+<script src="js/pantheons.js"></script>
+<div class="mk">
+  <h1 class="mk-h1">Dark sprites</h1>
+  <p class="mk-lead">What vanishes on Progress's black: the head's pips you don't have, the pantheons, and the sprites that are dark by nature. Each one had and not had, as a pip and as a plate.</p>
+  <div class="mk-bar" id="bar"></div>
+  <p class="mk-note" id="note"></p>
+  <div id="stage"></div>
+</div>
+<script>
+'use strict';
+const D = HK.data, PN = HK.pantheons, I = HK.i18n;
+I.setLang('es');
+const q = new URLSearchParams(location.search);
+const st = { v: q.get('v') || 'b' };
+const VARIANTS = {
+  now: ['Now', 'As it is: the head\'s missing pips in their own, darker shadow; the dark sprites as they come.'],
+  a: ['A · One shadow', 'The head\'s missing pips take --missing-art, as the plates do: one shadow for what you don\'t have.'],
+  b: ['B · A + rim of light', 'A, and the dark-by-nature sprites get a thin pale outline, as the game lights its dark icons; missing, the rim dims with them.'],
+  d: ['D · A + rim + halo', 'A, with both: the faint halo behind the dark-by-nature sprites and the thin rim on their outline.'],
+  c: ['C · A + halo at rest', 'A, and behind the dark-by-nature sprites the plate\'s soft light (the one it shows on hover) stays on, faint.'],
+};
+// The dark-by-nature sprites (measured: under 60 of 255 over the black when had).
+const pantheonArt = (p) => { const last = p.rooms.filter((r) => r.type === 'fight').pop(); return last ? D.art('hall', last.foe) : ''; };
+const GROUPS = [
+  ['Panteones', PN.PANTHEONS.slice(0, 5).map((p) => [I.pick(p.name), pantheonArt(p), true])],
+  ['Hechizos', [['Oscuridad descendente', D.art('spells', 'dd2'), true], ['Chillido del Abismo', D.art('spells', 'hw2'), true], ['Salto desolador', D.art('spells', 'dd'), false], ['Espíritu vengativo', D.art('spells', 'vs'), false]]],
+  ['Equipo', [['Capa sombría', D.art('abilities', 'cloak2'), true], ['Capa de polilla', D.art('abilities', 'cloak1'), false]]],
+  ['Aguijones', [1, 2, 3, 4].map((l) => [I.pick(D.NAILS[l]), D.art('nails', l), true])],
+  ['Amuletos (referencia)', ['crest', 'sharpshadow', 'baldur', 'compass'].map((c) => [c, `assets/charms/${c}.png`, false])],
+];
+const pip = (art, on, dark) => `<span class="pg-pip${on ? ' is-on' : ''}${dark ? ' is-dark' : ''}"><img src="${art}" alt=""></span>`;
+const plate = (name, art, on, dark) => `<button type="button" class="gplate${on ? ' is-on' : ''}"><span class="gplate-art${dark ? ' is-dark' : ''}"><img src="${art}" alt=""></span>
+  <span class="gplate-name">${name}</span><span class="gplate-val is-none">${on ? '' : 'Sin conseguir'}</span></button>`;
+function paint() {
+  document.getElementById('bar').innerHTML = '<b>Variant</b>' + Object.entries(VARIANTS).map(([v, [n]]) => `<button type="button" data-v="${v}" aria-pressed="${st.v === v}">${n}</button>`).join('');
+  document.getElementById('note').textContent = VARIANTS[st.v][1];
+  document.getElementById('stage').className = 'gear-body pg-body v-' + st.v;
+  document.getElementById('stage').innerHTML = GROUPS.map(([g, list]) => `<p class="mk-h2">${g}</p>
+    <ol class="pg-rows"><li class="pg-row"><div class="pg-head"><span class="pg-name">Cabecera: conseguidos · sin conseguir</span>
+      <span class="pg-pips">${list.map(([, a, dk]) => pip(a, true, dk)).join('')}<span style="width:16px"></span>${list.map(([, a, dk]) => pip(a, false, dk)).join('')}</span><span></span><span></span></div>
+    <div class="pg-open"><div class="pg-plates">${list.map(([n, a, dk]) => plate(n, a, true, dk)).join('')}${list.map(([n, a, dk]) => plate(n, a, false, dk)).join('')}</div></div></li></ol>`).join('');
+}
+document.addEventListener('click', (e) => { const b = e.target.closest('[data-v]'); if (b) { st.v = b.dataset.v; paint(); } });
+paint();
+</script>
+</body>
+</html>

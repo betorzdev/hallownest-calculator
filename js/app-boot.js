@@ -23,6 +23,8 @@
   // tools/pages.js), a link with a build opens Charms, and with no link, wherever you left it.
   const urlHash = splitHash(location.hash);
   prefs.view = urlHash.view || PAGE_VIEW || (C.isEmpty(urlHash.build) ? prefs.view : 'charms');
+  App.admin = urlHash.admin;   // #…&admin=1: the Map's pins can be dragged to where they go (js/app-map.js)
+  App.sisterPreview = urlHash.sister;   // #…&sister=1: the sister site's link before it's published (js/app-sister.js)
   if (App.TOOLS.includes(prefs.view)) prefs.tool = prefs.view;
   // Godhome is Combat's tabs 'hall' and 'pantheon' shown as their own screen: the tab follows the screen.
   if ((prefs.view === 'godhome') !== (prefs.fightTab !== 'combat')) prefs.fightTab = prefs.view === 'godhome' ? (prefs.godTab === 'pantheon' ? 'pantheon' : 'hall') : 'combat';
@@ -47,5 +49,6 @@
   recompute();           // and with it fightSync(), which hands out combat health and soul
   render();
   App.knight.start();    // the Knight on the page, from now on (js/app-knight.js)
+  App.sister.start();    // and Hornet on the sister site's link, when it shows (js/app-sister.js)
   App.liveStart();       // the slot linked to the game's file starts following it (js/app-saves.js)
 })();

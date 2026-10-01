@@ -141,7 +141,7 @@
       // Just marked (doorFx): the binding lights up; the four at once, one after another in gold.
       const fx = doorFx && doorFx.pid === p.id ? doorFx : null;
       const bindBtns = `<div class="pdone ${allDone ? 'is-all' : ''}${fx && fx.all ? ' is-sealing' : ''}${held ? ' is-held' : ''}" role="group" aria-label="${esc(t('doorDoneLbl', { name: pantheonName }))}">
-        ${BINDS.map((k, i) => `<button type="button" class="pdone-bind ${boundDone.includes(k) ? 'is-on' : ''}${fx && !fx.all && fx.k === k && boundDone.includes(k) ? ' is-lit' : ''}" style="--i:${i}" data-act="doorBind" data-value="${p.id}:${k}"
+        ${BINDS.map((k, i) => `<button type="button" class="pdone-bind${App.darkCls(`assets/pantheon/bind-${k}.png`)} ${boundDone.includes(k) ? 'is-on' : ''}${fx && !fx.all && fx.k === k && boundDone.includes(k) ? ' is-lit' : ''}" style="--i:${i}" data-act="doorBind" data-value="${p.id}:${k}"
           aria-pressed="${boundDone.includes(k)}" title="${esc(t('bind_' + k))}" ${held ? 'disabled' : ''}><img src="assets/pantheon/bind-${k}.png" alt="${esc(t('bind_' + k))}" width="22" height="22"></button>`).join('')}
         <button type="button" class="pdone-all ${allDone ? 'is-on' : ''}" data-act="doorBind" data-value="${p.id}:all" aria-pressed="${allDone}"
           title="${esc(t('doorAllTip'))}" aria-label="${esc(t('doorAllTip'))}" ${held ? 'disabled' : ''}>×4</button>

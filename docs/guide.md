@@ -92,6 +92,32 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   He's decorative: hidden from screen readers and out of the tab order; a click on him is an
   easter egg: he focuses soul as the game heals, standing still while the Focus's white light
   (`--focus-glow`) swells around him and fades, then sits again (counted as `knight`).
+- **The sister site's link and Hornet** (`js/app-sister.js`, css `.mh-sister`, `.sis-*`), **hidden
+  until the sister is published** (`SISTER = false` in the script; `#…&sister=1` shows it, and
+  survives a reload like `admin=1`). «Silksong ↗» goes after Share in the masthead, in Share's
+  type, to the Silksong sister site (`../pharloom-calculator`, «Calculadora de Telalejana»), in your
+  language, in a new tab; on a phone (below 600 px) it's a line of its own under the masthead, on the
+  right, with room above it for her. Instead of an underline it carries a silk thread, drawn in a
+  layer under the masthead's letters (`.sis-lay.is-back`, z-index 0 under the masthead's 1).
+  Hornet comes **once per visit** (sessionStorage `hollow.sisterShown`), and only with the masthead
+  in view: she floats down on her Drifter's Cloak onto the word, closes it, sweeps her needle
+  (Challenge Strong), and the thread weaves through the letters and cinches into that underline,
+  which glints while the word breathes in bone three times (`--dur-sister-call`). Then she stays
+  on the link, breathing (the game's Idle at a third of its speed, there and back: at 12 frames a
+  second it read as a fidget at her size): every 15–25 s (masthead in view, tab visible) she shakes out her cloak, looks up, plays
+  the Needolin or sits; she watches the mouse over the masthead and spins into guard while it's on
+  the link. Clicking it (`track('sister')`) she leaves on Silk Soar as the game does it (the wiki:
+  charge, the needle thrown to the ceiling, and she shoots up to it): she crouches with the silk
+  swirling round her, throws the needle to the top of the window on its thread, watches it, crouches
+  and goes up after it, the thread shortening above her (Super Jump's clips; not its speed lines, which streaked down through the word), and
+  never comes again (localStorage `hollow.sisterSeen`): the link and its thread stay. Reloading in
+  the same visit, she's just standing there. With `prefers-reduced-motion` there's no arrival and no
+  life: she stands on the link and fades on the click. Her moves are the game's own
+  (`js/hornet-moves.js`, `assets/hornet/`, by `tools/extract-hornet.py`): strips at a third of the
+  game's size shown at half that (~36 px standing), each placed by her pivot; one-shot moves step on
+  animation frames (only while there are any) and repeating ones are a CSS `steps()` animation. She's
+  decorative: hidden from screen readers, never under the pointer. Chosen in three rounds,
+  `design/26-sister-hornet.html`, `27-sister-hornet-moves.html` and `28-sister-hornet-clawline.html` (C).
 - **Your game**, the start screen (`view=home`, `js/app-home.js`; variant C, *the bench*, of
   `design/10-home-variants.html`): your real game at a glance.
   - **The area's title card**: *Resting at* over the name of the area of your bench, large, on
@@ -117,7 +143,9 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
     frame with *reduce motion*. Beside the card (under the figures on a phone), **the area's
     map**, as the Map screen draws it (`App.pgmRoomsSvg`: mapped rooms whole, the rest sketched
     or a ghost, a little stronger here), with your bench and the Knight on it (a ring beating),
-    your shade if it's in that area, and what you're missing there as pins: each opens it on the
+    your shade if it's in that area, and what you're missing there as pins, only of the kinds the
+    Map's filter shows (`App.pgMapOff`; the caption counts those, and under it a line says where
+    your shade waits and with how much geo): each opens it on the
     Map, and hovering a cell of *Missing nearby* lights its pin (and the other way round). An area
     the game's map doesn't draw (the Hive, Godhome, the White Palace…) has none. The Black Egg
     Temple's bench counts as the Crossroads, where the game's map puts the Temple (the randomizer's
@@ -126,7 +154,8 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
     **The arrival**: when the screen opens, and again when the game saves something new while
     it's open (`hollow.prev` changes), the name fades in like the game's title card, the
     completion and the Journal **count up from the save before**, a bar out of 112 lights what
-    you just gained, and the rows of *Since last time* come in one by one with a shine
+    you just gained (one bar: what you had comes in with the bench, and the gain grows on from
+    its end in step with the count-up, `--delay-card-count`, `--dur-card-count`), and the rows of *Since last time* come in one by one with a shine
     (`.is-enter`; the timings are tokens, `--dur-card*`). The geo isn't kept in `hollow.prev`:
     it only shows. The Dreamers in *Since last time* carry their map pin as a picture.
   - **The link to the game's file**: *Live*, *Paused* with its *Resume* button (after a reload the
@@ -145,9 +174,11 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
     isn't told. A bench sat at with nothing new doesn't empty it. **The live notice says the
     same** when the game saves: "Bench in City of Tears: Watcher Knight, Lurien the Watcher,
     Captive Grub and 1 more, +2%".
-  - **Your shade**: drawn as the game draws it, floating, with where it waits and with how much
-    geo, and a link to the Map (it used to be a notice above every screen); with none, its dim
-    silhouette.
+  - **What you carry** (1 Oct 2026, `design/23`, variant A; it took the place of *Your shade*,
+    now a line under the area's map): the charms worn in a row, with how many and the notches
+    used, and the two figures they move most, the nail's **damage per second** (under it, the nail
+    and its damage a hit) and **hits until you die** (the masks and the soul), and a link to
+    Charms; wearing none, it says so.
   - **Missing nearby**: the collectibles of the area of your bench you haven't got (twelve in view,
     the count alongside), each with its place, and a link to the Map.
   - **With no game** (free mode, the first visit) the screen is an **invitation** instead, in one
@@ -275,7 +306,10 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
       Carefree Melody—; if you have one (you mark it on the Inventory), the slot shows **only that
       one**, whole, as the game does; with neither, it splits into two shadowed halves. Only the artwork, no data: lit the ones you wear, **with a soft
       light behind them** (a radial halo in the accent, as the game marks the equipped one,
-      stronger under the pointer), dimmed the ones that don't fit. A click (or a tap) equips or removes, and what each one
+      stronger under the pointer); one that doesn't fit now (no free notch) looks like any you don't
+      wear, as in the game, and says so where it's tried —the cursor, its title, the notice—
+      (`design/22`, 1 Oct 2026: dimmed, a full grid of notches left it nearly black); the ones you
+      haven't found, in the one shadow. A click (or a tap) equips or removes, and what each one
       does is read in the detail (in a save —the lock, in [Saves](#saves)— the grid
       keeps its colour and its hover, which drives the detail, but equips nothing: its hint says
       so, a tap brings the notice, the detail carries no *Mark as found*, and the masks above
@@ -430,7 +464,9 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   equipment), on the right what you collect (the body, the charms found and the items); on
   mobile, one column in the order nail, body, arts, spells, abilities, equipment, charms, items. The body —masks,
   soul vessels and notches— **with the game's own pieces**: a row of masks, the vessels and the
-  notches, lit up to what you have and shadowed after, like the HUD's lost mask. Tapping a
+  notches, lit up to what you have and shadowed after (in the one shadow, `--missing-art`, as
+  every screen's; the sprites dark by nature —the Shade Cloak, Shade Soul, Descending Dark, Sharp
+  Shadow, Baldur Shell, the Love Key, the Arcane Egg— with their rim of light, `design/21`). Tapping a
   dark one lights up to it; tapping a lit one takes it off with every one after it, so one tap
   reaches any value (with 3 vessels, the first leaves none), and with the mouse the ones that
   would go dim before you click. The ones every Knight starts with (5 masks, 3 notches) can't
@@ -520,7 +556,7 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
 
 ## Files
 
-- `index.html` — the page; thirty-five classic scripts (it works over `file://`) and GoatCounter's,
+- `index.html` — the page; thirty-six classic scripts (it works over `file://`) and GoatCounter's,
   the visit counter: no cookies, one visit per page load and, as events, the screen switches
   (`screen-*`), the language (`lang-*`), *Share* and the way into a save, as a funnel: the import
   opened (`import-open`), a file read (`import-read`) or refused (`import-bad`), the game imported
@@ -606,6 +642,10 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   front…), unflipped, and where the Knight sits on it in each scene: over the floor its collider
   marks, as high as the game raises him there (its Bench Control FSM's `Adjust Vector`: 0.1 on
   most town benches, 1.0 on the Nailmasters').
+- `js/hornet-moves.js` and `assets/hornet/` — generated by `tools/extract-hornet.py` from
+  Silksong's own sprites (the game installed, UnityPy), not edited by hand: each of Hornet's moves as
+  a strip, with its frames, fps, cell and her pivot, and `FLOOR` (her feet under it). Also Clawline's
+  needle and thread (with each frame's box), used only by the design pages.
 - `js/scene-objects.js` — generated by `tools/extract-scenes.py` from the game's own scenes, not
   edited by hand: each scene's tile map size (to place a point in its room, as the game does) and
   what it holds for the Map: enemies per Journal entry, what breaks and stays broken (by the
@@ -638,6 +678,10 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   (`Hallownest_marked_map.png`) and MapGenie's, overlaid: every room is there, in its place and
   with its drawing. Rerun it once per game
   patch: it needs the game installed and UnityPy (`python3 -m pip install UnityPy`, in a venv).
+- `js/map-fixes.js` — written by the Map's admin mode (below, `tools/admin.js`), not edited by
+  hand: where a pin really goes when the data's place is off, its id → `[x, y]` in the map's
+  units. `js/app-map.js` applies them last of all, over whatever the data and its formulas say,
+  so the Map, its search, "see it on the map" and Your game's area map all agree.
 - `js/collectibles.js` — generated by `npm run collectibles` (`tools/fetch-collectibles.js`), not
   edited by hand: the kingdom's 202 collectibles, each with its kind, its room and how a save
   says you have it (`how`: its room's object picked up, a playerData bool, the Seer's or the
@@ -716,13 +760,15 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
     the collectibles.
   - `js/app-map.js` — the Map screen: the game's map with your collectibles on it, dragged and zoomed.
   - `js/app-home.js` — Your game, the start screen: the area's title card, the link, the figures,
-    since last time, your shade and what's missing nearby; or, with no game, the invitation.
+    since last time, what you carry and what's missing nearby; or, with no game, the invitation.
   - `js/app-saves.js` — the Saves screen: free mode, the four slots and their buttons, and the
     import view (steps, drop zone, preview), and the link with the game (the slot's line, the
     notice when it's paused, the watcher of the slot you're in).
   - `js/app-knight.js` — the Knight who walks the page: sitting on the bar under the tab you're on
     (its mark), running along it when you change screens, and walking his pin on the Map to a new
     bench through the doors ("The Knight" above).
+  - `js/app-sister.js` — the sister site's link and the Hornet who points it out, hidden until the
+    sister is published ("The sister site's link and Hornet" above).
   - `js/app-boot.js` — startup: what's saved, the link and the first render. It goes last.
 - `assets/` — the game's artwork: `charms/`, `nails/`, `spells/`, `arts/`, `abilities/`
   and `hud/`. `tools/fetch-icons.js` downloads them from the wiki's CDN (`npm run icons`).
@@ -766,6 +812,18 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   (`enemies/`) and the medallions (`journal/`) travel packed as data: URIs in `js/artpack.js`,
   which `D.art()` checks before the path; `index.html` loads that script before `js/app.js`. It
   leaves 188 files and writes their list. It isn't used locally.
+- `tools/admin.js` — the Map's admin mode's server (`npm run admin`): the site on
+  `http://localhost:8787` and, for the Map opened with `#view=map&admin=1`, a way to save. In that
+  mode (for the maintainer, nothing a visitor sees) a pin is dragged to where it really goes, or
+  nudged with the arrow keys (0.02 units; 0.1 with Shift); a panel at the map's top-left says
+  the chosen pin's id, the data's point and the new one, with *Restore* (back to the data's
+  point, or a saved fix dropped), *Undo* and *Save*, and lists every fix; a dashed way is drawn
+  from the data's point to the fix (in the accent while unsaved). *Save* sends them all to the
+  server, which writes `js/map-fixes.js` (keys sorted, three decimals, header kept) and the page
+  takes them without a reload; with no server (`file://`, or the published site) the button
+  reads *Copy* and puts the file's lines on the clipboard, to paste inside `FIXES` by hand.
+  Unsaved moves survive a reload (`sessionStorage`), and the hash keeps `admin=1` while the mode
+  is on. Your own marks (your bench, shade, Dreamgate and markers: the save's) are never moved.
 - `debug*.html` — support pages, not part of the site:
   - `debug.html` — opens the page with fixed prefs for screenshots
     (`?w=390&h=2000&top=2450&lang=en&detail=1&guide=1&view=charms&open=fury&fx=70&hash=…`).
@@ -1413,24 +1471,45 @@ on Cornifer's map). It's the tablet chosen among three variants in
   charms, the Hive Knight (Lifeblood's) with the bosses, and the Troupe is its ritual: Grimmchild
   (or Carefree Melody), its master and its king. Each thing is worth the same, so it's 112 either
   way. Each row: its name, **its things as small pips** —their picture, lit if you have it,
-  dimmed if half done (a spell with one level of two), in shadow if not— and its points, which
-  turn green when the category is complete. Every thing has its picture: the Dreamers and the
+  dimmed if half done (a spell with one level of two), in shadow if not (the plates' one shadow,
+  `--missing-art`)— and its points, which turn green when the category is complete. The sprites
+  dark by nature (`D.DARK_ART`: the pantheons' statues, Shade Soul, Descending Dark, Abyss Shriek,
+  the Shade Cloak, Sharp Shadow, the nails), which the black swallowed even when had, carry a thin
+  rim of the soul's white and a faint halo behind (`design/21`, variant D). Every thing has its picture: the Dreamers and the
   trials the game's own pins for them on its map, each pantheon the Hall's statue of its last fight
   (Oro & Mato, Sheo, Sly, the Pure Vessel). The bosses go in the order a usual playthrough meets
   them, the warrior dreams in the Hunter's Journal's.
 - **A row opens** (one at a time, remembered in `pgOpen`) to show its things as the Inventory's
-  plates. **A tap marks one where the site already keeps it** (not in a save,
+  plates. It **unfolds** while the one open folds away at the same time, so the row you tapped
+  glides instead of jumping, and its plates fade in one after another (`design/20`, variant B;
+  nothing moves with reduced motion, and marking a plate doesn't replay it). **A tap marks one where the site already keeps it** (not in a save,
   where the plates are inert: the lock, in [Saves](#saves)), so
   no two screens disagree: a
   boss or a warrior dream is its Hunter's Journal entry (as its first defeat; unmarking clears
   it), a charm is your collection (a two-version one, as its first version), and the rest
   —equipment, Dreamers, trials, Hornet Sentinel, the Awoken Dream Nail, the Seer, the
   Godtuner, the pantheons cleared— is `hollow.progress`. Nightmare King Grimm is its Journal
-  entry *or* the banishment; unmarking takes both away. What changes your figures —the masks,
-  the vessels, the nail, spells, arts, the cloaks, the Dream Nail— isn't marked here: its plate
-  says *On the Inventory* and takes you there (with a save from the game, where nothing's marked
-  by hand, just *Not found*). The masks' plate says the masks you have (5 to 9); their points are
-  the ones past the first five.
+  entry *or* the banishment; unmarking takes both away. **The spells go one by one**: six pips and
+  six plates, each level its own thing as in the game (Vengeful Spirit, Shade Soul, Desolate Dive,
+  Descending Dark, Howling Wraiths, Abyss Shriek), with its name, picture and pin; a tap sets the
+  spell's level, so marking an upgrade brings its first level and unmarking the first level takes
+  the upgrade too. What changes your other figures —arts, the cloaks, the Dream Nail— isn't marked here: its plate says *On the Inventory* and takes you
+  there (with a save from the game, where nothing's marked by hand, nothing). A plate you don't have
+  says no *Not found* (1 Oct 2026): its shadow says it; under it, only what it asks for, if anything (a price).
+- **Masks, vessels and the nail count pieces** (1 Oct 2026, `design/19-fragments-variants.html`,
+  variant A). Their pips are what the 112% counts —the 4 masks past the first five, the 3
+  vessels, the 4 upgrades— each **filling with its pieces** from the bottom (a quarter per shard, a
+  third per fragment: your game's masks and loose shards). Open, **every piece**: the 16 Mask
+  Shards and the 9 Vessel Fragments, each with its place, its pin to the Map and, while missing,
+  its price (Sly's geo, the Seer's essence, the Grubfather's grubs), grouped by how you get them
+  (*In the world*, *Sly*, *Rewards*); the nail's four upgrades with the Nailsmith's price
+  (`kb/02-arsenal.md`; a tap sets the nail, as on Your game) and the six Pale Ore. On top, **See
+  all N on the map** opens the Map focused on all of them (the nail's: the ores and the Nailsmith).
+  A tap marks a piece, as on the Map, and **the pieces lead**: Your game's figure is never below
+  the pieces marked, so marking one past it adds a piece (the fourth loose shard makes a mask) and
+  unmarking one when the figure was just the marks takes it away; a figure set higher on Your game
+  (free mode starts with everything) stays. Pale Ore is marks only: the ore you carry is spent at
+  the Nailsmith.
 - The names are the game's: Hornet's two fights by their titles, *Hornet Protector* and *Hornet
   Sentinel* (one Journal entry, its picture); the Seer's point, *Ascension* (its achievement);
   *Troupe Master Grimm* and *Nightmare King Grimm*, whose plate says *Troupe banished* when that's
@@ -1451,20 +1530,31 @@ on Cornifer's map). It's the tablet chosen among three variants in
   The same button, now ⤡ and lit, brings it back. On a phone it already has the whole width, and
   there's no button.
 - **Everything the map can show is a layer**, and the filter, **under the map**, lists them in
-  **seven sections, by what things are for** (30 Sep 2026). Each section **folds** (its caret, its
-  title, how many of its things you have, and its own **All / None**; all open at first, and which
-  are open is remembered, `pgMapOpen`), and each layer in it is its picture, its
+  **seven sections, by what things are for** (30 Sep 2026). Each section **folds** by its caret
+  (all open at first, and which are open is remembered, `pgMapOpen`), and **its title is its
+  switch** (1 Oct 2026: it was an *All / None* button): a tap shows the whole section, or hides it
+  when it's all shown; the title is in ink with all on, dimmer with some, muted with none, and
+  carries how many of its things you have. Each layer in it is its picture, its
   name in the plural and its count: **the picture is the switch**, grey when the layer is off
   (design/16, the sister site's look). Above the sections, the three choices as **switches**
   (always the whole map, also what you have, area names) and **Show all** / **Hide all**:
-  **Towards 112%** (charms, equipment, spells and arts, bosses and trials, warriors' graves,
+  **Towards 112%** (charms, equipment, spells, nail arts, Dream Nail, bosses, Colosseum trials,
+  the Grimm Troupe —one layer per kind of thing since 1 Oct 2026, `design/24`: *Equipment, spells
+  and arts* and *Bosses and trials* were two—, warriors' graves,
   Dreamers, mask shards, vessel fragments, pale ore: the masks, vessels and nail it counts) ·
   **Collectibles** (grubs, charm notches, simple keys, key items, rancid eggs, **relics** —the four
-  in one layer—, maps) · **Quests** (whispering roots, Grimmkin flames, meetings with characters) ·
+  in one layer—, maps) · **Quests** (whispering roots, Grimmkin flames, the Grimmkin, meetings with characters) ·
   **Enemies and bosses** (enemies, other bosses) · **Secrets and geo** (walls and floors, hidden places, geo chests, geo
   rocks) · **Places** (benches, stag stations, trams, lifts, shops and characters, hot springs,
   cocoons, soul totems, lore tablets) · **Your game** (only with a save: your bench, shade,
-  Dreamgate, markers). What each holds, below. **What a new user sees** (no prefs yet, `DEFAULT_ON`): the 112%'s things (charms,
+  Dreamgate, markers). The layers that are a set of one kind —key items, relics, other bosses,
+  meetings with characters, shops and characters, walls and floors, markers— carry a **caret**
+  beside them: tapped, it opens what the layer holds, with pictures, read from its pins, **each a
+  switch of its own** (`pgMapSubOff`, by a stable key: the item, the relic, the foe, the character,
+  the wall's kind, the marker's colour): hide Sly and every other shop stays; with the layer hidden,
+  tapping one shows that one alone; hiding the last one hides the layer. A layer with some of its
+  members hidden shows its picture half-lit, and its own switch shows it whole again; the group's
+  title and *Show all · Hide all* reset its members too. What each holds, below. **What a new user sees** (no prefs yet, `DEFAULT_ON`): the 112%'s things (charms,
   equipment, bosses, graves, Dreamers, mask shards, vessel fragments, pale ore), the other bosses, grubs, benches,
   stag stations, trams, shops and characters, your game's own and the area names, about 250 pins;
   the rest starts off, to switch on. Which are hidden is remembered (`pgMapOff`). With no save
@@ -1502,10 +1592,11 @@ on Cornifer's map). It's the tablet chosen among three variants in
     placed in a room isn't pinned twice. Two fights load their own copy of a room the map doesn't
     draw: the Crystal Guardian goes on its bench room and Flukemarm where she leaves Flukenest; the
     Crystal Guardian's second fight, at the top of the Peak, is named *Enraged Guardian* (same
-    Journal entry). The bosses no room places go on the game's pin for their fight: the nine
-    Grimmkin on the flames of Grimm's ritual (Novice: Greenpath, Crystal Peak, City of Tears;
-    Master: King's Pass, Resting Grounds, Kingdom's Edge; Nightmare: Fungal Core, Royal Waterways,
-    the Hive; the wiki's pages), and the Hollow Knight and the Radiance on the Black Egg. The
+    Journal entry). The Hollow Knight and the Radiance, which no room places, go on the game's pin
+    for the Black Egg. The nine **Grimmkin** aren't here but in *Quests*, a layer of their own
+    beside their flames (1 Oct 2026): they're Grimm's ritual's, each on the game's pin for its
+    flame (Novice: Greenpath, Crystal Peak, City of Tears; Master: King's Pass, Resting Grounds,
+    Kingdom's Edge; Nightmare: Fungal Core, Ancient Basin, the Hive; the wiki's pages). The
     Godhome-only bosses have no place on the map. The **enemies**, each entry where it lives, one pin per room with how many
     there are (`js/scene-objects.js`, read from the game's scenes: every object with the game's
     `EnemyDeathEffects` counts for the entry its `playerDataName` names), saying what's left of it
@@ -1518,6 +1609,10 @@ on Cornifer's map). It's the tablet chosen among three variants in
     found), **geo chests** and **geo rocks**, each where it is and marked by the save's own record
     (`sceneData`: `persistentBoolItems`, `geoRocks` with no hits left). Those in a room the map
     doesn't draw (the White Palace, Godhome, a house) aren't shown: they'd pile on its door.
+    Their pictures (`design/25`, 1 Oct 2026): a geo chest is the game's own (`assets/world/chest.png`,
+    from its tk2d sprite, `tools/extract-scenes.py --art`); a wall that breaks, a brick wall with a
+    hole knocked through, and a hidden place, an archway half veiled with a glint, are drawn (the
+    game's walls are tall and nearly black at icon size, and it has no picture for hidden places).
     Places also gets **soul totems** and **lore tablets**, whose card shows the tablet's text as
     the game writes it. The enemies, the hidden places, the geo rocks and the totems (hundreds
     of pins) start hidden (`pgMapSeen`), then are yours to show.
@@ -1526,7 +1621,9 @@ on Cornifer's map). It's the tablet chosen among three variants in
     the game's picture. The save has no position of the Knight's own: the game saves at a bench
     (and on dying or quitting), and the map's compass is only live. The shade and the Dreamgate
     are at their room's centre: the game stores `shadeMapPos` and `dreamgateMapPos` so
-    (`GameMap.PositionCompass`), not the exact spot.
+    (`GameMap.PositionCompass`), not the exact spot. They go on top of the other pins, where they
+    are; one that would cover a pin at that zoom (the room's centre is where many things stand)
+    steps aside, the nearest way that covers nothing (`placeMarks`; your bench stays on its pin).
   - **The areas' and the places' names**, as the game's map titles them (the areas' from afar,
     the places' once closer; they keep their size on screen), switched by their own box,
     *Show the area names*, beside the other two choices.

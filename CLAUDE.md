@@ -29,13 +29,19 @@ Before touching anything, check whether it's already solved:
   game patch). The same goes for `js/benches.js` with `assets/benches/`, each bench as the game
   draws it (`tools/extract-benches.py`), and `js/scene-objects.js` with `assets/world/`, what
   each room holds for the Map: enemies, secrets, geo, totems, tablets (`tools/extract-scenes.py`).
-  `js/people.js`, the characters' meetings, was read by hand from the game's scenes.
+  `js/hornet-moves.js` with `assets/hornet/` too: Hornet's moves from Silksong's own sprites
+  (`tools/extract-hornet.py`), for the sister site's link, `js/app-sister.js` (hidden until the
+  sister is published: `SISTER = false`; `#…&sister=1` shows it).
+  `js/people.js`, the characters' meetings, was read by hand from the game's scenes. And
+  `js/map-fixes.js`, where a pin really goes when all that places it wrong: written by the Map's
+  **admin mode** (`#view=map&admin=1`, dragging the pin; `npm run admin` serves the site and
+  saves it, `tools/admin.js`), never by hand. Fix a pin there, not in the formulas.
 
 Neither folder is part of the page: `index.html` doesn't load them.
 
 ## Hard constraints
 
-- **No framework and no build.** `index.html` loads **thirty-five classic scripts**, not modules.
+- **No framework and no build.** `index.html` loads **thirty-eight classic scripts**, not modules.
   The page is `js/app.js` (the core) and one script per screen (`js/app-*.js`), sharing the
   `HK.app` object, and `js/app-boot.js` starts it; the rules for sharing are in `js/app.js`'s header.
   Plus GoatCounter's (`async`, external), the visit counter: the site has to work the same

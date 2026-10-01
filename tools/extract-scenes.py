@@ -20,6 +20,11 @@ What it reads, per scene (level<N>, in BuildSettings' order):
   · and, placed by the community's ItemChanger (its locations.json, the same pinned commit as
     tools/fetch-collectibles.js), the geo chests, the soul totems and the lore tablets, whose
     text key is the one their inspect FSM carries (kb/data/all_text.json names it).
+And the Map's pictures the game draws for them (assets/world/): a soul totem and a lore tablet
+from their scenes' sprites, and the geo chest from its tk2d sprite collection (TK2D_ART).
+`--art` writes only the tk2d ones, without the scenes' pass (js/scene-objects.js untouched):
+
+    python3 tools/extract-scenes.py --art [path/to/hollow_knight_Data]
 """
 import json, os, re, struct, sys, urllib.request
 from collections import defaultdict
@@ -28,7 +33,8 @@ from UnityPy.helpers.TypeTreeGenerator import TypeTreeGenerator
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
-DATA = sys.argv[1] if len(sys.argv) > 1 else os.path.expanduser(
+ARGS = [a for a in sys.argv[1:] if not a.startswith('--')]
+DATA = ARGS[0] if ARGS else os.path.expanduser(
     '~/.local/share/Steam/steamapps/common/Hollow Knight/hollow_knight_Data')
 GAME = os.path.dirname(DATA)
 OUT_JS = os.path.join(ROOT, 'js', 'scene-objects.js')
@@ -36,6 +42,9 @@ OUT_ART = os.path.join(ROOT, 'assets', 'world')
 # The Map's pictures for them that the game draws with a plain sprite: a soul totem, lit, and a
 # lore tablet (Greenpath's), by their scene and sprite; 128 px tall at most.
 ART = {'totem': ('Abyss_04', 'Mini_totems_0002_5'), 'tablet': ('Fungus1_30', 'green_path_lore_tabs_0002_2')}
+# The ones drawn with tk2d (a sprite collection over an atlas, as most of the game's animated
+# things): the geo chest, closed (design/25-map-secret-icons.html), by its file, collection and sprite.
+TK2D_ART = {'chest': ('sharedassets6.assets', 'Chest', 'chest0000')}
 TEXT = os.path.join(ROOT, 'kb', 'data', 'all_text.json')
 IC_LOCATIONS = ('https://raw.githubusercontent.com/homothetyhk/HollowKnight.ItemChanger/'
                 'e57bc4e37bf7297f39b51b17af93f80c1ef8ce9e/ItemChanger/Resources/locations.json')
@@ -61,7 +70,43 @@ def tilemap_size(o):
             return [ints[i], ints[i + 1]]
     return None
 
+def tk2d_art():
+    """TK2D_ART's pictures: the sprite's rectangle of its collection's atlas (its UVs; turned back
+    upright when tk2d stored it flipped), trimmed, 128 px at most."""
+    for key, (file, coll, name) in TK2D_ART.items():
+        env = UnityPy.load(os.path.join(DATA, file))
+        gen = TypeTreeGenerator(env.objects[0].assets_file.unity_version)
+        gen.load_local_game(GAME)
+        env.typetree_generator = gen
+        objs = {o.path_id: o for o in env.objects}
+        data = None
+        for o in env.objects:
+            if o.type.name != 'MonoBehaviour':
+                continue
+            try:
+                d = o.read_typetree()
+            except Exception:
+                continue
+            if d.get('spriteCollectionName') == coll and d.get('spriteDefinitions'):
+                data = d
+                break
+        sd = next(x for x in data['spriteDefinitions'] if x.get('name') == name)
+        tex = objs[data['textures'][sd.get('materialId', 0)]['m_PathID']].read().image.convert('RGBA')
+        w, h = tex.size
+        us, vs = [u['x'] for u in sd['uvs']], [u['y'] for u in sd['uvs']]
+        im = tex.crop((round(min(us) * w), round((1 - max(vs)) * h), round(max(us) * w), round((1 - min(vs)) * h)))
+        if sd.get('flipped'):
+            im = im.rotate(90, expand=True)
+        im = im.crop(im.getbbox())
+        im.thumbnail((128, 128))
+        os.makedirs(OUT_ART, exist_ok=True)
+        im.save(os.path.join(OUT_ART, key + '.png'), optimize=True)
+        print('assets/world/%s.png %dx%d' % ((key,) + im.size))
+
 def main():
+    tk2d_art()
+    if '--art' in sys.argv:
+        return
     all_text = json.load(open(TEXT, encoding='utf-8'))
     text = set(all_text['EN'])
     # A text of the game's, as the site writes it: its pages as paragraphs, its line breaks kept,

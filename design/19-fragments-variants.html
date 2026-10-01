@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Shards on Progress</title>
+<!-- Design material, not part of the site. Progress's three rows that count pieces (1 Oct 2026):
+     Mask Shards, Vessel Fragments and Nail Upgrades are one pip in the head and one plate when
+     open ("Masks 6/9", a link to Your game), while every other row shows one pip per thing. The
+     question: draw the pieces? Over the site's real CSS and data (js/collectibles.js):
+       Now · as it is.
+       A · by what counts: the head draws the 4 masks / 3 vessels / 4 nails the 112% counts, each
+           filling with its pieces (a quarter per shard, a third per fragment), so a pip is a point
+           as in the other rows; open, the 16 shards (9 fragments, 6 ores) each with its place and
+           its pin, grouped by how you get them (in the world, Sly, rewards). The nail: its four
+           upgrades with their cost, then the six ores.
+       B · every piece: the head draws the 16 shards (9, 6) themselves; open, the same plates in
+           one run. The pips no longer match the points (16 pips for 1/4).
+     And how the pieces and Your game's figures meet in free mode (a save from the game always
+     agrees): the pieces lead (marking the fourth shard adds a mask in Your game) or Your game
+     leads (the marks only say which you have; the figure stays Your game's, and a mismatch says so).
+     Each open row has, besides each piece's pin, "See all N on the map": the Map's focus on the
+     row's pieces (the nail's: the six ores and the Nailsmith).
+     Chosen on 1 Oct 2026: A, the pieces leading, with "See all" (built: js/app-progress.js,
+     css/app.css; docs/guide.md). Built, the rule is "Your game's figure is never below the marks"
+     rather than ±1: free mode starts with everything, and ±1 there took a piece away on unmarking
+     one that marking hadn't added.
+     ?v=now|a|b&link=pieces|game&lang=es|en. The <base> points at the root so "assets/…" works. -->
+<base href="../">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+/* ════ The mockup's chrome: none of this goes into the site ══════════════════════════════ */
+body { background: var(--page-bg); background-attachment: fixed; margin: 0; }
+.mk { max-width: 1000px; margin: 0 auto; padding: var(--sp-6) var(--page-pad) var(--sp-16); }
+.mk-h1 { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-xl); letter-spacing: var(--track-title); color: var(--ink-strong); margin: 0 0 var(--sp-2); }
+.mk-lead { max-width: var(--measure); color: var(--ink-2); font-size: var(--fs-sm); margin: 0 0 var(--sp-4); }
+.mk-bar { position: sticky; top: 0; z-index: 50; display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-4);
+  padding: var(--sp-2) 0; margin-bottom: var(--sp-6); background: var(--scene-bg); border-bottom: 1px solid var(--line); font-size: var(--fs-sm); color: var(--muted); }
+.mk-bar b { font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); font-weight: 600; }
+.mk-bar button { background: none; border: 0; padding: var(--sp-1) 0; font: inherit; color: var(--muted); cursor: pointer; }
+.mk-bar button[aria-pressed="true"] { color: var(--accent); box-shadow: inset 0 -1px 0 var(--accent-line); }
+.mk-sep { width: 1px; align-self: stretch; background: var(--line); }
+.mk-note { max-width: var(--measure); margin: 0 auto var(--sp-6); color: var(--ink-2); font-size: var(--fs-sm); text-align: center; min-height: 3em; }
+.mk-game { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-2) var(--sp-6); margin: 0 auto var(--sp-6); font-size: var(--fs-sm); color: var(--muted); }
+.mk-game b { font-family: var(--font-num); font-variant-numeric: tabular-nums; color: var(--ink-strong); }
+.mk-game button { background: none; border: 1px solid var(--line-ctl); border-radius: var(--r-sm); color: var(--ink-2); font: inherit; padding: 0 var(--sp-2); cursor: pointer; }
+
+/* ════ What would go into the site ═══════════════════════════════════════════════════════ */
+/* A pip that fills with its pieces: the shadowed picture, and the lit one cut from the bottom up. */
+.fx-pip { position: relative; }
+.fx-pip img + img { position: absolute; inset: 0; margin: auto; filter: none; opacity: 1; clip-path: inset(calc((1 - var(--f)) * 100%) 0 0 0); }
+.fx-sep { width: 1px; height: 14px; align-self: center; margin: 0 var(--sp-1); background: var(--line); }
+/* Open: the pieces in groups, each with a quiet label. */
+.fx-group + .fx-group { margin-top: var(--sp-6); }
+.fx-sub { margin: 0 0 var(--sp-3); font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); }
+.fx-sub span { margin-left: var(--sp-2); font-family: var(--font-num); font-variant-numeric: tabular-nums; letter-spacing: 0; text-transform: none; color: var(--muted); }
+.fx-all { display: flex; justify-content: flex-end; margin: 0 0 var(--sp-2); font-size: var(--fs-sm); }
+.fx-warn { margin: 0 0 var(--sp-4); font-size: var(--fs-xs); color: var(--ink-2); }
+</style>
+</head>
+<body>
+<script src="js/i18n.js"></script>
+<script src="js/data.js"></script>
+<script src="js/rooms.js"></script>
+<script src="js/collectibles.js"></script>
+
+<div class="mk">
+  <h1 class="mk-h1">Shards on Progress</h1>
+  <p class="mk-lead">Progress's Mask Shards, Vessel Fragments and Nail Upgrades: one pip and one plate today. Two ways to draw
+    their pieces, and two ways for the marks to meet Your game's figures in free mode. Tap the plates: they mark.</p>
+  <div class="mk-bar" id="bar"></div>
+  <p class="mk-note" id="note"></p>
+  <div class="mk-game" id="game"></div>
+  <div class="gear-body pg-body"><ol class="pg-rows" id="rows"></ol></div>
+</div>
+
+<script>
+'use strict';
+const HK = globalThis.HK, D = HK.data, R = HK.rooms, CO = HK.collectibles, I = HK.i18n;
+const q = new URLSearchParams(location.search);
+const st = { v: q.get('v') || 'a', link: q.get('link') || 'pieces', lang: q.get('lang') || 'es', open: new Set(['masks', 'vessels', 'nail']) };
+I.setLang(st.lang);
+const t = I.t, L = (o) => (o && (o[st.lang] || o.en)) || '';
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const num = (n) => I.nf(0).format(n);
+const VARIANTS = {
+  now: ['Now', 'As it is: one pip, one plate that takes you to Your game.'],
+  a: ['A · By what counts', 'The head draws what the 112% counts (4 masks, 3 vessels, 4 nails), each filling with its pieces: a pip is still a point. Open, every piece with its place and its pin, grouped by how you get it.'],
+  b: ['B · Every piece', 'The head draws the pieces themselves (16, 9, 6). Open, the same plates in one run. The pips no longer match the points: 16 pips for 1/4.'],
+};
+const LINKS = {
+  pieces: ['The pieces lead', 'Marking a piece moves Your game: the fourth shard adds a mask, the third fragment a vessel. One figure, two ways to set it.'],
+  game: ['Your game leads', 'The marks only say which pieces you have; the figure is Your game\'s. When they disagree, the row says so.'],
+};
+// Mockup-only strings (the site would take them into js/i18n.js).
+const S = {
+  world: { es: 'En el mundo', en: 'In the world' }, sly: { es: 'Sly', en: 'Sly' },
+  rewards: { es: 'Recompensas', en: 'Rewards' }, upgrades: { es: 'Mejoras', en: 'Upgrades' },
+  ore: { es: 'Mineral Pálido', en: 'Pale Ore' },
+  mismatch: { es: 'Tu partida dice {a}; aquí hay {b} marcados.', en: 'Your game says {a}; {b} marked here.' },
+  shards: { es: '{n} fragmentos', en: '{n} shards' }, frags: { es: '{n} fragmentos', en: '{n} fragments' },
+  game: { es: 'Tu partida', en: 'Your game' },
+  all: { es: 'Ver los {n} en el mapa', en: 'See all {n} on the map' },
+  went: { es: 'Iría al Mapa, enfocado en {n} pines: los que te faltan resaltados, Anterior/Siguiente para recorrerlos.', en: 'Would go to the Map, focused on {n} pins: the ones missing stand out, Previous/Next to go through them.' },
+};
+const T = (k, p = {}) => L(S[k]).replace(/\{(\w+)\}/g, (_, x) => p[x]);
+// The Nailsmith's prices (wiki, "Nailsmith"): geo and Pale Ore for each upgrade.
+const NAIL_COST = [null, [250, 0], [800, 1], [2000, 2], [4000, 3]];
+
+/* A game halfway through: 6 masks and 2 loose shards, 1 vessel and 1 loose fragment, the
+   Sharpened Nail; the pieces marked to match. */
+const items = (k) => CO.ITEMS.filter((it) => it.kind === k);
+const SH = items('mask-shard'), VF = items('vessel-fragment'), OR = items('pale-ore');
+const found = new Set([...SH.slice(2, 8), ...VF.slice(1, 5), ...OR.slice(0, 2)].map((it) => it.id));
+const game = { masks: 6, shards: 2, vessels: 1, frags: 1, nail: 1 };
+const nFound = (list) => list.filter((it) => found.has(it.id)).length;
+// The pieces leading: Your game's figures follow the marks.
+function follow() {
+  if (st.link !== 'pieces') return;
+  const s = nFound(SH), f = nFound(VF);
+  Object.assign(game, { masks: 5 + Math.floor(s / 4), shards: s % 4, vessels: Math.floor(f / 3), frags: f % 3 });
+}
+const pieces = { masks: () => (game.masks - 5) * 4 + game.shards, vessels: () => game.vessels * 3 + game.frags };
+
+const where = (scene) => { const a = R.areaOf(scene), pl = R.placeOf(scene); return [a && L(R.AREAS[a]), pl && L(R.PLACES[pl])].filter(Boolean).join(' · '); };
+const howOf = (it) => {
+  if (!it.src) return '';
+  const [who, n] = it.src;
+  return who === 'sly' ? `${num(n)} geo` : who === 'seer' ? t('pgmEssence', { n: num(n) }) : who === 'grubs' ? t('pgmGrubs', { n: num(n) }) : '';
+};
+const groupOf = (it) => (!it.src ? 'world' : it.src[0] === 'sly' ? 'sly' : 'rewards');
+const PIN = '<svg class="ic" width="12" height="14" viewBox="0 0 12 14" fill="currentColor" aria-hidden="true"><path d="M6 0.6a4.9 4.9 0 0 0-4.9 4.9c0 3.5 4.9 8 4.9 8s4.9-4.5 4.9-8A4.9 4.9 0 0 0 6 0.6zm0 6.7a1.8 1.8 0 1 1 0-3.6 1.8 1.8 0 0 1 0 3.6z"/></svg>';
+// The whole row's pieces at once: the Map's focus (js/app-map.js, 'collect:<kind>'), as Your game's pin does.
+const allLink = (n) => `<p class="fx-all"><button type="button" class="text-btn map-link" data-all="${n}">${PIN}${esc(T('all', { n: num(n) }))}</button></p>`;
+const pinBtn = (name) => `<button type="button" class="icon-btn map-pin" aria-label="${esc(t('seeOnMap') + ' · ' + name)}" title="${esc(t('seeOnMap'))}">${PIN}</button>`;
+
+function plate({ art, name, val, on, act, id, pin = true }) {
+  const body = `<span class="gplate-art"><img src="${art}" alt=""></span>
+      <span class="gplate-name">${esc(name)}</span>
+      <span class="gplate-val is-none">${esc(val || (on ? '' : t('notFound')))}</span>`;
+  const b = `<button type="button" class="gplate${on ? ' is-on' : ''}" data-act="${act}" data-id="${id}" aria-pressed="${on}">${body}</button>`;
+  return pin ? `<span class="gplate-wrap">${b}${pinBtn(name)}</span>` : b;
+}
+const piecePlate = (it, art) => plate({ art, name: where(it.scene) || it.scene, val: found.has(it.id) ? '' : howOf(it), on: found.has(it.id), act: 'piece', id: it.id });
+function grouped(list, art) {
+  return ['world', 'sly', 'rewards'].map((g) => {
+    const of = list.filter((it) => groupOf(it) === g);
+    if (!of.length) return '';
+    return `<div class="fx-group"><p class="fx-sub">${esc(L(S[g]))}<span>${num(nFound(of))}/${num(of.length)}</span></p>
+      <div class="pg-plates">${of.map((it) => piecePlate(it, art)).join('')}</div></div>`;
+  }).join('');
+}
+const pip = (src, f) => (f >= 1 ? `<span class="pg-pip is-on"><img src="${src}" alt=""></span>`
+  : f <= 0 ? `<span class="pg-pip"><img src="${src}" alt=""></span>`
+  : `<span class="pg-pip fx-pip" style="--f:${f}"><img src="${src}" alt=""><img src="${src}" alt=""></span>`);
+
+/* Each row: { id, name, got, max, pips, open } */
+function rows() {
+  const art = { mask: D.art('hud', 'mask'), shard: D.art('hud', 'mask-shard'), vessel: D.art('hud', 'vessel'), frag: D.art('hud', 'vessel-frag'), ore: D.art('items', 'pale-ore') };
+  const masks = game.masks - 5, mp = pieces.masks(), vp = pieces.vessels();
+  const warn = (have, marked, unit) => (st.link === 'game' && have !== marked ? `<p class="fx-warn">${esc(T('mismatch', { a: T(unit, { n: num(have) }), b: num(marked) }))}</p>` : '');
+  const out = [];
+  if (st.v === 'now') {
+    out.push({ id: 'masks', name: t('pgCat_masks'), got: masks, max: 4, pips: pip(art.mask, masks / 4 > 0 ? 1 : 0),
+      open: `<div class="pg-plates">${plate({ art: art.mask, name: t('masksField'), val: `${game.masks}/9`, on: false, act: '', id: '', })}</div>` });
+    out.push({ id: 'vessels', name: t('pgCat_vessels'), got: game.vessels, max: 3, pips: pip(art.vessel, game.vessels ? 1 : 0),
+      open: `<div class="pg-plates">${plate({ art: art.vessel, name: t('vesselsField'), val: `${game.vessels}/3`, on: false, act: '', id: '' })}</div>` });
+    out.push({ id: 'nail', name: t('pgCat_nail'), got: game.nail, max: 4, pips: pip(D.art('nails', game.nail), game.nail ? 1 : 0),
+      open: `<div class="pg-plates">${plate({ art: D.art('nails', game.nail), name: L(D.NAILS[game.nail]), val: `${game.nail}/4`, on: false, act: '', id: '' })}</div>` });
+    return out;
+  }
+  // The nail: its upgrades are the Nailsmith's; the link takes the six ores and him (as Your game's nail pin does).
+  const nailPlates = `${allLink(OR.length + 1)}<div class="fx-group"><p class="fx-sub">${esc(L(S.upgrades))}<span>${num(game.nail)}/4</span></p><div class="pg-plates">${[1, 2, 3, 4].map((l) => {
+      const [geo, ore] = NAIL_COST[l];
+      return plate({ art: D.art('nails', l), name: L(D.NAILS[l]), val: `${num(geo)} geo${ore ? ` · ${num(ore)} ${L(S.ore)}` : ''}`, on: game.nail >= l, act: 'nail', id: l, pin: false });
+    }).join('')}</div></div>
+    <div class="fx-group"><p class="fx-sub">${esc(L(S.ore))}<span>${num(nFound(OR))}/6</span></p><div class="pg-plates">${OR.map((it) => piecePlate(it, art.ore)).join('')}</div></div>`;
+  if (st.v === 'a') {
+    out.push({ id: 'masks', name: t('pgCat_masks'), got: masks, max: 4, pips: [0, 1, 2, 3].map((i) => pip(art.mask, Math.min(1, Math.max(0, (mp - i * 4) / 4)))).join(''),
+      open: allLink(SH.length) + warn(mp, nFound(SH), 'shards') + grouped(SH, art.shard) });
+    out.push({ id: 'vessels', name: t('pgCat_vessels'), got: game.vessels, max: 3, pips: [0, 1, 2].map((i) => pip(art.vessel, Math.min(1, Math.max(0, (vp - i * 3) / 3)))).join(''),
+      open: allLink(VF.length) + warn(vp, nFound(VF), 'frags') + grouped(VF, art.frag) });
+    out.push({ id: 'nail', name: t('pgCat_nail'), got: game.nail, max: 4, pips: [1, 2, 3, 4].map((l) => pip(D.art('nails', l), game.nail >= l ? 1 : 0)).join(''), open: nailPlates });
+  } else {
+    const flat = (list, a) => `<div class="pg-plates">${list.map((it) => piecePlate(it, a)).join('')}</div>`;
+    const marks = (list, a) => list.map((it) => pip(a, found.has(it.id) ? 1 : 0)).join('');
+    out.push({ id: 'masks', name: t('pgCat_masks'), got: masks, max: 4, pips: marks(SH, art.shard), open: allLink(SH.length) + warn(mp, nFound(SH), 'shards') + flat(SH, art.shard) });
+    out.push({ id: 'vessels', name: t('pgCat_vessels'), got: game.vessels, max: 3, pips: marks(VF, art.frag), open: allLink(VF.length) + warn(vp, nFound(VF), 'frags') + flat(VF, art.frag) });
+    out.push({ id: 'nail', name: t('pgCat_nail'), got: game.nail, max: 4,
+      pips: [1, 2, 3, 4].map((l) => pip(D.art('nails', l), game.nail >= l ? 1 : 0)).join('') + '<span class="fx-sep"></span>' + marks(OR, art.ore), open: nailPlates });
+  }
+  return out;
+}
+
+const chevron = (up) => `<svg class="ic chev ${up ? 'up' : ''}" width="12" height="8" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1.5 L6 6 L11 1.5"/></svg>`;
+function paint() {
+  follow();
+  const btn = (k, v, label) => `<button type="button" data-k="${k}" data-v="${v}" aria-pressed="${st[k] === v}">${esc(label)}</button>`;
+  document.getElementById('bar').innerHTML = `<b>Variant</b>${Object.entries(VARIANTS).map(([v, [n]]) => btn('v', v, n)).join('')}
+    <span class="mk-sep"></span><b>Free mode</b>${Object.entries(LINKS).map(([v, [n]]) => btn('link', v, n)).join('')}
+    <span class="mk-sep"></span>${btn('lang', 'es', 'ES')}${btn('lang', 'en', 'EN')}`;
+  document.getElementById('note').textContent = VARIANTS[st.v][1] + (st.v === 'now' ? '' : ' — ' + LINKS[st.link][1]);
+  document.getElementById('game').innerHTML = `<span>${esc(L(S.game))}:</span>
+    <span>${esc(t('masksField'))} <b>${game.masks}</b> + <b>${game.shards}</b>/4 ${st.link === 'game' ? '<button data-g="masks">+</button>' : ''}</span>
+    <span>${esc(t('vesselsField'))} <b>${game.vessels}</b> + <b>${game.frags}</b>/3 ${st.link === 'game' ? '<button data-g="vessels">+</button>' : ''}</span>
+    <span>${esc(L(D.NAILS[game.nail]))}</span>`;
+  document.getElementById('rows').innerHTML = rows().map((c) => {
+    const open = st.open.has(c.id);
+    return `<li class="pg-row${open ? ' is-open' : ''}${c.got === c.max ? ' is-full' : ''}">
+      <button type="button" class="pg-head" data-row="${c.id}" aria-expanded="${open}">
+        <span class="pg-name">${esc(c.name)}</span><span class="pg-pips" aria-hidden="true">${c.pips}</span>
+        <span class="pg-pts"><b>${num(c.got)}</b><i class="u">/${num(c.max)}</i></span>
+        <span class="disc-ring" aria-hidden="true">${chevron(open)}</span></button>
+      ${open ? `<div class="pg-open">${c.open}</div>` : ''}</li>`;
+  }).join('');
+}
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  if (b.dataset.k) { st[b.dataset.k] = b.dataset.v; if (b.dataset.k === 'lang') I.setLang(st.lang); }
+  else if (b.dataset.row) { st.open.has(b.dataset.row) ? st.open.delete(b.dataset.row) : st.open.add(b.dataset.row); }
+  else if (b.dataset.act === 'piece') { found.has(b.dataset.id) ? found.delete(b.dataset.id) : found.add(b.dataset.id); }
+  else if (b.dataset.act === 'nail') { const l = Number(b.dataset.id); game.nail = game.nail >= l ? l - 1 : l; }
+  else if (b.dataset.all) { document.getElementById('note').textContent = T('went', { n: num(Number(b.dataset.all)) }); return; }
+  else if (b.dataset.g === 'masks') { const p = (pieces.masks() + 1) % 17; Object.assign(game, { masks: 5 + Math.floor(p / 4), shards: p % 4 }); }
+  else if (b.dataset.g === 'vessels') { const p = (pieces.vessels() + 1) % 10; Object.assign(game, { vessels: Math.floor(p / 3), frags: p % 3 }); }
+  else return;
+  paint();
+});
+paint();
+</script>
+</body>
+</html>

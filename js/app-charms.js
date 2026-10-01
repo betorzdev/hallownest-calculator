@@ -242,6 +242,7 @@
     const a = imp.action;
     const cls = ['qc'];
     if (half) cls.push('qc-half');
+    if (App.darkCls(`assets/charms/${c.id}.png`)) cls.push('is-dark');
     if (imp.equipped) cls.push('is-on');
     // What was just equipped or found lights up once.
     if (justWorn(c.id) || justFound(c.id)) cls.push('is-new');
@@ -578,7 +579,7 @@
       const name = lvl ? pick(sp.levels[lvl]) : pick(sp.slot);
       const note = lvl ? t('soulCost', { n: fmtStat(App.sheet.stats['soul.spellCost']) }) : t('notLearned');
       return `<button type="button" class="plate${lvl ? ' is-on' : ''}${flashCls('spell.' + k)}" data-act="kpi" data-id="spell.${k}" title="${esc(t('goTo', { label: name }))}">
-        <span class="plate-art"><img src="${icon}" alt=""></span>
+        <span class="plate-art${App.darkCls(icon)}"><img src="${icon}" alt=""></span>
         <span class="plate-name"${NT}>${esc(name)}</span>
         ${lvl ? `<span class="plate-val">${fmtStatRich(stat)}</span>` : ''}
         <span class="plate-note">${esc(note)}</span>

@@ -262,6 +262,7 @@
   --dur-step: 100ms;
   --dur-run: 500ms;
   --kn-bar: 26px;      /* sitting under a tab's title without touching its letters */
+  --dur-sister-call: 1.6s;  /* the sister's link breathing after Hornet's thread (js/app-sister.js), three times */
   --kn-bench: 96px;    /* sitting on his bench on Your game (the bench at the game's scale to him) */
   --kn-bench-max: 180px; /* the tallest a bench is drawn there (a bigger one shrinks, him with it) */
 
@@ -349,7 +350,9 @@
   --dur-card: 1.8s;
   --dur-card-bench: 1.2s;
   --delay-card-bench: 0.5s;
-  --delay-card-bar: 1.1s;
+  --delay-card-count: 1s;               /* the figures' count-up, and the bar's gain with it: */
+  --dur-card-count: 1.1s;               /* COUNT_DELAY and COUNT_MS in js/app-home.js */
+  --ease-count: cubic-bezier(0.33, 1, 0.68, 1);  /* its easing: a cubic ease-out, 1 − (1 − p)³ */
   --delay-card-new: 1.6s;
   --dur-card-step: 0.18s;               /* between one new thing and the next */
   --dur-breathe: 5s;                    /* the bench's light, in and out */
@@ -393,6 +396,13 @@
      layer that's off. Colourless and half-lit: each one's relief can still be read, where a flat
      silhouette made them all look the same. */
   --missing-art: grayscale(1) brightness(0.4);
+  /* The sprites dark by nature (D.DARK_ART: the pantheons' statues, Descending Dark, the Shade
+     Cloak…), which the black swallows even when had (design/21, 1 Oct 2026): a thin rim of the
+     soul's white on their outline, dimmer on what you don't have (after --missing-art, so the
+     shadow doesn't dim it away), and a faint light behind a small one. */
+  --dark-art-rim: drop-shadow(0 0 1px rgba(236, 236, 236, 0.55)) drop-shadow(0 0 5px rgba(236, 236, 236, 0.12));
+  --dark-art-rim-off: drop-shadow(0 0 1px rgba(236, 236, 236, 0.35));
+  --halo-dark: radial-gradient(closest-side, rgba(236, 236, 236, 0.16), transparent);
 
   /* The charm screen (design/02-hollow-knight.md §5 and §7.7).
      The equipped charm, with a soft light behind it, like the game, and

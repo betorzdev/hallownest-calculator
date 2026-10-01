@@ -562,6 +562,46 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 /* On the screen bar: sitting at its bottom edge, under the current tab's title. */
 .nav-tabs > .kn { bottom: 0; left: 0; }
 
+/* ── The sister site's link and its Hornet (js/app-sister.js) ──────────────
+   «Silksong ↗», one more loose word after Share, in Share's type; instead of Share's underline, the
+   silk thread Hornet sewed (drawn in the layer under the masthead's letters). Once her thread is in,
+   it breathes in bone three times; a tug of the needle makes it flinch. On a phone, a line of its own
+   under the masthead, on the right, with room above for her (css: the ≤599 px block). Hidden until
+   the sister is published: without .has-sister none of this is drawn. */
+.mh-sister {
+  display: inline-flex; align-items: center; gap: var(--sp-1); min-height: var(--ctl-sm);
+  font-family: var(--font-body); font-size: var(--fs-md); color: var(--ink-2); text-decoration: none;
+  transition: color var(--dur) var(--ease);
+}
+.mh-sister:is(:hover, :focus-visible) { color: var(--accent); }
+.mh-sister-arr { font-size: var(--fs-2xs); }
+.mh-sister-row { display: none; }
+.masthead.has-sister { position: relative; z-index: 1; }
+@media (prefers-reduced-motion: no-preference) {
+  .mh-sister.is-called { color: var(--ink-strong); animation: sister-call var(--dur-sister-call) var(--ease-fade) 3; }
+  .mh-sister.is-struck { animation: sister-struck var(--dur-slow) var(--ease-fade); }
+}
+@keyframes sister-call { 50% { text-shadow: 0 0 6px var(--focus-glow), 0 0 14px color-mix(in oklab, var(--ink-strong) 40%, transparent); } }
+@keyframes sister-struck { 0% { text-shadow: 0 0 2px var(--focus-glow), 0 0 18px var(--focus-glow); transform: translateX(-3px); } 100% { transform: none; } }
+/* Her two layers in .page: the thread under the masthead (z-index 0 < its 1), she over it, and both
+   under the screen bar when it sticks. */
+.sis-lay { position: absolute; inset: 0; pointer-events: none; }
+.sis-lay.is-back { z-index: 0; }
+.sis-lay.is-front { z-index: 3; }
+.sis-silk { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.sis-thread { fill: none; stroke: var(--ink-strong); stroke-width: 1px; stroke-linecap: round; opacity: 0.6; }
+.sis-lay.is-glint .sis-thread { filter: drop-shadow(0 0 3px var(--focus-glow)); }
+/* Hornet: the strip of her move as a background, stepped by JS, or by .is-loop for a move that
+   repeats (--cell, --n and the duration set from js/hornet-moves.js). */
+.sis-hornet { position: absolute; left: 0; top: 0; background-repeat: no-repeat; will-change: transform; }
+.sis-hornet.is-loop { animation: sis-cycle 1s steps(var(--n)) infinite; }
+.sis-hornet.is-loop.is-calm { animation-name: sis-breathe; animation-timing-function: steps(var(--n), jump-none); animation-direction: alternate; }
+@keyframes sis-cycle { from { background-position-x: 0; } to { background-position-x: calc(-1 * var(--cell) * var(--n)); } }
+@keyframes sis-breathe { from { background-position-x: 0; } to { background-position-x: calc(-1 * var(--cell) * (var(--n) - 1)); } }
+.sis-fx { position: absolute; left: 0; top: 0; background-repeat: no-repeat; }
+.sis-dust { position: absolute; width: var(--sp-half); height: var(--sp-half); border-radius: 50%; background: var(--ink-strong); box-shadow: 0 0 4px var(--focus-glow); }
+.sis-note { position: absolute; font-size: var(--fs-md); color: var(--ink-strong); text-shadow: 0 0 6px var(--focus-glow); }
+
 /* The link to the game's file, on Your game's link line: the diamond lit while it follows the game. */
 .nav-live { display: inline-block; width: var(--sp-2); height: var(--sp-2); transform: rotate(45deg); border: 1px solid currentColor; }
 .nav-live.is-live { background: var(--ink-strong); border-color: var(--ink-strong); box-shadow: 0 0 8px color-mix(in oklab, var(--ink-strong) 55%, transparent); }
@@ -914,15 +954,16 @@ button.hud-mask { padding: 0; border: 0; background: none; cursor: pointer; }
 .qc.is-locked { cursor: not-allowed; }
 /* The one moved by the full-sheet chip you're looking at: lit, with its halo (above). */
 .qc.is-hot img { opacity: 1; filter: none; }
-.qc.is-locked img { opacity: 0.25; filter: grayscale(0.75); }
-.qc.is-locked:hover img { opacity: 0.45; filter: grayscale(0.75); transform: none; }
+/* One that doesn't fit now (no free notch) looks like any you don't wear, as in the game: not
+   fitting is said where it's tried —the cursor, its title, the notice— (design/22, A). */
+.qc.is-locked:hover img { opacity: 0.7; filter: grayscale(0.3); transform: none; }
 /* The one you haven't found in your game stays shadowed in every state —under the mouse, in
    the detail (is-sel), highlighted by a chip (is-hot) or warning of overcharm—: otherwise
    those rules gave it its colour back and it looked found. That's why it comes after all of
    them. It only lightens a little, and the one that would overcharm you keeps its magenta halo.
    Equipped (is-on) looks like any equipped one: you're wearing it. */
 .qc.is-missing:not(.is-on) img { filter: var(--missing-art); }
-.qc.is-missing:not(.is-on):not(.is-locked) img { opacity: 1; }
+.qc.is-missing:not(.is-on) img { opacity: 1; }
 .qc.is-missing:not(.is-on):is(:hover, :focus-visible, .is-sel, .is-hot) img { filter: var(--missing-art) brightness(1.6); }
 .qc.is-missing.is-over:not(.is-on):is(:hover, :focus-visible) img { filter: var(--missing-art) brightness(1.6) drop-shadow(0 0 8px var(--over-line)); }
 /* The locked grid —halfway through a pantheon outside its benches, or with the Charms
@@ -1248,7 +1289,17 @@ button.plate.is-on:is(:hover, :focus-visible) .plate-art > img { filter: brightn
 .gplate-wrap:has(.lvlpick) { grid-row: span 4; }
 .gplate-wrap > .gplate { grid-row: 1 / -1; }
 .map-pin { color: var(--ink-2); }
-.gplate-wrap > .map-pin { position: absolute; z-index: 1; top: 0; right: 0; }
+/* The ring hugs the corner (the button's spare hit area spills into the gap). A column too narrow
+   to fit the widest picture (100px) between two rings drops the picture below the pin rather than
+   under it (the container is the grid: on the plate it would break the subgrid). Three columns of
+   164px and their two gaps: 516px. */
+.gplates { container-type: inline-size; }
+.gplate-wrap { --pin-ring: calc(var(--sp-6) + var(--sp-half)); --pin-bleed: calc((var(--pin-ring) - var(--ctl-sm)) / 2); }
+.gplate-wrap > .map-pin { position: absolute; z-index: 1; top: var(--pin-bleed); right: var(--pin-bleed); }
+@container (width < 516px) {
+  .gplate-wrap .gplate-art { box-sizing: content-box; padding-top: var(--pin-ring); }
+  .gplate-wrap .gplate-art::before { top: var(--pin-ring); }
+}
 .field-row > .map-pin { align-self: center; }
 .map-pin.is-head { vertical-align: middle; margin-left: var(--sp-2); }
 .map-link { display: inline-flex; align-items: center; gap: var(--sp-1); }
@@ -1260,7 +1311,7 @@ button.plate.is-on:is(:hover, :focus-visible) .plate-art > img { filter: brightn
 .gplate:not(.is-on) .gplate-art :is(img, .pg-atlas) { filter: var(--missing-art); }
 /* A picture from the game's map pins (js/app-map.js, pinArtHtml): the Dreamers', the Colosseum's. */
 .gplate-art .pg-atlas { width: 50px; height: 50px; }
-.pg-pip .pg-atlas { width: 100%; height: 100%; filter: brightness(0.3) saturate(0); opacity: 0.6; }
+.pg-pip .pg-atlas { width: 100%; height: 100%; filter: var(--missing-art); }
 .gplate-name { font-size: var(--fs-xs); line-height: 1.25; color: var(--ink-2); }
 .gplate.is-on .gplate-name { color: var(--ink); }
 .gplate-val { font-size: var(--fs-md); font-weight: 700; line-height: 1.25; color: var(--ink-strong); }
@@ -1285,6 +1336,9 @@ button.gplate:is(:hover, :focus-visible) .gplate-art::before, .gplate:has(.lvlpi
 .lvl:hover, .lvl:focus-visible { color: var(--accent); border-bottom-color: var(--accent-line); }
 .lvl.is-on { border-bottom-color: var(--accent); box-shadow: 0 1px 0 var(--accent); color: var(--ink-strong); }
 .lvl.is-on img { filter: none; }
+/* The sprites dark by nature (D.DARK_ART, design/21): their rim, as on the plates. */
+.lvl.is-dark img { filter: grayscale(1) brightness(0.55) var(--dark-art-rim-off); }
+.lvl.is-on.is-dark img { filter: var(--dark-art-rim); }
 .lvl.is-none { flex: 0 0 24px; font-size: var(--fs-md); }
 .lvlpick.is-dots { gap: 0; }
 .lvlpick.is-dots .sd-dot small { color: var(--ink-2); text-decoration: none; }
@@ -1294,6 +1348,10 @@ button.gplate:is(:hover, :focus-visible) .gplate-art::before, .gplate:has(.lvlpi
 .own-all { margin-left: auto; display: flex; align-items: baseline; gap: var(--sp-2); }
 .own-all .text-btn { font-size: var(--fs-sm); }
 .quick-owned .qc:not(.is-missing) img { opacity: 1; filter: none; }
+/* A charm dark by nature (D.DARK_ART): its rim; its halo stays the equipped one's (design/21). */
+.qc.is-dark img { filter: grayscale(0.3) var(--dark-art-rim); }
+:is(.qc.is-on, .quick-owned .qc:not(.is-missing)).is-dark img { filter: var(--dark-art-rim); }
+.qc.is-missing.is-dark:not(.is-on) img { filter: var(--missing-art) var(--dark-art-rim-off); }
 /* The double slots: one whole slot that switches version on each tap, and two dots under it,
    the marked one filled in bone. With none, two empty rings. */
 .qc-pips {
@@ -1317,7 +1375,7 @@ button.gplate:is(:hover, :focus-visible) .gplate-art::before, .gplate:has(.lvlpi
   border-bottom: 2px solid transparent; transition: border-color var(--dur) var(--ease);
 }
 .piece img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; transition: filter var(--dur) var(--ease), opacity var(--dur) var(--ease); }
-.piece:not(.is-on) img { filter: brightness(0.2) saturate(0); opacity: 0.85; }
+.piece:not(.is-on) img { filter: var(--missing-art); }   /* the one shadow (design/21) */
 .piece .notch { width: 20px; height: 20px; }
 /* The keyboard's focus keeps its rule; the mouse gets no line: it gets a preview up to the piece
    under the pointer, like the notches on Charms. What a click would add comes up to half light
@@ -2619,8 +2677,9 @@ button.gplate:is(:hover, :focus-visible) .gplate-art::before, .gplate:has(.lvlpi
 .pcard-wrap > .pcard { flex: 1 1 auto; }
 .pdone { display: flex; justify-content: center; align-items: center; gap: var(--sp-half); }
 .pdone-bind, .pdone-all { width: 32px; height: 32px; display: grid; place-items: center; }
-.pdone-bind img { width: 22px; height: 22px; filter: grayscale(1) brightness(0.3); opacity: 0.8; transition: filter var(--dur) var(--ease), opacity var(--dur) var(--ease); }
+.pdone-bind img { width: 22px; height: 22px; filter: var(--missing-art); transition: filter var(--dur) var(--ease), opacity var(--dur) var(--ease); }
 .pdone-bind:hover img { filter: grayscale(1) brightness(0.8); }
+.pdone-bind.is-dark:not(.is-on) img { filter: var(--missing-art) var(--dark-art-rim-off); }   /* a black disc: its rim (design/21) */
 .pdone-bind.is-on img { filter: drop-shadow(0 0 4px var(--notch-used-glow)); opacity: 1; }
 .pdone-all { font-family: var(--font-num); font-size: var(--fs-xs); font-weight: 600; color: var(--muted); transition: color var(--dur) var(--ease); }
 .pdone-all:hover { color: var(--accent); }
@@ -3961,6 +4020,11 @@ kbd {
   .save-nail span { display: none; }
   /* On a phone the Knight alone didn't say "your saves": larger, with a short word under him
      (Saves, or Save 1 after the state's diamond when it follows the game), in a 44 px target. */
+  /* The sister's link (js/app-sister.js): out of the tools, on a line of its own, Hornet's room above it. */
+  .masthead.has-sister { flex-wrap: wrap; }
+  .masthead.has-sister .brand { flex: 1 1 0; min-width: 0; }   /* the first line stays as without it */
+  .mh-tools > .mh-sister { display: none; }
+  .mh-sister-row { display: flex; order: 2; flex: 1 0 100%; justify-content: flex-end; padding-top: var(--sp-8); }
   .mh-save-lbl, .mh-save-lbl:has(.mh-live) { display: none; }
   .mh-save { flex-direction: column; justify-content: center; gap: var(--sp-half); min-width: var(--ctl); min-height: var(--ctl); }
   .mh-save-fig { width: var(--sp-8); height: var(--sp-8); }
@@ -4073,20 +4137,43 @@ kbd {
 /* The pips: each thing's picture, small; in shadow what's missing, dimmed what's half done. */
 .pg-pips { display: flex; flex-wrap: wrap; gap: var(--sp-1); }
 .pg-pip { width: 18px; height: 18px; display: grid; grid-template-rows: minmax(0, 1fr); place-items: center; }
-.pg-pip img { max-width: 100%; max-height: 100%; object-fit: contain; filter: brightness(0.3) saturate(0); opacity: 0.6; }
+/* What you don't have, in the one shadow (--missing-art), as the plates (design/21). */
+.pg-pip img { max-width: 100%; max-height: 100%; object-fit: contain; filter: var(--missing-art); }
 .pg-pip.is-on :is(img, .pg-atlas) { filter: none; opacity: 1; }
 .pg-pip.is-part :is(img, .pg-atlas) { filter: brightness(0.6) saturate(0.6); opacity: 1; }
+/* The sprites dark by nature (D.DARK_ART): a rim of light, and a faint halo behind (design/21, D). */
+.pg-pip.is-dark { background: var(--halo-dark); border-radius: 50%; }
+:is(.pg-pip, .gplate:not(.is-on) .gplate-art, .plate:not(.is-on) .plate-art).is-dark img { filter: var(--missing-art) var(--dark-art-rim-off); }
+:is(.pg-pip.is-on, .gplate.is-on .gplate-art, .plate.is-on .plate-art).is-dark img { filter: var(--dark-art-rim); }
+:is(.gplate-art, .plate-art).is-dark::before { opacity: 0.55; }
+/* Combat's attack cells: the rim, and the halo as a light behind (design/21). */
+.move-art.is-dark img { filter: var(--dark-art-rim); }
+.move-art.is-dark { background: var(--halo-dark); }
 /* Where there's no picture (the Dreamers, the trials, the pantheons): the rule's diamond. */
 .pg-glyph { display: block; width: 30px; height: 30px; border: 1px solid currentColor; transform: rotate(45deg) scale(0.7); color: var(--ink-2); }
 .pg-pip .pg-glyph { width: 10px; height: 10px; transform: rotate(45deg); color: var(--muted); }
 .pg-pip.is-on .pg-glyph { color: var(--ink); background: var(--ink-2); }
 .gplate:not(.is-on) .pg-glyph { color: var(--muted); opacity: 0.5; }
 .pg-open { padding: var(--sp-2) var(--sp-2) var(--sp-6); }
+/* A row unfolding (js/app-progress.js unfold): its height, and the one closing, from JS; the
+   plates fading in one after another (--i). */
+@media (prefers-reduced-motion: no-preference) {
+  .pg-open.is-folding { overflow: hidden; transition: height var(--dur-slow) var(--ease), padding var(--dur-slow) var(--ease); }
+  .pg-open.is-in .gplate { animation: title-in var(--dur-slow) var(--ease) both; animation-delay: calc(min(var(--i, 0), 12) * 15ms + 80ms); }
+}
 .pg-plates { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: var(--sp-3) var(--sp-3); }
 .pg-plates .gplate-art { height: 56px; }
 .pg-plates .gplate-art img { max-height: 48px; }
 .pg-plates .gplate.is-part .gplate-art img { filter: brightness(0.6) saturate(0.6); }
 .pg-plates .gplate.is-part .gplate-art::before { background: var(--halo-plate-off); }
+/* The rows that count pieces (masks, vessels, the nail): a pip lit by a fraction, cut from the
+   bottom up (--f); open, the pieces in groups under a quiet label, and the link to see them all. */
+.pg-pip.is-fill { position: relative; }
+.pg-pip.is-fill img + img { position: absolute; inset: 0; margin: auto; filter: none; opacity: 1; clip-path: inset(calc((1 - var(--f)) * 100%) 0 0 0); }
+.pg-all { display: flex; justify-content: flex-end; margin: 0 0 var(--sp-2); font-size: var(--fs-sm); }
+.pg-group + .pg-group { margin-top: var(--sp-6); }
+.pg-sub { margin: 0 0 var(--sp-3); font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); }
+.pg-sub span { margin-left: var(--sp-2); font-family: var(--font-num); font-variant-numeric: tabular-nums; letter-spacing: 0; text-transform: none; color: var(--muted); }
 /* The build's things are marked on Your game: they say so, and take you there. */
 .pg-plates .gplate.is-far .gplate-val { font-family: var(--font-body); }
 /* List · Map, under the title: text tabs, the chosen one with the accent's rule, like Combat's. */
@@ -4118,18 +4205,42 @@ kbd {
 .pgm-sec { border-top: 1px solid var(--inv-line); }
 .pgm-sec:last-child { border-bottom: 1px solid var(--inv-line); }
 .pgm-sec-h { display: flex; align-items: center; gap: var(--sp-3); }
-.pgm-fold { display: flex; flex: 1; align-items: center; gap: var(--sp-3); min-height: var(--ctl); padding: 0; text-align: left; color: var(--ink-strong); }
-.pgm-fold:hover .pgm-sec-t { color: var(--accent); }
+.pgm-fold { display: grid; place-items: center; flex: none; width: var(--ctl-sm); min-height: var(--ctl); padding: 0; }
+/* The group's title is its switch: all on in ink, some in ink-2, none muted (as an off chip). */
+.pgm-sec-sw { display: flex; flex: 1; align-items: center; gap: var(--sp-3); min-height: var(--ctl); padding: 0; text-align: left; color: var(--ink-strong); }
+.pgm-sec-sw.is-some { color: var(--ink-2); }
+.pgm-sec-sw.is-none { color: var(--muted); }
+.pgm-sec-sw:is(:hover, :focus-visible) .pgm-sec-t, .pgm-fold:is(:hover, :focus-visible) + .pgm-sec-sw .pgm-sec-t { color: var(--accent); }
 .pgm-caret { flex: none; width: 10px; height: 10px; color: var(--lamp, var(--accent)); transition: rotate var(--dur) var(--ease); }
 .pgm-sec.is-open .pgm-caret { rotate: 90deg; }
 .pgm-sec-t { font-family: var(--font-display); font-size: var(--fs-sm); font-weight: 600; letter-spacing: var(--track-caps); text-transform: uppercase; transition: color var(--dur) var(--ease); }
 .pgm-kinds { display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-6); padding: 0 0 var(--sp-3) var(--sp-6); }
+/* A set of one kind and its caret, which lists what it holds in a row under it (design/24, C). */
+.pgm-set { display: inline-flex; align-items: center; gap: var(--sp-1); }
+.pgm-more { display: inline-grid; place-items: center; flex: none; width: 24px; height: 24px; padding: 0; border: 1px solid var(--line-ctl); border-radius: 50%; color: var(--ink-2); }
+.pgm-more svg { width: 9px; height: 9px; transition: rotate var(--dur) var(--ease); }
+.pgm-more:is(:hover, :focus-visible), .pgm-more[aria-expanded="true"] { border-color: var(--accent); color: var(--accent); }
+.pgm-more[aria-expanded="true"] svg { rotate: 90deg; }
+.pgm-inside { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-4); margin: 0 0 var(--sp-2) var(--sp-8); padding: var(--sp-2) var(--sp-4); border-left: 1px solid var(--line); font-size: var(--fs-xs); color: var(--ink-2); }
+/* Each member a switch of its own: off, grey as an off layer. */
+.pgm-sub { display: inline-flex; align-items: center; gap: var(--sp-1); min-height: var(--ctl-sm); padding: 0; font-size: var(--fs-xs); color: var(--ink); }
+.pgm-sub:not(.is-on) { color: var(--muted); }
+.pgm-sub:not(.is-on) .pgm-inside-art > * { filter: var(--missing-art); }
+.pgm-sub:is(:hover, :focus-visible) { color: var(--accent); }
+/* A set with some members hidden: its picture half-lit. */
+.pgm-set.is-some .pgm-kind-art > * { filter: grayscale(0.5) brightness(0.75); }
+.pgm-inside-art { display: inline-grid; place-items: center; width: 20px; height: 20px; }
+.pgm-inside-art > :is(img, svg) { width: 20px; height: 20px; object-fit: contain; }
+@media (pointer: coarse) { .pgm-more { width: 32px; height: 32px; } }
 /* A layer: its picture is the switch; off, the picture in grey and the name muted. */
 .pgm-kind { display: inline-flex; align-items: center; gap: var(--sp-2); min-height: var(--ctl-sm); padding: 0; font-size: var(--fs-sm); color: var(--ink); }
 .pgm-kind-art { flex: none; display: inline-block; overflow: hidden; width: 28px; height: 28px; }
 .pgm-kind-art > :is(img, .pgm-ico) { display: block; width: 100%; height: 100%; max-width: none; object-fit: contain; transition: filter var(--dur) var(--ease), opacity var(--dur) var(--ease); }
 .pgm-kind:hover .pgm-kind-t { color: var(--accent); }
 .pgm-kind:not(.is-on) .pgm-kind-art > * { filter: var(--missing-art); }
+/* A layer whose picture is dark by nature (D.DARK_ART: the tablet, the Simple Key): its rim (design/21). */
+.pgm-kind .pgm-kind-art.is-dark > * { filter: var(--dark-art-rim); }
+.pgm-kind:not(.is-on) .pgm-kind-art.is-dark > * { filter: var(--missing-art) var(--dark-art-rim-off); }
 .pgm-kind:not(.is-on) :is(.pgm-kind-t, .pgm-kind-n b) { color: var(--muted); }
 @media (max-width: 599px) {
   .pgm-filter-bar { flex-direction: column; align-items: flex-start; }
@@ -4188,6 +4299,29 @@ kbd {
 .pgm-route circle { fill: var(--ink-strong); }
 .pgm-route-row { display: flex; flex-direction: column; gap: var(--sp-1); max-width: 22em; white-space: normal; }
 .pgm-pin.is-on { opacity: 0.4; }
+/* The admin mode (js/app-map.js, #…&admin=1): the pins can be dragged, a fixed one wears a dashed
+   ring, the way from the data's point to the fix is drawn (a pending one in the accent: it
+   responds to the hand), and the panel at the box's top-left says what's moved. */
+.pgm-svg.is-admin .pgm-pin:not(.pgm-mark) { cursor: grab; }
+.pgm-svg.is-admin .pgm-pin.is-fixed circle { stroke: var(--accent); stroke-dasharray: 0.09 0.06; }
+.pgm-fix-line line { stroke: var(--ink-strong); stroke-width: 1.5; stroke-dasharray: 4 3; vector-effect: non-scaling-stroke; opacity: 0.75; }
+.pgm-fix-line circle { fill: none; stroke: var(--ink-strong); stroke-width: 1.5; vector-effect: non-scaling-stroke; opacity: 0.75; }
+.pgm-fix-line.is-pending line, .pgm-fix-line.is-pending circle { stroke: var(--accent); }
+.pgm-admin { position: absolute; z-index: 3; top: var(--sp-3); left: var(--sp-3); width: min(24em, calc(100% - var(--sp-6))); max-height: calc(100% - var(--sp-6)); overflow: auto;
+  display: flex; flex-direction: column; gap: var(--sp-2); padding: var(--sp-2) var(--sp-3); background: var(--card); border: 1px solid var(--line-panel); box-shadow: var(--shadow-md);
+  font-size: var(--fs-sm); color: var(--ink-2); }
+.pgm-admin-h { display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-3); align-items: baseline; }
+.pgm-admin b { color: var(--ink-strong); font-weight: 600; }
+.pgm-admin-sel { display: flex; flex-direction: column; gap: var(--sp-1); align-items: flex-start; }
+.pgm-admin code, .pgm-admin-xy, .pgm-admin-list, .pgm-admin-text { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
+.pgm-admin code { color: var(--ink); font-size: var(--fs-xs); word-break: break-all; }
+.pgm-admin-xy { color: var(--ink); }
+.pgm-admin-hint { font-size: var(--fs-xs); color: var(--muted); }
+.pgm-admin-btns { display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-3); align-items: center; }
+.pgm-admin-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--sp-1); font-size: var(--fs-xs); }
+.pgm-admin-list .text-btn { word-break: break-all; text-align: left; }
+.pgm-admin .is-pending { color: var(--accent); }
+.pgm-admin-text { width: 100%; min-height: 6em; font-size: var(--fs-xs); background: var(--bg); color: var(--ink); border: 1px solid var(--line-ctl); }
 /* The pins you came to see from another screen (js/app-map.js, showOnMap): a ring in the pins'
    bone that swells out of them and fades, three times; still, without motion, just the ring. */
 .pgm-pin .pgm-arrive { fill: none; stroke: var(--ink-strong); stroke-width: 0.14; opacity: 0; transform-box: fill-box; transform-origin: center; }
@@ -4201,6 +4335,9 @@ kbd {
 /* The lift, drawn by the site (the game has no pin for it): in bone, like the game's pins. */
 .pgm-glyph { fill: var(--ink-strong); }
 .pgm-glyph.is-line { fill: none; stroke: var(--ink-strong); stroke-width: 0.06; }
+/* A cut in a glyph, in the page's dark: the wall's joints (design/25). The arch's veil, half tone. */
+.pgm-glyph-cut { fill: none; stroke: var(--bg); stroke-width: 0.05; stroke-linecap: round; stroke-linejoin: round; }
+.pgm-glyph .is-veil { opacity: 0.55; }
 /* Close up (.is-near), each pin's name under it, in bone with the black of the map around its
    letters, so it reads over the rooms' lines. */
 .pgm-lbl { display: none; font-family: var(--font-body); font-size: 0.46px; text-anchor: middle; fill: var(--ink-strong);
@@ -4289,11 +4426,13 @@ kbd {
 .hm-near-cell:is(:hover, :focus-visible) { color: var(--accent); }
 .hm-near img { height: 28px; width: auto; max-width: 48px; object-fit: contain; filter: brightness(0.55) saturate(0.4); }
 /* Your shade as the game draws it, floating in the area's light; with none, its dim place. */
-.hm-shade { display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); align-self: stretch; text-align: center; }
-.hm-shade-art { width: 72px; height: auto; filter: drop-shadow(0 0 12px color-mix(in oklab, var(--area-l, var(--tint)) 50%, transparent)); }
-.hm-shade.is-none .hm-shade-art { opacity: 0.12; filter: grayscale(1); }
-.hm-shade p { margin: 0; max-width: 30ch; font-size: var(--fs-sm); color: var(--ink-2); }
-.hm-shade + .text-btn { align-self: center; }
+/* What you carry (design/23, A): the charms worn in a row, then two figures. */
+.hm-worn { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+.hm-worn img { width: 40px; height: 40px; object-fit: contain; }
+.hm-build { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-3) var(--sp-6); align-self: stretch; margin: 0; }
+.hm-build dt { font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); }
+.hm-build dd { margin: 0; font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-lg); font-weight: 700; color: var(--ink-strong); }
+.hm-build dd small { display: block; font-family: var(--font-body); font-size: var(--fs-xs); font-weight: 400; color: var(--muted); }
 .hm-item-art .pg-atlas { width: 100%; height: 100%; }
 /* The title card: "Resting at" over the area's name, on the area's light (--area-*: tokens.css). */
 .hmC-hero { position: relative; isolation: isolate; display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); text-align: center;
@@ -4368,6 +4507,7 @@ kbd {
 .hmI-demo .hmB-svg { max-height: 300px; }
 @media (max-width: 899px) { .hmI-demo .hmB-map { display: none; } }
 .hmB-cap { font-size: var(--fs-xs); color: var(--muted); text-align: center; }
+.hmB-shade { display: block; margin-top: var(--sp-1); }   /* your shade, under the area's map */
 .hmB-pin[data-near] { cursor: pointer; }
 /* The rooms you haven't mapped read a little more than on the Map: here they're the area's shape. */
 .hmB-svg .pgm-room.is-ghost { opacity: 0.3; }
@@ -4379,23 +4519,24 @@ kbd {
 .hm-near-cell.is-lit img { filter: none; }
 @media (prefers-reduced-motion: no-preference) {
   .hm.has-area .hmC-bench::before, .hmI-demo .hmC-bench::before { animation: hm-breathe var(--dur-breathe) var(--ease-fade) infinite alternate; }
-  .hm-shade:not(.is-none) .hm-shade-art { animation: hm-bob var(--dur-bob) var(--ease-fade) infinite alternate; }
   .hmB-ring { animation: hm-ring calc(var(--dur-arrive) * 2.4) var(--ease) infinite; transform-box: fill-box; transform-origin: center; }
   .hmB-pin[data-near] image { transition: filter var(--dur) var(--ease), transform var(--dur) var(--ease); transform-box: fill-box; transform-origin: center; }
   .hmB-pin[data-near]:is(:hover, .is-lit) image { transform: scale(1.35); }
   .hm.is-enter :is(.hmC-sup, .hmA-orn) { animation: hm-fade var(--dur-card-bench) var(--ease-fade) both; }
   .hm.is-enter .hmC-area { animation: hm-card var(--dur-card) var(--ease-fade) both; }
   .hm.is-enter :is(.hmC-bench, .hmB-map) { animation: hm-fade var(--dur-card-bench) var(--delay-card-bench) var(--ease-fade) both; }
-  .hm.is-enter .hmC-bar i { animation: hm-grow var(--dur-card-bench) var(--delay-card-bar) var(--ease) both; transform-origin: left; }
-  .hm.is-enter .hmC-bar i.is-new { animation: hm-grow var(--dur-card-bench) var(--delay-card-bar) var(--ease) both,
-    hm-glow var(--dur-card-bench) calc(var(--delay-card-bar) + var(--dur-card-bench)) var(--ease-fade) 2 alternate; }
+  /* One bar: what you had is where it starts (it comes in with the bench, as the figure shows the
+     save before), and what you gained grows on from its end as the % counts up, in step with it. */
+  .hm.is-enter .hmC-bar i { animation: hm-fade var(--dur-card-bench) var(--delay-card-bench) var(--ease-fade) both; }
+  .hm.is-enter .hmC-bar i.is-new { transform-origin: left;
+    animation: hm-grow var(--dur-card-count) var(--delay-card-count) var(--ease-count) both,
+    hm-glow var(--dur-card-bench) calc(var(--delay-card-count) + var(--dur-card-count)) var(--ease-fade) 2 alternate; }
   .hm.is-enter .hm-list > .hm-item { position: relative; animation: hm-fade var(--dur-slow) calc(var(--delay-card-new) + var(--i, 0) * var(--dur-card-step)) var(--ease-fade) both; }
   .hm.is-enter .hm-list > .hm-item::after { content: ''; position: absolute; inset: 0; pointer-events: none;
     background: linear-gradient(100deg, transparent 30%, color-mix(in oklab, var(--ink-strong) 22%, transparent) 50%, transparent 70%) no-repeat;
     background-size: 250% 100%; animation: hm-shine var(--dur-flash) calc(var(--delay-card-new) + var(--i, 0) * var(--dur-card-step)) var(--ease) both; }
 }
 @keyframes hm-breathe { from { opacity: 0.55; } to { opacity: 1; } }
-@keyframes hm-bob { to { transform: translateY(-6px); } }
 @keyframes hm-ring { from { transform: scale(0.6); opacity: 1; } to { transform: scale(3); opacity: 0; } }
 @keyframes hm-fade { from { opacity: 0; } }
 /* The name fades in out of a blur, as the game's title card: nothing that changes its size (a

@@ -81,3 +81,22 @@ test('the key items have their place on the map (js/app-map.js, KEY_AT)', () => 
   for (const ic of ['Sly', 'City_Crest', "Shopkeeper's_Key", 'Sly_(Key)', 'Love_Key', 'Tram_Pass', 'Godtuner',
     "Collector's_Map", "Hunter's_Journal"]) assert.ok(M.SPOTS[ic], ic);
 });
+
+// js/map-fixes.js: where the admin mode moved a pin (tools/admin.js writes it).
+test('every map fix is a point on the map, and the file keeps its shape', () => {
+  const MF = require('../js/map-fixes.js');
+  const { check, withFixes } = require('../tools/admin.js');
+  const fs = require('node:fs'), path = require('node:path');
+  assert.equal(check(MF.FIXES), '');
+  const keys = Object.keys(MF.FIXES);
+  assert.deepEqual(keys, keys.slice().sort(), 'keys sorted');
+  // The server rewrites the file's body and nothing else: the file is what it would write.
+  const text = fs.readFileSync(path.join(__dirname, '..', 'js', 'map-fixes.js'), 'utf8');
+  assert.equal(withFixes(text, MF.FIXES), text);
+  assert.equal(check({ a: [0, 0], b: [1, 2] }), '');
+  assert.notEqual(check({ a: [999, 0] }), '');
+  assert.notEqual(check({ a: [0] }), '');
+  assert.notEqual(check([]), '');
+  const out = withFixes(text, { 'z:1': [1.23456, -2], 'a:1': [0, 0] });
+  assert.ok(out.includes('    "a:1": [0.000, 0.000],\n    "z:1": [1.235, -2.000],\n  };'), out);
+});

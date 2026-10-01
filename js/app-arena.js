@@ -1372,7 +1372,7 @@
       const sub = m.cost ? `${soulIco}−${m.cost}${soulSr}` : m.gain && m.dmg !== undefined ? `${soulIco}+${m.gain}${soulSr}`
         : m.gain ? `${soulIco}${esc(t('soulLower'))}` : m.note ? esc(m.note) : '';
       const btn = `<button type="button" class="move ${m.art ? 'has-art' : ''}" data-act="hit" data-id="${m.id}" ${off ? 'disabled' : ''} ${why ? `title="${esc(why)}"` : ''}>
-        ${m.art ? `<span class="move-art ${m.id === 'nail' ? 'is-nail' : ''}${m.charm ? ' is-charm' : ''}"><img src="${m.art}" alt=""></span>` : ''}
+        ${m.art ? `<span class="move-art ${m.id === 'nail' ? 'is-nail' : ''}${m.charm ? ' is-charm' : ''}${App.darkCls(m.art)}"><img src="${m.art}" alt=""></span>` : ''}
         <span class="move-name"${/^(nail|art:|spell:)/.test(m.id) ? NT : ''}>${esc(m.label)}</span>
         <span class="move-num">${num}</span>
         ${sub ? `<span class="move-cost">${sub}</span>` : ''}
