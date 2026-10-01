@@ -198,7 +198,7 @@ submitting the sitemap in Search Console is a manual step.
    indexed before then (indexing takes days to weeks). Honest note for every page: **reading
    the save needs the PC/Mac/Linux file**; console players get the hand-marked checklist.
 
-**Measure** with Search Console (queries, impressions, position per page) and GoatCounter
+**Measure** with Search Console (queries, impressions, position per page) and Footworn
 (which page they land on). Review a month after the pages go live.
 
 ## Sources
