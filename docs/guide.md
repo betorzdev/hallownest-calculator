@@ -1567,7 +1567,12 @@ on Cornifer's map). It's the tablet chosen among three variants in
   The rooms are as your game draws them (`GameMap.SetupMap`, `RoughMapRoom`): nothing of an area
   until you have its map (Dirtmouth's comes with the game), even where you've been; with it,
   Cornifer's sketch of the rooms his map shows (`SKETCHED`), and the whole drawing of those you've
-  been to (the save's `scenesVisited` and `scenesMapped`); barely there the rest; with no save from the game, all of it, whole. **Always show the whole map**
+  been to (the save's `scenesVisited` and `scenesMapped`); barely there the rest; with no save from the game, all of it, whole.
+  A room's second drawing the save hasn't earned yet (Dirtmouth's lift shaft to Crystal Peak,
+  `ALTS`) goes under the drawing you have as a ghost: what it adds shows faintly, like the
+  rooms you don't know, so the Peak's ghost corridor doesn't end against the town's plain
+  silhouette (the game never shows that corridor without the shaft: `Mines_10` isn't sketched,
+  and being there is what swaps the drawing). **Always show the whole map**
   draws it all whole anyway: it's your choice (a pref, `pgMapWhole`), so a bench never undoes it.
   **Large map**, the zoom's third button, ⤢ (a pref, `pgMapBig`; off by default, so the filter
   shows at first sight): on a computer the Map leaves the page's column, takes the window's whole width and its
@@ -1624,7 +1629,9 @@ on Cornifer's map). It's the tablet chosen among three variants in
     what's marked on the Inventory (spells, arts, cloaks, the Dream Nail), takes you there.
   - **Places**: benches, tram stations (open with their line: `openedTramLower`, `openedTramRestingGrounds`…),
     the lifts between areas (both ends; the game has no pin for them, so the site draws one, and its
-    flags for them aren't clear enough to say which are working), tram stations, hot
+    flags for them aren't clear enough to say which are working; Dirtmouth's, to Crystal Peak,
+    only once its shaft is drawn, the town's second drawing after `visitedMines10`: before that
+    the pin would hang over nothing), tram stations, hot
     springs and cocoons (the game's pins, named by its map key); and **shops and characters**
     (Sly, Iselda, Salubra, Leg Eater, Lemm, Jiji, the Nailsmith, the Seer, the Grubfather, the
     Colosseum of Fools and the Black Egg Temple).

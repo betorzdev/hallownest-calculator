@@ -399,9 +399,13 @@
         where: where(DREAMER_ROOM[it.id]), on: it.got >= it.max, act: { cat: 'dreamers', id: it.id } });
     }
     out.push(...worldThings());
-    // The places: the game's own pins, and who's where.
+    // The places: the game's own pins, and who's where. Dirtmouth's lift to Crystal Peak only once
+    // its shaft is drawn (the town's second drawing, js/progress.js ALTS: visitedMines10): before
+    // that the pin would hang over nothing. With no save the world is finished, and it's there.
+    const alts = App.progress.mapped.length ? new Set(App.progress.alts) : null;
     for (const [layer, kind] of Object.entries(PLACE_PINS)) {
       pinsOf(kind).forEach(([, scene, x, y], i) => {
+        if (kind === 'lift' && scene === 'Town' && alts && !alts.has('Town')) return;
         const open = openOf(kind, scene);
         out.push({ id: `${layer}:${i}`, layer, p: [x, y], art: kind === 'lift' ? { glyph: 'lift' } : { pin: kind },
           name: t('pgmP_' + kind), where: where(scene), on: null, scene, closed: open === false,
@@ -478,8 +482,14 @@
       const [bw, bh] = useFull ? [w, h] : [rW, rH];
       const [sx, sy, sw, sh] = useFull ? (alt && alts.has(name) ? alt : full) : rough;
       const [iw, ih] = useFull ? [aw, ah] : [rw, rh];
-      return `<svg class="pgm-room is-${st}" x="${(x - bw / 2).toFixed(3)}" y="${(-y - bh / 2).toFixed(3)}" width="${bw}" height="${bh}"
-        viewBox="${sx} ${sy} ${sw} ${sh}" preserveAspectRatio="none"><image href="assets/map/rooms-${useFull ? 'full' : 'rough'}.png" width="${iw}" height="${ih}"/></svg>`;
+      const room = (cls, [rx, ry, rW2, rH2], src, [w2, h2]) => `<svg class="pgm-room ${cls}" x="${(x - bw / 2).toFixed(3)}" y="${(-y - bh / 2).toFixed(3)}" width="${bw}" height="${bh}"
+        viewBox="${rx} ${ry} ${rW2} ${rH2}" preserveAspectRatio="none"><image href="assets/map/rooms-${src}.png" width="${w2}" height="${h2}"/></svg>`;
+      /* A second drawing the save hasn't earned yet (Dirtmouth's lift shaft before you've ridden it)
+         goes under the room's own as a ghost, like the rooms you don't know: what it adds (the
+         shaft, up to the Peak's corridor, itself a ghost) shows faintly where the drawing you have
+         leaves nothing, so the two don't meet as a wall. */
+      const ghostAlt = useFull && alt && !alts.has(name) ? room('is-ghost', alt, 'full', [aw, ah]) : '';
+      return ghostAlt + room(`is-${st}`, [sx, sy, sw, sh], useFull ? 'full' : 'rough', [iw, ih]);
     }).join('');
   }
 
