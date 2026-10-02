@@ -38,7 +38,7 @@ test('its strings come in both languages', () => {
 
 test('the page loads the moves and the script, after the Knight and before the boot', () => {
   const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-  const at = (f) => html.indexOf(`<script src="js/${f}"></script>`);
+  const at = (f) => html.search(new RegExp(`<script src="js/${f.replace('.', '\\.')}(\\?v=[0-9a-f]+)?"></script>`));
   assert.ok(at('hornet-moves.js') > 0 && at('hornet-moves.js') < at('app.js'));
   assert.ok(at('app-knight.js') < at('app-sister.js') && at('app-sister.js') < at('app-boot.js'));
 });
