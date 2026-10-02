@@ -932,21 +932,31 @@
     return { sel, scoped: where && box ? `${where} ${box} ${sel}` : '' };
   }
 
+  /* One part that throws doesn't take the rest with it. Every screen starts hidden (index.html) and
+     only showScreen() shows one: an error halfway left the page with its bar and no screen. It
+     happens after a deploy, when the browser mixes a cached script with a new one (GitHub Pages
+     caches each file 10 minutes on its own). The error still reaches the console, and the counter. */
+  function safely(name, fn) {
+    try { fn(); } catch (e) {
+      console.error(e);
+      track('error-' + name);
+    }
+  }
   function render() {
     const focus = focusDescriptor();
-    renderMasthead();
-    renderAbout();
-    renderColophon();
-    renderNav();                           // with your game's Journal button
-    renderBanner();
-    App.renderHome();
-    App.renderPanel();
-    renderMiniHud();
-    App.renderGear();
-    App.renderFight();
-    App.renderSaves();
-    App.renderProgress();
-    if (prefs.view === 'journal') { if (App.hjSec.querySelector('.hj-list')) App.paintHunter(); else App.renderHunter(); }
+    safely('masthead', renderMasthead);
+    safely('about', renderAbout);
+    safely('colophon', renderColophon);
+    safely('nav', renderNav);              // with your game's Journal button
+    safely('banner', renderBanner);
+    safely('home', App.renderHome);
+    safely('panel', App.renderPanel);
+    safely('minihud', renderMiniHud);
+    safely('gear', App.renderGear);
+    safely('fight', App.renderFight);
+    safely('saves', App.renderSaves);
+    safely('progress', App.renderProgress);
+    if (prefs.view === 'journal') safely('journal', () => { if (App.hjSec.querySelector('.hj-list')) App.paintHunter(); else App.renderHunter(); });
     showScreen();
     App.bandCheck();                       // the arena's band measures the stage once it's visible
     App.hjFit();
