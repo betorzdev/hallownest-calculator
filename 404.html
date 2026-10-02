@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Page not found · Hallownest Calculator</title>
+<meta name="robots" content="noindex">
+<!-- GitHub Pages serves this page at whatever address was missing, at any depth: every path
+     here is absolute, from the site's root. -->
+<link rel="icon" href="/hallownest-calculator/assets/site/icon-48.png" sizes="48x48" type="image/png">
+<link rel="apple-touch-icon" href="/hallownest-calculator/assets/site/apple-touch-icon.png">
+<link rel="stylesheet" href="/hallownest-calculator/css/tokens.css">
+<!-- Visit counts: which broken addresses people land on. -->
+<script data-goatcounter="https://betorzdev.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+<meta name="theme-color" content="#07090e">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    min-height: 100vh; display: grid; place-items: center; padding: var(--sp-8) var(--sp-4);
+    background: var(--bg) var(--page-bg) no-repeat; color: var(--ink);
+    font-family: var(--font-body); font-size: var(--fs-md); line-height: 1.5;
+    -webkit-font-smoothing: antialiased; text-align: center;
+  }
+  main { width: 100%; display: flex; flex-direction: column; align-items: center; gap: var(--sp-4); max-width: var(--measure); }
+  /* The Shade: what the Knight leaves where it got lost. */
+  .shade { width: calc(var(--kn-bench) * 1.2); height: auto; opacity: 0.9; margin-bottom: var(--sp-2); }
+  .code { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-2xs); letter-spacing: var(--track-wide); color: var(--label); }
+  h1 { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: var(--fs-xl); letter-spacing: var(--track-title); color: var(--tint-sheet); }
+  p { margin: 0; color: var(--ink-2); font-size: var(--fs-lg); }
+  .btn {
+    position: relative; display: inline-flex; align-items: center; justify-content: center; margin-top: var(--sp-4);
+    min-height: calc(var(--ctl) + var(--sp-2)); padding: var(--sp-1) var(--sp-8); border: 1px solid var(--accent-line);
+    background-color: color-mix(in oklab, var(--accent) 10%, transparent); color: var(--ink-strong); text-decoration: none;
+    font-family: var(--font-display); font-weight: 600; font-size: var(--fs-sm); letter-spacing: var(--track-caps); text-transform: uppercase;
+    transition: background-color var(--dur) var(--ease);
+    --bk: var(--accent); --bk-len: var(--sp-4);
+  }
+  /* The corner brackets, as on the site's primary button (css/app.css, .btn). */
+  .btn::before {
+    content: ''; position: absolute; inset: -1px; pointer-events: none;
+    --bk-h: linear-gradient(var(--bk), var(--bk));
+    background:
+      var(--bk-h) top left / var(--bk-len) 1px no-repeat, var(--bk-h) top left / 1px var(--bk-len) no-repeat,
+      var(--bk-h) top right / var(--bk-len) 1px no-repeat, var(--bk-h) top right / 1px var(--bk-len) no-repeat,
+      var(--bk-h) bottom left / var(--bk-len) 1px no-repeat, var(--bk-h) bottom left / 1px var(--bk-len) no-repeat,
+      var(--bk-h) bottom right / var(--bk-len) 1px no-repeat, var(--bk-h) bottom right / 1px var(--bk-len) no-repeat;
+  }
+  .btn:is(:hover, :focus-visible) { background-color: color-mix(in oklab, var(--accent) 18%, transparent); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<main>
+  <img class="shade" src="/hallownest-calculator/assets/knight/shade.png" alt="" width="145" height="174">
+  <div class="code">404</div>
+  <h1 data-t="title">Page not found</h1>
+  <p data-t="body">This path doesn't lead anywhere in Hallownest. Maybe it moved, or the link was mistyped.</p>
+  <a class="btn" href="/hallownest-calculator/" data-t="back">Back to the calculator</a>
+</main>
+<script>
+  /* Speaks the site's language: the one chosen there (hollow.prefs), else the address's
+     (/es/…), else the browser's. */
+  (function () {
+    var T = {
+      title: { es: 'Página no encontrada', en: 'Page not found' },
+      body: {
+        es: 'Este camino no lleva a ningún sitio de Hallownest. Quizá se ha movido, o el enlace está mal escrito.',
+        en: "This path doesn't lead anywhere in Hallownest. Maybe it moved, or the link was mistyped."
+      },
+      back: { es: 'Volver a la calculadora', en: 'Back to the calculator' },
+      doc: { es: 'Página no encontrada · Calculadora de Hallownest', en: 'Page not found · Hallownest Calculator' }
+    };
+    var lang = null;
+    try { lang = (JSON.parse(localStorage.getItem('hollow.prefs') || 'null') || {}).lang || null; } catch (e) { /* no storage */ }
+    if (lang !== 'es' && lang !== 'en') {
+      lang = /^\/hallownest-calculator\/es(\/|$)/.test(location.pathname) ? 'es'
+        : /^es\b/i.test(navigator.language || '') ? 'es' : 'en';
+    }
+    document.documentElement.lang = lang;
+    document.title = T.doc[lang];
+    var els = document.querySelectorAll('[data-t]');
+    for (var i = 0; i < els.length; i++) els[i].textContent = T[els[i].getAttribute('data-t')][lang];
+    if (lang === 'es') document.querySelector('.btn').setAttribute('href', '/hallownest-calculator/es/');
+  })();
+</script>
+</body>
+</html>
