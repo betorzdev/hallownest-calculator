@@ -45,12 +45,12 @@ const walk = (rel) => fs.readdirSync(path.join(ROOT, rel), { withFileTypes: true
   .flatMap((d) => (d.isDirectory() ? walk(`${rel}/${d.name}`) : [`${rel}/${d.name}`]));
 
 const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-const APP = '<script src="js/app.js"></script>';
-if (!html.includes(APP)) {
-  console.error(`index.html no longer loads ${APP}: check where js/artpack.js goes.`);
+const APP = /<script src="js\/app\.js(\?v=[0-9a-f]+)?"><\/script>/;   // with its version (tools/pages.js)
+if (!APP.test(html)) {
+  console.error(`index.html no longer loads js/app.js: check where js/artpack.js goes.`);
   process.exit(1);
 }
-put('index.html', html.replace(APP, `<script src="js/artpack.js"></script>\n${APP}`));
+put('index.html', html.replace(APP, (app) => `<script src="js/artpack.js"></script>\n${app}`));
 
 for (const rel of [...walk('css'), ...walk('js')]) put(rel, fs.readFileSync(path.join(ROOT, rel)));
 

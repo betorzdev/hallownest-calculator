@@ -9,11 +9,13 @@
    path (css/, js/, assets/, including the ones app.js writes) at the site's root.
 
    index.html is the source and is edited by hand, except what this writes in it too: its <head>
-   fields and the regions between <!-- about --> / <!-- /about --> and <!-- page-ld --> /
-   <!-- /page-ld -->. Every other page is generated, never edited by hand; so is sitemap.xml.
+   fields, the regions between <!-- about --> / <!-- /about --> and <!-- page-ld --> /
+   <!-- /page-ld -->, and the ?v= on each script and stylesheet (stamp()). Every other page
+   is generated, never edited by hand; so is sitemap.xml.
    test/pages.test.js fails if any of them falls behind. The texts are tools/pages-text.js's.
    Usage: node tools/pages.js          (npm run pages) */
 'use strict';
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const { BRAND, LABELS, PAGES, OG_ALT } = require('./pages-text.js');
@@ -101,8 +103,15 @@ function build(html, page, lang) {
     if (!hits || hits.length !== 1) throw new Error(`index.html: expected ${re} once, found ${hits ? hits.length : 0}`);
     out = out.replace(re, typeof to === 'function' ? to : () => to);
   }
-  return out;
+  return stamp(out);
 }
+
+/* Each script and stylesheet carries its content's version (?v=): GitHub Pages caches every file
+   10 minutes on its own, and right after a deploy the browser could mix an old app.js with a new
+   app-*.js (the page stayed with its bar and no screen). A file that changes changes its address. */
+const version = (rel) => crypto.createHash('sha1').update(fs.readFileSync(path.join(ROOT, rel))).digest('hex').slice(0, 8);
+const stamp = (html) => html.replace(/(<script src="|<link rel="stylesheet" href=")((?:js|css)\/[\w.-]+\.(?:js|css))(?:\?v=[0-9a-f]*)?"/g,
+  (m, open, rel) => `${open}${rel}?v=${version(rel)}"`);
 
 function sitemap() {
   const alt = (page) => LANGS.map((l) => `    <xhtml:link rel="alternate" hreflang="${l}" href="${url(page, l)}"/>`)

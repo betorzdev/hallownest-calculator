@@ -49,6 +49,11 @@ Neither folder is part of the page: `index.html` doesn't load them.
   `HK.app` object, and `js/app-boot.js` starts it; the rules for sharing are in `js/app.js`'s header.
   Plus GoatCounter's (`async`, external), the visit counter: the site has to work the same
   without it, so its events go through `track()` in `js/app.js`, which does nothing if it's missing.
+- **Each script and stylesheet carries its version** (`?v=<hash>`, written by `npm run pages`,
+  never by hand): GitHub Pages caches each file 10 minutes on its own, and without it a deploy
+  could mix an old file with a new one. A new script goes into `index.html` without `?v=`.
+  Each part `render()` paints, and each loader at boot, goes through `safely()` (`js/app.js`):
+  one that throws mustn't leave the page without a screen.
 - **The site has to work over `file://`** (opening `index.html` with a double click). Everything
   else follows from that: ES modules and `fetch()` are blocked by the opaque origin, so **data
   travels in `.js` files with an assignment, never in `.json`**. If `kb/data/hp.json` ever goes
@@ -106,10 +111,11 @@ what the game says.
   `npm run text -- --audit`.
 - If you've touched `js/savefile.js` or `js/completion.js` and have a folder of real saves,
   `npm run check-pack -- <folder>`: the site's 112% must equal the game's in every one.
-- If you've touched `index.html` or `tools/pages-text.js`, `npm run pages`: the site's other
-  pages (`es/`, one per search intent in each language: `map/`, `es/mapa/`… see
-  `design/12-seo.md`) and `sitemap.xml` are generated from it, and `test/pages.test.js` fails if
-  one is behind.
+- If you've touched `index.html`, `tools/pages-text.js` or anything in `js/` or `css/`,
+  `npm run pages`: the site's other pages (`es/`, one per search intent in each language: `map/`,
+  `es/mapa/`… see `design/12-seo.md`) and `sitemap.xml` are generated from it, every page's
+  scripts and stylesheets carry their content's version (`?v=`, so a deploy can't mix a cached
+  file with a new one), and `test/pages.test.js` fails if one is behind.
 - To look at the page: `debug-smoke.html` drives the site and writes the result; `debug.html`
   sets the preferences for screenshots; `debug-overflow.html` lists what spills past the width; `debug-benches.html` shows every bench
   of Your game with the Knight on it (`?seat=1` marks the seat);

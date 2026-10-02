@@ -7,16 +7,18 @@
   const C = HK.codec, I = HK.i18n;
   const App = HK.app;
   const { t, KEY, PAGE_LANG, PAGE_VIEW, load, rebuildNF, prefs, loadPrefs, splitHash, loadState, persist, recompute,
-    charmLock, touchesCharms, loadMarks, loadDoor, loadRun, render, toast, loadOwned, withFixed, loadJournal } = App;
+    charmLock, touchesCharms, loadMarks, loadDoor, loadRun, render, toast, loadOwned, withFixed, loadJournal, safely } = App;
 
   /* ── Startup ─────────────────────────────────────────────────────────── */
+  // What's saved comes back part by part (safely(), js/app.js): one that fails to load doesn't
+  // stop the page, which starts without it.
   loadPrefs();
-  App.run = loadRun();     // a half-done pantheon survives a page reload
-  loadMarks();             // and the Hall of Gods marks, anything
-  loadDoor();              // and the lifeblood door's completed bindings
-  loadJournal();           // and your game's Hunter's Journal
-  loadOwned();             // and the charms you have
-  App.loadProgress();      // and the rest of what your game has (js/progress.js)
+  safely('run', () => { App.run = loadRun(); });   // a half-done pantheon survives a page reload
+  safely('marks', loadMarks);               // and the Hall of Gods marks, anything
+  safely('door', loadDoor);                 // and the lifeblood door's completed bindings
+  safely('journal', loadJournal);           // and your game's Hunter's Journal
+  safely('owned', loadOwned);               // and the charms you have
+  safely('progress', App.loadProgress);     // and the rest of what your game has (js/progress.js)
   // The link's language; without one, the Spanish page speaks Spanish (and that counts as choosing it).
   const fromUrl = splitHash(location.hash).lang || (PAGE_LANG === 'en' ? null : PAGE_LANG);
   // The screen: the link's; without it, the page's own (a search landed you on the map, say:
@@ -48,7 +50,7 @@
   persist();
   recompute();           // and with it fightSync(), which hands out combat health and soul
   render();
-  App.knight.start();    // the Knight on the page, from now on (js/app-knight.js)
-  App.sister.start();    // and Hornet on the sister site's link, when it shows (js/app-sister.js)
-  App.liveStart();       // the slot linked to the game's file starts following it (js/app-saves.js)
+  safely('knight', App.knight.start);   // the Knight on the page, from now on (js/app-knight.js)
+  safely('sister', App.sister.start);   // and Hornet on the sister site's link, when it shows (js/app-sister.js)
+  safely('live', App.liveStart);        // the slot linked to the game's file starts following it (js/app-saves.js)
 })();
