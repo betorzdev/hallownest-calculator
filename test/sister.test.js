@@ -1,5 +1,5 @@
-/* test/sister.test.js — the sister site's link and its Hornet (js/app-sister.js): hidden until the
-   sister is published, every move she plays drawn (js/hornet-moves.js, tools/extract-hornet.py), and
+/* test/sister.test.js — the sister site's link and its Hornet (js/app-sister.js): shown since the
+   sister was published, every move she plays drawn (js/hornet-moves.js, tools/extract-hornet.py), and
    the page loading both scripts. */
 'use strict';
 const test = require('node:test');
@@ -13,8 +13,8 @@ const i18n = require('../js/i18n.js');
 require('../js/hornet-moves.js');
 const { HORNET } = globalThis.HK;
 
-test('the link stays hidden until the sister is published', () => {
-  assert.match(src, /const SISTER = false;/);
+test('the link is shown: the sister is published', () => {
+  assert.match(src, /const SISTER = true;/);
 });
 
 test('every move she plays is in js/hornet-moves.js, with its strip', () => {

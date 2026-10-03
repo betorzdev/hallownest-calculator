@@ -12,7 +12,8 @@
    Soar, up and out on her thread. Her moves are the game's own (js/hornet-moves.js, assets/hornet/,
    by tools/extract-hornet.py). With reduced motion she only stands on the link, and fades on the click.
    Decorative: hidden from screen readers and never in the way of a click; the link is the control.
-   **Hidden** until the sister site is published: SISTER below, or #…&sister=1 to see it (App.sisterPreview).
+   Shown since the sister site went public (SISTER below; false hides it again, and #…&sister=1 still
+   shows it then: App.sisterPreview).
    Shares HK.app (see js/app.js): App.sister.on() and linkHtml() for the masthead, App.sister.sync()
    after every render, App.sister.start() once, from js/app-boot.js. */
 (() => {
@@ -22,7 +23,7 @@
   const { el, t, esc, NT, track, prefs } = App;
   const H = HK.HORNET, M = H.MOVES;
 
-  const SISTER = false;          // true once ../pharloom-calculator is published
+  const SISTER = true;           // ../pharloom-calculator is published
   const HOME = 'https://betorzdev.github.io/pharloom-calculator/';
   const SHOWN = 'hollow.sisterShown', SEEN = 'hollow.sisterSeen';
   const K = 0.5;                 // the strips are at a third of the game's size; she's shown at half that

@@ -24,7 +24,7 @@ The save's shadeMapPos and dreamgateMapPos are in that same frame. y grows upwar
 import json, os, re, struct, sys, urllib.request
 from collections import deque
 import UnityPy
-from PIL import Image
+from PIL import Image, ImageChops
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
@@ -92,6 +92,17 @@ def tinted(img, color):
     r = r.point(lambda v: int(v * color.r)); g = g.point(lambda v: int(v * color.g))
     b = b.point(lambda v: int(v * color.b)); a = a.point(lambda v: int(v * color.a))
     return Image.merge('RGBA', (r, g, b, a))
+
+def solid(img, at=200, dark=90):
+    """The drawing's fill made opaque, as it looks on the map's black: the game's fill is
+    translucent (alpha 217 in most areas), so where two rooms overlap (pack's bleed) it would add
+    up into a light hairline. Only the fill: nearly opaque and dark (luminance under dark, below
+    tools/extract-walk.js's LIT, so the Knight's ground reads the same); the lines and the soft
+    outer edges stay as they are."""
+    r, g, b, a = img.split()
+    flat = Image.merge('RGBA', (ImageChops.multiply(r, a), ImageChops.multiply(g, a), ImageChops.multiply(b, a), a.point(lambda v: 255)))
+    fill = ImageChops.multiply(a.point(lambda v: 255 if v >= at else 0), img.convert('L').point(lambda v: 255 if v < dark else 0))
+    return Image.composite(flat, img, fill)
 
 def whole(sprite):
     """The sprite's whole picture, as big as its rect: the game's files keep only the part with
@@ -168,22 +179,41 @@ class Scenes:
                 return x, y
         return None
 
-def pack(images, width=2048, pad=2):
-    """A simple shelf packing: (name → image) into one atlas; returns it and each rect."""
+# The rooms' drawings carry a ring of their own edge pixels this wide (pack, js/app-map.js roomsSvg).
+BLEED = 1
+
+def pack(images, width=2048, pad=2, bleed=0):
+    """A simple shelf packing: (name → image) into one atlas; returns it and each rect.
+    With bleed, each image is ringed by that many copies of its own edge pixels (outside its
+    rect), so the page can draw a room a pixel past its edge: two rooms that meet then overlap
+    with their own colour instead of each fading out at the seam (a dark hairline)."""
     items = sorted(images.items(), key=lambda kv: -kv[1].size[1])
-    x = y = shelf = 0
+    # A transparent gap between two drawings' rings: scaled, the browser blends an edge pixel with
+    # the one beside it, and if that were another drawing's ring it would draw a line of it there.
+    pad = pad + 2 * bleed + (2 if bleed else 0)
+    x = y = bleed
+    shelf = 0
     rects = {}
     for name, im in items:
         w, h = im.size
         if x + w + pad > width:
-            x, y, shelf = 0, y + shelf + pad, 0
+            x, y, shelf = bleed, y + shelf + pad, 0
         rects[name] = (x, y, w, h)
         x += w + pad
         shelf = max(shelf, h)
-    atlas = Image.new('RGBA', (width, y + shelf), (0, 0, 0, 0))
+    atlas = Image.new('RGBA', (width, y + shelf + bleed), (0, 0, 0, 0))
     for name, im in items:
-        rx, ry, _, _ = rects[name]
-        atlas.paste(im, (rx, ry))
+        rx, ry, w, h = rects[name]
+        if bleed:
+            atlas.paste(im.resize((w + 2 * bleed, h + 2 * bleed), Image.NEAREST), (rx - bleed, ry - bleed))
+            atlas.paste(im, (rx, ry))
+            for i in range(bleed):   # the edges, copied outwards (nearest-neighbour stretching smears inner pixels)
+                atlas.paste(im.crop((0, 0, w, 1)), (rx, ry - 1 - i))
+                atlas.paste(im.crop((0, h - 1, w, h)), (rx, ry + h + i))
+                atlas.paste(im.crop((0, 0, 1, h)), (rx - 1 - i, ry))
+                atlas.paste(im.crop((w - 1, 0, w, h)), (rx + w + i, ry))
+        else:
+            atlas.paste(im, (rx, ry))
     return atlas, rects
 
 def main():
@@ -341,12 +371,17 @@ def main():
         areas.append({'name': area.m_Name, 'x': round(ax, 3), 'y': round(ay, 3), 'rooms': room_count})
 
     os.makedirs(OUT_DIR, exist_ok=True)
-    full_atlas, full_rects = pack(full_imgs)
-    rough_atlas, rough_rects = pack(rough_imgs)
+    full_atlas, full_rects = pack({k: solid(v) for k, v in full_imgs.items()}, bleed=BLEED)
+    rough_atlas, rough_rects = pack({k: solid(v) for k, v in rough_imgs.items()}, bleed=BLEED)
     pin_atlas, pin_rects = pack(pin_imgs, width=512)
     full_atlas.save(os.path.join(OUT_DIR, 'rooms-full.png'), optimize=True)
     rough_atlas.save(os.path.join(OUT_DIR, 'rooms-rough.png'), optimize=True)
     pin_atlas.save(os.path.join(OUT_DIR, 'pins.png'), optimize=True)
+    # Each atlas's version (its content's), for the page's ?v=: the rects in js/map.js change with
+    # it, and a cached old atlas under new rects would draw every room out of place.
+    import hashlib
+    atlas_v = {k: hashlib.sha1(open(os.path.join(OUT_DIR, f), 'rb').read()).hexdigest()[:8]
+               for k, f in (('full', 'rooms-full.png'), ('rough', 'rooms-rough.png'), ('pins', 'pins.png'))}
 
     for name, r in rooms.items():
         r['full'] = list(full_rects[name])
@@ -482,6 +517,9 @@ def main():
             "     PLACE_LABELS [scene, name]: the map's own titles of the places inside the areas",
             "     PIN_ART their pictures in assets/map/pins.png, and the shade's, the Dreamgate's, the",
             "             compass's and the markers' (marker-b|r|y|w) [x, y, w, h]",
+            "     ATLAS   the atlases' sizes; bleed, the ring of each drawing's own edge pixels around",
+            "             its rect, for drawing it that far past its edge (no hairline where rooms meet);",
+            "             v, each atlas's version, for its ?v=",
             "     BOUNDS  [minX, minY, maxX, maxY] of the rooms",
             "     ANCHORS scene → [x, y]: rooms the map draws inside another, only their place",
             "     HOSTS   scene → [x, y]: where an undrawn room goes: its door in the drawn room you enter",
@@ -506,7 +544,7 @@ def main():
             *pin_lines,
             '  ];',
             f"  const PIN_ART = {js({k: list(v) for k, v in pin_rects.items()})};",
-            f"  const ATLAS = {js({'full': list(full_atlas.size), 'rough': list(rough_atlas.size), 'pins': list(pin_atlas.size)})};",
+            f"  const ATLAS = {js({'full': list(full_atlas.size), 'rough': list(rough_atlas.size), 'pins': list(pin_atlas.size), 'bleed': BLEED, 'v': atlas_v})};",
             f"  const BOUNDS = {js(bounds)};",
             f"  const ANCHORS = {js(anchors)};",
             f"  const HOSTS = {js(hosts)};",

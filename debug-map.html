@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>debug: the map's rooms</title>
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color: #d8d4c8; font: 14px/1.4 system-ui, sans-serif; }
+  .bar { position: fixed; inset: 0 0 auto 0; z-index: 2; display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; padding: 8px 12px; background: #0f131cee; border-bottom: 1px solid #2a3040; }
+  .bar label { display: inline-flex; gap: 4px; align-items: center; }
+  .bar select, .bar button, .bar input[type=number] { font: inherit; background: #1a2030; color: inherit; border: 1px solid #3a4258; border-radius: 4px; padding: 2px 8px; }
+  .bar button { cursor: pointer; }
+  .bar .grp { display: inline-flex; gap: 4px; align-items: center; }
+  .hint { color: #8891a6; }
+  #info:empty { display: none; }
+  #info { position: fixed; left: 12px; bottom: 10px; z-index: 2; padding: 4px 8px; background: #0f131cdd; border: 1px solid #2a3040; border-radius: 4px; pointer-events: none; min-height: 1.4em; }
+  #map { position: fixed; inset: 0; width: 100%; height: 100%; cursor: grab; touch-action: none; }
+  #map:active { cursor: grabbing; }
+  #map .pgm-room:hover { outline: 1px solid #ff0; }
+  #map .pgm-room.is-hot { outline: 1px dashed #ff0; }
+  /* Ghost styles to compare (the site's own is "site", css/app.css .pgm-room.is-ghost). */
+  body[data-ghost="o30"] #map .pgm-room.is-ghost { opacity: 0.3; }
+  body[data-ghost="grey"] #map .pgm-room.is-ghost { opacity: 0.35; filter: grayscale(1); }
+  body[data-ghost="grey-dim"] #map .pgm-room.is-ghost { opacity: 0.5; filter: grayscale(1) brightness(0.55); }
+  body[data-ghost="hide"] #map .pgm-room.is-ghost { display: none; }
+</style></head><body data-ghost="site">
+<!-- debug-map.html — a page to check by hand that every room of the Map fits its neighbours in
+     each state, not part of the site. The whole map, drawn by the site's own js/app-map.js
+     (HK.app.pgmRoomsSvg, the same markup and css/app.css), with each room's state set here
+     instead of by a save: a click on a room cycles it unlocked (full) → Cornifer's sketch (rough,
+     only if the game has one) → unknown (ghost); with "whole area" ticked the click sets its
+     whole area. Shift+click flips the room's second drawing (alt: Dirtmouth's lift shaft, a
+     broken wall…), drawn as a ghost under it while not earned. Drag to move, wheel to zoom.
+     The states are kept in localStorage (hollow.debugMap). Works over file:// (no iframe). -->
+<svg id="map" xmlns="http://www.w3.org/2000/svg"><g id="rooms" class="pgm-rooms"></g></svg>
+<div class="bar">
+  <span class="grp">All: <button data-all="full">unlocked</button><button data-all="rough">sketch</button><button data-all="ghost">locked</button><button data-all="mix">random</button></span>
+  <label><input type="checkbox" id="byArea"> whole area</label>
+  <label>Click sets <select id="mode"><option value="cycle">next state</option><option value="full">unlocked</option><option value="rough">sketch</option><option value="ghost">locked</option></select></label>
+  <span class="grp">Alts: <button data-alts="1">all</button><button data-alts="0">none</button></span>
+  <label>Ghost style <select id="ghost">
+    <option value="site">site (as css/app.css)</option>
+    <option value="o30">opacity 0.3</option>
+    <option value="grey">grey, 0.35</option>
+    <option value="grey-dim">grey, dim, 0.5</option>
+    <option value="hide">hidden (as the game)</option>
+  </select></label>
+  <button id="fit">Fit</button>
+  <span class="hint">Click a room: change its state · Shift+click: its alt · drag / wheel</span>
+</div>
+<div id="info"></div>
+<!-- The site's containers, which js/app.js looks up when it loads: here empty and hidden. -->
+<div hidden><div class="page"></div><div id="masthead"></div><div id="colophon"></div><div id="about"></div><div id="nav"></div><div id="panel"></div><div id="minihud"></div><div id="banner"></div><div id="gear"></div><div id="hj"></div><div id="home"></div><div id="nav-sub"></div><div id="nav-sub-game"></div><div id="toast"></div><div id="overcharm-fx"></div><div id="fight"></div><div id="saves"></div><div id="pg"></div></div>
+
+<script src="js/i18n.js"></script>
+<script src="js/data.js"></script>
+<script src="js/enemies.js"></script>
+<script src="js/journal.js"></script>
+<script src="js/pantheons.js"></script>
+<script src="js/hall.js"></script>
+<script src="js/hunter.js"></script>
+<script src="js/rooms.js"></script>
+<script src="js/collectibles.js"></script>
+<script src="js/map.js"></script>
+<script src="js/map-fixes.js"></script>
+<script src="js/benches.js"></script>
+<script src="js/scene-objects.js"></script>
+<script src="js/map-walk.js"></script>
+<script src="js/walk.js"></script>
+<script src="js/people.js"></script>
+<script src="js/hornet-moves.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/completion.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/fight.js"></script>
+<script src="js/codec.js"></script>
+<script src="js/changes.js"></script>
+<script src="js/saves.js"></script>
+<script src="js/savefile.js"></script>
+<script src="js/live.js"></script>
+<script src="js/app.js"></script>
+<script src="js/app-map.js"></script>
+<script>
+'use strict';
+// js/app-boot.js isn't loaded: nothing of the site renders, only its Map's rooms, here.
+const M = HK.map, A = HK.app;
+const $ = (id) => document.getElementById(id);
+const svg = $('map'), g = $('rooms');
+const NAMES = Object.keys(M.ROOMS);
+const SKETCHED = new Set(M.SKETCHED);
+const STATES = ['full', 'rough', 'ghost'];
+const LABEL = { full: 'unlocked', rough: 'sketch', ghost: 'locked' };
+
+// The states: { rooms: name → state, alts: [names] }, kept between visits.
+const KEY = 'hollow.debugMap';
+let st = { rooms: {}, alts: NAMES.filter((n) => M.ROOMS[n][9]) };
+try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.rooms) st = s; } catch (e) { /* defaults */ }
+const keep = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) { /* not kept */ } };
+// A room's sketch only if the game has one for it (M.SKETCHED); otherwise it stays as it was.
+const can = (name, s) => s !== 'rough' || SKETCHED.has(name);
+const stateOf = (name) => st.rooms[name] || 'full';
+
+function draw() {
+  const alts = new Set(st.alts);
+  g.innerHTML = A.pgmRoomsSvg(undefined, { state: stateOf, alts });
+}
+
+// The view: the SVG's viewBox, in the map's units (y flipped, as the site draws it).
+const [x0, y0, x1, y1] = M.BOUNDS;
+let vb;
+function fit() {
+  const w = x1 - x0 + 1, h = y1 - y0 + 1, r = innerWidth / innerHeight;
+  const W = Math.max(w, h * r), H = W / r;
+  vb = { x: (x0 + x1) / 2 - W / 2, y: -(y0 + y1) / 2 - H / 2, w: W, h: H };
+  apply();
+}
+const apply = () => svg.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
+const toMap = (e) => [vb.x + (e.clientX / innerWidth) * vb.w, vb.y + (e.clientY / innerHeight) * vb.h];
+
+svg.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const [mx, my] = toMap(e), k = Math.exp(e.deltaY * 0.0015);
+  vb = { x: mx - (mx - vb.x) * k, y: my - (my - vb.y) * k, w: vb.w * k, h: vb.h * k };
+  apply();
+}, { passive: false });
+
+let drag = null;
+svg.addEventListener('pointerdown', (e) => { drag = { x: e.clientX, y: e.clientY, vb: { ...vb }, moved: false }; svg.setPointerCapture(e.pointerId); });
+svg.addEventListener('pointermove', (e) => {
+  if (drag) {
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    if (Math.hypot(dx, dy) > 4) drag.moved = true;
+    if (drag.moved) { vb.x = drag.vb.x - (dx / innerWidth) * vb.w; vb.y = drag.vb.y - (dy / innerHeight) * vb.h; apply(); }
+    return;
+  }
+  const r = roomAt(e);
+  $('info').textContent = r ? `${r} · ${M.AREAS[M.ROOMS[r][0]]} · ${LABEL[stateOf(r)]}${M.ROOMS[r][9] ? ` · alt ${st.alts.includes(r) ? 'on' : 'off'}` : ''}${SKETCHED.has(r) ? '' : ' · no sketch'}` : '';
+});
+svg.addEventListener('pointerup', (e) => {
+  const was = drag; drag = null;
+  if (!was || was.moved) return;
+  const r = roomAt(e);
+  if (!r) return;
+  if (e.shiftKey) {
+    if (!M.ROOMS[r][9]) return;
+    st.alts = st.alts.includes(r) ? st.alts.filter((n) => n !== r) : [...st.alts, r];
+  } else {
+    const mode = $('mode').value;
+    const next = mode !== 'cycle' ? mode : STATES[(STATES.indexOf(stateOf(r)) + 1) % 3];
+    const targets = $('byArea').checked ? NAMES.filter((n) => M.ROOMS[n][0] === M.ROOMS[r][0]) : [r];
+    for (const n of targets) {
+      // Cycling past a sketch the room doesn't have goes on to the next state.
+      const s = can(n, next) ? next : mode === 'cycle' ? 'ghost' : stateOf(n);
+      st.rooms[n] = s;
+    }
+  }
+  keep(); draw();
+});
+/* The room under the pointer: the topmost drawn pixel would need the atlas; the box under it
+   is enough, the smallest of those that hold the point (a room inside another wins). */
+function roomAt(e) {
+  const [mx, my] = toMap(e);
+  let best = null, area = Infinity;
+  for (const n of NAMES) {
+    const [, x, y, w, h, rW, rH] = M.ROOMS[n];
+    const [bw, bh] = stateOf(n) === 'rough' ? [rW, rH] : [w, h];
+    if (Math.abs(mx - x) <= bw / 2 && Math.abs(my + y) <= bh / 2 && bw * bh < area) { best = n; area = bw * bh; }
+  }
+  return best;
+}
+
+document.querySelectorAll('[data-all]').forEach((b) => b.addEventListener('click', () => {
+  const s = b.dataset.all;
+  const any = (n) => { const ok = STATES.filter((x) => can(n, x)); return ok[Math.floor(Math.random() * ok.length)]; };
+  for (const n of NAMES) st.rooms[n] = s === 'mix' ? any(n) : can(n, s) ? s : 'ghost';
+  keep(); draw();
+}));
+document.querySelectorAll('[data-alts]').forEach((b) => b.addEventListener('click', () => {
+  st.alts = b.dataset.alts === '1' ? NAMES.filter((n) => M.ROOMS[n][9]) : [];
+  keep(); draw();
+}));
+$('ghost').addEventListener('change', () => { document.body.dataset.ghost = $('ghost').value; });
+$('fit').addEventListener('click', fit);
+addEventListener('resize', fit);
+fit(); draw();
+</script>
+</body></html>
