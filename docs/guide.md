@@ -577,9 +577,11 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
 
 ## Files
 
-- `index.html` — the page; forty classic scripts (it works over `file://`) and GoatCounter's,
+- `index.html` — the page; forty classic scripts (it works over `file://`) and Footworn's,
   the visit counter: no cookies, one visit per page load and, as events, the screen switches
-  (`screen-*`), the language (`lang-*`), *Share* and the way into a save, as a funnel: the import
+  (`screen`, with the view and the language as properties), the language (`lang`), a part that
+  failed to render (`error`, with the part), *Share*, the Knight's walk (`knight`), the sister
+  site's link (`sister`) and the way into a save, as a funnel: the import
   opened (`import-open`), a file read (`import-read`) or refused (`import-bad`), the game imported
   (`save-import`), its slot linked to the file (`save-link`) and a live update received
   (`save-sync`, once per visit). The hash with the build is never sent, and it
@@ -2022,8 +2024,12 @@ for (LSSI art. 22.2, ePrivacy art. 5.3), and never leaves it:
 - IndexedDB: the save-file handle, only after "Follow the game" (`js/live.js`).
 - Save files are read in the browser; nothing is uploaded.
 
-The visit counter is GoatCounter (`track()` in `js/app.js`). It sets no cookies, keeps no IP and
-only aggregates pages, referrer, browser/screen and country. That fits the AEPD's exemption for
+The visit counter is [Footworn](https://github.com/betorzdev/footworn) (`track()` in `js/app.js`;
+`404.html` loads it too, to see which broken addresses people land on), Albert's own, on a
+Cloudflare Worker in Western Europe. It sets no cookies, keeps no IP and stores only daily counts
+of pages, referrer host, browser and system families, screen width, language, country and the
+events above; its own record of what it stores is at footworn.betorzdev.workers.dev/privacy
+(the owner can also watch visits arrive live there, and that view keeps nothing). That fits the AEPD's exemption for
 audience measurement ("Guía uso de cookies para herramientas de medición de audiencia", January
 2024), whose one condition that falls on the site is to **inform** visitors: that's what the
 notice is for. GitHub Pages, the host, keeps technical logs (GDPR art. 13), which the notice also
