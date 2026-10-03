@@ -74,7 +74,10 @@ const sceneOf = (name) => (R.DOORS[name] ? name : (([, s]) => (R.DOORS[s] ? s : 
 
 (() => {
   const png = readPng(ATLAS);
-  const alphaAt = (x, y) => (x < 0 || y < 0 || x >= png.w || y >= png.h ? 0 : png.data[(y * png.w + x) * 4 + 3]);
+  /* Only the drawing's own rect counts (clip): past it is background, though the atlas rings each
+     drawing with copies of its edge (M.ATLAS.bleed, for the page's seams). */
+  let clip = [0, 0, png.w, png.h];
+  const alphaAt = (x, y) => (x < clip[0] || y < clip[1] || x >= clip[2] || y >= clip[3] ? 0 : png.data[(y * png.w + x) * 4 + 3]);
   /* A pixel of the ground: the fill (drawn and dark), or a light line that has no empty background
      within EDGE pixels: a platform or a ledge drawn across a corridor, which he walks over. A line
      by the background is the drawing's outline, a wall: rock, as the gap between two corridors. */
@@ -108,6 +111,7 @@ const sceneOf = (name) => (R.DOORS[name] ? name : (([, s]) => (R.DOORS[s] ? s : 
     for (const [cx, cy, dw, dh, [ax, ay, aw, ah]] of draws) {
       // The drawing's pixels that fall in each cell (the atlas at the drawing's own scale).
       const sx = aw / dw, sy = ah / dh;
+      clip = [ax, ay, ax + aw, ay + ah];
       for (let j = 0; j < h; j++) {
         const top = y1 - j * CELL, bot = top - CELL;           // the row's y span, map units
         const py0 = Math.floor((cy + dh / 2 - top) * sy), py1 = Math.ceil((cy + dh / 2 - bot) * sy);

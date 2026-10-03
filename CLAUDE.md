@@ -33,8 +33,8 @@ Before touching anything, check whether it's already solved:
   the ground each room's drawing covers and what crossing it costs, which `js/walk.js` walks
   (the Knight's way from bench to bench: corridors, doors, stags, trams and lifts).
   `js/hornet-moves.js` with `assets/hornet/` too: Hornet's moves from Silksong's own sprites
-  (`tools/extract-hornet.py`), for the sister site's link, `js/app-sister.js` (hidden until the
-  sister is published: `SISTER = false`; `#…&sister=1` shows it).
+  (`tools/extract-hornet.py`), for the sister site's link, `js/app-sister.js` (shown since the
+  sister was published: `SISTER = true`).
   `js/people.js`, the characters' meetings, was read by hand from the game's scenes. And
   `js/map-fixes.js`, where a pin really goes when all that places it wrong: written by the Map's
   **admin mode** (`#view=map&admin=1`, dragging the pin; `npm run admin` serves the site and
@@ -47,8 +47,9 @@ Neither folder is part of the page: `index.html` doesn't load them.
 - **No framework and no build.** `index.html` loads **forty classic scripts**, not modules.
   The page is `js/app.js` (the core) and one script per screen (`js/app-*.js`), sharing the
   `HK.app` object, and `js/app-boot.js` starts it; the rules for sharing are in `js/app.js`'s header.
-  Plus GoatCounter's (`async`, external), the visit counter: the site has to work the same
-  without it, so its events go through `track()` in `js/app.js`, which does nothing if it's missing.
+  Plus Footworn's (`async`, external; github.com/betorzdev/footworn), the visit counter: the
+  site has to work the same without it, so its events go through `track()` in `js/app.js`,
+  which does nothing if it's missing.
 - **Each script and stylesheet carries its version** (`?v=<hash>`, written by `npm run pages`,
   never by hand): GitHub Pages caches each file 10 minutes on its own, and without it a deploy
   could mix an old file with a new one. A new script goes into `index.html` without `?v=`.
@@ -120,6 +121,8 @@ what the game says.
   sets the preferences for screenshots; `debug-overflow.html` lists what spills past the width; `debug-benches.html` shows every bench
   of Your game with the Knight on it (`?seat=1` marks the seat);
   `debug-walk.html` plays the Knight's walk between two benches you tap, with the way drawn;
+  `debug-map.html` draws the whole Map and a click on a room locks, sketches or unlocks it (Shift:
+  its second drawing), to check that every state fits its neighbours (no iframe: works over `file://`);
   `debug-hover.html` tests the mouse behaviour, and has to be run with
   `--blink-settings=primaryHoverType=2,primaryPointerType=4,availableHoverTypes=2,availablePointerTypes=4`
   (without it, headless Chrome behaves as touch).

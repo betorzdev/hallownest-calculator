@@ -448,6 +448,9 @@
   // Where a pin really is on the map, its place in its spot's grid included.
   const pinAt = (th) => (th.off ? [th.at[0] + th.off[0] * pinK, th.at[1] - th.off[1] * pinK] : th.p);
 
+  // An atlas's ?v= (js/map.js): its rects change with it, and a cached old one would misplace them.
+  const atlasV = (k) => (M.ATLAS.v && M.ATLAS.v[k] ? '?v=' + M.ATLAS.v[k] : '');
+
   /* ── The rooms, as your game has them ── */
   // The area's map from Cornifer, by the name js/map.js gives the area (Dirtmouth's comes with the game).
   const AREA_MAP = { 'Crossroads': 'crossroads-map', 'Green_Path': 'greenpath-map', 'Fog_Canyon': 'fog-canyon-map',
@@ -468,29 +471,43 @@
     if (mapped.has(name) || mapped.has(sceneOf(name))) return 'full';
     return SKETCHED.has(name) ? 'rough' : 'ghost';
   }
-  // All the rooms, or one area's (its index in M.AREAS: Your game draws the area of your bench).
-  function roomsSvg(only) {
+  /* All the rooms, or one area's (its index in M.AREAS: Your game draws the area of your bench).
+     debug-map.html passes its own { state(name, area) → 'full'|'rough'|'ghost', alts: Set }, to
+     check by hand that every state of every room fits its neighbours. */
+  function roomsSvg(only, as = null) {
     const mapped = new Set(App.progress.mapped);
     const [aw, ah] = M.ATLAS.full, [rw, rh] = M.ATLAS.rough;
     // A room's second drawing, once the world shows it (a lift, a wall broken…); with no save,
     // the world finished: all of them.
-    const alts = mapped.size ? new Set(App.progress.alts) : new Set(Object.keys(M.ROOMS));
-    return Object.entries(M.ROOMS).filter(([, r]) => only === undefined || r[0] === only).map(([name, r]) => {
+    const alts = as ? as.alts : mapped.size ? new Set(App.progress.alts) : new Set(Object.keys(M.ROOMS));
+    /* Each drawing goes BLEED atlas pixels past its edge, onto the ring of its own edge pixels the
+       atlas keeps around it (tools/extract-map.py): two rooms that meet overlap there instead of
+       each fading out at the seam, which drew a dark hairline across every joint. */
+    const B = M.ATLAS.bleed || 0;
+    const ghosts = [], rest = [];
+    for (const [name, r] of Object.entries(M.ROOMS)) {
+      if (only !== undefined && r[0] !== only) continue;
       const [area, x, y, w, h, rW, rH, full, rough, alt] = r;
-      const st = roomState(name, area, mapped);
+      const st = as ? as.state(name, area) : roomState(name, area, mapped);
       const useFull = st !== 'rough';
       const [bw, bh] = useFull ? [w, h] : [rW, rH];
       const [sx, sy, sw, sh] = useFull ? (alt && alts.has(name) ? alt : full) : rough;
       const [iw, ih] = useFull ? [aw, ah] : [rw, rh];
-      const room = (cls, [rx, ry, rW2, rH2], src, [w2, h2]) => `<svg class="pgm-room ${cls}" x="${(x - bw / 2).toFixed(3)}" y="${(-y - bh / 2).toFixed(3)}" width="${bw}" height="${bh}"
-        viewBox="${rx} ${ry} ${rW2} ${rH2}" preserveAspectRatio="none"><image href="assets/map/rooms-${src}.png" width="${w2}" height="${h2}"/></svg>`;
+      const room = (cls, [rx, ry, rW2, rH2], src, [w2, h2]) => {
+        const ex = (B * bw) / rW2, ey = (B * bh) / rH2;   // the bleed, in map units
+        return `<svg class="pgm-room ${cls}" data-room="${name}" x="${(x - bw / 2 - ex).toFixed(4)}" y="${(-y - bh / 2 - ey).toFixed(4)}" width="${(bw + 2 * ex).toFixed(4)}" height="${(bh + 2 * ey).toFixed(4)}"
+        viewBox="${rx - B} ${ry - B} ${rW2 + 2 * B} ${rH2 + 2 * B}" preserveAspectRatio="none"><image href="assets/map/rooms-${src}.png${atlasV(src)}" width="${w2}" height="${h2}"/></svg>`;
+      };
       /* A second drawing the save hasn't earned yet (Dirtmouth's lift shaft before you've ridden it)
          goes under the room's own as a ghost, like the rooms you don't know: what it adds (the
          shaft, up to the Peak's corridor, itself a ghost) shows faintly where the drawing you have
          leaves nothing, so the two don't meet as a wall. */
-      const ghostAlt = useFull && alt && !alts.has(name) ? room('is-ghost', alt, 'full', [aw, ah]) : '';
-      return ghostAlt + room(`is-${st}`, [sx, sy, sw, sh], useFull ? 'full' : 'rough', [iw, ih]);
-    }).join('');
+      if (useFull && alt && !alts.has(name)) ghosts.push(room('is-ghost', alt, 'full', [aw, ah]));
+      (st === 'ghost' ? ghosts : rest).push(room(`is-${st}`, [sx, sy, sw, sh], useFull ? 'full' : 'rough', [iw, ih]));
+    }
+    /* The rooms you don't know, all under the ones you do: a ghost drawn over a room of yours
+       (they overlap at their joints, and some lie inside another) darkened it in patches. */
+    return ghosts.join('') + rest.join('');
   }
 
   /* ── The map's own titles: each area's over the middle of its rooms, each place's on its room ── */
@@ -638,7 +655,7 @@
   function atlasSvg(key, size, cls = '') {
     const [x, y, w, h] = M.PIN_ART[key], [aw, ah] = M.ATLAS.pins;
     const at = size === null ? '' : ` x="${-size / 2}" y="${-size / 2}" width="${size}" height="${size}"`;
-    return `<svg class="pgm-atlas${cls}"${at} viewBox="${x} ${y} ${w} ${h}" aria-hidden="true"><image href="assets/map/pins.png" width="${aw}" height="${ah}"/></svg>`;
+    return `<svg class="pgm-atlas${cls}"${at} viewBox="${x} ${y} ${w} ${h}" aria-hidden="true"><image href="assets/map/pins.png${atlasV('pins')}" width="${aw}" height="${ah}"/></svg>`;
   }
   // The lift, which the game has no pin for: a cage between two arrows, in the pins' bone.
   /* …and the rest the game draws with no sprite of its own the site can take: a wall that breaks

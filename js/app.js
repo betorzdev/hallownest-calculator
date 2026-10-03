@@ -322,10 +322,11 @@
     if (!cur || cur.key !== key) writeUrl(true);
   }
 
-  /* A GoatCounter event (index.html loads it). Only the name travels, never the hash with the
-     build. Without the script (blocked, offline, file://) it does nothing. */
-  function track(name) {
-    try { if (window.goatcounter && goatcounter.count) goatcounter.count({ path: name, title: name, event: true }); } catch (e) {}
+  /* A Footworn event (index.html loads it): a name and, at most, a few short properties. Only
+     those travel, never the hash with the build. Without the script (blocked, offline, file://)
+     it does nothing. */
+  function track(name, props) {
+    try { if (window.footworn && footworn.event) footworn.event(name, props); } catch (e) {}
   }
 
   function persist() {
@@ -677,7 +678,7 @@
           <li>${t('footPrivNone')}</li>
           <li>${t('footPrivLocal')}</li>
           <li>${t('footPrivSaves')}</li>
-          <li>${t('footPrivCount', { gc: ext('https://www.goatcounter.com/help/gdpr', 'GoatCounter') })}</li>
+          <li>${t('footPrivCount', { gc: ext('https://footworn.betorzdev.workers.dev/privacy', 'Footworn') })}</li>
           <li>${t('footPrivHost', { gh: ext('https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement', 'GitHub Pages') })}</li>
           <li>${t('footPrivErase')}</li>
         </ul>
@@ -939,7 +940,7 @@
   function safely(name, fn) {
     try { fn(); } catch (e) {
       console.error(e);
-      track('error-' + name);
+      track('error', { part: name });
     }
   }
   function render() {
@@ -1001,7 +1002,7 @@
     setView(v);
     navTo(false);
     render();
-    if (changed) { track('screen-' + prefs.view); fadeIn(screenOf(prefs.view)); }
+    if (changed) { track('screen', { view: prefs.view, lang: prefs.lang }); fadeIn(screenOf(prefs.view)); }
     if (changed) {
       const start = el.masthead.offsetTop + el.masthead.offsetHeight;   // where the bar stays stuck
       if (scrollY > start) scrollTo(0, start);
@@ -1055,7 +1056,7 @@
       const page = langPage(next);
       prefs.lang = I.setLang(next);
       prefs.langChosen = true;
-      track('lang-' + prefs.lang);
+      track('lang', { lang: prefs.lang });
       savePrefs();
       if (page) { persist(); location.href = page; return; }
       rebuildNF();

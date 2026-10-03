@@ -113,9 +113,9 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   He's decorative: hidden from screen readers and out of the tab order; a click on him is an
   easter egg: he focuses soul as the game heals, standing still while the Focus's white light
   (`--focus-glow`) swells around him and fades, then sits again (counted as `knight`).
-- **The sister site's link and Hornet** (`js/app-sister.js`, css `.mh-sister`, `.sis-*`), **hidden
-  until the sister is published** (`SISTER = false` in the script; `#…&sister=1` shows it, and
-  survives a reload like `admin=1`). «Silksong ↗» goes after Share in the masthead, in Share's
+- **The sister site's link and Hornet** (`js/app-sister.js`, css `.mh-sister`, `.sis-*`), shown since
+  the sister was published (`SISTER = true` in the script; set to false it hides again, and then
+  `#…&sister=1` shows it, surviving a reload like `admin=1`). «Silksong ↗» goes after Share in the masthead, in Share's
   type, to the Silksong sister site (`../pharloom-calculator`, «Calculadora de Telalejana»), in your
   language, in a new tab; on a phone (below 600 px) it's a line of its own under the masthead, on the
   right, with room above it for her. Instead of an underline it carries a silk thread, drawn in a
@@ -577,9 +577,11 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
 
 ## Files
 
-- `index.html` — the page; forty classic scripts (it works over `file://`) and GoatCounter's,
+- `index.html` — the page; forty classic scripts (it works over `file://`) and Footworn's,
   the visit counter: no cookies, one visit per page load and, as events, the screen switches
-  (`screen-*`), the language (`lang-*`), *Share* and the way into a save, as a funnel: the import
+  (`screen`, with the view and the language as properties), the language (`lang`), a part that
+  failed to render (`error`, with the part), *Share*, the Knight's walk (`knight`), the sister
+  site's link (`sister`) and the way into a save, as a funnel: the import
   opened (`import-open`), a file read (`import-read`) or refused (`import-bad`), the game imported
   (`save-import`), its slot linked to the file (`save-link`) and a live update received
   (`save-sync`, once per visit). The hash with the build is never sent, and it
@@ -800,8 +802,7 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   - `js/app-knight.js` — the Knight who walks the page: sitting on the bar under the tab you're on
     (its mark), running along it when you change screens, and walking his pin on the Map to a new
     bench through the doors ("The Knight" above).
-  - `js/app-sister.js` — the sister site's link and the Hornet who points it out, hidden until the
-    sister is published ("The sister site's link and Hornet" above).
+  - `js/app-sister.js` — the sister site's link and the Hornet who points it out ("The sister site's link and Hornet" above).
   - `js/app-boot.js` — startup: what's saved, the link and the first render. It goes last.
 - `assets/` — the game's artwork: `charms/`, `nails/`, `spells/`, `arts/`, `abilities/`
   and `hud/`. `tools/fetch-icons.js` downloads them from the wiki's CDN (`npm run icons`).
@@ -1572,7 +1573,11 @@ on Cornifer's map). It's the tablet chosen among three variants in
   `ALTS`) goes under the drawing you have as a ghost: what it adds shows faintly, like the
   rooms you don't know, so the Peak's ghost corridor doesn't end against the town's plain
   silhouette (the game never shows that corridor without the shaft: `Mines_10` isn't sketched,
-  and being there is what swaps the drawing). **Always show the whole map**
+  and being there is what swaps the drawing). The rooms you don't know are all drawn under the
+  ones you know, so none darkens a room of yours where they overlap; and each drawing reaches a
+  pixel past its edge (the atlas rings it with copies of its own edge, its fill opaque), so two
+  rooms that meet join without a hairline. `debug-map.html` sets each room's state by hand to
+  check the joints. **Always show the whole map**
   draws it all whole anyway: it's your choice (a pref, `pgMapWhole`), so a bench never undoes it.
   **Large map**, the zoom's third button, ⤢ (a pref, `pgMapBig`; off by default, so the filter
   shows at first sight): on a computer the Map leaves the page's column, takes the window's whole width and its
@@ -2019,8 +2024,12 @@ for (LSSI art. 22.2, ePrivacy art. 5.3), and never leaves it:
 - IndexedDB: the save-file handle, only after "Follow the game" (`js/live.js`).
 - Save files are read in the browser; nothing is uploaded.
 
-The visit counter is GoatCounter (`track()` in `js/app.js`). It sets no cookies, keeps no IP and
-only aggregates pages, referrer, browser/screen and country. That fits the AEPD's exemption for
+The visit counter is [Footworn](https://github.com/betorzdev/footworn) (`track()` in `js/app.js`;
+`404.html` loads it too, to see which broken addresses people land on), Albert's own, on a
+Cloudflare Worker in Western Europe. It sets no cookies, keeps no IP and stores only daily counts
+of pages, referrer host, browser and system families, screen width, language, country and the
+events above; its own record of what it stores is at footworn.betorzdev.workers.dev/privacy
+(the owner can also watch visits arrive live there, and that view keeps nothing). That fits the AEPD's exemption for
 audience measurement ("Guía uso de cookies para herramientas de medición de audiencia", January
 2024), whose one condition that falls on the site is to **inform** visitors: that's what the
 notice is for. GitHub Pages, the host, keeps technical logs (GDPR art. 13), which the notice also
