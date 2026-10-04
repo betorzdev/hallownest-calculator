@@ -47,6 +47,9 @@
       case 'item': {
         const cat = catOf(c.id);
         const m = cat ? App.pgMeta(cat, c.id) : null;
+        // A dream boss with no Journal entry (js/progress.js): its name and picture as a foe.
+        const foe = !m && F.FOE_BY_ID[c.id];
+        if (foe) return { name: pick(foe.name), note: '', art: D.art('enemies', c.id) };
         // The Dreamers have no picture of their own: their pins on the game's map.
         return { name: m ? m.name : c.id, note: '', art: m ? m.art : '', pin: cat === 'dreamers' ? 'dreamer-' + c.id : '' };
       }

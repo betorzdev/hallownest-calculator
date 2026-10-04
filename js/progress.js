@@ -59,6 +59,9 @@
     'dream-awakened': 'dreamNailUpgraded', 'seer-ascended': 'mothDeparted',
     // Bosses the Journal can't tell apart: it has one Hornet for her two fights.
     'hornet-sentinel': 'hornetOutskirtsDefeated',
+    // Three dream bosses with no Journal entry of their own: only the game's flag says they fell.
+    'failed-champion': 'falseKnightDreamDefeated', 'soul-tyrant': 'mageLordDreamDefeated',
+    'lost-kin': 'infectedKnightDreamDefeated',
     'monomon': 'monomonDefeated', 'lurien': 'lurienDefeated', 'herrah': 'hegemolDefeated',
     'trial-warrior': 'colosseumBronzeCompleted', 'trial-conqueror': 'colosseumSilverCompleted',
     'trial-fool': 'colosseumGoldCompleted',

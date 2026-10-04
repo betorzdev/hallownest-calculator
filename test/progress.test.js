@@ -42,6 +42,14 @@ test('a save brings its progress: equipment, keys, Dreamers, Colosseum, pantheon
     'hornet-sentinel', 'monomon', 'trial-warrior', 'banishment', 'godtuner', 'pantheon-artist', 'divine-greed']);
 });
 
+test('the three dream bosses with no Journal entry come from their flags', () => {
+  const pd = { ...BASE, falseKnightDreamDefeated: true, infectedKnightDreamDefeated: true, mageLordDreamDefeated: false,
+    killedFalseKnight: true, killsFalseKnight: 0 };
+  assert.deepEqual(P.fromSave(pd).ids, ['failed-champion', 'lost-kin']);
+  // The Journal's False Knight says nothing of his dream.
+  assert.deepEqual(P.fromSave({ ...BASE, killedFalseKnight: true, killsFalseKnight: 0 }).ids, []);
+});
+
 test('what you carry, your bench and your shade', () => {
   const pd = { ...BASE, geo: 2024, dreamOrbs: 2409, heartPieces: 2, vesselFragments: 1, ore: 1, rancidEggs: 3,
     simpleKeys: 0, trinket1: 4, trinket4: 1, bankerBalance: 500, respawnScene: 'GG_Atrium', shadeScene: 'Fungus3_02', geoPool: 750 };

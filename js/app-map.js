@@ -111,7 +111,8 @@
     'troupe-master-grimm': 'Grimm_Main_Tent', nkg: 'Grimm_Main_Tent',
   };
   /* The dream bosses, fought with the Dream Nail where their waking self fell (Grey Prince Zote,
-     in Bretta's house): not part of the 112%, but the Journal's; beaten once it has them complete. */
+     in Bretta's house): not part of the 112%, but the Journal's; beaten once it has them complete.
+     Three have no entry of their own (js/journal.js, `of`): the save's flag says it (js/progress.js). */
   const DREAM_BOSS_AT = { 'failed-champion': 'Crossroads_10', 'soul-tyrant': 'Ruins1_24', 'lost-kin': 'Abyss_19',
     'white-defender': 'Waterways_15', 'grey-prince-zote': 'Room_Bretta' };
   /* Foes no room places (js/scene-objects.js reads what a scene holds; these come some other way),
@@ -387,7 +388,7 @@
     for (const [id, scene] of Object.entries(DREAM_BOSS_AT)) {
       const p = roomPoint(scene), foe = F.FOE_BY_ID[id];
       if (p && foe) out.push({ id: 'd:' + id, layer: 'other-bosses', p, scene, art: { src: D.art(NO_MEDAL.includes(id) ? 'enemies' : 'journal', id) }, name: pick(foe.name), where: where(scene),
-        on: HJ.stateOf(App.hjBook(), id).done, act: { state: true } });
+        on: P.IDS[id] ? P.has(App.progress, id) : HJ.stateOf(App.hjBook(), id).done, act: { state: true } });
     }
     for (const it of cats.bosses.items) add112('bosses', 'bosses', it.id, BOSS_AT[it.id]);
     for (const it of cats.colosseum.items) add112('trials', 'colosseum', it.id, BOSS_AT[it.id]);
