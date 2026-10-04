@@ -15,10 +15,22 @@ const BASE = { charmSlots: 3, maxHealthBase: 5, MPReserveMax: 0, nailSmithUpgrad
 test('it keeps only what it knows: ids once and in order, counts clamped, rooms by name', () => {
   assert.deepEqual(P.normalize({ ids: ['lurien', 'nope', 'monomon', 'lurien'],
     counts: { shards: 7, geo: -3, 'pale-ore': 2.4, nope: 5 }, bench: 'Town', shade: { scene: 'Fungus3_02', geo: 120 } }),
-  { ids: ['monomon', 'lurien'], counts: { shards: 3, 'pale-ore': 2 }, found: [], bench: 'Town', shade: { scene: 'Fungus3_02', geo: 120 }, gate: null, statues: null, mapped: [], markers: [], alts: [], opened: [], rocks: [], met: [] });
-  assert.deepEqual(P.normalize(null), { ids: [], counts: {}, found: [], bench: '', shade: null, gate: null, statues: null, mapped: [], markers: [], alts: [], opened: [], rocks: [], met: [] });
-  assert.deepEqual(P.normalize({ bench: '<b>', shade: { scene: 'None', geo: 5 } }), { ids: [], counts: {}, found: [], bench: '', shade: null, gate: null, statues: null, mapped: [], markers: [], alts: [], opened: [], rocks: [], met: [] });
+  { ids: ['monomon', 'lurien'], counts: { shards: 3, 'pale-ore': 2 }, found: [], bench: 'Town', away: false, shade: { scene: 'Fungus3_02', geo: 120 }, gate: null, statues: null, mapped: [], markers: [], alts: [], opened: [], rocks: [], met: [] });
+  assert.deepEqual(P.normalize(null), { ids: [], counts: {}, found: [], bench: '', away: false, shade: null, gate: null, statues: null, mapped: [], markers: [], alts: [], opened: [], rocks: [], met: [] });
+  assert.deepEqual(P.normalize({ bench: '<b>', shade: { scene: 'None', geo: 5 } }), { ids: [], counts: {}, found: [], bench: '', away: false, shade: null, gate: null, statues: null, mapped: [], markers: [], alts: [], opened: [], rocks: [], met: [] });
   assert.deepEqual(P.normalize({ found: ['grub-crossroads-acid', 'nope', 'grub-crossroads-acid'] }).found, ['grub-crossroads-acid']);
+});
+
+test('where you wake: a bench, or where a dreamer lay (away) until you rest again', () => {
+  const at = (respawnScene, respawnMarkerName, respawnType) => P.fromSave({ ...BASE, respawnScene, respawnMarkerName, respawnType });
+  assert.deepEqual([at('Town', 'RestBench', 1).away, at('Crossroads_ShamanTemple', 'BoneBench', 1).away], [false, false]);
+  // The dreamers' rooms set "Death Respawn Marker" (Herrah's in Beast's Den, which has a bench too).
+  assert.equal(at('Fungus3_archive_02', 'Death Respawn Marker', 0).away, true);
+  assert.equal(at('Deepnest_Spider_Town', 'Death Respawn Marker Hegemol', 1).away, true);
+  assert.equal(at('Deepnest_Spider_Town', 'RestBench Return', 1).away, false);
+  assert.equal(P.fromSave(BASE).away, false);   // nothing to tell: no bench either
+  assert.equal(P.normalize({ bench: 'Fungus3_archive_02', away: true }).away, true);
+  assert.equal(P.normalize({ away: true }).away, false);
 });
 
 test('what the Map follows of the rooms and the characters: broken, opened, met', () => {
@@ -48,6 +60,16 @@ test('the three dream bosses with no Journal entry come from their flags', () =>
   assert.deepEqual(P.fromSave(pd).ids, ['failed-champion', 'lost-kin']);
   // The Journal's False Knight says nothing of his dream.
   assert.deepEqual(P.fromSave({ ...BASE, killedFalseKnight: true, killsFalseKnight: 0 }).ids, []);
+});
+
+test("Kingsoul's halves, each on its own: the White Lady's and the Pale King's", () => {
+  const halves = (pd) => P.fromSave({ ...BASE, ...pd }).ids.filter((x) => x.endsWith('-fragment'));
+  assert.deepEqual(halves({}), []);
+  // One half (royalCharmState 1): only that one, whichever came first.
+  assert.deepEqual(halves({ royalCharmState: 1, gotQueenFragment: true }), ['queen-fragment']);
+  assert.deepEqual(halves({ royalCharmState: 1, gotKingFragment: true }), ['king-fragment']);
+  // Joined, and on to Void Heart: the flags stay.
+  assert.deepEqual(halves({ royalCharmState: 4, gotQueenFragment: true, gotKingFragment: true }), ['queen-fragment', 'king-fragment']);
 });
 
 test('what you carry, your bench and your shade', () => {

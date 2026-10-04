@@ -147,7 +147,9 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
     its line, curls and plaque, from the area's light as any section's lamp; chosen in
     `design/15-tab-colours.html`), so it changes when you rest elsewhere; with no game (free mode) it's the Inventory's lavender.
     The card has no light of its own (nor does the invitation's example: it shows your game as
-    it will look, on the frame's black); under it the bench you rest at, as the game draws it (`js/benches.js`: the Salubra's,
+    it will look, on the frame's black). When the save wakes you where no bench is (after a
+    Dreamer, see the Map's *Your game* below) it says *You'll wake up in* and draws no bench.
+    Under it the bench you rest at, as the game draws it (`js/benches.js`: the Salubra's,
     the toll bench, the Nailmasters', the Mantis Village's, Godhome's…; the town bench when no
     bench is known), with the Knight sitting on its seat at the game's scale (a bench taller
     than `--kn-bench-max` shrinks, him with it), lit in the area's colour: a picture of him resting there (css `.hmC-kn`), still, while the Knight
@@ -1632,6 +1634,11 @@ on Cornifer's map). It's the tablet chosen among three variants in
     room ItemChanger's `locations.json` gives it, the shop for what's bought, the fight's room for
     a boss) and counts as the 112% tablet counts it; its card marks it as the tablet does, or, for
     what's marked on the Inventory (spells, arts, cloaks, the Dream Nail), takes you there.
+    Kingsoul is its two White Fragments, each where it's picked up: the left from the White Lady
+    (Queen's Gardens), the right from the Pale King's body at the end of the White Palace, which
+    the map doesn't draw, so its pin stands where you dream your way in (Palace Grounds). Each
+    goes once the save has it (`gotQueenFragment`, `gotKingFragment`) or has the whole charm;
+    their cards only say whether you have them.
   - **Places**: benches, tram stations (open with their line: `openedTramLower`, `openedTramRestingGrounds`…),
     the lifts between areas (both ends; the game has no pin for them, so the site draws one, and its
     flags for them aren't clear enough to say which are working; Dirtmouth's, to Crystal Peak,
@@ -1673,9 +1680,14 @@ on Cornifer's map). It's the tablet chosen among three variants in
     Places also gets **soul totems** and **lore tablets**, whose card shows the tablet's text as
     the game writes it. The enemies, the hidden places, the geo rocks and the totems (hundreds
     of pins) start hidden (`pgMapSeen`), then are yours to show.
-  - **Your game**: your bench (a ring, on its bench's pin), your shade, your Dreamgate, and **the
+  - **Your game**: your bench (a ring, on its bench's pin; with no pin, by its Dreamer or at its
+    room), your shade, your Dreamgate, and **the
     markers you've placed** in the game (`placedMarkers_r/b/y/w`, in the map's frame), each with
-    the game's picture. The save has no position of the Knight's own: the game saves at a bench
+    the game's picture. Your bench is the save's `respawnScene`, and it isn't always a bench:
+    dreaming of a Dreamer moves it to their body (the room's FSM calls
+    `HeroController.SetBenchRespawn` with a `Death Respawn Marker`) until you rest again. Then
+    (`respawnType` other than 1, or that marker: `js/progress.js`, `away`) the pin is only the
+    Knight, by the Dreamer, named *You'll wake up here*. The save has no position of the Knight's own: the game saves at a bench
     (and on dying or quitting), and the map's compass is only live. The shade and the Dreamgate
     are at their room's centre: the game stores `shadeMapPos` and `dreamgateMapPos` so
     (`GameMap.PositionCompass`), not the exact spot. They go on top of the other pins, where they

@@ -75,6 +75,8 @@
     { id: 'collectors-map', es: 'Mapa del coleccionista', en: "Collector's Map" }, // COLLECTOR_MAP
     { id: 'hunters-journal', es: 'Diario del Cazador', en: "Hunter's Journal" },    // INV_NAME_JOURNAL
   ];
+  // Each of Kingsoul's two halves, before they join: the Map pins each where it's picked up.
+  const WHITE_FRAGMENT = { es: 'Fragmento blanco', en: 'White Fragment' };      // CHARM_NAME_36_A
   /* What you carry, in the Inventory's order: max is the most there can be (js/progress.js),
      sell what Relic Seeker Lemm pays for one (wiki, each relic's page). */
   const CARRIED = [
@@ -294,6 +296,9 @@
       'hallownest-seal':   'Hallownest_Seal.png',
       'kings-idol':        "King's_Idol.png",
       'arcane-egg':        'Arcane_Egg.png',
+      // Kingsoul's halves, for the Map's pin where each is picked up.
+      'white-fragment-left':  'Charm_KingSoul_Left.png',
+      'white-fragment-right': 'Charm_KingSoul_Right.png',
       // The collectibles' kinds that have no inventory icon (COLLECTIBLE_KINDS).
       'whispering-root':   'Whispering_Root.png',
       'grimmkin-flame':    'FlameConsumed.png',
@@ -846,7 +851,7 @@
   const STAT_BY_ID = Object.fromEntries(STAT_DEFS.map((d) => [d.id, d]));
 
   HK.data = {
-    DARK_ART, NAILS, NAIL, ARTS, ABILITIES, EQUIPMENT, KEY_ITEMS, MAP_ITEMS, CARRIED, SHARDS, FRAGMENTS, COMPLETION_NAMES, COLLECTIBLE_KINDS, SPELLS, SPELL_COST, SPELL_COST_TWISTER,
+    DARK_ART, NAILS, NAIL, ARTS, ABILITIES, EQUIPMENT, KEY_ITEMS, MAP_ITEMS, WHITE_FRAGMENT, CARRIED, SHARDS, FRAGMENTS, COMPLETION_NAMES, COLLECTIBLE_KINDS, SPELLS, SPELL_COST, SPELL_COST_TWISTER,
     SOUL, HEALTH, FOCUS, MOVE, PETS, CHARM_NOTCHES,
     CHARMS, CHARM_BY_ID, EFFECT_WHEN, CHARM_EFFECTS, GROUPS, STAT_DEFS, STAT_BY_ID, ART, art,
   };
