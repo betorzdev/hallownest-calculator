@@ -19,6 +19,14 @@ test('the enemies count for a Journal entry the site reads from a save', () => {
   }
 });
 
+test("Grimm's fights count for Grimm, not the Hornet the game's EnemyDeathEffects names there", () => {
+  const pds = (scene) => (SO.ENEMIES[scene] || []).map(([pd]) => pd);
+  for (const scene of ['Grimm_Main_Tent_boss', 'GG_Grimm']) assert.deepEqual(pds(scene), ['Grimm'], scene);
+  for (const scene of ['Grimm_Nightmare', 'GG_Grimm_Nightmare']) assert.deepEqual(pds(scene), ['NightmareGrimm'], scene);
+  // Hornet's own fights keep her.
+  for (const scene of ['Fungus1_04_boss', 'GG_Hornet_1']) assert.ok(pds(scene).includes('Hornet'), scene);
+});
+
 test("what the Map puts in a drawn room has its room's size, to be placed in it", () => {
   for (const list of [SO.SECRETS, SO.ROCKS, SO.CHESTS, SO.TOTEMS, SO.TABLETS]) {
     for (const scene of Object.keys(list)) if (M.ROOMS[scene]) assert.ok(SO.SIZES[scene], scene);

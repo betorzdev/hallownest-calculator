@@ -47,6 +47,9 @@
       case 'item': {
         const cat = catOf(c.id);
         const m = cat ? App.pgMeta(cat, c.id) : null;
+        // A dream boss with no Journal entry (js/progress.js): its name and picture as a foe.
+        const foe = !m && F.FOE_BY_ID[c.id];
+        if (foe) return { name: pick(foe.name), note: '', art: D.art('enemies', c.id) };
         // The Dreamers have no picture of their own: their pins on the game's map.
         return { name: m ? m.name : c.id, note: '', art: m ? m.art : '', pin: cat === 'dreamers' ? 'dreamer-' + c.id : '' };
       }
@@ -218,7 +221,9 @@
       return p ? at(p, `<image href="${D.art(k.art[0], k.art[1])}" x="-0.3" y="-0.3" width="0.6" height="0.6"/>`, '', ` data-near="${it.id}" data-act="toMap" data-target="collect:${it.id}" data-name="${esc(pick(k))}"`) : '';
     }).join('');
     const shade = pr.shade && pr.shade.x !== undefined && R.areaOf(pr.shade.scene) === area ? at([pr.shade.x, pr.shade.y], App.pgmAtlasSvg('shade', 0.8)) : '';
-    const here = bench ? at(bench, `<circle class="hmB-ring" r="0.4"/>${App.pgmAtlasSvg('bench', 0.8)}<image href="${D.art('hud', 'knight')}" x="-0.3" y="-1.25" width="0.6" height="0.7"/>`, ' is-here') : '';
+    // Not a bench (js/progress.js, away): you standing there, with no bench under you.
+    const seat = pr.away ? '' : App.pgmAtlasSvg('bench', 0.8);
+    const here = bench ? at(bench, `<circle class="hmB-ring" r="0.4"/>${seat}<image href="${D.art('hud', 'knight')}" x="-0.3" y="-1.25" width="0.6" height="0.7"/>`, ' is-here') : '';
     return `<figure class="hmB-map">
       <svg class="hmB-svg" viewBox="${(x - pad).toFixed(3)} ${(-y - h - pad).toFixed(3)} ${(w + 2 * pad).toFixed(3)} ${(h + 2 * pad).toFixed(3)}" role="img" aria-label="${esc(t('homeMapLabel', { area: pick(R.AREAS[area]) }))}">
         <g>${App.pgmRoomsSvg(i)}</g>${near}${shade}${here}</svg>
@@ -258,14 +263,14 @@
     const slot = t('saveSlot', { n });
     const when = meta.saved ? ` · <span class="hm-ago" data-at="${meta.saved}">${esc(ago(meta.saved))}</span>` : '';
     const title = area
-      ? `${orn(' is-top')}<span class="hmC-sup">${esc(t('homeRestingAt'))}</span><h3 class="hmC-area"${NT}>${esc(pick(R.AREAS[area]))}</h3>${orn('')}`
+      ? `${orn(' is-top')}<span class="hmC-sup">${esc(t(App.progress.away ? 'homeRespawnAt' : 'homeRestingAt'))}</span><h3 class="hmC-area"${NT}>${esc(pick(R.AREAS[area]))}</h3>${orn('')}`
       : `<h3 class="hmC-area">${esc(slot)}</h3>`;
     // A figure that counts up from the save before (data-from → its own value): App's arrive().
     const up = (k, v) => `<b class="hm-up" data-from="${from(k, v)}" data-to="${v}">${num(enter ? from(k, v) : v)}</b>`;
     const map = areaMapHtml(area, App.progress.bench);
     const card = `<div class="hmC-card">
         ${title}
-        ${benchHtml(App.progress.bench)}
+        ${App.progress.away ? '' : benchHtml(App.progress.bench)}
         <div class="hm-link-row">${linkLine(n)}</div>
         ${area ? `<span class="hm-when">${esc(slot)}${when}</span>` : ''}
         <div class="hm-figs hmC-figs">

@@ -7,6 +7,7 @@
              pale ore, rancid eggs, simple keys, the four relics and the geo in Millibelle's bank
      found   the collectibles you have (js/collectibles.js): each grub, shard, relic, root…
      bench   the room of the bench you'd wake up at (its area: js/rooms.js)
+     away    yes when that place isn't a bench: the save wakes you where a dreamer lay (see fromSave)
      shade   where your shade waits (its room, and x, y on the game's map) and the geo it carries, or null
      gate    where your Dreamgate is (its room, and x, y on the map), or null
      statues the Hall of Gods' statues unlocked (statueState<X>.isUnlocked: the boss beaten in the
@@ -59,6 +60,9 @@
     'dream-awakened': 'dreamNailUpgraded', 'seer-ascended': 'mothDeparted',
     // Bosses the Journal can't tell apart: it has one Hornet for her two fights.
     'hornet-sentinel': 'hornetOutskirtsDefeated',
+    // Three dream bosses with no Journal entry of their own: only the game's flag says they fell.
+    'failed-champion': 'falseKnightDreamDefeated', 'soul-tyrant': 'mageLordDreamDefeated',
+    'lost-kin': 'infectedKnightDreamDefeated',
     'monomon': 'monomonDefeated', 'lurien': 'lurienDefeated', 'herrah': 'hegemolDefeated',
     'trial-warrior': 'colosseumBronzeCompleted', 'trial-conqueror': 'colosseumSilverCompleted',
     'trial-fool': 'colosseumGoldCompleted',
@@ -76,6 +80,9 @@
     // of each line are shown open on the map.
     'tram-upper': (pd) => !!pd.openedTramRestingGrounds || !!pd.tramOpenedCrossroads,
     'tram-lower': (pd) => !!pd.openedTramLower || !!pd.tramOpenedDeepnest,
+    // Kingsoul's two halves (the White Fragments), each where it's picked up: the left from the
+    // White Lady, the right from the Pale King's body. Kept once they've joined (royalCharmState 3).
+    'queen-fragment': 'gotQueenFragment', 'king-fragment': 'gotKingFragment',
   });
   const ID_LIST = Object.keys(IDS);
 
@@ -98,7 +105,7 @@
   const SCENE = /^[A-Za-z0-9_]{1,64}$/;
   const scene = (s) => (typeof s === 'string' && SCENE.test(s) && s !== 'None' ? s : '');
 
-  const EMPTY = Object.freeze({ ids: [], counts: {}, found: [], bench: '', shade: null, gate: null, statues: null, mapped: [], markers: [], alts: [],
+  const EMPTY = Object.freeze({ ids: [], counts: {}, found: [], bench: '', away: false, shade: null, gate: null, statues: null, mapped: [], markers: [], alts: [],
     opened: [], rocks: [], met: [] });
   /* The map's rooms with a second drawing (js/map.js, a room's alt), and when the game swaps it
      in (its FSM map_altsprite): Dirtmouth's lift to Crystal Peak once you've been there, and
@@ -138,7 +145,8 @@
     // The rooms' state and the characters met: only what's known, each once.
     const known = (list, set) => (Array.isArray(list) ? [...new Set(list.filter((k) => set.has(k)))] : []);
     const opened = known(o.opened, OPENED_SET), rocks = known(o.rocks, ROCKS_SET), met = known(o.met, new Set(PE.FLAGS));
-    return { ids, counts, found, bench: scene(o.bench), shade, gate, statues, mapped, markers, alts, opened, rocks, met };
+    const bench = scene(o.bench);
+    return { ids, counts, found, bench, away: !!(bench && o.away), shade, gate, statues, mapped, markers, alts, opened, rocks, met };
   }
 
   /* Which collectibles a save says you have (js/collectibles.js, `how`). sd is the save's
@@ -188,7 +196,12 @@
       .filter((r) => r && typeof r.sceneName === 'string' && typeof r.id === 'string' && int(r.hitsLeft) <= 0)
       .map((r) => r.sceneName + '|' + r.id);
     const met = PE.FLAGS.filter((f) => !!pd[f]);
-    return normalize({ ids, counts, found: detect(pd, sd), bench: pd.respawnScene, shade, gate, statues, mapped, markers, alts, opened, rocks, met });
+    /* Where you'll wake: the save's respawnScene, a bench's room once you rest (respawnType 1, with
+       its RestBench, BoneBench… marker). Dreaming of a dreamer moves it to the dreamer's body
+       (its room's FSM "Set Death Respawn": HeroController.SetBenchRespawn with a "Death Respawn
+       Marker"), and the save keeps that until you rest again: away, not a bench. */
+    const away = (typeof pd.respawnType === 'number' && pd.respawnType !== 1) || /^Death Respawn Marker/.test(String(pd.respawnMarkerName || ''));
+    return normalize({ ids, counts, found: detect(pd, sd), bench: pd.respawnScene, away, shade, gate, statues, mapped, markers, alts, opened, rocks, met });
   }
 
   const isEmpty = (p) => {

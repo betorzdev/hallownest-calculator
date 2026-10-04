@@ -84,7 +84,7 @@
     womb: 'Glowing_Womb', quickfocus: 'Salubra', deepfocus: 'Deep_Focus', lbheart: 'Salubra', lbcore: 'Lifeblood_Core',
     joni: "Joni's_Blessing", grubsong: 'Grubsong', elegy: 'Grubfather', hiveblood: 'Hiveblood', spore: 'Spore_Shroom',
     sharpshadow: 'Sharp_Shadow', unn: 'Shape_of_Unn', glory: "Nailmaster's_Glory", wielder: 'Dream_Wielder',
-    king: 'Queen_Fragment', dreamshield: 'Dreamshield', sprintmaster: 'Sly', weaversong: 'Weaversong', grimmchild: 'Grimmchild',
+    dreamshield: 'Dreamshield', sprintmaster: 'Sly', weaversong: 'Weaversong', grimmchild: 'Grimmchild',
   };
   const EQUIP_AT = {
     'mothwing-cloak': 'Mothwing_Cloak', 'mantis-claw': 'Mantis_Claw', 'crystal-heart': 'Crystal_Heart',
@@ -111,7 +111,8 @@
     'troupe-master-grimm': 'Grimm_Main_Tent', nkg: 'Grimm_Main_Tent',
   };
   /* The dream bosses, fought with the Dream Nail where their waking self fell (Grey Prince Zote,
-     in Bretta's house): not part of the 112%, but the Journal's; beaten once it has them complete. */
+     in Bretta's house): not part of the 112%, but the Journal's; beaten once it has them complete.
+     Three have no entry of their own (js/journal.js, `of`): the save's flag says it (js/progress.js). */
   const DREAM_BOSS_AT = { 'failed-champion': 'Crossroads_10', 'soul-tyrant': 'Ruins1_24', 'lost-kin': 'Abyss_19',
     'white-defender': 'Waterways_15', 'grey-prince-zote': 'Room_Bretta' };
   /* Foes no room places (js/scene-objects.js reads what a scene holds; these come some other way),
@@ -261,10 +262,11 @@
   const foeName = (id) => { const r = HJ.ROW[id]; return pick((r && r.name) || (HJ.EXTRAS[id] || F.FOE_BY_ID[id] || {}).name) || id; };
   const SECRET_LAYER = { wall: 'walls', floor: 'walls', oneway: 'walls', hidden: 'hidden' };
   /* The bosses the 112% counts are its own layer's (the Journal's entries its categories read);
-     every other boss goes on 'other-bosses' with the dream bosses, the rest of the enemies on 'foes'. */
+     every other boss goes on 'other-bosses' with the dream bosses, the rest of the enemies on 'foes'.
+     The 112%'s Troupe Master Grimm is the Journal's 'grimm'. */
   let bosses112 = null;
   const is112Boss = (id) => (bosses112 || (bosses112 = new Set(HK.completion.CATEGORIES
-    .filter((c) => ['bosses', 'dreams', 'colosseum', 'grimm'].includes(c.id)).flatMap((c) => c.items.map((it) => it[0]))))).has(id);
+    .filter((c) => ['bosses', 'dreams', 'colosseum', 'grimm'].includes(c.id)).flatMap((c) => c.items.map((it) => it[0])).concat('grimm')))).has(id);
   function worldThings() {
     const out = [], pr = App.progress, book = App.hjBook();
     const opened = new Set(pr.opened), rocks = new Set(pr.rocks), met = new Set(pr.met);
@@ -359,7 +361,18 @@
       out.push({ id: 'c:' + id, layer, p: pt, scene, art: m.art ? { src: m.art } : { pin: 'colosseum' }, name: m.name, where: where(scene),
         on: it.got >= it.max, act: mark(cat, id) });
     };
-    for (const it of cats.charms.items) add112('charms', 'charms', it.id, CHARM_AT[it.id]);
+    for (const it of cats.charms.items) if (CHARM_AT[it.id]) add112('charms', 'charms', it.id, CHARM_AT[it.id]);
+    /* Kingsoul, in its two halves where each is picked up (wiki, "Kingsoul"): the left from the
+       White Lady (ItemChanger's Queen_Fragment), the right from the Pale King's body at the end
+       of the White Palace, which the map doesn't draw: where you dream your way in, its
+       "Dream Enter" in the Palace Grounds (tools/extract-map.py's Scenes, Abyss_05). Each is
+       gone once you have it, or the whole charm. */
+    const king = item('charms', 'king'), whole = !!king && king.got >= king.max;
+    for (const [half, side, at, note] of [['queen-fragment', 'left', spotOf('Queen_Fragment'), 'pgmFragQueen'],
+      ['king-fragment', 'right', { p: scenePoint('Abyss_05', 128.53, 18.33), scene: 'Abyss_05' }, 'pgmFragKing']]) {
+      if (at && at.p) out.push({ id: 'c:' + half, layer: 'charms', p: at.p, scene: at.scene, art: { src: D.art('items', 'white-fragment-' + side) },
+        name: pick(D.WHITE_FRAGMENT), where: where(at.scene), note: t(note), on: whole || P.has(App.progress, half), act: { state: true } });
+    }
     add112('charms', 'grimm', 'grimmchild', CHARM_AT.grimmchild);
     for (const it of cats.equipment.items) add112('equipment', 'equipment', it.id, EQUIP_AT[it.id]);
     for (const it of cats.arts.items) add112('arts', 'arts', it.id, EQUIP_AT[it.id]);
@@ -387,7 +400,7 @@
     for (const [id, scene] of Object.entries(DREAM_BOSS_AT)) {
       const p = roomPoint(scene), foe = F.FOE_BY_ID[id];
       if (p && foe) out.push({ id: 'd:' + id, layer: 'other-bosses', p, scene, art: { src: D.art(NO_MEDAL.includes(id) ? 'enemies' : 'journal', id) }, name: pick(foe.name), where: where(scene),
-        on: HJ.stateOf(App.hjBook(), id).done, act: { state: true } });
+        on: P.IDS[id] ? P.has(App.progress, id) : HJ.stateOf(App.hjBook(), id).done, act: { state: true } });
     }
     for (const it of cats.bosses.items) add112('bosses', 'bosses', it.id, BOSS_AT[it.id]);
     for (const it of cats.colosseum.items) add112('trials', 'colosseum', it.id, BOSS_AT[it.id]);
@@ -676,13 +689,23 @@
     : a.glyph ? `<svg class="pgm-ico" viewBox="-0.5 -0.5 1 1" aria-hidden="true">${GLYPH[a.glyph]}</svg>` : a.pin ? atlasSvg(a.pin, null, ' pgm-ico') : `<img src="${a.src}" alt="">`);
 
   // Yours: your bench, your shade, your Dreamgate and the markers you've placed, where the save says.
-  // Where a bench is: its pin, which can sit on its room's other drawing (Deepnest_30_b, Ruins1_18_b…), else its room.
-  const benchPoint = (scene) => { const b = pinsOf('bench').find((x) => sceneOf(x[1]) === scene); return b ? [b[2], b[3]] : roomPoint(scene); };
+  /* Where a bench is: its pin, which can sit on its room's other drawing (Deepnest_30_b, Ruins1_18_b…), else its room.
+     Where you wake after a dreamer (js/progress.js, away) is no bench's room: the dreamer's own pin, by their body.
+     Three benches are inside a room the map doesn't draw, and the game puts their pin on the room you enter it from:
+     Mato's hut (its door's spot is 1.8 units below the pin, under the cliffs), the Ancestral Mound and Unn's shrine. */
+  const BENCH_HOST = { Room_nailmaster: 'Cliffs_02', Crossroads_ShamanTemple: 'Crossroads_06', Room_Slug_Shrine: 'Fungus1_26' };
+  const dreamerAt = (scene) => { const id = Object.keys(DREAMER_ROOM).find((k) => DREAMER_ROOM[k] === scene); return id ? gamePin('dreamer', id) : null; };
+  const benchPoint = (scene) => {
+    const room = BENCH_HOST[scene] || scene, b = pinsOf('bench').find((x) => sceneOf(x[1]) === room);
+    return b ? [b[2], b[3]] : dreamerAt(scene) || roomPoint(scene);
+  };
   function mineThings() {
     const pr = App.progress, out = [];
     if (pr.bench) {
       const pt = benchPoint(pr.bench);
-      if (pt) out.push({ id: 'mine:bench', layer: 'my-bench', p: pt, art: { pin: 'bench' }, name: t('pgmL_my-bench'), where: where(pr.bench), on: null });
+      // Not a bench (away): on the map only you standing there (youSvg, bare); the Knight in its card and lists.
+      if (pt) out.push({ id: 'mine:bench', layer: 'my-bench', p: pt, art: pr.away ? { src: D.art('hud', 'knight') } : { pin: 'bench' }, bare: pr.away,
+        name: t(pr.away ? 'pgmRespawn' : 'pgmL_my-bench'), where: where(pr.bench), on: null });
     }
     if (pr.shade && pr.shade.x !== undefined) out.push({ id: 'mine:shade', layer: 'shade', p: [pr.shade.x, pr.shade.y], scene: pr.shade.scene, art: { pin: 'shade' },
       name: t('shadeTag'), where: [where(pr.shade.scene), `${App.NF[0].format(pr.shade.geo)} geo`].filter(Boolean).join(' · '), on: null });
@@ -720,7 +743,7 @@
     // Yours go on top, where they are (not spread; placeMarks moves one aside if it'd cover a pin), a little bigger, with no disc.
     const mark = (th) => `<g class="pgm-pin pgm-mark is-${th.layer}${th.id === selected ? ' is-sel' : ''}" style="--px:${th.p[0].toFixed(3)}px;--py:${(-th.p[1]).toFixed(3)}px"
         data-act="pgmPick" data-id="${esc(th.id)}" role="button" tabindex="0" aria-label="${esc(th.name + (th.where ? ' · ' + th.where : ''))}">
-        <title>${esc(th.name + (th.where ? ' · ' + th.where : ''))}</title>${th.layer === 'my-bench' ? '<circle r="0.62"/>' : ''}${artSvg(th.art, 1.2)}</g>`;
+        <title>${esc(th.name + (th.where ? ' · ' + th.where : ''))}</title>${th.layer === 'my-bench' ? '<circle r="0.62"/>' : ''}${th.bare ? '' : artSvg(th.art, 1.2)}</g>`;
     return list.map(pin).join('') + mine.map(mark).join('') + (layers.has('my-bench') ? youSvg() : '');
   }
   /* You: the Knight standing by your bench, with your bench's layer (as the game shows you on

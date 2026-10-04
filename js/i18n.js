@@ -69,6 +69,7 @@
     navGodhomeShort:{ es: 'Dioses', en: 'Godhome' },
     // Your game, the start screen (js/app-home.js)
     homeRestingAt:  { es: 'Descansas en', en: 'Resting at' },
+    homeRespawnAt:  { es: 'Reaparecerás en', en: 'You\'ll wake up in' },   // the save's respawn isn't a bench
     homeImported:   { es: 'Importada del juego, sin seguirlo', en: 'Imported from the game, not following it' },
     homeTime:       { es: 'Tiempo', en: 'Time' },
     homeSince:      { es: 'Desde la última vez', en: 'Since last time' },
@@ -443,6 +444,9 @@
     pgmL_springs:   { es: 'Aguas termales', en: 'Hot Springs' },
     pgmL_cocoons:   { es: 'Capullos', en: 'Cocoons' },
     'pgmL_my-bench':{ es: 'Tu banco', en: 'Your bench' },
+    pgmFragQueen:   { es: 'Te lo da la Dama Blanca', en: 'The White Lady gives it to you' },   // QUEEN_SUPER + QUEEN_MAIN
+    pgmFragKing:    { es: 'En el cuerpo del Rey Pálido, al final del Palacio Blanco', en: "On the Pale King's body, at the end of the White Palace" },   // WHITE_PALACE; Rey Pálido as in WISHING_WELL_INSPECT
+    pgmRespawn:     { es: 'Reaparecerás aquí', en: 'You\'ll wake up here' },   // not a bench: by a dreamer's body
     pgmL_shade:     { es: 'Tu sombra', en: 'Your shade' },
     pgmL_gate:      { es: 'Portal Onírico', en: 'Dreamgate' },   // INV_NAME_DREAMGATE
     pgmL_markers:   { es: 'Marcadores', en: 'Markers' },   // CTRL_MARKERS
