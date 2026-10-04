@@ -262,10 +262,11 @@
   const foeName = (id) => { const r = HJ.ROW[id]; return pick((r && r.name) || (HJ.EXTRAS[id] || F.FOE_BY_ID[id] || {}).name) || id; };
   const SECRET_LAYER = { wall: 'walls', floor: 'walls', oneway: 'walls', hidden: 'hidden' };
   /* The bosses the 112% counts are its own layer's (the Journal's entries its categories read);
-     every other boss goes on 'other-bosses' with the dream bosses, the rest of the enemies on 'foes'. */
+     every other boss goes on 'other-bosses' with the dream bosses, the rest of the enemies on 'foes'.
+     The 112%'s Troupe Master Grimm is the Journal's 'grimm'. */
   let bosses112 = null;
   const is112Boss = (id) => (bosses112 || (bosses112 = new Set(HK.completion.CATEGORIES
-    .filter((c) => ['bosses', 'dreams', 'colosseum', 'grimm'].includes(c.id)).flatMap((c) => c.items.map((it) => it[0]))))).has(id);
+    .filter((c) => ['bosses', 'dreams', 'colosseum', 'grimm'].includes(c.id)).flatMap((c) => c.items.map((it) => it[0])).concat('grimm')))).has(id);
   function worldThings() {
     const out = [], pr = App.progress, book = App.hjBook();
     const opened = new Set(pr.opened), rocks = new Set(pr.rocks), met = new Set(pr.met);

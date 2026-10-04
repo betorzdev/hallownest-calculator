@@ -57,6 +57,16 @@ SECRET = [
     ('hidden', re.compile(r'^Secret Mask', re.I)),
 ]
 
+# Grimm's four fights carry an EnemyDeathEffects whose playerDataName the game ships as "Hornet"
+# (the raw component in level392/393/443/444 holds 06 00 00 00 "Hornet": not a misread typetree).
+# It never fires: their HealthManager has hasSpecialDeath, and HealthManager.Die returns through
+# NonFatalHit before EnemyDeathEffects.RecieveDeathEvent, which records the Journal kill. The game
+# marks them otherwise: Grimm_Main_Tent's "Defeated NPC" FSM sets killedGrimm, and Grimm_Nightmare's
+# "Grimm Control" FSM calls EnemyDeathEffects.RecordKillForJournal("NightmareGrimm") (checked on
+# patch 1.5.12620). So the entry they count for is named by their scene.
+JOURNAL_BY_SCENE = {'Grimm_Main_Tent_boss': 'Grimm', 'GG_Grimm': 'Grimm',
+                    'Grimm_Nightmare': 'NightmareGrimm', 'GG_Grimm_Nightmare': 'NightmareGrimm'}
+
 def comps(go):
     return [c.component if hasattr(c, 'component') else c for c in go.m_Components]
 
@@ -226,6 +236,8 @@ def main():
                     pd = o.read_typetree().get('playerDataName')
                 except Exception:
                     pd = None
+                if pd == 'Hornet' and scene in JOURNAL_BY_SCENE:
+                    pd = JOURNAL_BY_SCENE[scene]
                 if pd:
                     group[pd].append(where(g))
             if group:
