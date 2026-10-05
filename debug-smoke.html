@@ -314,13 +314,13 @@ f.addEventListener('load', async () => {
        && !!q('#home .hmC-bench .hmC-kn') && w.HK.app.knight.state().perch === 'bar' && w.HK.app.knight.state().tabId === 'home', JSON.stringify(w.HK.app.knight.state()));
     ok('and the bar draws no rule under the current tab: he is the mark', w.getComputedStyle(q('#nav .nav-tab[aria-current="page"]')).boxShadow === 'none',
        w.getComputedStyle(q('#nav .nav-tab[aria-current="page"]')).boxShadow);
-    await goto('game');
+    await goto('inventory');
     await wait(2200);
-    ok('and runs along it to the Inventory', !!q('#nav .nav-tabs > .kn') && w.HK.app.knight.state().perch === 'bar' && w.HK.app.knight.state().tabId === 'game',
+    ok('and runs along it to the Inventory', !!q('#nav .nav-tabs > .kn') && w.HK.app.knight.state().perch === 'bar' && w.HK.app.knight.state().tabId === 'inventory',
        JSON.stringify(w.HK.app.knight.state()));
     ok('the footer has no Knight of its own: he never leaves the bar', !q('#colophon > .kn') && !!q('#nav .nav-tabs > .kn'));
-    ok('the Inventory is its own screen, next to it, and goes in the URL', visible() === 'gear' && w.location.hash.indexOf('view=game') >= 0
-       && q('#nav [aria-current="page"]').dataset.value === 'game' && q('#minihud').hidden, visible() + ' · ' + w.location.hash);
+    ok('the Inventory is its own screen, next to it, and goes in the URL', visible() === 'gear' && w.location.hash.indexOf('view=inventory') >= 0
+       && q('#nav [aria-current="page"]').dataset.value === 'inventory' && q('#minihud').hidden, visible() + ' · ' + w.location.hash);
     ok('with its two starting points', !!q('#gear [data-act="preset"][data-value="base"]') && !!q('#gear [data-act="preset"][data-value="max"]'));
     ok('and there overcharm is flagged at the top', !!q('#banner .banner:not(.is-run):not(.is-hint)'));
     // Body with the game's pieces: tapping the dark 7th mask lights up to it (7); tapping the lit
@@ -337,7 +337,7 @@ f.addEventListener('load', async () => {
     await click('#gear .pieces.is-masks .piece:nth-child(9)');
     await click('#gear [data-act="seg"][data-key="nail"][data-value="2"]');
     ok("changing the nail doesn't change screen", visible() === 'gear' && w.location.hash.indexOf('nail=2') >= 0
-       && w.location.hash.indexOf('view=game') >= 0, w.location.hash);
+       && w.location.hash.indexOf('view=inventory') >= 0, w.location.hash);
     await click('[data-act="share"]');
     ok('Share copies the build without the screen', copied.indexOf('nail=2') >= 0 && copied.indexOf('view=') < 0, copied);
     w.history.back();
@@ -367,7 +367,7 @@ f.addEventListener('load', async () => {
        knight() ? knight().style.translate + ' ' + knight().className : 'no knight');
     w.location.hash = '#view=game';
     await wait(150);
-    ok('a "#view=game" link opens the Inventory', visible() === 'gear', visible());
+    ok('an old "#view=game" link opens the Inventory, and the URL then says it by its name', visible() === 'gear' && w.location.hash.indexOf('view=inventory') >= 0, visible() + ' · ' + w.location.hash);
     await goto('map');
     ok('the Map starts at its normal size', visible() === 'pg' && !q('#pg').classList.contains('is-big') && q('.pgm-big').getAttribute('aria-pressed') === 'false');
     // From the Inventory's tab, so rightwards: the run itself may already be over under virtual time.
@@ -1472,7 +1472,7 @@ function heldPhase() {
         ok('[held] nor does Equipped remove', onIds() === 'quickslash' && all('#panel .eq').length === 1, onIds());
         ok('[held] Clear is gone', !q('#panel .eq-clear') || q('#panel .eq-clear').disabled);
 
-        await goto('game');
+        await goto('inventory');
         ok('[held] the Inventory is read: no starting points, every control inert', visible() === 'gear' && !q('#gear .presets') && q('#gear .gear-body').classList.contains('is-held')
            && all('#gear button, #gear input').every((b) => b.disabled) && !q('#gear .own-all') && !q('#gear .step'), all('#gear button:not(:disabled)').length + ' live');
         await clickAt('#gear .pieces.is-masks .piece:nth-child(9)');

@@ -48,11 +48,11 @@
      in the game) and the tools (Charms and Combat, the arena). And the save slots
      (js/app-saves.js), which aren't in the bar: the header opens them. The Map shares Progress's
      section, and Godhome Combat's (its tabs 'hall' and 'pantheon'; the arena is 'combat'). */
-  const VIEWS = ['home', 'game', 'progress', 'map', 'journal', 'godhome', 'charms', 'fight', 'saves'];
+  const VIEWS = ['home', 'inventory', 'progress', 'map', 'journal', 'godhome', 'charms', 'fight', 'saves'];
   const inArena = (v) => v === 'fight' || v === 'godhome';
   const TOOLS = ['charms', 'fight'];
-  // The screens that were: the Hall was a tab of Combat.
-  const OLD_VIEWS = { hall: 'godhome' };
+  // The screens that were: the Hall was a tab of Combat, and the Inventory went by 'game'.
+  const OLD_VIEWS = { hall: 'godhome', game: 'inventory' };
   const SPELL_KEYS = ['vs', 'dd', 'hw'];
   const ART_KEYS = ['cyclone', 'dash', 'great'];
   const ART_STAT = { cyclone: 'nail.cyclone', dash: 'nail.dashSlash', great: 'nail.greatSlash' };
@@ -710,9 +710,9 @@
       if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
     }
     // On a phone Your game's tab stands for the Inventory too, folded under it.
-    el.nav.querySelector('#nav-home').classList.toggle('is-parent', prefs.view === 'game');
+    el.nav.querySelector('#nav-home').classList.toggle('is-parent', prefs.view === 'inventory');
     el.navSub.hidden = !TOOLS.includes(prefs.view);
-    el.navSubGame.hidden = prefs.view !== 'home' && prefs.view !== 'game';
+    el.navSubGame.hidden = prefs.view !== 'home' && prefs.view !== 'inventory';
     el.navSubGame.setAttribute('aria-label', t('navHome'));
     el.navSub.setAttribute('aria-label', t('navTools'));
     App.paintHomeNav();
@@ -726,7 +726,7 @@
      it shows (render). */
   function showScreen() {
     el.home.hidden = prefs.view !== 'home';
-    el.gear.hidden = prefs.view !== 'game';
+    el.gear.hidden = prefs.view !== 'inventory';
     el.panel.hidden = prefs.view !== 'charms';
     el.fight.hidden = !inArena(prefs.view);
     el.hj.hidden = prefs.view !== 'journal';
@@ -792,7 +792,7 @@
      the band, below the notches (charmBand), and in combat the HUD's aura already says it. And
      when the save linked to the game needs a click to go on following it (js/app-saves.js). */
   function renderBanner() {
-    const over = prefs.view === 'game' && App.sheet.notches.overcharmed
+    const over = prefs.view === 'inventory' && App.sheet.notches.overcharmed
       ? `<div class="banner"><span class="banner-tag">${esc(t('overcharmed'))}</span><span class="banner-text">${esc(t('overcharmBanner'))}</span></div>`
       : '';
     // On the Pantheons tab you're already there: the notice doesn't send you where you are.
@@ -1014,7 +1014,7 @@
   }
   /* The screen you arrive at fades in, like the game's fades between areas (css: .is-entering). */
   const fadeIn = (node) => { node.classList.remove('is-entering'); void node.offsetWidth; node.classList.add('is-entering'); };
-  const screenOf = (v) => (v === 'home' ? el.home : v === 'game' ? el.gear : inArena(v) ? el.fight : v === 'journal' ? el.hj
+  const screenOf = (v) => (v === 'home' ? el.home : v === 'inventory' ? el.gear : inArena(v) ? el.fight : v === 'journal' ? el.hj
     : v === 'progress' || v === 'map' ? el.pg : v === 'saves' ? el.saves : el.panel);
   // Is the sticky bar covering it? Then you have to scroll up to it.
   const underNav = (node) => node.getBoundingClientRect().top < el.nav.getBoundingClientRect().bottom;
