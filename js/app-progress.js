@@ -103,7 +103,7 @@
     // Each with its pin to the Map, where it has a place there (js/app-map.js).
     const target = `c112:${cat}:${it.id}`;
     if (where === 'game') {
-      return App.pinned(`<button type="button" class="gplate is-far${st ? ' ' + st : ''}" data-act="view" data-value="game" title="${esc(t('pgInGameHint'))}">${body}</button>`, target, m.name);
+      return App.pinned(`<button type="button" class="gplate is-far${st ? ' ' + st : ''}" data-act="view" data-value="inventory" title="${esc(t('pgInGameHint'))}">${body}</button>`, target, m.name);
     }
     // In a save from the game (App.saveLock, js/app.js) the plate only says what it is: nothing marks it.
     const held = !!App.saveLock();

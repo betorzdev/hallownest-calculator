@@ -57,7 +57,7 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   not be the sheet's. The screen goes in the URL (`view=`, in "State and link"): **Back and
   Forward** move from one to another without touching the build —going back from *Your game*
   doesn't return the nail you had—, and on reload you stay where you were. The old links still
-  land: `view=hall` opens Godhome.
+  land: `view=hall` opens Godhome and `view=game` the Inventory.
   They also walk through the places inside a screen, which the history entry carries (not the
   URL): Godhome's tabs (Hall of Gods, Pantheons), the arena's Journal open, a Hall
   statue's fight, the tablet and, on mobile, the plaque and the Journal's page read in place of
@@ -218,7 +218,7 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
     everything, the other way in: *Just try builds* (Charms); a save is never made by hand, since
     it's the game's and isn't changed here ([Saves](#saves)). The steps (the folder, the file) are
     the import view's. It replaced the import notice that used to sit above every screen.
-  - The **Inventory** is its own screen (`view=game`, `#gear`, `js/app-game.js`), next in the bar (below).
+  - The **Inventory** is its own screen (`view=inventory`, `#gear`, `js/app-game.js`), next in the bar (below).
 - **The screens' frame** (every screen: `brackets` and `screenHead` in `js/app.js`, `.frame-line`,
   `.bk` and `.screen-head` in `css/app.css`), the sister site's (`../pharloom-calculator`; chosen
   30 Sep in `design/14-sister-variants.html`): a hairline inset all round the panel, a curl in each
@@ -470,7 +470,7 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   in the notch row **the notches of the charm that took you over the line come out in magenta
   and the row grows beyond your maximum** — which is exactly what the game does (with 11
   notches, 9 used and a 3-notch charm: nine white and three magenta, twelve in total).
-- **Inventory** (`view=game`), next to Your game: another page of the Inventory, with the same black and corner brackets and no
+- **Inventory** (`view=inventory`), next to Your game: another page of the Inventory, with the same black and corner brackets and no
   boxes inside: what you've achieved in the game. **In a save it's read, not
   changed** (the lock, in [Saves](#saves)): the same pieces and plates, since they say what you
   have, but every control inert, with no starting points, no *All · None* and no steppers, and a
@@ -908,7 +908,7 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
     `--blink-settings=primaryHoverType=2,primaryPointerType=4,availableHoverTypes=2,availablePointerTypes=4`
     (with that it gives `(hover: hover) and (pointer: fine)`).
   - `debug-overflow.html` — lists the elements that spill past the width, for the mobile side
-    (`?view=game|fight` measures that screen; `?tab=pantheon&run=master&room=2&view=charms`
+    (`?view=inventory|fight` measures that screen; `?tab=pantheon&run=master&room=2&view=charms`
     measures the charm grid locked halfway through a pantheon).
     `?tab=pantheon&run=hallownest` measures the Pantheons tab with its 53 tiles;
     `?tab=combat` measures the Journal on its list and `&read=<id>`, on its page;

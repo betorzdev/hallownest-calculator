@@ -28,7 +28,7 @@ test('each page points at itself and at its other language, both ways', () => {
 });
 
 test('each page opens on a real screen, and its base reaches the root', () => {
-  const VIEWS = ['home', 'game', 'progress', 'map', 'journal', 'godhome', 'charms', 'fight', 'saves'];
+  const VIEWS = ['home', 'inventory', 'progress', 'map', 'journal', 'godhome', 'charms', 'fight', 'saves'];
   for (const { page, lang } of EVERY) {
     const html = read(P.file(page, lang));
     const view = (html.match(/<html [^>]*data-view="([a-z]+)"/) || [])[1] || null;
