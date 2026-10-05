@@ -561,7 +561,7 @@
     return `<a class="mh-save${lv ? ' is-' + lv.state : ''}" href="${here(hashFor('saves'))}" data-act="view" data-value="saves"${prefs.view === 'saves' ? ' aria-current="page"' : ''}
           aria-label="${esc(label + (lv ? ', ' + st : ''))}" title="${esc(title)}"><span class="mh-save-fig"><span class="mh-save-light" aria-hidden="true"></span><img src="${D.art('hud', 'knight')}" alt=""></span><span class="mh-save-lbl">${FLEURS}${esc(label)}${live}</span><span class="mh-save-short" aria-hidden="true">${esc(n ? label : t('savesTitle'))}</span></a>`;
   }
-  const VIEW_KEY = { home: 'navHome', game: 'navGame', charms: 'navCharms', fight: 'navFight', journal: 'navJournal', progress: 'navProgress',
+  const VIEW_KEY = { home: 'navHome', inventory: 'navGame', charms: 'navCharms', fight: 'navFight', journal: 'navJournal', progress: 'navProgress',
     map: 'navMap', godhome: 'navGodhome', saves: 'savesTitle' };
   function renderMasthead() {
     // On the page's own screen and language, the head it was served with (tools/pages.js).
