@@ -27,7 +27,6 @@
   prefs.view = urlHash.view || PAGE_VIEW || (C.isEmpty(urlHash.build) ? prefs.view : 'charms');
   App.admin = urlHash.admin;   // #…&admin=1: the Map's pins can be dragged to where they go (js/app-map.js)
   App.sisterPreview = urlHash.sister;   // #…&sister=1: the sister site's link before it's published (js/app-sister.js)
-  if (App.TOOLS.includes(prefs.view)) prefs.tool = prefs.view;
   // Godhome is Combat's tabs 'hall' and 'pantheon' shown as their own screen: the tab follows the screen.
   if ((prefs.view === 'godhome') !== (prefs.fightTab !== 'combat')) prefs.fightTab = prefs.view === 'godhome' ? (prefs.godTab === 'pantheon' ? 'pantheon' : 'hall') : 'combat';
   I.setLang(fromUrl || prefs.lang);

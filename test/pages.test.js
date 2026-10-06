@@ -67,7 +67,7 @@ test('the texts carry only the tags they may, and their links go to real pages',
   for (const tag of all.match(/<\/?([a-z]+)/g) || []) assert.ok(/^<\/?(code|strong|em)$/.test(tag), `tag ${tag} in pages-text.js`);
   for (const { page, lang } of EVERY) {
     const html = read(P.file(page, lang));
-    for (const [, href] of html.matchAll(/<a href="([^"]*)" data-page>/g)) {
+    for (const [, href] of html.matchAll(/<a href="([^"]*)" data-page="[^"]*">/g)) {
       const target = href === './' ? 'index.html' : href + 'index.html';
       assert.ok(fs.existsSync(path.join(ROOT, target)), `${P.file(page, lang)} links to ${href}`);
     }

@@ -48,13 +48,25 @@ f.addEventListener('load', async () => {
     ok('loads the state from the URL', txt('.hero-num') === '32', 'hero=' + txt('.hero-num'));
     ok('in English by default', txt('.title') === 'Hallownest Calculator' && d.documentElement.lang === 'en', txt('.title'));
     ok('the selector puts English first', [...d.querySelectorAll('[data-act="lang"]')].map((n) => n.dataset.value).join(',') === 'en,es');
+    // The language's list (design/29): closed until its button opens it; Esc or a tap outside close it.
+    ok('the language list starts closed, its button saying what is chosen', q('.lang-menu').hidden && q('.lang-btn').getAttribute('aria-expanded') === 'false' && txt('.lang-name') === 'English' && txt('.lang-code') === 'EN');
+    await click('.lang-btn');
+    ok('open, each language by its own name, the chosen one marked, and the header over the bar', !q('.lang-menu').hidden && q('.lang-btn').getAttribute('aria-expanded') === 'true'
+       && [...d.querySelectorAll('.lang-menu a')].map((a) => a.textContent).join(',') === 'English,Español' && q('.lang-menu [aria-current]').dataset.value === 'en'
+       && q('#masthead').classList.contains('is-lang-open'), txt('.lang-menu'));
+    d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    ok('Esc closes it, back on its button', q('.lang-menu').hidden && !q('#masthead').classList.contains('is-lang-open') && d.activeElement === q('.lang-btn'));
+    await click('.lang-btn');
+    d.body.click();
+    ok('and so does a tap outside', q('.lang-menu').hidden && q('.lang-btn').getAttribute('aria-expanded') === 'false');
+    ok('the bar names its eight screens, with no folded tab', d.querySelectorAll('#nav .nav-tabs > .nav-tab').length === 8 && !q('#nav-tools') && !q('.nav-sub'));
     ok('the screen labels follow the language', q('#home').getAttribute('aria-label') === 'Your game'
-       && txt('#nav [data-value="home"] .nav-lbl') === 'Your game' && txt('#nav-tools') === 'Tools', q('#home').getAttribute('aria-label'));
+       && txt('#nav [data-value="home"] .nav-lbl') === 'Your game' && txt('#nav [data-value="fight"]') === 'Combat', q('#home').getAttribute('aria-label'));
     await click('[data-act="lang"][data-value="es"]');
     ok('title in Spanish', txt('.title').startsWith('Calculadora'));
     ok('Spanish goes into the URL', w.location.hash.includes('lang=es'), w.location.hash);
     ok('and so do the labels', q('#home').getAttribute('aria-label') === 'Partida'
-       && txt('#nav [data-value="home"] .nav-lbl') === 'Partida' && txt('#nav-tools') === 'Herramientas', q('#home').getAttribute('aria-label'));
+       && txt('#nav [data-value="home"] .nav-lbl') === 'Partida' && txt('#nav [data-value="fight"]') === 'Combate', q('#home').getAttribute('aria-label'));
     ok('opens on Charms, with its tab marked and no "view=" in the URL', visible() === 'panel'
        && q('#nav [aria-current="page"]').dataset.value === 'charms' && w.location.hash.indexOf('view=') < 0, visible());
     ok('no top bar, floating button or collapsibles', !q('#topbar') && !q('#hj-fab') && !q('[data-act="gear"]') && !q('[data-act="fightOpen"]'));
@@ -157,6 +169,13 @@ f.addEventListener('load', async () => {
     ok('and on mobile the grid and the detail take the full width', widthOf('#panel .quick-grid') > 300 && widthOf('#charm-detail') > 300
        && q('#panel .loadout-block.is-notches').getBoundingClientRect().top < q('#panel .quick').getBoundingClientRect().top,
        'rejilla ' + widthOf('#panel .quick-grid') + ' · detalle ' + widthOf('#charm-detail'));
+    // The screen bar below 900 px: one line that slides inside the frame, the current tab in view.
+    const row = q('#nav .nav-tabs'), onTab = q('#nav .nav-tab[aria-current="page"]');
+    const inRow = (n) => { const r = n.getBoundingClientRect(), b = row.getBoundingClientRect(); return r.left >= b.left - 1 && r.right <= b.right + 1; };
+    ok('on mobile the bar is one line that slides, no wider than the screen', row.scrollWidth > row.clientWidth && row.getBoundingClientRect().width <= 391
+       && d.documentElement.scrollWidth <= 391, 'fila ' + row.scrollWidth + ' en ' + row.clientWidth + ' · página ' + d.documentElement.scrollWidth);
+    ok('with the current tab brought into view', onTab && onTab.dataset.value === 'charms' && row.scrollLeft > 0 && inRow(onTab), 'scroll ' + row.scrollLeft);
+    ok('and the language by its code', w.getComputedStyle(q('.lang-name')).display === 'none' && w.getComputedStyle(q('.lang-code')).display !== 'none');
     f.style.width = '1280px';
     await wait(80);
     q('#panel .qc[data-id="joni"]').focus();
@@ -287,7 +306,8 @@ f.addEventListener('load', async () => {
 
     await click('[data-act="share"]');
     ok('the link saves the build', w.location.hash.indexOf('joni') >= 0, w.location.hash);
-    ok('and Share copies it', copied.indexOf('joni') >= 0 && copied.indexOf('#') > 0, copied);
+    // On Charms: its page, bare (the language only if the frame's isn't the page's).
+    ok('and Share copies the link to the page, without it', /\/charm-calculator\/index\.html(#lang=\w+)?$/.test(copied) && copied.indexOf('joni') < 0, copied);
 
     await click('[data-act="clear"]'); await wait(1000);   // the charms leave one by one first
     ok('clearing removes all charms', onCount() === 0, onIds());
@@ -339,7 +359,8 @@ f.addEventListener('load', async () => {
     ok("changing the nail doesn't change screen", visible() === 'gear' && w.location.hash.indexOf('nail=2') >= 0
        && w.location.hash.indexOf('view=inventory') >= 0, w.location.hash);
     await click('[data-act="share"]');
-    ok('Share copies the build without the screen', copied.indexOf('nail=2') >= 0 && copied.indexOf('view=') < 0, copied);
+    ok('from a screen with no page of its own, Share copies the home, without the build or the screen',
+       copied.replace(/#lang=\w+$/, '') === w.location.href.split(/[?#]/)[0], copied);
     w.history.back();
     await wait(200);
     ok('Back returns to Your game and keeps the new nail', visible() === 'home' && w.location.hash.indexOf('nail=2') >= 0
@@ -373,6 +394,8 @@ f.addEventListener('load', async () => {
     // From the Inventory's tab, so rightwards: the run itself may already be over under virtual time.
     ok('the Knight moved along the bar to under Map, facing right (running or sat again)', knightBy('map') && !knight().classList.contains('is-left') && /is-(run|sit)/.test(knight().className),
        knight() ? knight().style.translate + ' ' + knight().className : 'no knight');
+    await click('[data-act="share"]');
+    ok('and from the Map, Share copies the Map\'s page', /\/map\/index\.html(#lang=\w+)?$/.test(copied), copied);
     // The easter egg: a click and he focuses soul (standing, the glow), then sits again.
     await wait(2500); knight().click();
     ok('a click makes the Knight focus soul, standing', knight().classList.contains('is-focus') && !knight().classList.contains('is-sit'), knight().className);
@@ -383,10 +406,27 @@ f.addEventListener('load', async () => {
        && JSON.parse(w.localStorage.getItem('hollow.prefs')).pgMapBig === true);
     await click('.pgm-big');
     ok('and Normal map brings it back', !q('#pg').classList.contains('is-big'));
+    // Full screen: in this iframe the browser's own isn't allowed, so the map fills the window.
+    const fullBox = () => { const r = q('.pgm-box').getBoundingClientRect(); return w.getComputedStyle(q('.pgm-box')).position === 'fixed' && Math.abs(r.width - w.innerWidth) < 2 && Math.abs(r.height - w.innerHeight) < 2; };
+    await click('.pgm-full');
+    ok('Full screen lays the map over the whole window, with the search on it', q('#pg').classList.contains('is-full') && q('.pgm-full').getAttribute('aria-pressed') === 'true'
+       && fullBox() && w.getComputedStyle(q('.pgm-bar')).position === 'fixed', JSON.stringify(q('.pgm-box').getBoundingClientRect()));
+    await click('.pgm-full');
+    ok('its button brings the map back', !q('#pg').classList.contains('is-full') && w.getComputedStyle(q('.pgm-box')).position !== 'fixed');
+    // With the large map on too, whose box has a height of its own.
+    await click('.pgm-big'); await click('.pgm-full');
+    ok('over the whole window with the large map on as well', q('#pg').classList.contains('is-big') && fullBox(), JSON.stringify(q('.pgm-box').getBoundingClientRect()));
+    await click('.pgm-full'); await click('.pgm-big');
+    await click('.pgm-full');
+    w.document.body.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    await wait(40);
+    ok('and so does Esc', !q('#pg').classList.contains('is-full'));
+    await click('.pgm-full');
     w.location.hash = '#view=fight';
     await wait(150);
     ok('a bare "#view=fight" changes the screen and doesn\'t wipe the build', visible() === 'fight' && w.location.hash.indexOf('nail=2') >= 0,
        w.location.hash);
+    ok('and leaving the Map leaves its full screen', !q('#pg').classList.contains('is-full') && !w.HK.app.pgmIsFull());
 
     /* ── Combat simulator ──────────────────────────────────────────────── */
     w.location.hash = '#v=1&nail=4&masks=5&notches=3&view=fight';

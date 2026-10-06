@@ -21,7 +21,7 @@
   const CH = HK.changes, WK = HK.walk, P = HK.progress;
 
   const still = matchMedia('(prefers-reduced-motion: reduce)');
-  // Below 900 px the bar spreads six tabs over the width: no gap for him beside a tab (css).
+  // Below 900 px the bar is one line that slides (css): he isn't on it.
   const phone = matchMedia('(max-width: 899px)');
 
   const kn = document.createElement('button');
@@ -125,23 +125,41 @@
      The pin is the map's own Knight (js/app-map.js, youSvg): he keeps his seat on the bar. */
   const mapBox = () => el.pg.querySelector('.pgm-box');
   const youPin = () => el.pg.querySelector('.pgm-you');
-  let walking = null;    // the walk under way, { from, to }
+  let walking = null;    // the walk under way, { from, to, legs, at (where it has him) }
   let toWalk = null;     // a bench change waiting for the map to be in view
+  let waits = null;      // the walk that waits, with its way: asked at every render, found once
   // The game saved at another bench: the pin's walk, when the map is in view.
   function onSave(was) {
+    waits = null;
     if (was && App.progress.bench && was !== App.progress.bench) toWalk = { from: was, to: App.progress.bench };
   }
   // The bench of the save before (hollow.prev, js/saves.js), or ''.
   function prevBench() {
     try { const p = JSON.parse(load('hollow.prev') || 'null'); return p && p.snap ? CH.fromSnap(p.snap).progress.bench : ''; } catch (e) { return ''; }
   }
+  // The walk that waits for the map to be in view, { from, to, legs (null: no way) }, or null.
+  function waiting() {
+    let w = toWalk;
+    // A bench change the page wasn't open for: once, from the save before.
+    if (!w) { const from = prevBench(), to = App.progress.bench; if (from && to && from !== to && prefs.walked !== to) w = { from, to }; }
+    if (!w) return (waits = null);
+    if (!waits || waits.from !== w.from || waits.to !== w.to) waits = { from: w.from, to: w.to, legs: wayTo(w.from, w.to) };
+    return waits;
+  }
   // The map in view: a bench change plays as the pin's walk, once.
   function syncMap() {
     if (walking || !youPin()) return;
-    let w = toWalk; toWalk = null;
-    // A bench change the page wasn't open for: once, from the save before.
-    if (!w) { const from = prevBench(), to = App.progress.bench; if (from && to && from !== to && prefs.walked !== to) w = { from, to }; }
-    if (w) mapWalk(w.from, w.to);
+    const w = waiting(); toWalk = waits = null;
+    if (w) mapWalk(w.from, w.to, w.legs);
+  }
+  /* Where the map paints his pin while he isn't at your bench (js/app-map.js, youSvg): where the
+     walk has him, or at the old bench while a walk waits for the map to be in view (painted at
+     the new one, he'd be seen there before setting off). null: at your bench. */
+  function pinAt() {
+    if (walking) return walking.at;
+    if (still.matches) return null;
+    const w = waiting();
+    return w && w.legs ? w.legs[0].pts[0] : null;
   }
   /* His run's frames through the pin's svg (js/app-map.js, youSvg), or standing. */
   function frame(pin, i) {
@@ -180,17 +198,17 @@
      all, and no way between: the game's ride is instant). The whole way is fitted to 2 to 8 s,
      every leg alike. The view stays as you have it (never zoomed or moved for him): out of it,
      he goes unseen. The pin is repainted with every render, so it's looked up again at every
-     step; it's already painted at the new bench, where the walk ends. No way (Godhome, the White
+     step, and every render paints it where the walk has him (pinAt). No way (Godhome, the White
      Palace: entered by dream), or reduced motion: he's simply there. Seen once per bench
      (prefs.walked). */
   const PACE = 4;
   const RIDE = { tram: { v: 8, stop: 0.5 }, lift: { v: 3, stop: 0.3 } };
   const STAG_S = 1.4;
-  function mapWalk(from, to) {
-    walking = { from, to, legs: null };
+  function mapWalk(from, to, legs) {
+    walking = { from, to, legs, at: null };
     const done = () => { walking = null; prefs.walked = to; savePrefs(); const pin = youPin(); if (pin) { frame(pin, -1); pin.style.opacity = ''; } };
-    const legs = walking.legs = wayTo(from, to);
     if (!legs || still.matches) { done(); return; }
+    walking.at = legs[0].pts[0];
     for (const l of legs) {
       l.segs = []; l.len = 0;
       for (let i = 1; i < l.pts.length; i++) { const d = Math.hypot(l.pts[i][0] - l.pts[i - 1][0], l.pts[i][1] - l.pts[i - 1][1]); l.segs.push(d); l.len += d; }
@@ -221,6 +239,7 @@
         at = lerp(l.pts[0], l.pts[1], Math.min(1, Math.max(0, (f - stop / 2) / (1 - stop))));
         if (l.kind === 'tram') dx = l.pts[1][0] - l.pts[0][0];
       }
+      walking.at = at;
       const pin = youPin();
       if (pin) {
         pin.style.setProperty('--px', at[0].toFixed(3) + 'px'); pin.style.setProperty('--py', (-at[1]).toFixed(3) + 'px');
@@ -277,7 +296,7 @@
   // Where he is and whether the map is in view, for the smoke test and the debug pages.
   const state = () => ({ perch, tabId, mapSeen, mapOn, cls: kn.className, walking });
   // For debug-walk.html: a walk under way called off (the pin stays where it is until a repaint), and the rides chosen by hand.
-  const cancel = () => { walking = null; toWalk = null; };
+  const cancel = () => { walking = null; toWalk = waits = null; };
   const setRides = (r) => { ridesSet = r; };
-  App.knight = { start, sync, onSave, state, route, way: wayTo, cancel, setRides };
+  App.knight = { start, sync, onSave, pinAt, state, route, way: wayTo, cancel, setRides };
 })();

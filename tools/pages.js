@@ -36,7 +36,7 @@ const fullTitle = (page, lang) => page.title[lang] + ' · ' + BRAND[lang];
 function about(page, lang) {
   const faq = page.faq.map((f) => `    <h3>${f.q[lang]}</h3>\n    <p>${f.a[lang]}</p>`).join('\n');
   const more = PAGES.filter((p) => p !== page)
-    .map((p) => `      <li><a href="${rel(p, lang) || './'}" data-page>${p.link[lang]}</a></li>`).join('\n');
+    .map((p) => `      <li><a href="${rel(p, lang) || './'}" data-page="${p.view || ''}">${p.link[lang]}</a></li>`).join('\n');
   // Indented to sit in index.html's .shell, where the region's markers are.
   return `<!-- about -->
 <section class="about" id="about" lang="${lang}" aria-labelledby="about-h">

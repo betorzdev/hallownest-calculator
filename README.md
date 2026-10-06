@@ -160,7 +160,8 @@ python3 -m http.server 8000    # then http://localhost:8000
 npm test                       # node --test, no dependencies
 ```
 
-Your build lives in the URL, so **Share** gives you a link to exactly what you're wearing. Following
+Your build lives in the URL, so the address bar is a link to exactly what you're wearing; **Share**
+copies the short one, to the page of the screen you're on. Following
 a save live needs Chrome or Edge on a computer (the File System Access API); importing it once works
 anywhere.
 

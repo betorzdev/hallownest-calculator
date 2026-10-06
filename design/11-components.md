@@ -83,7 +83,7 @@ words with the chosen one underlined, so the others read as text; there were six
 
 | Component | Class | Look | Used by |
 |---|---|---|---|
-| Choose one | `.seg` (`.seg.sm`) | each word on a faint line of the accent (40%); the chosen one in bone on the accent's line, doubled with a shadow so nothing moves; a count in `<i>` | compare with, the import's systems, the Journal's filters (`.hj-tabs`) and an entry's state (`.hj-state`, its `·` separators gone), the enemy picker's kinds, the language (`.langsel`, its `·` gone), a spell's side (`.sd-side`) |
+| Choose one | `.seg` (`.seg.sm`) | each word on a faint line of the accent (40%); the chosen one in bone on the accent's line, doubled with a shadow so nothing moves; a count in `<i>` | compare with, the import's systems, the Journal's filters (`.hj-tabs`) and an entry's state (`.hj-state`, its `·` separators gone), the enemy picker's kinds, a spell's side (`.sd-side`) |
 | On/off | `.check` + `.check-box` | a 16 px square on the accent's line; on, filled with the accent and a dark tick | the Journal's row picks (`.hj-pick`, was `.hj-box`), following the game (`.imp-sync-v`, was a `.btn` with a diamond) |
 | Switch | `.switch` + `.switch-track` | a button with role="switch": a small track with a knob; on, the knob slides right in the accent (30 Sep, design/16) | a choice about how a screen shows: the map's whole map, what you have, area names |
 | Search | `.search` | a sunken well with its rule and the lens in front (the steppers' number well); the rule takes the accent under the pointer and, doubled, while typing | the Journal (`.hj-search`), the enemy picker (`.jr-search`), the map (`.pgm-q`) |

@@ -382,7 +382,7 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 .empty.is-inline > .rule { display: none; }
 
 /* Choose one (.seg, round 3, 27-sep): a group where one is always chosen — compare with, the
-   import's systems, the Journal's filters and an entry's state, the language, a spell's side.
+   import's systems, the Journal's filters and an entry's state, a spell's side.
    Words in a row, each on a faint line of the accent so it reads as something to pick; the
    chosen one in bone on the accent's whole line, doubled (a shadow, so nothing moves). */
 .seg { display: inline-flex; align-items: center; gap: var(--sp-4); flex-wrap: wrap; }
@@ -399,21 +399,21 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 .seg.sm button { min-height: var(--ctl-sm); font-size: var(--fs-xs); }
 
 /* ── Header ──────────────────────────────────────────────────────────────
-   One row: the title, centred, under the filigree from the Hall's screen (tablet-hdr, the game's
-   white stroke), small; on its left the language and Share, which belong to the site, and on
-   its right the save selector, which is yours. Behind it, like behind the whole page, the dust motes from the main menu (.atmos). */
-/* Three columns: the title in the centre of the page and one side on each flank. The two side
-   columns grow equally, so the title lands dead centre; if a side doesn't fit in its half, its
-   column widens and the title gives way a little rather than overlap. */
-/* Two rows: the filigree above, and the title below with the two sides beside it, centred on its
-   line (the brand spans both rows and shares them, subgrid). */
-.masthead {
-  padding: var(--sp-6) 0 0; display: grid; grid-template-columns: 1fr auto 1fr; grid-template-rows: auto auto;
-  align-items: center; gap: var(--sp-4) var(--sp-6);
-}
-.masthead .brand { grid-column: 2; grid-row: 1 / 3; display: grid; grid-template-rows: subgrid; row-gap: var(--sp-1); justify-items: center; }
-.masthead .mh-tools { grid-column: 1; grid-row: 2; justify-self: start; flex-wrap: nowrap; }
-.masthead .mh-save { grid-column: 3; grid-row: 2; justify-self: end; }
+   Two lines (design/30-top-variants.html, 6 Oct 2026). The strip: what belongs to the site, the
+   language and Share, small and at the right. The brand row: the title, centred, under the
+   filigree from the Hall's screen (tablet-hdr, the game's white stroke), small; on its left the
+   way to the sister site and on its right the save selector, which is yours. Behind it, like
+   behind the whole page, the dust motes from the main menu (.atmos). */
+.masthead { display: flex; flex-direction: column; padding: var(--sp-2) 0 0; }
+.mh-strip { display: flex; align-items: center; justify-content: flex-end; gap: var(--sp-6); min-height: var(--ctl); }
+/* The brand row, three columns: the title in the centre of the page and one side on each flank.
+   The two side columns grow equally, so the title lands dead centre; if a side doesn't fit in its
+   half, its column widens and the title gives way a little rather than overlap. The sides sit on
+   the title's line, under the filigree. */
+.mh-brand { display: grid; grid-template-columns: 1fr auto 1fr; align-items: end; gap: var(--sp-6); }
+.mh-brand .brand { grid-column: 2; }
+.mh-brand .mh-sister { grid-column: 1; justify-self: start; min-height: var(--ctl); }
+.mh-brand .mh-save { grid-column: 3; justify-self: end; }
 .brand { display: flex; flex-direction: column; align-items: center; gap: var(--sp-1); min-width: 0; color: inherit; text-decoration: none; }
 /* The title leads to the start screen: on hover, the filigree lights up fully. */
 .brand .mh-hdr { transition: opacity var(--dur) var(--ease); }
@@ -424,20 +424,34 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
   line-height: 1.05; letter-spacing: var(--track-title); color: var(--ink-strong); text-align: center;
   text-wrap: balance;
 }
-/* The language and Share, as loose text like a game menu: small, unboxed, so the title
-   rules. The chosen language in bone; what can be touched lights up in the accent. */
-.mh-tools { --tools-gap: var(--sp-6); display: flex; align-items: center; gap: var(--tools-gap); flex-wrap: wrap; }
-.langsel { position: relative; display: flex; align-items: center; gap: var(--sp-2); }
-/* Between the language and Share, a thin upright rule centred in the gap, like Combat's tabs' (.tab-sep). */
-.mh-tools > .langsel:not(:last-child)::after {
-  content: ''; position: absolute; top: 50%; right: calc(var(--tools-gap) / -2 - 0.5px);
-  width: 1px; height: var(--sp-4); transform: translateY(-50%); background: var(--line-ctl);
+/* The language and Share, as loose text like a game menu: small, unboxed and in one type, so
+   the title rules; what can be touched lights up in the accent. */
+.mh-tools { display: flex; align-items: center; gap: var(--sp-6); flex-wrap: nowrap; }
+.lang-btn, .mh-link { min-height: var(--ctl-sm); font-size: var(--fs-sm); letter-spacing: var(--track-label); white-space: nowrap; }
+/* The language (design/29-language-selector.html): what's chosen and a chevron —its name on a
+   wide screen, its code on a phone— and, under it, a short list: each language by its own name,
+   the chosen one in bone behind the screen bar's diamond. */
+.langsel { position: relative; }
+.lang-btn { gap: var(--sp-2); }
+.lang-btn[aria-expanded="true"] { color: var(--ink-strong); text-decoration-color: var(--accent); }
+.lang-code { display: none; }
+.lang-menu {
+  position: absolute; z-index: 2; top: calc(100% + var(--sp-2)); right: calc(var(--sp-4) * -1); min-width: max-content;   /* over the save selector, below it */
+  max-height: calc(100dvh - var(--sp-16) * 2); overflow-y: auto; margin: 0; padding: var(--sp-2) 0; list-style: none;
+  background: var(--card); border: 1px solid var(--line-panel); box-shadow: var(--shadow-md);
 }
-.langsel button, .mh-link {
-  display: inline-flex; align-items: center; min-height: var(--ctl-sm); padding: 0;
-  font-size: var(--fs-sm); letter-spacing: var(--track-label);
+.lang-menu a {
+  display: flex; align-items: center; gap: var(--sp-3); min-height: var(--ctl-sm); padding: 0 var(--sp-8) 0 var(--sp-4);
+  font-size: var(--fs-sm); color: var(--ink-2); text-decoration: none; white-space: nowrap;
+  transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease);
 }
-
+.lang-menu a::before { content: ''; flex: none; width: var(--diamond); height: var(--diamond); transform: rotate(45deg); }
+.lang-menu a[aria-current="true"] { color: var(--ink-strong); }
+.lang-menu a[aria-current="true"]::before { background: var(--accent); }
+.lang-menu a:is(:hover, :focus-visible) { color: var(--accent-ink); background: var(--accent-soft); }
+.lang-menu a:focus-visible { outline-offset: calc(var(--sp-half) * -1); }   /* inside the list, which clips */
+/* Open, the list falls over the screen bar, which is stuck above the header's own layer. */
+.masthead.is-lang-open, .masthead.has-sister.is-lang-open { position: relative; z-index: 40; }
 
 /* ── The screen bar ──────────────────────────────────────────────────────
    The pages of the game's pause menu: their names in the serif, in lowercase, and an accent
@@ -530,10 +544,8 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 /* The Journal carries its completed entries over the total alongside. */
 .nav-num { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-xs); font-weight: 600; color: var(--ink-2); }
 .nav-hj:hover .nav-num { color: var(--accent); }
-/* The two groups: your game, then the tools after a thin rule (design/10-restructure.md). On a
-   computer the tools go by name; the Tools tab and its second row are the phone's. */
+/* The two groups: your game, then the tools after a thin rule (design/10-restructure.md). */
 .nav-sep { width: 1px; height: 1.4em; align-self: center; background: var(--line-ctl); }
-.nav-tools, .nav-sub, .nav-short { display: none; }
 /* ── The Knight who walks the page (js/app-knight.js) ──────────────────
    One sprite, drawn from a strip of 104 × 140 cells (assets/knight/, tools/fetch-knight.js):
    standing, running (six frames, stepped at --dur-step) or sitting; he faces right and turns
@@ -563,11 +575,11 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 .nav-tabs > .kn { bottom: 0; left: 0; }
 
 /* ── The sister site's link and its Hornet (js/app-sister.js) ──────────────
-   «Silksong ↗», one more loose word after Share, in Share's type; instead of Share's underline, the
-   silk thread Hornet sewed (drawn in the layer under the masthead's letters). Once her thread is in,
-   it breathes in bone three times; a tug of the needle makes it flinch. On a phone, a line of its own
-   under the masthead, on the right, with room above for her (css: the ≤599 px block). Hidden until
-   the sister is published: without .has-sister none of this is drawn. */
+   «Silksong ↗», a loose word left of the title, the counterweight of your save on its right; instead
+   of an underline, the silk thread Hornet sewed (drawn in the layer under the masthead's letters).
+   Once her thread is in, it breathes in bone three times; a tug of the needle makes it flinch. On a
+   phone, the strip's copy (.is-strip), on its left, with room above for her (css: the ≤599 px
+   block). Hidden until the sister is published: without .has-sister none of this is drawn. */
 .mh-sister {
   display: inline-flex; align-items: center; gap: var(--sp-1); min-height: var(--ctl-sm);
   font-family: var(--font-body); font-size: var(--fs-md); color: var(--ink-2); text-decoration: none;
@@ -575,7 +587,7 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 }
 .mh-sister:is(:hover, :focus-visible) { color: var(--accent); }
 .mh-sister-arr { font-size: var(--fs-2xs); }
-.mh-sister-row { display: none; }
+.mh-sister.is-strip { display: none; }
 .masthead.has-sister { position: relative; z-index: 1; }
 @media (prefers-reduced-motion: no-preference) {
   .mh-sister.is-called { color: var(--ink-strong); animation: sister-call var(--dur-sister-call) var(--ease-fade) 3; }
@@ -1522,8 +1534,9 @@ button.gplate:is(:hover, :focus-visible) .gplate-art::before, .gplate:has(.lvlpi
      three sets of sizes, one per breakpoint, aren't needed. */
   :root { --page-pad: var(--sp-4); --sticky-h: 100px; }
   .shell { gap: var(--sp-6); }
-  /* The bar in two rows: the tabs and, below, the mini-bar across the full width. */
-  .nav { flex-direction: column; align-items: stretch; gap: 0; }
+  /* The bar in two rows: the tabs and, below, the mini-bar across the full width. Without
+     wrapping: a wrapped column would be as wide as its tabs, and their line couldn't slide. */
+  .nav { flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: 0; }
   .minihud { justify-content: space-between; gap: var(--sp-3); padding: var(--sp-2) 0; border-top: 1px solid var(--line-row); }
   .minihud.is-fight { flex: none; justify-content: space-between; }
   .minihud .mini-foe { flex: 1 1 auto; }
@@ -1544,24 +1557,28 @@ button.gplate:is(:hover, :focus-visible) .gplate-art::before, .gplate:has(.lvlpi
 @media (max-width: 599px) {
   .panel, .gear-body { --inv-pad: var(--sp-4); }
   .fx { grid-template-columns: minmax(0, 1fr); }
-  /* The header in a single row, so what matters starts sooner on every screen: the title on the
-     left, smaller and without its filigree, and on the right the Knight, the language and Share
-     (the title goes first and the site's two after the selector: order). */
-  .masthead { display: flex; flex-wrap: nowrap; justify-content: space-between; align-items: center; gap: var(--sp-2); padding-top: var(--sp-3); }
-  .brand, .masthead .brand { display: flex; flex: 1 1 auto; align-items: flex-start; order: -1; }
-  .masthead .mh-tools { order: 1; }
+  /* The header on a phone: the brand row first, so the title is what you see —on the left, in
+     one line, smaller and without its filigree, with the Knight on the right—, and the strip
+     under it, close to the screen bar: the sister's link on the left (the ≤599 px block of
+     js/app-sister.js's rules) and the site's two tools on the right. */
+  .masthead { padding-top: var(--sp-3); margin-bottom: calc(var(--sp-4) * -1); }
+  /* From the top: a title that takes two lines (a narrow phone, a long language) still leaves
+     Hornet her room under it. */
+  .mh-brand { order: -1; display: flex; justify-content: space-between; align-items: flex-start; gap: var(--sp-2); }
+  .brand, .mh-brand .brand { display: flex; flex: 1 1 auto; min-width: 0; align-items: flex-start; }
   .brand .mh-hdr { display: none; }
   .title { font-size: var(--fs-lg); text-align: left; letter-spacing: var(--track-title); }
-  .masthead .mh-tools { flex: none; flex-wrap: nowrap; --tools-gap: var(--sp-3); }
+  .mh-strip { justify-content: space-between; }
+  .mh-tools { margin-left: auto; gap: var(--sp-4); }
+  .lang-name { display: none; }
+  .lang-code { display: inline; }
   /* The two starting points: the label above, and both on one line. */
   .presets .lbl { flex: 1 1 100%; text-align: center; }
-  /* The bar, on mobile: the four tabs spread out (the active one underlined: the diamond doesn't
-     fit) and without the Journal's book, which leaves room for its name with your completed entries. */
+  /* The bar, on a phone: the sliding line's tabs (the ≤899 px block below), a little smaller and
+     a finger tall. */
   :root { --sticky-h: 100px; }
-  /* Each tab as wide as its word (a long one, «Inventario», doesn't break), the free space between them. */
-  .nav-tabs { display: grid; grid-template-columns: repeat(6, auto); justify-content: space-between; gap: 0 var(--sp-2); }
-  .nav-tab { flex-direction: column; justify-content: center; gap: 0; min-height: 48px; font-size: var(--fs-md); text-align: center; }
-  /* No gap beside a tab here: no Knight (js/app-knight.js); the rule marks the tab. */
+  .nav-tab { min-height: 48px; font-size: var(--fs-md); }
+  /* No Knight on this bar (js/app-knight.js); the rule marks the tab. */
   .nav-tabs > .kn { display: none; }
 }
 /* The eight tabs and the mini-bar (the build's figures or the fight's scoreboard) don't fit side
@@ -1582,28 +1599,24 @@ button.gplate:is(:hover, :focus-visible) .gplate-art::before, .gplate:has(.lvlpi
 @media (min-width: 1240px) {
   .minihud { margin-left: auto; }
 }
-/* Seven tabs don't fit below 900 px: the tools fold into one, Tools, and while you're in one a
-   second row switches between Charms and Combat. */
+/* The eight tabs don't fit below 900 px: they stay on one line that slides sideways, every screen
+   by its name and its number beside it (design/30-top-variants.html, 6 Oct 2026). The line bleeds
+   to the page's edges, which fade where there's more; js/app.js brings the current tab into view
+   (navIntoView). */
 @media (max-width: 899px) {
-  .nav-tabs { gap: var(--sp-1) var(--sp-4); }
-  .nav-tool, .nav-sep, .nav-inv { display: none; }
+  .nav-tabs {
+    gap: 0 var(--sp-6); overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none;
+    margin-inline: calc(var(--page-pad) * -1); padding-inline: var(--page-pad);
+    /* A mask only reads the alpha: any opaque token does. */
+    mask-image: linear-gradient(to right, transparent, var(--bg) var(--page-pad), var(--bg) calc(100% - var(--sp-8)), transparent);
+  }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+  .nav-tab, .nav-sep { flex: none; }
+  .nav-tab { white-space: nowrap; }
   /* The current tab's rule, on the bar's bottom edge: the Knight isn't on this bar to mark it. */
-  .nav-tab[aria-current="page"], .nav-home.is-parent { color: var(--ink-strong); box-shadow: inset 0 -2px 0 var(--accent); }
-  .nav-tools { display: inline-flex; }
-  .nav-sub:not([hidden]) { display: flex; justify-content: center; gap: var(--sp-8); border-top: 1px solid var(--line-row); }
-  .nav-sub .nav-tab { min-height: var(--ctl); font-size: var(--fs-md); }
-  /* The bar's height follows its rows: the tabs alone on your game's screens, and the tools'
-     second row and the mini-bar with the tools. */
+  .nav-tab[aria-current="page"] { color: var(--ink-strong); box-shadow: inset 0 -2px 0 var(--accent); }
+  /* The bar's height follows its rows: the tabs alone, or the tabs and the mini-bar with the tools. */
   :root:has(#minihud[hidden]) { --sticky-h: 60px; }
-  :root:has(#nav-sub:not([hidden])) { --sticky-h: 140px; }
-  :root:has(#nav-sub-game:not([hidden])) { --sticky-h: 100px; }
-}
-@media (max-width: 599px) {
-  /* Six tabs in 358 px: one step smaller. */
-  .nav-tabs { gap: 0 var(--sp-1); }
-  .nav-tabs > .nav-tab { font-size: var(--fs-sm); letter-spacing: 0; }
-  .nav-long { display: none; }
-  .nav-short { display: inline; }
 }
 /* The sheet arranges itself by its own width (container inv), not the window's. */
 /* No room for the row: the HUD and the damage on top, and the six below, after a rule. */
@@ -4018,13 +4031,17 @@ kbd {
   .save-vessels img { height: var(--sp-3); }
   .save-nail img { height: var(--sp-12); }
   .save-nail span { display: none; }
-  /* On a phone the Knight alone didn't say "your saves": larger, with a short word under him
-     (Saves, or Save 1 after the state's diamond when it follows the game), in a 44 px target. */
-  /* The sister's link (js/app-sister.js): out of the tools, on a line of its own, Hornet's room above it. */
-  .masthead.has-sister { flex-wrap: wrap; }
-  .masthead.has-sister .brand { flex: 1 1 0; min-width: 0; }   /* the first line stays as without it */
-  .mh-tools > .mh-sister { display: none; }
-  .mh-sister-row { display: flex; order: 2; flex: 1 0 100%; justify-content: flex-end; padding-top: var(--sp-8); }
+  /* The sister's link (js/app-sister.js): the strip's copy, on its left, and Hornet's room above
+     it, between the title and the strip. */
+  .mh-brand > .mh-sister { display: none; }
+  .mh-sister.is-strip { display: inline-flex; }
+  .masthead.has-sister .mh-strip { margin-top: var(--sp-8); }
+}
+/* Below 900 px the save's full label doesn't fit beside the title (the brand row's sides are
+   equal, so it would push the title out). The Knight alone didn't say "your saves": with a short
+   word under him (Saves, or Save 1 after the state's diamond when it follows the game), in a
+   44 px target. */
+@media (max-width: 899px) {
   .mh-save-lbl, .mh-save-lbl:has(.mh-live) { display: none; }
   .mh-save { flex-direction: column; justify-content: center; gap: var(--sp-half); min-width: var(--ctl); min-height: var(--ctl); }
   .mh-save-fig { width: var(--sp-8); height: var(--sp-8); }
@@ -4286,6 +4303,19 @@ kbd {
   .pg.is-big { --map-w: calc(var(--page-w, 100vw) - 2 * var(--page-pad)); width: var(--map-w); margin-inline: calc((100% - var(--map-w)) / 2); }
   .pg.is-big .pgm-box { height: max(480px, min(calc(100vh - var(--sticky-h) - var(--sp-6)), var(--map-w) / 1.6)); }
 }
+/* Full screen (the zoom's last button; js/app-map.js, setFull): the map's box over the whole
+   window, on the page's ground, and the search on its top left corner, as maps have it, up to
+   where the zoom starts (three buttons: the large map's has no say here). The filter stays on
+   the page, under it, and the page doesn't scroll behind. On a phone too: there it's what makes
+   the map big. After the large map's rules, which it overrides: both can be on. */
+.pgm-full[aria-pressed="true"] { color: var(--ink-strong); background: var(--picked); }
+/* The screen's body is a layer of its own (isolation), under the header and the bar: over them. */
+.pg.is-full .pg-body { z-index: 50; }
+.pg.is-full .pgm-box { position: fixed; z-index: 4; inset: 0; height: auto; background: var(--bg); border: 0; }
+.pg.is-full .pgm-big { display: none; }
+.pg.is-full .pgm-bar { position: fixed; z-index: 5; top: var(--sp-3); left: var(--sp-3); right: calc(var(--sp-3) * 2 + 3 * var(--ctl-sm) + var(--sp-2)); pointer-events: none; }
+.pg.is-full .pgm-search { pointer-events: auto; box-shadow: var(--shadow-md); }
+html:has(.pg.is-full:not([hidden])) { overflow: hidden; }
 .pgm-svg { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; user-select: none; }
 .pgm-svg:active { cursor: grabbing; }
 .pgm-room.is-rough { opacity: 0.8; }
@@ -4414,7 +4444,9 @@ kbd {
 .hm-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; align-self: stretch; }
 .hm-item { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto auto; gap: var(--sp-3); align-items: center; padding: var(--sp-2) 0; border-bottom: 1px solid var(--inv-line); }
 .hm-item:last-child { border-bottom: 0; }
-.hm-item-art { width: 36px; height: 32px; display: grid; place-items: center; }
+/* The picture's cell is the box itself (minmax(0, 1fr)): in an auto track it grew to the picture's
+   own height, and the max-height below, a percentage of that track, held nothing back. */
+.hm-item-art { width: 36px; height: 32px; display: grid; grid-template: minmax(0, 1fr) / minmax(0, 1fr); place-items: center; }
 .hm-item-art img { max-width: 100%; max-height: 100%; object-fit: contain; }
 .hm-item-name { font-size: var(--fs-sm); color: var(--ink); min-width: 0; }
 .hm-item-name small { display: block; font-size: var(--fs-xs); color: var(--muted); }

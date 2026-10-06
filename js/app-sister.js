@@ -1,9 +1,10 @@
 /* js/app-sister.js — the way to the sister site, the Silksong one (../pharloom-calculator, «Calculadora
    de Telalejana»), and the Hornet who points it out. Chosen on 1 Oct 2026 in
    design/28-sister-hornet-clawline.html (C, after design/26 and design/27).
-   The link is one more loose word in the masthead's tools, «Silksong ↗», after Share (js/app.js,
-   renderMasthead, asks linkHtml); on a phone, a line of its own under the masthead. A silk thread
-   underlines it, under the masthead's letters, for as long as it's there.
+   The link is a loose word in the masthead's brand row, «Silksong ↗», left of the title: the other
+   game on one side, your save on the other (js/app.js, renderMasthead, asks linkHtml); on a phone,
+   in the strip under the title, on the left. A silk thread underlines it, under the masthead's
+   letters, for as long as it's there.
    Hornet comes once per visit (sessionStorage) until the link is clicked (localStorage: never again):
    she floats down on her Drifter's Cloak onto the word, closes it, sweeps her needle, and the thread
    weaves through the letters and cinches into that underline. Then she stays on it: now and then (15–25
@@ -34,11 +35,10 @@
   const ss = { get(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }, set(k) { try { sessionStorage.setItem(k, '1'); } catch (e) { /* no memory: she comes again */ } } };
   const ls = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k) { try { localStorage.setItem(k, '1'); } catch (e) { /* no memory */ } } };
 
-  /* The link, for the masthead: in the tools, or as the phone's line (`row`). The sister's page in
-     your language. */
-  function linkHtml(row) {
-    const a = `<a class="mh-sister" href="${HOME}${prefs.lang === 'es' ? 'es/' : ''}" target="_blank" rel="noopener" title="${esc(t('sisterHint'))}"><span${NT}>${esc(t('sister'))}</span> <span class="mh-sister-arr" aria-hidden="true">↗</span></a>`;
-    return row ? `<div class="mh-sister-row">${a}</div>` : a;
+  /* The link, for the masthead: in the brand row, or the strip's copy for a phone (`strip`); the
+     CSS shows one of the two. The sister's page in your language. */
+  function linkHtml(strip) {
+    return `<a class="mh-sister${strip ? ' is-strip' : ''}" href="${HOME}${prefs.lang === 'es' ? 'es/' : ''}" target="_blank" rel="noopener" title="${esc(t('sisterHint'))}"><span${NT}>${esc(t('sister'))}</span> <span class="mh-sister-arr" aria-hidden="true">↗</span></a>`;
   }
 
   /* ── The clock: one-shot clips and tweens step on animation frames, only while there are any ── */
