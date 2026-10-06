@@ -9,7 +9,7 @@ map with what you're missing, the Hunter's Journal and Godhome. Keep playing, an
 sit on a bench it catches up and tells you what you got, and the Knight, who walks the page to say
 where you are, walks the map from your old bench to the new one. Then try builds and take them into a fight.
 
-[**Open the calculator**](https://betorzdev.github.io/hallownest-calculator/)
+[**Open the calculator**](https://hallownestcalculator.com/)
 &nbsp;·&nbsp; [Full guide](docs/guide.md)
 &nbsp;·&nbsp; [Report a wrong number](https://github.com/betorzdev/hallownest-calculator/issues)
 

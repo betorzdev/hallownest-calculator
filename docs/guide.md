@@ -621,7 +621,7 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   *Share* copies the address of the page the screen you're on has, or the language's home for a
   screen with none (Your game, the Inventory, the saves). They're
   generated with `npm run pages` (`tools/pages.js`, the texts in `tools/pages-text.js`), which
-  also writes `index.html`'s own head fields, its About block and `sitemap.xml`; never edited by
+  also writes `index.html`'s own head fields, its About block, `sitemap.xml`, `robots.txt` and `CNAME` (the site lives at `hallownestcalculator.com`: `SITE` there); never edited by
   hand, and `test/pages.test.js` fails if one falls behind. `debug.html` and
   `debug-overflow.html` open one of them with `&page=map/`.
 - `css/tokens.css` — the tokens of the dark theme, the only one.
