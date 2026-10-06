@@ -9,6 +9,7 @@
   const FIXES = {
     "arcane-egg-birthplace": [4.346, -13.797],
     "arcane-egg-lifeblood-core": [2.302, -12.778],
+    "benches:15": [-7.100, -1.015],
     "benches:23": [-7.668, -7.207],
     "benches:24": [-2.669, 7.230],
     "benches:25": [13.129, 4.919],
@@ -68,6 +69,7 @@
     "people:iselda": [-1.824, 7.241],
     "people:sly": [-2.167, 7.221],
     "queens-gardens-stag": [-13.769, -0.129],
+    "queens-station-stag": [-7.400, -0.997],
     "r:Abyss_06_Core|Geo Rock Abyss (1)": [4.846, -12.384],
     "r:Cliffs_01|Geo Rock 2 (1)": [-11.726, 9.254],
     "r:Cliffs_01|Geo Rock 2 (2)": [-11.578, 8.618],

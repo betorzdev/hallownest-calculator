@@ -9,7 +9,7 @@ map with what you're missing, the Hunter's Journal and Godhome. Keep playing, an
 sit on a bench it catches up and tells you what you got, and the Knight, who walks the page to say
 where you are, walks the map from your old bench to the new one. Then try builds and take them into a fight.
 
-[**Open the calculator**](https://betorzdev.github.io/hallownest-calculator/)
+[**Open the calculator**](https://hallownestcalculator.com/)
 &nbsp;·&nbsp; [Full guide](docs/guide.md)
 &nbsp;·&nbsp; [Report a wrong number](https://github.com/betorzdev/hallownest-calculator/issues)
 
@@ -160,7 +160,8 @@ python3 -m http.server 8000    # then http://localhost:8000
 npm test                       # node --test, no dependencies
 ```
 
-Your build lives in the URL, so **Share** gives you a link to exactly what you're wearing. Following
+Your build lives in the URL, so the address bar is a link to exactly what you're wearing; **Share**
+copies the short one, to the page of the screen you're on. Following
 a save live needs Chrome or Edge on a computer (the File System Access API); importing it once works
 anywhere.
 

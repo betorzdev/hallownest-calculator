@@ -14,7 +14,7 @@ const ROOT = path.join(__dirname, '..');
 const read = (rel) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
 const EVERY = PAGES.flatMap((page) => P.LANGS.map((lang) => ({ page, lang })));
 
-test('every page and the sitemap are up to date with index.html (npm run pages)', () => {
+test('every page, the sitemap, robots.txt and CNAME are up to date with index.html (npm run pages)', () => {
   for (const [file, text] of Object.entries(P.all(read('index.html')))) assert.strictEqual(read(file), text, file);
 });
 
@@ -67,7 +67,7 @@ test('the texts carry only the tags they may, and their links go to real pages',
   for (const tag of all.match(/<\/?([a-z]+)/g) || []) assert.ok(/^<\/?(code|strong|em)$/.test(tag), `tag ${tag} in pages-text.js`);
   for (const { page, lang } of EVERY) {
     const html = read(P.file(page, lang));
-    for (const [, href] of html.matchAll(/<a href="([^"]*)" data-page>/g)) {
+    for (const [, href] of html.matchAll(/<a href="([^"]*)" data-page="[^"]*">/g)) {
       const target = href === './' ? 'index.html' : href + 'index.html';
       assert.ok(fs.existsSync(path.join(ROOT, target)), `${P.file(page, lang)} links to ${href}`);
     }

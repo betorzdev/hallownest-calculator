@@ -66,6 +66,8 @@ f.addEventListener('load', () => {
     // What's inside an <svg> is clipped by the svg itself, which is measured: your scene's
     // ground is a 900 px strip clipped to the width, and it overflows nothing.
     if (node.ownerSVGElement) continue;
+    // Nor what slides inside its own line: below 900 px the screen bar's tabs (css .nav-tabs).
+    if (node.closest('.nav-tabs') && !node.matches('.nav-tabs')) continue;
     const r = node.getBoundingClientRect();
     if (r.right > w + 1 || r.left < -1) {
       lines.push(Math.round(r.left) + '→' + Math.round(r.right) + '  ' + node.tagName.toLowerCase() +

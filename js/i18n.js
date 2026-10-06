@@ -14,7 +14,7 @@
     /* Header */
     title:          { es: 'Calculadora de Hallownest', en: 'Hallownest Calculator' },
     goHome:         { es: 'Ir a Partida, la pantalla de inicio', en: 'Go to Your game, the home screen' },
-    langGroup:      { es: 'Idioma', en: 'Language' },
+    langGroup:      { es: 'Idioma', en: 'Language' },   // GAME_LANGUAGE
     // The tab and search-result title of the home, when you're in the other language: the same
     // as the page's own (tools/pages-text.js; test/pages.test.js keeps them together).
     docTitle:       { es: 'Tu partida de Hollow Knight en vivo, el 112 % y los amuletos · Calculadora de Hallownest',
@@ -27,7 +27,7 @@
     presetMax:      { es: 'Todo al máximo', en: 'Everything maxed' },
     presetMaxHint:  { es: 'Todas las mejoras permanentes al máximo, todos los amuletos conseguidos y todo el equipo y los objetos clave; conserva los amuletos que llevas', en: 'Every permanent upgrade maxed, every charm found and all the equipment and key items; keeps the charms you wear' },
     share:          { es: 'Compartir', en: 'Share' },
-    shareHint:      { es: 'Copia un enlace con esta build', en: 'Copy a link to this build' },
+    shareHint:      { es: 'Copia el enlace a esta página', en: 'Copy the link to this page' },
     // The sister site's link (js/app-sister.js): the game's title, as it's sold in both languages; its
     // hint names the sister in each (Telalejana is Pharloom in the game's Spanish: HEART_OF_PHARLOOM_NAME).
     sister:         { es: 'Silksong', en: 'Silksong' },
@@ -64,9 +64,7 @@
     navGame:        { es: 'Inventario', en: 'Inventory' },   // PANE_INVENTORY
     navHome:        { es: 'Partida', en: 'Your game' },
     navMap:         { es: 'Mapa', en: 'Map' },   // INV_NAME_MAP
-    navTools:       { es: 'Herramientas', en: 'Tools' },
     navGodhome:     { es: 'Hogar de Dioses', en: 'Godhome' },   // GODHOME_MAIN
-    navGodhomeShort:{ es: 'Dioses', en: 'Godhome' },
     // Your game, the start screen (js/app-home.js)
     homeRestingAt:  { es: 'Descansas en', en: 'Resting at' },
     homeRespawnAt:  { es: 'Reaparecerás en', en: 'You\'ll wake up in' },   // the save's respawn isn't a bench
@@ -476,6 +474,8 @@
     pgZoomOut:      { es: 'Alejar', en: 'Zoom out' },
     pgMapBig:       { es: 'Mapa grande', en: 'Large map' },
     pgMapSmall:     { es: 'Mapa normal', en: 'Normal map' },
+    pgMapFull:      { es: 'Pantalla completa', en: 'Full Screen' },   // VIDEO_FULLSCREEN
+    pgMapFullExit:  { es: 'Salir de pantalla completa', en: 'Exit full screen' },
     pgNkgOr:        { es: 'o el destierro', en: 'or the banishment' },
     shadeTag:       { es: 'Tu sombra', en: 'Your shade' },
     shadeBanner:    { es: 'Te espera en {area} con {geo} geo.', en: 'It waits in {area} with {geo} geo.' },
@@ -1046,13 +1046,23 @@
   const locale = () => (lang === 'en' ? 'en-GB' : 'es-ES');
   const nf = (max, min = 0) => new Intl.NumberFormat(locale(), { minimumFractionDigits: min, maximumFractionDigits: max });
 
+  /* The languages the site speaks, in the selector's order (English first: it's the default).
+     `tag` is the HTML language, `code` what a phone's header shows and `name` the language's own
+     name, as the game writes it in its menu (its LANG_CURRENT): never translated. The selector
+     (js/app.js, renderMasthead) lists them; a new language starts with a row here. */
+  const LANGS = [
+    { id: 'en', tag: 'en', code: 'EN', name: 'English' },   // EN: LANG_CURRENT
+    { id: 'es', tag: 'es', code: 'ES', name: 'Español' },   // ES: LANG_CURRENT
+  ];
+  const speaks = (id) => LANGS.some((l) => l.id === id);
+
   function setLang(next) {
-    lang = next === 'es' ? 'es' : 'en';
+    lang = speaks(next) ? next : 'en';
     HK.i18n.lang = lang;
     if (typeof document !== 'undefined') document.documentElement.lang = lang;
     return lang;
   }
 
-  HK.i18n = { UI, lang, t, pick, nf, setLang, get current() { return lang; } };
+  HK.i18n = { UI, LANGS, speaks, lang, t, pick, nf, setLang, get current() { return lang; } };
   if (typeof module !== 'undefined' && module.exports) module.exports = HK.i18n;
 })();

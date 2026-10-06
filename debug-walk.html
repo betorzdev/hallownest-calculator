@@ -115,9 +115,8 @@ function play() {
   if (!from || !to) return;
   A.knight.cancel();
   A.progress = HK.progress.normalize({ ...A.progress, bench: to });
-  A.render();
   A.knight.onSave(from);
-  A.knight.sync();
+  A.render();
 }
 $('from').addEventListener('change', () => { from = $('from').value; to = $('to').value && $('to').value !== from ? $('to').value : ''; $('to').value = to; state(); if (from && to) go(); });
 $('to').addEventListener('change', () => { to = $('to').value !== from ? $('to').value : ''; $('to').value = to; state(); if (from && to) go(); });

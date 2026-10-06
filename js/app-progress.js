@@ -228,6 +228,7 @@
        the Map, with the collectibles on it (js/app-map.js). */
     const head = `${brackets}${screenHead(esc(t(prefs.view === 'map' ? 'navMap' : 'navProgress')))}`;
     el.pg.classList.toggle('is-big', prefs.view === 'map' && !!prefs.pgMapBig);
+    el.pg.classList.toggle('is-full', prefs.view === 'map' && App.pgmIsFull());
     if (prefs.view === 'map') {
       el.pg.innerHTML = `<div class="gear-body pg-body">${head}${App.renderPgMap()}</div>`;
       App.pgMapAfterPaint();

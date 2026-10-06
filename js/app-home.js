@@ -64,7 +64,8 @@
         const it = ITEM[c.id], k = D.COLLECTIBLE_KINDS[it.kind];
         return { name: pick(k), sub: placeName(it.scene), note: '', art: D.art(k.art[0], k.art[1]) };
       }
-      case 'statue': return { name: pick((F.FOE_BY_ID[c.id] || {}).name), note: t(DIFF_KEY[c.diff]), art: D.art('journal', c.id) };
+      // A statue whose boss has no Journal entry (Lost Kin, Absolute Radiance...): its picture as a foe.
+      case 'statue': return { name: pick((F.FOE_BY_ID[c.id] || {}).name), note: t(DIFF_KEY[c.diff]), art: D.art(HJ.ROW[c.id] ? 'journal' : 'enemies', c.id) };
       default: return null;
     }
   }

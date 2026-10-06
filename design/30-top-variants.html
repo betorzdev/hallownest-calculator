@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Top variants</title>
+<!-- Design material, not part of the site: the top of the page (the masthead and the screen bar)
+     reorganised around a utility strip. Chosen on 6 Oct 2026 and now in the site: header B on
+     a wide screen with C's order on a phone, the bar that slides (1), the language as a dropdown. Today the site's things (the
+     language, Share, Silksong) sit left of the title as three loose words, and on a phone the top
+     is four rows. Here they get a thin line of their own, in three places, and the phone's bar
+     three forms. The site's real CSS plus this page's rules (the candidates), over the real
+     markup of the masthead and the bar, written by the script below in both languages. The
+     language control is design/29's dropdown. Hornet (js/app-sister.js) stands on «Silksong ↗»
+     as she does on the site, a still frame, so the room she needs shows. A bar at the bottom
+     switches each choice; the choice is in the URL
+     (?head=a&bar=slide&state=live&view=charms&lang=en&w=390). At 390 the page shows itself in
+     an iframe that wide, so the site's media queries apply. The <base> points at the root so
+     that the site's "assets/…" paths work as they are. -->
+<base href="../">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+/* ════ The page's own layout ════ */
+body { background: var(--page-bg); background-attachment: fixed; margin: 0; }
+.tv-stub { min-height: 360px; display: grid; place-items: center; border: 1px dashed var(--line-panel); color: var(--muted); font-size: var(--fs-sm); }
+.tv-notes { max-width: var(--page-max); margin: 0 auto; padding: var(--sp-8) var(--page-pad) 200px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--sp-6); }
+.tv-note { padding: var(--sp-4); border: 1px solid var(--line-panel); background: var(--card); font-size: var(--fs-sm); color: var(--ink-2); }
+.tv-note h2 { margin: 0 0 var(--sp-2); font-family: var(--font-display); font-size: var(--fs-md); font-weight: 600; letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--ink-strong); }
+.tv-note p { margin: 0 0 var(--sp-2); }
+.tv-note p:last-child { margin: 0; }
+.tv-note.is-size b { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-xl); color: var(--ink-strong); }
+.tv-bar { position: fixed; z-index: 100; left: 0; right: 0; bottom: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-2) var(--sp-8);
+  padding: var(--sp-3) var(--sp-4); background: var(--card); border-top: 1px solid var(--line-panel); font-size: var(--fs-sm); }
+.tv-grp { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-1) var(--sp-3); }
+.tv-lbl { color: var(--muted); font-family: var(--font-num); font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; }
+.tv-bar button { color: var(--ink-2); padding: var(--sp-1) 0; border-bottom: 1px solid transparent; }
+.tv-bar button[aria-pressed="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.tv-frame { display: block; margin: 0 auto; border: 1px solid var(--line-panel); background: var(--page-bg); }
+
+/* Hornet, still: on the word, her feet on its top edge (js/app-sister.js, spot), at the size the
+   site shows her (js/hornet-moves.js: idle, 65 × 76 at half). And her thread under the word. */
+.mh-sister { position: relative; }
+.tv-hornet { position: absolute; left: 50%; bottom: calc(100% - 1px); width: 32.5px; height: 38px; translate: -50% 0; pointer-events: none;
+  background: url(assets/hornet/idle.png) 0 0 / 195px 38px no-repeat; }
+.mh-sister > span:first-child { box-shadow: 0 2px 0 -1px color-mix(in oklab, var(--ink-strong) 60%, transparent); }
+
+/* ════ The language: design/29's dropdown ════ */
+.langsel { position: relative; }
+.lang-btn { position: relative; gap: var(--sp-2); white-space: nowrap; }
+.lang-btn .chev { transition: rotate var(--dur) var(--ease); }
+.lang-btn[aria-expanded="true"] { color: var(--ink-strong); text-decoration-color: var(--accent); }
+.lang-btn[aria-expanded="true"] .chev { rotate: 180deg; }
+.lang-code { display: none; }
+.lang-menu { position: absolute; z-index: 60; top: calc(100% + var(--sp-2)); left: calc(var(--sp-4) * -1); min-width: 13rem; max-height: min(70vh, 34rem); overflow-y: auto;
+  margin: 0; padding: var(--sp-2) 0; list-style: none; background: var(--card); border: 1px solid var(--line-panel); box-shadow: var(--shadow-md); }
+.lang-menu.is-end { left: auto; right: calc(var(--sp-4) * -1); }
+.lang-menu a { display: flex; align-items: center; gap: var(--sp-3); min-height: var(--ctl-sm); padding: 0 var(--sp-4); font-size: var(--fs-sm); color: var(--ink-2); text-decoration: none; white-space: nowrap; cursor: pointer;
+  transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease); }
+.lang-menu a::before { content: ''; flex: none; width: 5px; height: 5px; rotate: 45deg; }
+.lang-menu a[aria-current="true"] { color: var(--ink-strong); }
+.lang-menu a[aria-current="true"]::before { background: var(--accent); }
+.lang-menu a:is(:hover, :focus-visible) { color: var(--accent-ink); background: var(--accent-soft); }
+@media (max-width: 599px) {
+  .lang-name { display: none; }
+  .lang-code { display: inline; }
+}
+
+/* ════ The candidates' header: .top, a strip and the brand row ════ */
+/* The strip: the site's things, small and in one type, so the title rules. Above the screen bar
+   while the language's list is open (the bar is stuck over the header's layer). */
+.top { position: relative; z-index: 1; display: flex; flex-direction: column; }
+.top.is-lang-open { z-index: 40; }
+.top-strip { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-6); min-height: var(--ctl); }
+.top-grp { display: flex; align-items: center; gap: var(--sp-6); }
+.top-strip :is(.lang-btn, .mh-link, .mh-sister) { font-size: var(--fs-sm); letter-spacing: var(--track-label); }
+/* The brand row: the title in the middle of the page under its filigree, and your save on its line. */
+.top-brand { display: grid; grid-template-columns: 1fr auto 1fr; align-items: end; gap: var(--sp-6); }
+.top-brand .brand { grid-column: 2; }
+.top-brand .mh-save { grid-column: 3; justify-self: end; }
+.top-brand .mh-sister { grid-column: 1; justify-self: start; min-height: var(--ctl); }
+
+/* A · the strip first: the language on the left, Share and Silksong on the right, a hairline
+   under it. Hornet stands on the page's first line, so the line starts lower. */
+.top.is-a { padding-top: var(--sp-12); }
+.top.is-a .top-strip { border-bottom: 1px solid var(--line); }
+.top.is-a .top-brand { padding-top: var(--sp-4); }
+/* B · the strip keeps the site's two tools, together on the right; Silksong goes down to the
+   brand row, left of the title: the other game on one side, yours on the other. */
+.top.is-b { padding-top: var(--sp-2); }
+.top.is-b .top-strip { justify-content: flex-end; }
+.top.is-b .top-strip .mh-sister { display: none; }
+/* C · the brand row first, and the strip under it, on the screen bar's doorstep: Silksong on the
+   left, where the brand row is empty above it, and the site's tools on the right. */
+.top.is-c { padding-top: var(--sp-6); }
+.top.is-c .top-strip { order: 2; margin-top: var(--sp-2); }
+/* With the strip there, the shell's gap before the bar would count twice. */
+body[data-head="c"] .shell > .nav { margin-top: calc(var(--sp-6) * -1); }
+
+@media (max-width: 599px) {
+  /* The brand row: the title on the left, in one line if it fits, and the Knight. */
+  .top-brand { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-2); }
+  .top-brand .brand { flex: 1 1 auto; min-width: 0; }
+  .top-brand .mh-sister { display: none; }
+  .top-grp { gap: var(--sp-4); }
+  /* Silksong comes up to the strip in every variant: there is no free column beside the title. */
+  .top.is-b .top-strip { justify-content: space-between; }
+  .top.is-b .top-strip .mh-sister { display: inline-flex; }
+  /* Hornet's room: over the strip when it's first, over nothing when the title is above her and
+     she stands clear of it (the strip's own top padding). */
+  .top.is-a, .top.is-b { padding-top: calc(var(--sp-8) + var(--sp-2)); }
+  .top.is-a .top-brand, .top.is-b .top-brand { padding-top: var(--sp-2); }
+  .top.is-c { padding-top: var(--sp-3); }
+  .top.is-c .top-strip { margin-top: var(--sp-6); }
+  body[data-head="c"] .shell > .nav { margin-top: calc(var(--sp-4) * -1); }
+}
+
+/* ════ The phone's bar ════ */
+@media (max-width: 899px) {
+  /* 1 · one line that slides: the eight by name, no folding and no second row; the edge fades
+     where there's more. The numbers go beside their word, small. */
+  body[data-bar="slide"] .nav-tabs { display: flex; justify-content: flex-start; gap: 0 var(--sp-6); width: 100%; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain;
+    mask-image: linear-gradient(to right, transparent 0, #000 var(--sp-4), #000 calc(100% - var(--sp-8)), transparent 100%); padding-inline: var(--sp-4); margin-inline: calc(var(--sp-4) * -1); width: calc(100% + 2 * var(--sp-4)); }
+  body[data-bar="slide"] .nav-tabs::-webkit-scrollbar { display: none; }
+  body[data-bar="slide"] :is(.nav-tool, .nav-inv) { display: inline-flex; }
+  body[data-bar="slide"] .nav-sep { display: block; flex: none; }
+  body[data-bar="slide"] :is(.nav-tools, .nav-sub, .nav-short) { display: none; }
+  body[data-bar="slide"] .nav-long { display: inline; }
+  body[data-bar="slide"] .nav-tab { flex: none; flex-direction: row; gap: var(--sp-2); white-space: nowrap; }
+  body[data-bar="slide"] .nav-home.is-parent { color: var(--muted); box-shadow: none; }
+}
+@media (max-width: 599px) {
+  /* 2 · as now, without the numbers: every tab is one line. */
+  body[data-bar="plain"] .nav-num { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="tv-embed">
+<div class="page">
+  <div class="shell">
+    <div id="top"></div>
+    <nav class="nav" id="nav"></nav>
+    <main class="screens"><div class="tv-stub" id="stub"></div></main>
+  </div>
+</div>
+</div>
+<section class="tv-notes" aria-label="Notas">
+  <article class="tv-note is-size"><h2>Lo que ocupa</h2><p>De arriba de la página al borde inferior de la barra: <b id="size">–</b> px</p><p id="size-note"></p></article>
+  <article class="tv-note" id="note-head"></article>
+  <article class="tv-note" id="note-bar"></article>
+</section>
+<nav class="tv-bar" aria-label="Opciones">
+  <div class="tv-grp"><span class="tv-lbl">Cabecera</span><button type="button" data-k="head" data-v="now">Como ahora</button><button type="button" data-k="head" data-v="a">A · Franja arriba</button><button type="button" data-k="head" data-v="b">B · Franja + hermana junto al título</button><button type="button" data-k="head" data-v="c">C · Franja bajo la marca</button></div>
+  <div class="tv-grp"><span class="tv-lbl">Barra en el móvil</span><button type="button" data-k="bar" data-v="now">Como ahora</button><button type="button" data-k="bar" data-v="slide">1 · Una fila que se desliza</button><button type="button" data-k="bar" data-v="plain">2 · Sin números</button></div>
+  <div class="tv-grp"><span class="tv-lbl">Pantalla</span><button type="button" data-k="view" data-v="home">Partida</button><button type="button" data-k="view" data-v="map">Mapa</button><button type="button" data-k="view" data-v="charms">Amuletos</button></div>
+  <div class="tv-grp"><span class="tv-lbl">Estado</span><button type="button" data-k="state" data-v="free">Modo libre</button><button type="button" data-k="state" data-v="live">Partida en vivo</button></div>
+  <div class="tv-grp"><span class="tv-lbl">Idioma</span><button type="button" data-k="lang" data-v="es">es</button><button type="button" data-k="lang" data-v="en">en</button></div>
+  <div class="tv-grp"><span class="tv-lbl">Ancho</span><button type="button" data-k="w" data-v="1440">1440</button><button type="button" data-k="w" data-v="390">390</button></div>
+</nav>
+<script>
+  const q = new URLSearchParams(location.search);
+  const ch = { head: q.get('head') || 'a', bar: q.get('bar') || 'now', view: q.get('view') || 'home', state: q.get('state') || 'free', lang: q.get('lang') || 'es', w: q.get('w') || '1440' };
+  document.body.dataset.head = ch.head; document.body.dataset.bar = ch.bar;
+  const embed = q.get('embed') === '1';
+  const es = ch.lang === 'es';
+  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+
+  /* The site's own words (js/i18n.js) and the game's language names (LANG_CURRENT in each language). */
+  const T = es
+    ? { title: 'Calculadora de Hallownest', share: 'Compartir', lang: 'Idioma', select: 'Selecciona partida', slot: 'Partida 1', saves: 'Partidas', live: 'en vivo',
+        home: 'Partida', inventory: 'Inventario', progress: 'Progreso', map: 'Mapa', journal: 'Diario', godhome: 'Hogar de Dioses', godShort: 'Dioses', charms: 'Amuletos', fight: 'Combate', tools: 'Herramientas', pct: '65 %', dps: '51,2' }
+    : { title: 'Hallownest Calculator', share: 'Share', lang: 'Language', select: 'Select save', slot: 'Save 1', saves: 'Saves', live: 'live',
+        home: 'Your game', inventory: 'Inventory', progress: 'Progress', map: 'Map', journal: 'Journal', godhome: 'Godhome', godShort: 'Godhome', charms: 'Charms', fight: 'Combat', tools: 'Tools', pct: '65%', dps: '51.2' };
+  const LANGS = [['en', 'EN', 'English'], ['es', 'ES', 'Español'], ['fr', 'FR', 'Français'], ['de', 'DE', 'Deutsch'], ['pt-BR', 'PT', 'Português (Brasil)'], ['it', 'IT', 'Italiano'],
+    ['ru', 'RU', 'Русский'], ['ja', 'JA', '日本語'], ['ko', 'KO', '한국어'], ['zh-Hans', 'ZH', '简体中文'], ['zh-Hant', 'ZH', '繁體中文']];
+  const cur = LANGS.find((l) => l[0] === ch.lang);
+
+  const CHEV = '<svg class="ic chev" width="12" height="8" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1.5 L6 6 L11 1.5"></path></svg>';
+  const FLEUR = '<svg viewBox="0 0 12 20" fill="currentColor" aria-hidden="true"><path d="M1 10 C4.5 9.4 7.2 7.2 8.6 2.4 C9 6.4 10 8.8 11.6 10 C10 11.2 9 13.6 8.6 17.6 C7.2 12.8 4.5 10.6 1 10 Z"></path><circle cx="2.4" cy="10" r="1.3"></circle></svg>';
+  const sister = () => `<a class="mh-sister"><i class="tv-hornet" aria-hidden="true"></i><span translate="no">Silksong</span> <span class="mh-sister-arr" aria-hidden="true">↗</span></a>`;
+  const share = () => `<button type="button" class="text-btn mh-link">${T.share}</button>`;
+  const brand = () => `<a class="brand"><img class="mh-hdr" src="assets/hall/tablet-hdr.png" alt="" width="862" height="111"><p class="title">${T.title}</p></a>`;
+  const live = ch.state === 'live';
+  const save = () => `<a class="mh-save${live ? ' is-live' : ''}"><span class="mh-save-fig"><span class="mh-save-light" aria-hidden="true"></span><img src="assets/hud/knight.png" alt=""></span><span class="mh-save-lbl"><span class="save-fleur is-l">${FLEUR}</span><span class="save-fleur is-r">${FLEUR}</span>${live ? T.slot : T.select}${live ? `<span class="mh-live" aria-hidden="true"><i class="mh-live-dot"></i><span class="mh-live-t">${T.live}</span></span>` : ''}</span><span class="mh-save-short" aria-hidden="true">${live ? T.slot : T.saves}</span></a>`;
+  // The language: what's chosen and a chevron; the list hangs from the side the trigger is on (`end`).
+  const language = (end) => `<div class="langsel"><button type="button" class="text-btn lang-btn" aria-haspopup="true" aria-expanded="false" aria-label="${T.lang}: ${esc(cur[2])}" title="${T.lang}"><span class="lang-name" translate="no">${esc(cur[2])}</span><span class="lang-code" aria-hidden="true">${cur[1]}</span>${CHEV}</button>
+    <ul class="lang-menu${end ? ' is-end' : ''}" hidden>${LANGS.map((l) => `<li><a lang="${l[0]}" translate="no"${l === cur ? ' aria-current="true"' : ''}>${esc(l[2])}</a></li>`).join('')}</ul></div>`;
+
+  /* The header. `now` is the site's own markup (js/app.js, renderMasthead); the candidates are a
+     strip (.top-strip) and the brand row (.top-brand), in the order the wide screen shows them. */
+  const HEADS = {
+    now: () => `<header class="masthead has-sister">
+      <div class="mh-tools">
+        <div class="seg langsel" role="group"><button type="button" aria-pressed="${!es}">EN</button><button type="button" aria-pressed="${es}">ES</button></div>
+        ${share()}${sister()}
+      </div>${brand()}${save()}<div class="mh-sister-row">${sister()}</div></header>`,
+    a: () => `<header class="top is-a">
+      <div class="top-strip"><div class="top-grp">${language(false)}</div><div class="top-grp">${share()}${sister()}</div></div>
+      <div class="top-brand">${brand()}${save()}</div></header>`,
+    b: () => `<header class="top is-b">
+      <div class="top-strip">${sister()}<div class="top-grp">${language(true)}${share()}</div></div>
+      <div class="top-brand">${sister()}${brand()}${save()}</div></header>`,
+    c: () => `<header class="top is-c">
+      <div class="top-strip">${sister()}<div class="top-grp">${language(true)}${share()}</div></div>
+      <div class="top-brand">${brand()}${save()}</div></header>`,
+  };
+  document.getElementById('top').outerHTML = HEADS[ch.head]();
+
+  /* The screen bar, as index.html and renderNav leave it (js/app.js). */
+  const tool = ch.view === 'charms';
+  const at = (v) => (v === ch.view ? ' aria-current="page"' : '');
+  document.getElementById('nav').innerHTML = `
+      <div class="nav-tabs">
+        <a class="nav-tab nav-hj nav-home"${at('home')}><span class="nav-lbl">${T.home}</span><span class="nav-num"></span></a>
+        <a class="nav-tab nav-inv">${T.inventory}</a>
+        <a class="nav-tab nav-hj nav-pg"><span class="nav-lbl">${T.progress}</span><span class="nav-num">${T.pct}</span></a>
+        <a class="nav-tab"${at('map')}>${T.map}</a>
+        <a class="nav-tab nav-hj"><span class="nav-lbl">${T.journal}</span><span class="nav-num">2/146</span></a>
+        <a class="nav-tab"><span class="nav-long">${T.godhome}</span><span class="nav-short" aria-hidden="true">${T.godShort}</span></a>
+        <span class="nav-sep" aria-hidden="true"></span>
+        <a class="nav-tab nav-tool"${at('charms')}>${T.charms}</a>
+        <a class="nav-tab nav-tool">${T.fight}</a>
+        <a class="nav-tab nav-tools"${tool ? ' aria-current="page"' : ''}>${T.tools}</a>
+        <button type="button" class="kn is-sit" tabindex="-1" aria-hidden="true"></button>
+      </div>
+      <div class="nav-sub"${ch.view === 'home' ? '' : ' hidden'}><a class="nav-tab" aria-current="page">${T.home}</a><a class="nav-tab">${T.inventory}</a></div>
+      <div class="nav-sub"${tool ? '' : ' hidden'}><a class="nav-tab" aria-current="page">${T.charms}</a><a class="nav-tab">${T.fight}</a></div>
+      <div class="minihud" id="minihud" aria-hidden="true"${tool ? '' : ' hidden'}>
+        <span><img class="mini-nail" src="assets/nails/4.png" alt="" width="80" height="360"><b>21</b></span>
+        <span><i class="mini-lbl">DPS</i><b>${T.dps}</b></span>
+        <span><img class="mini-mask" src="assets/hud/mask.png" alt=""><b>9</b></span>
+        <span><img class="mini-soul" src="assets/hud/soul.png" alt=""><b>198</b></span>
+        <span><i class="notch is-used"></i><b>0/11</b></span></div>`;
+  document.getElementById('stub').textContent = es ? 'la pantalla' : 'the screen';
+
+  // The Knight, sat under the current tab's title (js/app-knight.js); the sliding row brings the tab into view.
+  const tabs = document.querySelector('.nav-tabs'), kn = tabs.querySelector('.kn');
+  const place = () => {
+    const on = [...tabs.querySelectorAll('.nav-tab[aria-current="page"]')].find((a) => a.offsetWidth);
+    if (!on) return;
+    kn.style.translate = Math.round(on.offsetLeft + on.offsetWidth / 2 - kn.offsetWidth / 2) + 'px';
+    if (tabs.scrollWidth > tabs.clientWidth) tabs.scrollLeft = on.offsetLeft - (tabs.clientWidth - on.offsetWidth) / 2;
+  };
+
+  // The language's list: open under its trigger, closed by Esc or a tap outside.
+  const btn = document.querySelector('.lang-btn'), menu = document.querySelector('.lang-menu');
+  const setOpen = (on) => { btn.setAttribute('aria-expanded', String(on)); menu.hidden = !on; btn.closest('.top').classList.toggle('is-lang-open', on); };
+  if (btn) {
+    btn.addEventListener('click', () => setOpen(menu.hidden));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !menu.hidden) { setOpen(false); btn.focus(); } });
+    document.addEventListener('click', (e) => { if (!menu.hidden && !e.target.closest('.langsel')) setOpen(false); });
+    if (q.get('open') === '1') setOpen(true);
+  }
+
+  /* What the top takes: from the page's first pixel to the bar's bottom edge. The framed copy
+     tells the page around it. */
+  const NOTE_HEAD = {
+    now: ['Como ahora', 'El idioma, Compartir y Silksong, sueltos a la izquierda del título; en el móvil, el título partido en dos junto a todo lo demás, y Silksong en su propia fila.', ''],
+    a: ['A · Franja arriba', 'La franja es la primera línea de la página: el idioma a la izquierda; Compartir y Silksong a la derecha. Debajo, la fila de la marca solo con el título y tu partida.',
+      '<b>A favor:</b> lo del sitio queda junto y aparte; la fila de la marca respira. <b>En contra:</b> Hornet se posa en la primera línea, así que hay que dejarle aire encima; y a la izquierda del título no queda nada.'],
+    b: ['B · Franja + hermana junto al título', 'La franja se queda con las dos herramientas del sitio, juntas a la derecha. Silksong baja a la fila de la marca, a la izquierda del título: el otro juego a un lado, tu partida al otro.',
+      '<b>A favor:</b> los dos lados del título se equilibran y Hornet tiene su sitio sin pedir aire. <b>En contra:</b> Silksong gana peso, al nivel de tu partida. En el móvil sube a la franja, como en A.'],
+    c: ['C · Franja bajo la marca', 'Primero la marca; la franja, una línea fina entre el título y la barra de pantallas: Silksong a la izquierda, donde la fila de arriba está vacía, y el idioma y Compartir a la derecha.',
+      '<b>A favor:</b> el título es lo primero que se ve y Hornet aprovecha el hueco que ya hay; es la más baja en pantalla ancha. <b>En contra:</b> dos líneas de enlaces seguidas, la franja y la barra.'],
+  };
+  const NOTE_BAR = {
+    now: ['Barra · como ahora', 'Seis pestañas; el Inventario y las herramientas, plegados, con una segunda fila para cambiar que aparece y desaparece según la pantalla.', ''],
+    slide: ['Barra · 1 · una fila que se desliza', 'Las ocho pantallas por su nombre en una sola línea que se desliza de lado, con la actual a la vista y el borde difuminado donde hay más.',
+      '<b>A favor:</b> ni plegados ni segunda fila: la barra mide siempre lo mismo. <b>En contra:</b> las últimas quedan fuera de la vista hasta deslizar.'],
+    plain: ['Barra · 2 · sin números', 'El mismo plegado de ahora, pero el % de Progreso y la cuenta del Diario salen de las pestañas del móvil: todas en una línea.',
+      '<b>A favor:</b> el cambio más pequeño. <b>En contra:</b> la segunda fila sigue apareciendo y desapareciendo.'],
+  };
+  const note = (id, n) => { document.getElementById(id).innerHTML = `<h2>${n[0]}</h2><p>${n[1]}</p>${n[2] ? `<p>${n[2]}</p>` : ''}`; };
+  note('note-head', NOTE_HEAD[ch.head]); note('note-bar', NOTE_BAR[ch.bar]);
+  const size = () => Math.round(document.getElementById('nav').getBoundingClientRect().bottom + scrollY);
+  const tell = () => { place(); if (embed) parent.postMessage({ tvSize: size() }, '*'); else if (ch.w !== '390') document.getElementById('size').textContent = size(); };
+  addEventListener('message', (e) => { if (e.data && e.data.tvSize) document.getElementById('size').textContent = e.data.tvSize; });
+  document.getElementById('size-note').textContent = ch.w === '390' ? 'En un móvil de 390 px.' : 'En pantalla ancha.';
+
+  if (embed) { document.querySelector('.tv-bar').remove(); document.querySelector('.tv-notes').remove(); }
+  // At 390 the page shows itself in an iframe that wide, so the site's own media queries apply.
+  if (!embed && ch.w === '390') {
+    const u = new URLSearchParams(q); u.set('embed', '1');
+    document.querySelector('.tv-embed').innerHTML = '<iframe class="tv-frame" width="390" height="' + Math.max(480, innerHeight - 110) + '" src="design/30-top-variants.html?' + u + '"></iframe>';
+    document.body.style.paddingTop = 'var(--sp-4)';
+  } else { addEventListener('load', tell); addEventListener('resize', tell); tell(); }
+  for (const b of document.querySelectorAll('.tv-bar button')) {
+    b.setAttribute('aria-pressed', String(ch[b.dataset.k] === b.dataset.v));
+    b.addEventListener('click', () => { q.set(b.dataset.k, b.dataset.v); q.delete('embed'); q.delete('open'); location.search = q; });
+  }
+</script>
+</body>
+</html>

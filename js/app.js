@@ -37,7 +37,7 @@
   const $ = (sel) => document.querySelector(sel);
   const el = {
     page: $('.page'), masthead: $('#masthead'), colophon: $('#colophon'), about: $('#about'), nav: $('#nav'), panel: $('#panel'),
-    mini: $('#minihud'), banner: $('#banner'), gear: $('#gear'), hj: $('#hj'), home: $('#home'), navSub: $('#nav-sub'), navSubGame: $('#nav-sub-game'),
+    mini: $('#minihud'), banner: $('#banner'), gear: $('#gear'), hj: $('#hj'), home: $('#home'),
     toast: $('#toast'), fx: $('#overcharm-fx'), fight: $('#fight'), saves: $('#saves'), pg: $('#pg'),
   };
   const hoverable = matchMedia('(hover: hover) and (pointer: fine)');
@@ -178,7 +178,7 @@
   /* ── State ───────────────────────────────────────────────────────────── */
   App.state = C.normalize({});
   App.baseline = null;              // state pinned for comparison, or null
-  let prefs = { lang: 'en', langChosen: false, compare: 'base', open: [], view: 'home', tool: 'charms', detailOpen: false,
+  let prefs = { lang: 'en', langChosen: false, compare: 'base', open: [], view: 'home', detailOpen: false,
                 foeId: '', foeKind: 'all',
                 fightTab: 'combat', pantheon: 'master',
                 hallId: HG.STATUES[0].id, hallDiff: '',
@@ -205,7 +205,7 @@
     // Until someone chooses (selector or link), the browser's language: the first of its list
     // that the site speaks, and English if none. Spanish used to be saved even when nobody had
     // chosen it, so a saved language that wasn't really chosen isn't honoured.
-    if (!prefs.langChosen || !['es', 'en'].includes(prefs.lang)) prefs.lang = browserLang();
+    if (!prefs.langChosen || !I.speaks(prefs.lang)) prefs.lang = browserLang();
     if (!['base', 'nocharms', 'pinned'].includes(prefs.compare)) prefs.compare = 'base';
     if (!Array.isArray(prefs.open)) prefs.open = [];
     delete prefs.diff;   // difficulty no longer belongs to Combat: it belongs to each statue in the Hall
@@ -216,7 +216,7 @@
     delete prefs.pgTab;
     prefs.view = OLD_VIEWS[prefs.view] || prefs.view;
     if (!VIEWS.includes(prefs.view)) prefs.view = 'home';
-    if (!TOOLS.includes(prefs.tool)) prefs.tool = 'charms';
+    delete prefs.tool;   // the phone's Tools tab is gone: the bar slides and names every screen
     if (!F.FOE_BY_ID[prefs.foeId]) prefs.foeId = DEFAULT_FOE;
     if (!['all', 'boss', 'enemy'].includes(prefs.foeKind)) prefs.foeKind = 'all';
     if (!['combat', 'hall', 'pantheon'].includes(prefs.fightTab)) prefs.fightTab = 'combat';
@@ -235,7 +235,7 @@
     try { list = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language]; } catch (e) { /* no navigator */ }
     for (const tag of list) {
       const base = String(tag || '').toLowerCase().split('-')[0];
-      if (base === 'es' || base === 'en') return base;
+      if (I.speaks(base)) return base;
     }
     return 'en';
   }
@@ -255,7 +255,7 @@
       else if (pair) keep.push(pair);
     }
     view = OLD_VIEWS[view] || view;
-    return { build: keep.join('&'), lang: ['es', 'en'].includes(lang) ? lang : null, view: VIEWS.includes(view) ? view : null, admin, sister };
+    return { build: keep.join('&'), lang: I.speaks(lang) ? lang : null, view: VIEWS.includes(view) ? view : null, admin, sister };
   }
 
   function loadState() {
@@ -268,8 +268,7 @@
   }
 
   /* A screen's URL: the build, the language if it isn't the page's (English, or Spanish in es/)
-     and the screen if it isn't the one a bare hash means (BARE_VIEW). Share leaves it out: the fight doesn't
-     travel in the link, so opening it on Combat would show the recipient's own fight. */
+     and the screen if it isn't the one a bare hash means (BARE_VIEW). */
   const hashFor = (view = prefs.view) => '#' + C.encode(App.state) + (prefs.lang !== PAGE_LANG ? '&lang=' + prefs.lang : '')
     + (view && view !== BARE_VIEW ? '&view=' + view : '') + (App.admin ? '&admin=1' : '') + (App.sisterPreview ? '&sister=1' : '');   // the admin mode and the sister preview survive a reload
   /* The same, as a path to this page. es/index.html carries <base href="../">, and against it a
@@ -537,12 +536,15 @@
   }).join('');
   el.page.insertAdjacentHTML('afterbegin', `<div class="atmos" aria-hidden="true">${MOTES}</div>`);
 
-  /* The header, in one row: the title under the game's filigree —the one from the Hall of Gods
-     screen (assets/hall/tablet-hdr.png, white stroke), small—, on its left what belongs to the
-     site (the language and Share) and on its right what's yours: the save selector (js/app-saves.js).
-     In the markup, in the order they're seen on a wide screen; on mobile the CSS reorders them. The filigree stays white, as in the game: over
+  /* The header (design/30-top-variants.html, chosen 6 Oct 2026), in two lines. The strip: what
+     belongs to the site, the language and Share, small and at the right. The brand row: the title
+     under the game's filigree —the one from the Hall of Gods screen (assets/hall/tablet-hdr.png,
+     white stroke), small—, on its left the way to the sister site (js/app-sister.js) and on its
+     right what's yours, the save selector (js/app-saves.js): the other game, the title, your game.
+     In the markup, in the order they're seen on a wide screen; on a phone the CSS puts the brand
+     row first and the sister's link in the strip. The filigree stays white, as in the game: over
      file:// it can't be tinted with mask-image. Title and filigree are a link to the start
-     screen, Charms, like the logo on almost any website. */
+     screen, Your game, like the logo on almost any website. */
   /* The save selector: the Knight and the save you're playing, or «Select save» in free mode
      (js/app-saves.js), which is nobody's game. It's one of the site's best features, so it isn't
      a footnote link: the Knight at a bench, under a lamp's light that breathes (the import view's),
@@ -576,22 +578,51 @@
     el.fight.setAttribute('aria-label', t('navFight'));
     el.hj.setAttribute('aria-label', t('jrTitle'));
     el.saves.setAttribute('aria-label', t('savesTitle'));
-    // In the corner, as text: the abbreviation in view and the full name for screen readers and the mouse.
-    const langBtn = (code, label) => `<button type="button" lang="${code}" data-act="lang" data-value="${code}" aria-pressed="${prefs.lang === code}" aria-label="${label}" title="${label}">${code.toUpperCase()}</button>`;
-    // The sister site's link (js/app-sister.js): after Share, and on a phone on a line of its own.
+    /* The language (design/29-language-selector.html): what's chosen and a chevron —its name on a
+       wide screen, its code on a phone—, and under it the site's languages (I.LANGS), each by its
+       own name and a link to this page in it (langPage; inside a frame, where the language
+       changes in place, to where you are). */
+    const now = I.LANGS.find((l) => l.id === prefs.lang) || I.LANGS[0];
+    const langItem = (l) => `<li><a href="${esc(langPage(l.id) || here(hashFor()))}" lang="${l.tag}" hreflang="${l.tag}"${NT} data-act="lang" data-value="${l.id}"${l === now ? ' aria-current="true"' : ''}>${esc(l.name)}</a></li>`;
+    const language = `<div class="langsel">
+          <button type="button" class="text-btn lang-btn" data-act="langMenu" aria-haspopup="true" aria-expanded="${langOpen}" aria-controls="lang-menu" aria-label="${esc(t('langGroup') + ': ' + now.name)}" title="${esc(t('langGroup'))}"><span class="lang-name" lang="${now.tag}"${NT}>${esc(now.name)}</span><span class="lang-code" aria-hidden="true">${now.code}</span>${chevron(langOpen)}</button>
+          <ul class="lang-menu" id="lang-menu"${langOpen ? '' : ' hidden'}>${I.LANGS.map(langItem).join('')}</ul>
+        </div>`;
+    // The sister site's link (js/app-sister.js): left of the title, and on a phone in the strip.
     const sister = !!(App.sister && App.sister.on());
     el.masthead.classList.toggle('has-sister', sister);
+    el.masthead.classList.toggle('is-lang-open', langOpen);
     el.masthead.innerHTML = `
-      <div class="mh-tools">
-        <div class="seg langsel" role="group" aria-label="${esc(t('langGroup'))}">${langBtn('en', 'English')}${langBtn('es', 'Español')}</div>
-        <button type="button" class="text-btn mh-link" data-act="share" title="${esc(t('shareHint'))}">${esc(t('share'))}</button>
-        ${sister ? App.sister.linkHtml(false) : ''}
+      <div class="mh-strip">
+        ${sister ? App.sister.linkHtml(true) : ''}
+        <div class="mh-tools">
+          ${language}
+          <button type="button" class="text-btn mh-link" data-act="share" title="${esc(t('shareHint'))}">${esc(t('share'))}</button>
+        </div>
       </div>
-      <a class="brand" href="${here(hashFor('home'))}" data-act="view" data-value="home" title="${esc(t('goHome'))}">
-        <img class="mh-hdr" src="assets/hall/tablet-hdr.png" alt="" width="862" height="111">
-        <p class="title">${esc(t('title'))}</p>
-      </a>
-      ${saveLink()}${sister ? App.sister.linkHtml(true) : ''}`;
+      <div class="mh-brand">
+        ${sister ? App.sister.linkHtml(false) : ''}
+        <a class="brand" href="${here(hashFor('home'))}" data-act="view" data-value="home" title="${esc(t('goHome'))}">
+          <img class="mh-hdr" src="assets/hall/tablet-hdr.png" alt="" width="862" height="111">
+          <p class="title">${esc(t('title'))}</p>
+        </a>
+        ${saveLink()}
+      </div>`;
+  }
+  /* The language's list, open or closed without repainting the header (the focus would be lost).
+     Open, the header rises over the screen bar (css: .is-lang-open) and the focus goes to the
+     chosen language; closed from the keyboard, back to its button. */
+  let langOpen = false;
+  function langMenu(on, byKey) {
+    langOpen = on;
+    const btn = el.masthead.querySelector('.lang-btn'), menu = el.masthead.querySelector('.lang-menu');
+    if (!btn || !menu) return;
+    el.masthead.classList.toggle('is-lang-open', on);
+    btn.setAttribute('aria-expanded', String(on));
+    btn.querySelector('.chev').classList.toggle('up', on);
+    menu.hidden = !on;
+    if (on) (menu.querySelector('[aria-current]') || menu.querySelector('a')).focus();
+    else if (byKey) btn.focus();
   }
 
   /* The About block (tools/pages.js writes it into each page): the page's text for search
@@ -646,11 +677,23 @@
     } catch (e) { return null; }
   }
 
-  /* Share links to the language's home, not to the page you're on: a shared build opens on
-     Charms, as it always has, wherever it was copied from. */
-  function shareBase() {
-    const home = (PAGE_LANG === 'es' ? 'es/' : '') + (location.protocol === 'file:' ? 'index.html' : '');
-    try { return new URL(home || './', document.baseURI).href; } catch (e) { return location.href.split('#')[0]; }
+  /* Share copies the address of the screen you're on, with no build in it: the page that
+     screen has (tools/pages.js; the About block's links say which screen each one is), or the
+     language's home for the ones with no page of their own (Your game, the Inventory, the
+     saves). Over file:// a folder needs its index.html. */
+  function sharePage() {
+    const page = location.href.split(/[?#]/)[0];
+    const file = location.protocol === 'file:' ? 'index.html' : '';
+    try {
+      let path = (PAGE_LANG === 'es' ? 'es/' : '') + file;
+      if (prefs.view !== 'home') {
+        if (prefs.view === PAGE_VIEW) return page;
+        const a = el.about.querySelector(`a[data-page="${prefs.view}"]`);
+        // renderAbout() may have put the index.html there already.
+        if (a) path = a.getAttribute('href').replace(/index\.html$/, '') + file;
+      }
+      return new URL(path || './', document.baseURI).href;
+    } catch (e) { return page; }
   }
 
   // GitHub's mark (Octicons mark-github), in currentColor so it takes the links' accent.
@@ -687,38 +730,40 @@
 
   /* The screen bar, in two groups: your game (Your game with the link's state, the Inventory, Progress with your
      completion, the Map, the Journal with your completed ones, the Hall) and, after a thin rule,
-     the tools (Charms, Combat). On a phone the eight don't fit: the tools fold into one tab,
-     Tools, which opens the last one used, and while you're in one a second row lets you switch
-     (#nav-sub); the Inventory folds the same way under Your game (#nav-sub-game). It lives in index.html and here only its texts and which one is active change:
+     the tools (Charms, Combat). Below 900 px the eight don't fit: they stay on one line that
+     slides sideways (css), every screen by its name, and the current one is brought into view
+     (navIntoView). It lives in index.html and here only its texts and which one is active change:
      repainted whole, the focus would be lost when switching screens. Your game's text is set by
      paintHomeNav, the Journal's by paintHjNav and Progress's by paintPgNav. */
   function renderNav() {
     el.nav.setAttribute('aria-label', t('navLabel'));
-    const tools = el.nav.querySelector('#nav-tools');
-    tools.dataset.value = prefs.tool;
     for (const a of el.nav.querySelectorAll('[data-act="view"]')) {
       const v = a.dataset.value;
-      if (a === tools) a.textContent = t('navTools');
-      // Godhome's name doesn't fit a phone's bar: a short one there, the full one for screen readers.
-      else if (v === 'godhome') {
-        a.innerHTML = `<span class="nav-long">${esc(t('navGodhome'))}</span><span class="nav-short" aria-hidden="true">${esc(t('navGodhomeShort'))}</span>`;
-        a.setAttribute('aria-label', t('navGodhome'));
-      }
-      else if (!a.querySelector('.nav-lbl')) a.textContent = t(VIEW_KEY[v]);
+      if (!a.querySelector('.nav-lbl')) a.textContent = t(VIEW_KEY[v]);
       a.setAttribute('href', here(hashFor(v)));
-      const on = a === tools ? TOOLS.includes(prefs.view) : v === prefs.view;
-      if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+      if (v === prefs.view) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
     }
-    // On a phone Your game's tab stands for the Inventory too, folded under it.
-    el.nav.querySelector('#nav-home').classList.toggle('is-parent', prefs.view === 'inventory');
-    el.navSub.hidden = !TOOLS.includes(prefs.view);
-    el.navSubGame.hidden = prefs.view !== 'home' && prefs.view !== 'inventory';
-    el.navSubGame.setAttribute('aria-label', t('navHome'));
-    el.navSub.setAttribute('aria-label', t('navTools'));
     App.paintHomeNav();
     App.paintHjNav();
     App.paintPgNav();
+    navIntoView();
   }
+  /* The sliding bar's current tab, to the middle of the line: only when the screen changes (a
+     repaint mustn't undo what the finger slid), at once the first time and with reduced motion,
+     gliding after. Where the eight fit, there's nothing to slide. */
+  let navAt = null;
+  function navIntoView() {
+    if (navAt === prefs.view) return;
+    const first = navAt === null;
+    navAt = prefs.view;
+    const row = el.nav.querySelector('.nav-tabs'), on = row.querySelector('.nav-tab[aria-current="page"]');
+    if (!on || row.scrollWidth <= row.clientWidth) return;
+    const left = Math.max(0, on.offsetLeft - (row.clientWidth - on.offsetWidth) / 2);
+    const glide = !first && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+    try { row.scrollTo({ left, behavior: glide ? 'smooth' : 'auto' }); } catch (e) { row.scrollLeft = left; }
+  }
+  // A new width (a phone turned on its side) is a new line: the current tab, into view again.
+  addEventListener('resize', () => { navAt = null; navIntoView(); });
 
   /* Only the chosen screen shows. The others keep being painted, hidden: that way their animations
      don't start from something stale when you come back, and the sheet's HUD doesn't animate what
@@ -974,11 +1019,12 @@
   function setView(v) {
     const was = prefs.view;
     prefs.view = VIEWS.includes(v) ? v : 'home';
-    if (TOOLS.includes(prefs.view)) prefs.tool = prefs.view;
     tabFollowsView();
     savePrefs();
     // The tablet is a view of the Hall, not a preference: whoever comes back, comes back to the statues.
     if (prefs.view !== was) App.hallTablet = false;
+    // Nor is the Map's full screen: leaving the Map leaves it (js/app-map.js).
+    if (prefs.view !== was && App.pgmFullOff) App.pgmFullOff();
     if (prefs.view === 'journal' && was !== 'journal') App.hjEnter = true;
     // Entering combat does what opening it used to: the fight, ready, and with no enemy the
     // Journal open, which is where you start.
@@ -1050,8 +1096,10 @@
   /* What each data-act does. Here, the header's and the link's; each screen's
      script adds its own with Object.assign(actions, …). */
   const actions = {
+    langMenu() { langMenu(!langOpen); },
     lang(node) {
       const next = node.dataset.value;
+      langMenu(false);
       if (next === prefs.lang) return;
       const page = langPage(next);
       prefs.lang = I.setLang(next);
@@ -1064,11 +1112,12 @@
       recompute();
       render();
     },
-    // The link carries the build and the language, not the screen.
+    // The link to the screen's page, without the build: the address bar carries that one. The
+    // language only when it isn't the page's (inside a frame, where it changes in place).
     share() {
       persist();
       track('share');
-      const url = shareBase() + hashFor('');
+      const url = sharePage() + (prefs.lang !== PAGE_LANG ? '#lang=' + prefs.lang : '');
       const done = () => toast(t('linkCopied'));
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, () => prompt(t('copyThis'), url));
       else prompt(t('copyThis'), url);
@@ -1086,7 +1135,9 @@
   };
 
   // The Journal isn't a dropdown: it doesn't close on a tap outside, only with its button or Esc.
+  // The language's list is one: a tap anywhere else closes it (and still does what it was for).
   document.addEventListener('click', (ev) => {
+    if (langOpen && !ev.target.closest('.langsel')) langMenu(false);
     const node = ev.target.closest('[data-act]');
     if (!node) { heldClick(ev); return; }
     // A link with Ctrl, Shift or the middle button opens wherever the browser asks.
@@ -1131,6 +1182,15 @@
     if (App.hjPeek && inList(ev.target, '.hj-list') && !inList(ev.relatedTarget, '.hj-list')) { App.hjPeek = null; App.hjShowPage(App.hjCursor); }
   });
   document.addEventListener('keydown', (ev) => {
+    // The language's list: Esc closes it and ↑ ↓ walk it, as a menu.
+    if (langOpen && ev.key === 'Escape') { langMenu(false, true); return; }
+    if (langOpen && (ev.key === 'ArrowDown' || ev.key === 'ArrowUp')) {
+      const items = [...el.masthead.querySelectorAll('.lang-menu a')];
+      const at = items.indexOf(document.activeElement), step = ev.key === 'ArrowDown' ? 1 : -1;
+      items[(at + step + items.length) % items.length].focus();
+      ev.preventDefault();
+      return;
+    }
     if (ev.key === 'Escape') {
       if (App.pickerOpen && ev.target.closest && ev.target.closest('.journal, .jr-toggle')) {
         // First it clears what's typed; if nothing is typed, it closes.

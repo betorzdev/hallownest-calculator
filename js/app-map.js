@@ -749,9 +749,10 @@
   /* You: the Knight standing by your bench, with your bench's layer (as the game shows you on
      its map). Not a pin to pick: nothing to say that the bench doesn't. When your bench moves,
      js/app-knight.js walks him here from the old one, room by room, stepping his run's frames
-     (assets/knight/run.png) through this svg's viewBox and turning him with the inner group. */
+     (assets/knight/run.png) through this svg's viewBox and turning him with the inner group;
+     until he's here, he's painted where that walk has him (pinAt). */
   function youSvg() {
-    const pt = App.progress.bench && benchPoint(App.progress.bench);
+    const pt = App.progress.bench && ((App.knight && App.knight.pinAt()) || benchPoint(App.progress.bench));
     if (!pt) return '';
     return `<g class="pgm-pin pgm-mark pgm-you" style="--px:${pt[0].toFixed(3)}px;--py:${(-pt[1]).toFixed(3)}px;--ox:0.85px" aria-hidden="true">
         <g class="pgm-you-art"><svg class="pgm-atlas" x="-0.52" y="-1.25" width="1.04" height="1.4" viewBox="0 0 104 140"><image href="assets/knight/idle.png" width="104" height="140"/></svg></g></g>`;
@@ -771,6 +772,7 @@
     return { x: FIT.x + (FIT.w - w) / 2, y: FIT.y + (FIT.h - h) / 2, w, h };
   }
   const box = () => el.pg.querySelector('.pgm-box');
+  let full = false;      // the map in full screen (setFull)
   const svg = () => el.pg.querySelector('.pgm-svg');
   // The pins' size on screen: about 26 px, whatever the zoom.
   function applyView() {
@@ -1005,6 +1007,11 @@
     </section>`;
   }
 
+  // Full screen's button: the four corners of a frame, opening out, and closing in to leave it.
+  const corners = (d) => `<svg class="ic is-lg" width="16" height="16" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`;
+  const FULL_IN = corners('M1.5 4.5 V1.5 H4.5 M7.5 1.5 H10.5 V4.5 M10.5 7.5 V10.5 H7.5 M4.5 10.5 H1.5 V7.5');
+  const FULL_OUT = corners('M4.5 1.5 V4.5 H1.5 M10.5 4.5 H7.5 V1.5 M7.5 10.5 V7.5 H10.5 M1.5 7.5 H4.5 V10.5');
+
   /* ── The whole view ── */
   function renderPgMap() {
     const layers = shownLayers();
@@ -1020,6 +1027,7 @@
           <button type="button" class="step" data-act="pgmZoom" data-value="in" aria-label="${esc(t('pgZoomIn'))}" title="${esc(t('pgZoomIn'))}">+</button>
           <button type="button" class="step" data-act="pgmZoom" data-value="out" aria-label="${esc(t('pgZoomOut'))}" title="${esc(t('pgZoomOut'))}">−</button>
           <button type="button" class="step pgm-big" data-act="pgmBig" aria-pressed="${!!prefs.pgMapBig}" aria-label="${esc(t('pgMapBig'))}" title="${esc(t(prefs.pgMapBig ? 'pgMapSmall' : 'pgMapBig'))}">${prefs.pgMapBig ? '⤡' : '⤢'}</button>
+          <button type="button" class="step pgm-full" data-act="pgmFull" aria-pressed="${full}" aria-label="${esc(t('pgMapFull'))}" title="${esc(t(full ? 'pgMapFullExit' : 'pgMapFull'))}">${full ? FULL_OUT : FULL_IN}</button>
         </span>
         <svg class="pgm-svg${admin() ? ' is-admin' : ''}" viewBox="${vb ? `${vb.x} ${vb.y} ${vb.w} ${vb.h}` : `${FIT.x} ${FIT.y} ${FIT.w} ${FIT.h}`}" role="img" aria-label="${esc(t('pgTabMap'))}">
           <g class="pgm-rooms">${roomsSvg()}</g>
@@ -1336,7 +1344,40 @@
   pageWidth();
   window.addEventListener('resize', () => { pageWidth(); if (prefs.view === 'map') applyView(); });
 
+  /* Full screen, a state and not a pref (the browser wants a tap to go in): the map's box over
+     the whole window with the search on it (css: .pg.is-full), and the page itself full screen
+     where the browser can; where it can't (an iPhone, an iframe), it fills the window. The page
+     and not the box: the box is repainted with every render, and what hangs from <body> has to
+     show. Out by its button, by Esc, or by leaving the Map (setView, js/app.js). */
+  const root = document.documentElement;
+  const fsEnter = root.requestFullscreen || root.webkitRequestFullscreen;
+  const fsExit = document.exitFullscreen || document.webkitExitFullscreen;
+  const fsOn = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
+  const fsCan = !!(fsEnter && fsExit && (document.fullscreenEnabled || document.webkitFullscreenEnabled));
+  const quiet = (f) => { try { const p = f(); if (p && p.catch) p.catch(() => {}); } catch (e) { /* refused: it fills the window */ } };
+  // Out of it without painting: whoever calls paints.
+  function fullOff() {
+    if (!full) return;
+    full = false; vb = null;
+    el.pg.classList.remove('is-full');
+    if (fsCan && fsOn()) quiet(() => fsExit.call(document));
+  }
+  function setFull(on) {
+    if (on === full) return;
+    if (on) { full = true; vb = null; if (fsCan) quiet(() => fsEnter.call(root)); } else fullOff();
+    render();
+    const btn = el.pg.querySelector('.pgm-full');
+    if (btn) btn.focus({ preventScroll: true });
+  }
+  for (const ev of ['fullscreenchange', 'webkitfullscreenchange']) document.addEventListener(ev, () => {
+    if (full && !fsOn()) setFull(false);                          // Esc, or the browser's own way out
+    else if (prefs.view === 'map') { vb = null; applyView(); }    // in, or out by its button: fitted to the window as it is now
+  });
+  // Esc where the browser doesn't take it (filling the window); the search's own Esc comes first.
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && full && !e.defaultPrevented) setFull(false); });
+
   Object.assign(actions, {
+    pgmFull() { setFull(!full); },
     pgmPick(node) {
       selected = node.dataset.id && node.dataset.id !== selected ? node.dataset.id : '';
       if (!route || route.id !== selected) route = null;
@@ -1445,7 +1486,7 @@
 
   // The map fitted to some points on the next paint (debug-walk.html fits it to a way).
   const fitTo = (pts) => { pendingFit = pts; vb = vb || { ...FIT }; render(); };
-  Object.assign(App, { renderPgMap, pgMapAfterPaint: afterPaint, pgmBenchPoint: benchPoint, pgmDoorPoint: doorPoint, pgmFitTo: fitTo, mapTargets, mapPinHtml, mapLinkHtml, pinned, showOnMap,
+  Object.assign(App, { renderPgMap, pgMapAfterPaint: afterPaint, pgmIsFull: () => full, pgmFullOff: fullOff, pgmBenchPoint: benchPoint, pgmDoorPoint: doorPoint, pgmFitTo: fitTo, mapTargets, mapPinHtml, mapLinkHtml, pinned, showOnMap,
     // A room's area and place, and a collectible's price: the Progress plates of the shards say them too.
     placeName: where, priceOf,
     // One of the game's map pins as a picture (the Progress plates of the Dreamers and the Colosseum).

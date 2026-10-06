@@ -62,8 +62,8 @@ word-count targets.
 | Open Graph / Twitter | Complete, 1200 × 630 | `og.jpg` still shows the Charms screen; the pitch is now the save |
 | JSON-LD | `WebApplication` + `WebSite` | Fine. Add `FAQPage`/`BreadcrumbList` on the new pages |
 | `sitemap.xml` | 2 URLs, `lastmod` 24 September | Stale `lastmod` is ignored; generate it |
-| `robots.txt` | None possible | A project site can't: robots lives at `betorzdev.github.io/robots.txt`. Submit the sitemap in Search Console instead |
-| Domain | `betorzdev.github.io/hallownest-calculator/` | Works; a custom domain would be a brand and a portable asset (links survive leaving GitHub). Not urgent |
+| `robots.txt` | None possible | A project site can't: robots lives at `betorzdev.github.io/robots.txt`. Submit the sitemap in Search Console instead. **Since 6 Oct 2026**, on its own domain, `tools/pages.js` writes one that points at the sitemap |
+| Domain | `betorzdev.github.io/hallownest-calculator/` | Works; a custom domain would be a brand and a portable asset (links survive leaving GitHub). Not urgent. **Moved on 6 Oct 2026 to `hallownestcalculator.com`** (Cloudflare Registrar, still on GitHub Pages; the old address redirects) |
 | Brand name | "Hallownest Calculator" | Nobody searches it; it doesn't say "save" or "112%". It's fine as a brand, but the **page titles have to carry the queries** |
 | Speed | Static, no build, local fonts | Good by construction. 32 scripts: measure LCP on a phone once |
 

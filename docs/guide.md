@@ -17,36 +17,47 @@ python3 -m http.server 8000    # then http://localhost:8000
 
 The site is made of **screens, like the pages of the game's pause menu**: one shows at a time.
 
-- **Header**, in one row: the title under the game's filigree —the one from the Hall of Gods
-  screen, `assets/hall/tablet-hdr.png`, white as there and small—, which is the header's only
-  ornament and, like the logo on almost any website, a link to the start screen (Your game). On
-  its left, what belongs to the site: the language (English / Español; until you choose, the
-  site follows the browser's language, English if it's neither) and *Share*. On its right,
-  what's yours: the save selector (the Knight and the save you're playing, or *Select save* in
-  free mode; it opens [its screen](#saves)). It isn't a footnote link: the Knight stands under a
+- **Header**, in two lines (`design/30-top-variants.html`, chosen 6 Oct 2026). **The strip**,
+  thin and at the right: what belongs to the site, the language and *Share*, which copies the
+  link to the page of the screen you're on ("State and link" below). The language is a
+  dropdown (`design/29-language-selector.html`): a text button with what's chosen and a chevron
+  —its name on a wide screen, «Español ⌄», its code on a phone, «ES ⌄»— and under it a short
+  list of the site's languages (`LANGS` in `js/i18n.js`), each by its own name as the game
+  writes it (`LANG_CURRENT`) and a link to this page in it, the chosen one in bone behind the
+  screen bar's diamond; Esc or a tap outside close it, ↑ ↓ walk it, and while it's open the
+  header rises over the screen bar. Until you choose, the site follows the browser's language,
+  English if it's none of them. **The brand row**: the title under the game's filigree —the one
+  from the Hall of Gods screen, `assets/hall/tablet-hdr.png`, white as there and small—, which
+  is the header's only ornament and, like the logo on almost any website, a link to the start
+  screen (Your game); on its left the way to the sister site («Silksong ↗», below) and on its
+  right what's yours, the save selector: the other game, the title, your game. The save
+  selector is the Knight and the save you're playing, or *Select save* in
+  free mode; it opens [its screen](#saves). It isn't a footnote link: the Knight stands under a
   lamp's light that breathes, the label goes in the game's menu capitals, and it reads as
   pressable at rest: the Knight at full light and the menu's two pointers already either side,
-  small; on hover or focus they open whole, the lamp swells and the Knight glows. On a phone, the
-  Knight larger, with *Saves* (or *Save n*) under him. Behind
+  small; on hover or focus they open whole, the lamp swells and the Knight glows. Below 900 px,
+  where the full label doesn't fit beside the title, the Knight with *Saves* (or *Save n*) under him. Behind
   it, as behind the whole page, the main menu's atmosphere (`.atmos`, fixed to the window): a
   vignette that sinks the four edges to the menu's measured `#04060C`, **22 dust motes** rising
   slowly from the bottom of the window to the top (with `prefers-reduced-motion` they don't
   appear) and a noise grain at 2.5% (an inline SVG, so it works over `file://`). All of it sits
   under the content: the screens' black covers it, so it shows in the header, the margins and
-  between blocks, and never covers a word. On mobile it stays in one row, so content starts sooner: the title on the left,
-  smaller and without its filigree, and the Knight (with the save's number, if you're in one),
-  the language and *Share* on the right.
+  between blocks, and never covers a word. On a phone (below 600 px) the brand row goes first, so
+  the title is what you see: on the left, smaller and without its filigree, with the Knight on
+  the right; and the strip under it, close to the screen bar, with «Silksong ↗» on its left and
+  the language and *Share* on its right.
 - **The screen bar**, which stays stuck at the top, **in two groups** (`design/10-restructure.md`):
   your game as the save says it —**Your game · Inventory · Progress · Map · Journal · Godhome**— and, after a
   thin rule, the tools —**Charms · Combat**—. In the serif and in lowercase; the one you're viewing
   is marked by the Knight, who sits under its title ("The Knight" below), with no rule of its
   own; on a phone, where he isn't on the bar, an accent rule lies under it on the bar's bottom
   edge like a page tab. Progress carries your completion ("58 %")
-  and the Journal your completed entries over the total ("2/146"). **On a phone** (below 900 px)
-  the eight don't fit: the two tools fold into one tab, *Tools*, which opens the last one used,
-  and while you're in one a second row switches between Charms and Combat (`#nav-sub`); the
-  Inventory folds the same way under *Your game*, with its own second row (`#nav-sub-game`); Godhome
-  goes as «Dioses» on a Spanish phone. On the right, the **mini-bar**, **only with the tools**
+  and the Journal your completed entries over the total ("2/146"). **Below 900 px**
+  the eight don't fit: they stay on **one line that slides sideways** (`design/30-top-variants.html`),
+  every screen by its name, bleeding to the page's edges, which fade where there's more; the
+  current tab is brought to its middle when the screen changes or the width does (`navIntoView`
+  in `js/app.js`), and a repaint doesn't undo what the finger slid. No tab folds and no second
+  row comes and goes, so the bar is always as tall. On the right, the **mini-bar**, **only with the tools**
   (and in Godhome while you fight): nail damage, DPS, the mask, soul and a notch, with the game's
   sprites and the same flash as the sheet, to see them while you scroll down. On Combat it shows
   those of the build you're fighting with, and with an enemy in front it's the fight's
@@ -115,10 +126,10 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   (`--focus-glow`) swells around him and fades, then sits again (counted as `knight`).
 - **The sister site's link and Hornet** (`js/app-sister.js`, css `.mh-sister`, `.sis-*`), shown since
   the sister was published (`SISTER = true` in the script; set to false it hides again, and then
-  `#…&sister=1` shows it, surviving a reload like `admin=1`). «Silksong ↗» goes after Share in the masthead, in Share's
-  type, to the Silksong sister site (`../pharloom-calculator`, «Calculadora de Telalejana»), in your
-  language, in a new tab; on a phone (below 600 px) it's a line of its own under the masthead, on the
-  right, with room above it for her. Instead of an underline it carries a silk thread, drawn in a
+  `#…&sister=1` shows it, surviving a reload like `admin=1`). «Silksong ↗» goes in the masthead's brand row, left of the title
+  (the counterweight of your save on its right), to the Silksong sister site (`../pharloom-calculator`, «Calculadora de Telalejana»), in your
+  language, in a new tab; on a phone (below 600 px) it's in the strip under the title, on the
+  left, with room above it for her (and the brand row hangs from its top, so a title that takes two lines still leaves it). Instead of an underline it carries a silk thread, drawn in a
   layer under the masthead's letters (`.sis-lay.is-back`, z-index 0 under the masthead's 1).
   Hornet comes **once per visit** (sessionStorage `hollow.sisterShown`), and only with the masthead
   in view: she floats down on her Drifter's Cloak onto the word, closes it, sweeps her needle
@@ -570,9 +581,9 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
 - **Journal**: your game's Hunter's Journal, to mark how far along its quest you are (further
   down, "The Hunter's Journal: your game").
 
-On mobile everything stacks in one column, and the screen bar stays at the top: the six tabs
-spread out (the active one underlined, and the figures below the names), the tools' second row
-when you're in one, and the mini-bar across the full width.
+On mobile everything stacks in one column, and the screen bar stays at the top: the eight tabs
+on one line that slides (the active one underlined and in view, the figures beside the names),
+and with the tools the mini-bar under it, across the full width.
 
 **Notches**: the game's rules. You can equip a charm that exceeds your notches if you have at
 least one free; you become *overcharmed* (double damage taken) and can't equip anything more.
@@ -607,9 +618,10 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   language selector goes to the other language's page ("Languages" below).
   On its own screen and language a page keeps its title and description; elsewhere the site
   writes them as always. A bare hash there means that page's screen (Charms on the homes), and
-  *Share* always links to the language's home, so a shared build still opens on Charms. They're
+  *Share* copies the address of the page the screen you're on has, or the language's home for a
+  screen with none (Your game, the Inventory, the saves). They're
   generated with `npm run pages` (`tools/pages.js`, the texts in `tools/pages-text.js`), which
-  also writes `index.html`'s own head fields, its About block and `sitemap.xml`; never edited by
+  also writes `index.html`'s own head fields, its About block, `sitemap.xml`, `robots.txt` and `CNAME` (the site lives at `hallownestcalculator.com`: `SITE` there); never edited by
   hand, and `test/pages.test.js` fails if one falls behind. `debug.html` and
   `debug-overflow.html` open one of them with `&page=map/`.
 - `css/tokens.css` — the tokens of the dark theme, the only one.
@@ -1586,6 +1598,13 @@ on Cornifer's map). It's the tablet chosen among three variants in
   box the window's height under the bar (up to the map's own 3:2), and the page scrolls to it.
   The same button, now ⤡ and lit, brings it back. On a phone it already has the whole width, and
   there's no button.
+  **Full screen**, the zoom's last button (the four corners of a frame), on a phone too: the map's
+  box goes over the whole window, with the search on its top left corner and the zoom on its
+  right, the pins' cards and the focus bar; the filter stays on the page, so the map shows what
+  was chosen. Where the browser allows it the page itself goes full screen; where it doesn't (an
+  iPhone), the map fills the window. It's a state, not a pref: the browser wants a tap to go in;
+  and it overrides the large map, whose button isn't there meanwhile.
+  The same button (its corners now closing in), Esc, or leaving the Map brings it back.
 - **Everything the map can show is a layer**, and the filter, **under the map**, lists them in
   **seven sections, by what things are for** (30 Sep 2026). Each section **folds** by its caret
   (all open at first, and which are open is remembered, `pgMapOpen`), and **its title is its
@@ -1898,8 +1917,8 @@ masks, the nails and the buttons line up from one slot to the next.
 - **The import's preview** also says, quietly at the end of its line, the game's version that
   wrote the save and the mods it had (a save from before 1.5 counts some things otherwise:
   Oblobbles needed three defeats).
-- A shared link still lands where you are: in free mode its build replaces that one's; in a save
-  it's left out (the lock, above), and a notice says so.
+- A link with a build still lands where you are: in free mode its build replaces that one's; in
+  a save it's left out (the lock, above), and a notice says so.
 
 ## State and link
 
@@ -1919,8 +1938,9 @@ on the Spanish one (`es/`). `view` isn't part of the build either: it's the scre
 link with a build and no `view` opens Charms; without a build, the site opens where you left
 it. Each screen change leaves a history entry marked by the site (`{hk: 1}`), and going back
 to one of them changes the screen without touching the build; a link typed or pasted by hand
-does bring its own. "Share" copies the link with the build and the language, but without the
-screen: the fight doesn't travel in it. It's also saved in
+does bring its own. "Share" doesn't copy any of this: it copies the bare address of the page the
+screen you're on has (`…/map/`, `…/es/mapa/`), or the language's home, so the link is short and
+doesn't replace the build of whoever opens it; to show a build, copy the address bar. The build is also saved in
 `localStorage` (`hollow.build`, `hollow.baseline`, `hollow.prefs`, and separately the half-done
 pantheon run in `hollow.run`, the Hall of Gods symbols in `hollow.hall` and your game's
 Hunter's Journal in `hollow.journal`); on
@@ -1960,7 +1980,9 @@ translator doesn't pop up. The language saved in `hollow.prefs` only counts if i
 had touched it. The Spanish page (`es/`) starts in Spanish unless its link says otherwise, and
 opening it counts as choosing Spanish.
 
-**The selector goes to the page in that language**: from `map/`, ES opens `es/mapa/` (and EN
+**The selector** is the header's dropdown, and its list is `LANGS` in `js/i18n.js` (the id, the
+HTML tag, the code a phone shows and the language's own name in the game): a new language
+starts with a row there. It **goes to the page in that language**: from `map/`, Español opens `es/mapa/` (and English
 back), on the same screen and with the build in the link, so the title, the address and the
 About block are in the language you read, the one search engines index (`langPage` in
 `js/app.js`, from the page's `hreflang` links; over `file://` too). Inside a frame

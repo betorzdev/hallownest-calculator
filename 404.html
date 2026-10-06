@@ -7,9 +7,9 @@
 <meta name="robots" content="noindex">
 <!-- GitHub Pages serves this page at whatever address was missing, at any depth: every path
      here is absolute, from the site's root. -->
-<link rel="icon" href="/hallownest-calculator/assets/site/icon-48.png" sizes="48x48" type="image/png">
-<link rel="apple-touch-icon" href="/hallownest-calculator/assets/site/apple-touch-icon.png">
-<link rel="stylesheet" href="/hallownest-calculator/css/tokens.css">
+<link rel="icon" href="/assets/site/icon-48.png" sizes="48x48" type="image/png">
+<link rel="apple-touch-icon" href="/assets/site/apple-touch-icon.png">
+<link rel="stylesheet" href="/css/tokens.css">
 <!-- Visit counts: which broken addresses people land on. -->
 <script async src="https://footworn.betorzdev.workers.dev/footworn.js" data-site="hallownest"></script>
 <meta name="theme-color" content="#07090e">
@@ -52,11 +52,11 @@
 </head>
 <body>
 <main>
-  <img class="shade" src="/hallownest-calculator/assets/knight/shade.png" alt="" width="145" height="174">
+  <img class="shade" src="/assets/knight/shade.png" alt="" width="145" height="174">
   <div class="code">404</div>
   <h1 data-t="title">Page not found</h1>
   <p data-t="body">This path doesn't lead anywhere in Hallownest. Maybe it moved, or the link was mistyped.</p>
-  <a class="btn" href="/hallownest-calculator/" data-t="back">Back to the calculator</a>
+  <a class="btn" href="/" data-t="back">Back to the calculator</a>
 </main>
 <script>
   /* Speaks the site's language: the one chosen there (hollow.prefs), else the address's
@@ -74,14 +74,14 @@
     var lang = null;
     try { lang = (JSON.parse(localStorage.getItem('hollow.prefs') || 'null') || {}).lang || null; } catch (e) { /* no storage */ }
     if (lang !== 'es' && lang !== 'en') {
-      lang = /^\/hallownest-calculator\/es(\/|$)/.test(location.pathname) ? 'es'
+      lang = /^\/es(\/|$)/.test(location.pathname) ? 'es'
         : /^es\b/i.test(navigator.language || '') ? 'es' : 'en';
     }
     document.documentElement.lang = lang;
     document.title = T.doc[lang];
     var els = document.querySelectorAll('[data-t]');
     for (var i = 0; i < els.length; i++) els[i].textContent = T[els[i].getAttribute('data-t')][lang];
-    if (lang === 'es') document.querySelector('.btn').setAttribute('href', '/hallownest-calculator/es/');
+    if (lang === 'es') document.querySelector('.btn').setAttribute('href', '/es/');
   })();
 </script>
 </body>
