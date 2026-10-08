@@ -14,13 +14,13 @@
 (() => {
   'use strict';
   const HK = globalThis.HK;
-  const D = HK.data, E = HK.engine, C = HK.codec, I = HK.i18n, F = HK.foes, PN = HK.pantheons, HG = HK.hall, P = HK.progress;
+  const D = HK.data, E = HK.engine, C = HK.codec, I = HK.i18n, F = HK.foes, PN = HK.pantheons, HG = HK.hall, P = HK.progress, A = HK.achievements;
   const App = HK.app = {};
 
   const t = (k, v) => I.t(k, v);
   const pick = (v) => I.pick(v);
 
-  const KEY = { build: 'hollow.build', baseline: 'hollow.baseline', prefs: 'hollow.prefs', run: 'hollow.run', hall: 'hollow.hall', owned: 'hollow.owned', door: 'hollow.bindings', progress: 'hollow.progress' };
+  const KEY = { build: 'hollow.build', baseline: 'hollow.baseline', prefs: 'hollow.prefs', run: 'hollow.run', hall: 'hollow.hall', owned: 'hollow.owned', door: 'hollow.bindings', progress: 'hollow.progress', feats: 'hollow.feats', meta: 'hollow.meta', account: 'hollow.account' };
   // With no enemy, half of Combat comes out empty: whoever has none starts with the Journal's first entry.
   const DEFAULT_FOE = 'crawlid';
   /* The page's own language: es/index.html is the Spanish copy, with its own address so that
@@ -32,6 +32,8 @@
      bare hash means that screen there, and Charms on the roots. And the page's own <title> and
      description, written for what people search, before render() rewrites them. */
   const PAGE_VIEW = document.documentElement.dataset.view || null;
+  // And the tab it opens on, where the screen has two (Progress: the 112% or the achievements).
+  const PAGE_TAB = document.documentElement.dataset.tab || null;
   const BARE_VIEW = PAGE_VIEW || 'charms';
   const PAGE_HEAD = { title: document.title, description: (document.querySelector('meta[name="description"]') || {}).content || '' };
   const $ = (sel) => document.querySelector(sel);
@@ -208,6 +210,8 @@
     if (!prefs.langChosen || !I.speaks(prefs.lang)) prefs.lang = browserLang();
     if (!['base', 'nocharms', 'pinned'].includes(prefs.compare)) prefs.compare = 'base';
     if (!Array.isArray(prefs.open)) prefs.open = [];
+    // Progress's two tabs: the 112% and the achievements (js/app-progress.js).
+    if (!['pct', 'feats'].includes(prefs.pgShow)) prefs.pgShow = 'pct';
     delete prefs.diff;   // difficulty no longer belongs to Combat: it belongs to each statue in the Hall
     delete prefs.gearOpen; delete prefs.fightOpen;   // Gear and combat no longer collapse: they are screens
     // The Map was Progress's second tab, and the Hall and the Pantheons Combat's.
@@ -565,9 +569,13 @@
   }
   const VIEW_KEY = { home: 'navHome', inventory: 'navGame', charms: 'navCharms', fight: 'navFight', journal: 'navJournal', progress: 'navProgress',
     map: 'navMap', godhome: 'navGodhome', saves: 'savesTitle' };
+  /* The page a screen has (tools/pages.js), as the About block's links name it (data-page):
+     its view, and Progress's achievements tab its own. */
+  const pageKey = () => (prefs.view === 'progress' && prefs.pgShow === 'feats' ? 'progress:feats' : prefs.view);
+  const ownPage = () => pageKey() === (PAGE_VIEW ? PAGE_VIEW + (PAGE_TAB ? ':' + PAGE_TAB : '') : 'home');
   function renderMasthead() {
     // On the page's own screen and language, the head it was served with (tools/pages.js).
-    const own = prefs.lang === PAGE_LANG && prefs.view === (PAGE_VIEW || 'home');
+    const own = prefs.lang === PAGE_LANG && ownPage();
     document.title = own ? PAGE_HEAD.title : prefs.view === 'home' ? t('docTitle') : t(VIEW_KEY[prefs.view]) + ' · ' + t('title');
     const meta = document.querySelector('meta[name="description"]');
     if (meta) meta.setAttribute('content', own ? PAGE_HEAD.description : t('metaDescription'));
@@ -636,7 +644,7 @@
   let aboutOpen = false;
   function renderAbout() {
     if (!el.about) return;
-    el.about.hidden = prefs.lang !== PAGE_LANG || prefs.view !== (PAGE_VIEW || 'home');
+    el.about.hidden = prefs.lang !== PAGE_LANG || !ownPage();
     // With a save the block folds; its button opens it and, open, folds it again.
     const foldable = !!(App.activeSlot && App.activeSlot());
     const folded = !aboutOpen && foldable;
@@ -687,8 +695,8 @@
     try {
       let path = (PAGE_LANG === 'es' ? 'es/' : '') + file;
       if (prefs.view !== 'home') {
-        if (prefs.view === PAGE_VIEW) return page;
-        const a = el.about.querySelector(`a[data-page="${prefs.view}"]`);
+        if (ownPage()) return page;
+        const a = el.about.querySelector(`a[data-page="${pageKey()}"]`);
         // renderAbout() may have put the index.html there already.
         if (a) path = a.getAttribute('href').replace(/index\.html$/, '') + file;
       }
@@ -1294,8 +1302,37 @@
   App.progress = P.normalize(null);
   const loadProgress = () => {
     try { App.progress = P.normalize(JSON.parse(load(KEY.progress) || 'null')); } catch (e) { App.progress = P.normalize(null); }
+    loadFeats();
   };
   const saveProgress = () => save(KEY.progress, P.isEmpty(App.progress) ? null : JSON.stringify(App.progress));
+  /* The achievements marked by hand (js/achievements.js), the ones a save can't tell; and the
+     save's meta (the time played, the completion, Steel Soul), which some of them read. Read with
+     the rest of the game, so a slot change or a new save brings them too. */
+  App.feats = [];
+  App.meta = null;
+  const loadFeats = () => {
+    try { App.feats = A.normalize(JSON.parse(load(KEY.feats) || 'null')); } catch (e) { App.feats = []; }
+    try { const m = JSON.parse(load(KEY.meta) || 'null'); App.meta = m && typeof m === 'object' ? m : null; } catch (e) { App.meta = null; }
+  };
+  /* Your account's achievements (js/achievements.js account()): Steam's, from Steam's own file
+     (js/steam.js), or kept by hand. The account's, not a slot's, so hollow.account isn't one of
+     the slots' keys (HK.saves.KEYS) and stays through slot changes and imports.
+     { source: 'steam' | 'hand', unlocked: { KEY: time }, hand, name, account, stamp, read } or null. */
+  App.account = null;
+  const loadAccount = () => {
+    try { const v = JSON.parse(load(KEY.account) || 'null'); App.account = v && typeof v === 'object' && v.unlocked ? v : null; } catch (e) { App.account = null; }
+  };
+  function setAccount(next) {
+    App.account = next && typeof next === 'object' && next.unlocked ? next : null;
+    save(KEY.account, App.account ? JSON.stringify(App.account) : null);
+    render();
+  }
+  // Marked by hand even in a save from the game: it's what the game's file doesn't say.
+  function setFeats(next) {
+    App.feats = A.normalize(next);
+    save(KEY.feats, App.feats.length ? JSON.stringify(App.feats) : null);
+    render();
+  }
   // A change by hand: kept and repainted, with what changed lighting up (App.was). Not in a save (saveLock).
   function setProgress(next) {
     if (saveLock()) { toast(saveLock()); return; }
@@ -1349,11 +1386,11 @@
     App.was = null;
   }
 
-  Object.assign(App, { t, pick, KEY, PAGE_LANG, PAGE_VIEW, $, el, hoverable, VIEWS, TOOLS, SPELL_KEYS, ART_KEYS, ART_STAT, POSITIONAL,
+  Object.assign(App, { t, pick, KEY, PAGE_LANG, PAGE_VIEW, PAGE_TAB, $, el, hoverable, VIEWS, TOOLS, SPELL_KEYS, ART_KEYS, ART_STAT, POSITIONAL,
     NEED_KEY, NT, namedSrc, esc, load, save, rebuildNF, pctSpace, fmtValue, fmtStat, fmtStatRich, sign,
     masksText, notchText, spellArt, shortOf, badgeText, goodClass, deltaChip, changeChip, prefs, loadPrefs,
     savePrefs, justWorn, justFound, splitHash, here, loadState, persist, compareLabel, compute, impact, recompute, commit, bindAllFx,
     brackets, corners, PLAQUE, chevron, cross, lens, tick, FLEURS, rule, emptyHtml, screenHead, hudHtml, restoreFocus, focusDescriptor, safely, render, go, navTo, screenOf,
-    darkCls, underNav, toast, track, actions, isMaxOwned, loadOwned, saveOwned, isOwned, fragileAway, withFixed, isFixed, setOwned, loadProgress, saveProgress, setProgress, reloadGame,
+    darkCls, underNav, toast, track, actions, isMaxOwned, loadOwned, saveOwned, isOwned, fragileAway, withFixed, isFixed, setOwned, loadProgress, saveProgress, setProgress, setFeats, loadAccount, setAccount, reloadGame,
     saveLock, edits });
 })();

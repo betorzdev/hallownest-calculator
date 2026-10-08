@@ -94,7 +94,24 @@ function audit(dump) {
   Object.entries(J.EXTRAS).forEach(([id, x]) => add('EXTRAS.' + id, x.name));
   J.BOOK.forEach((r) => r.name && add('BOOK.' + r.id, r.name));
 
-  let bad = 0, none = 0;
+  /* The achievements (js/achievements.js) carry their key: their name and text have to be its
+     _TITLE and _TEXT, in both languages. */
+  const featLines = [];
+  let feats = 0;
+  for (const a of require(JS('achievements.js')).ACHIEVEMENTS) {
+    for (const [part, suffix] of [['name', '_TITLE'], ['text', '_TEXT']]) {
+      const key = a.key + suffix;
+      feats += 1;
+      for (const lang of ['en', 'es']) {
+        const game = dump[lang.toUpperCase()][key];
+        if (game === undefined) featLines.push(`✗  FEATS.${a.id}.${part} the key ${key} doesn't exist in the dump`);
+        else if (low(a[part][lang]) !== low(game)) featLines.push(`✗  FEATS.${a.id}.${part} ${lang} "${a[part][lang]}" ≠ ${key} "${norm(game)}"`);
+      }
+    }
+  }
+
+  let bad = featLines.length, none = 0;
+  featLines.forEach((l) => console.log(l));
   for (const p of pairs) {
     const es = map.get(low(p.en));
     if (!es) { none += 1; console.log(`?  ${p.where.padEnd(30)} "${p.en}" isn't in the game: its source is the wiki (site: "${p.es}")`); continue; }
@@ -116,7 +133,7 @@ function audit(dump) {
     if (low(unesc(en)) !== low(dump.EN[key])) { bad += 1; console.log(`✗  UI.${id.padEnd(27)} en "${unesc(en)}" ≠ ${key} "${norm(dump.EN[key])}"`); }
     if (low(unesc(es)) !== low(dump.ES[key])) { bad += 1; console.log(`✗  UI.${id.padEnd(27)} es "${unesc(es)}" ≠ ${key} "${norm(dump.ES[key])}"`); }
   }
-  console.log(`${pairs.length} names and ${keyed} keyed strings: ${bad} that don't say what the game says, ${none} with no game text`);
+  console.log(`${pairs.length} names, ${feats} achievement strings and ${keyed} keyed strings: ${bad} that don't say what the game says, ${none} with no game text`);
   return bad;
 }
 

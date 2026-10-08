@@ -2,7 +2,8 @@
    on it: one page per search intent (design/12-seo.md), each in both languages. tools/pages.js
    builds the pages from index.html and this; the site itself never loads it.
 
-   Every page is the whole site, opened on one screen (`view`, index.html's data-view); the root
+   Every page is the whole site, opened on one screen (`view`, index.html's data-view, and `tab`
+   where the screen has two: data-tab); the root
    has no view and opens where you left it. `title` leads with what people search and gets the
    brand after it; `h1` is the About block's heading (the title, unless it says otherwise);
    `body` are its paragraphs and `faq` its questions (also FAQPage in the JSON-LD); `link` is the
@@ -96,6 +97,30 @@ const PAGES = [
         a: { es: 'No: ni las larvas, ni el Diario del Cazador, ni los mapas. Sí cuentan los amuletos que te da el Padre Larva.', en: 'No: neither grubs, the Hunter\'s Journal nor the maps do. The charms the Grubfather gives you do.' } },
       { q: { es: '¿Se puede perder algo para siempre?', en: 'Can anything be missed for good?' },
         a: { es: 'Casi nada. Lo delicado es la compañía de Grimm: el Rey Pesadilla y el destierro cuentan igual, pero hay que elegir uno.', en: 'Almost nothing. The delicate one is the Grimm Troupe: the Nightmare King and the banishment count the same, but you pick one.' } },
+    ],
+  },
+  {
+    // Progress's second tab (`tab`, index.html's data-tab): the game's achievements.
+    id: 'achievements', view: 'progress', tab: 'feats', slug: { es: 'logros', en: 'achievements' },
+    link: { es: 'Logros', en: 'Achievements' },
+    title: { es: 'Logros de Hollow Knight, marcados con tu partida', en: 'Hollow Knight achievements, ticked from your save' },
+    description: {
+      es: 'Los 63 logros de Hollow Knight con el icono y el texto del juego, también los ocultos. Los de tu cuenta de Steam, leídos de su archivo, y los que cumple tu partida.',
+      en: 'All 63 Hollow Knight achievements with the game\'s own icons and text, hidden ones included. Your Steam account\'s, read from its file, and the ones your save fulfils.',
+    },
+    body: [
+      { es: 'Hollow Knight tiene 63 logros: 52 del juego base, 2 de Sueños Ocultos, 3 de La Compañía de Grimm y 6 de Buscador de Dioses. 25 están ocultos hasta que los consigues; aquí todos muestran su nombre y el texto del juego, agrupados como en la wiki: amuletos, máscaras, vasijas, jefes, esencia, larvas, estaciones de ciervos, personajes, desafíos, finales y las tres expansiones.',
+        en: 'Hollow Knight has 63 achievements: 52 from the base game, 2 from Hidden Dreams, 3 from The Grimm Troupe and 6 from Godmaster. 25 of them are hidden until you earn them; here every one shows its name and the game\'s text, grouped as the wiki groups them: charms, masks, vessels, bosses, essence, grubs, stag stations, characters, challenges, endings and the three content packs.' },
+      { es: 'Los logros son de tu cuenta de Steam, no de una partida: dale al sitio el archivo con el que Steam los guarda en tu ordenador y verás los de tu cuenta, con la fecha de cada uno. Aparte, importa tu partida y el sitio dice cuáles cumple, con los umbrales del propio código del juego: 20 amuletos para <strong>Encantado</strong>, 23 larvas para <strong>Amigo de las larvas</strong>, 4 estaciones de ciervos para <strong>Conexión</strong> y los 13 mapas de zona para <strong>Cartógrafo</strong>. Diez se dan al terminar la partida, con el tiempo y el porcentaje de ese momento, y la partida no los guarda: el sitio descarta lo que puede, asegura lo que puede (una partida terminada en menos de 5 horas tiene <strong>Speedrun 2</strong>) y, sin Steam, el resto lo marcas tú.',
+        en: 'Achievements belong to your Steam account, not to a save: give the site the file Steam keeps them in on your computer and you\'ll see your account\'s, each with its date. Apart from that, import your save and the site says which ones it fulfils, with the thresholds of the game\'s own code: 20 charms for <strong>Enchanted</strong>, 23 grubs for <strong>Grubfriend</strong>, 4 Stag Stations for <strong>Connection</strong> and the 13 area maps for <strong>Cartographer</strong>. Ten are awarded at an ending, with the time and the completion of that moment, which the save doesn\'t keep: the site rules out what it can, settles what it can (a game finished in under 5 hours has <strong>Speedrun 2</strong>) and, without Steam, you mark the rest.' },
+    ],
+    faq: [
+      { q: { es: 'Tengo el 112 % pero no el logro Conclusión Pura', en: 'I have 112% but not the Pure Completion achievement' },
+        a: { es: 'Conclusión Pura pide el 112 % y después terminar el juego: se da en los créditos de un final, con el porcentaje de ese momento. Llega al 112 % y vuelve a ganar un final.', en: 'Pure Completion asks for 112% and then finishing the game: it\'s awarded at an ending\'s credits, with the completion of that moment. Reach 112% and beat an ending again.' } },
+      { q: { es: '¿El sitio ve mis logros de Steam?', en: 'Can the site see my Steam achievements?' },
+        a: { es: 'Sí, desde el archivo que Steam guarda en tu ordenador (<code>appcache/stats/UserGameStats_…_367520.bin</code>): elígelo o suéltalo en la pestaña y se lee en tu navegador, sin enviarlo a ningún sitio. Los logros son de la cuenta, no de la partida, así que el sitio los enseña aparte de lo que cumple cada partida.', en: 'Yes, from the file Steam keeps on your computer (<code>appcache/stats/UserGameStats_…_367520.bin</code>): pick it or drop it on the tab and it\'s read in your browser, sent nowhere. Achievements belong to the account, not to a save, so the site shows them apart from what each save fulfils.' } },
+      { q: { es: '¿Qué logros no caben en una sola partida?', en: 'Which achievements don\'t fit in one save?' },
+        a: { es: 'Los dos del Forjaguijones (Pureza y Parejita feliz) y los dos últimos de la Compañía de Grimm (Ritual y Destierro) se excluyen entre sí. Y Alma de Acero, Corazón de Acero y los speedruns piden una partida jugada para ellos.', en: 'The Nailsmith\'s two (Purity and Happy Couple) and the Grimm Troupe\'s last two (Ritual and Banishment) exclude each other. And Steel Soul, Steel Heart and the speedruns ask for a game played for them.' } },
     ],
   },
   {

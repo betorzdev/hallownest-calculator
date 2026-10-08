@@ -45,6 +45,9 @@ localStorage.setItem('hollow.prefs', JSON.stringify({
   /* &mapwhole=1: the whole map drawn, whatever the save has visited; &mapfound=1: what you have too. */
   pgMapWhole: q.get('mapwhole') === '1',
   pgMapFound: q.get('mapfound') === '1',
+  /* Progress: &pgshow=feats opens the achievements tab, &pgopen=<row> opens that row (f:<group> for an achievements one). */
+  pgShow: q.get('pgshow') || 'pct',
+  pgOpen: q.get('pgopen') || '',
   cocoon: Number(q.get('cocoon') || 0),
   /* &binds=all or &binds=nail,soul: the bindings chosen on the choose-a-pantheon screen. */
   bindings: Object.fromEntries(['nail', 'shell', 'charms', 'soul'].map((k) =>
@@ -118,6 +121,19 @@ if (q.get('saves')) {
    js/savefile.js from a save file (with hollow.saves making it the active one), for captures of
    Your game. */
 if (q.get('ls')) for (const [k, v] of Object.entries(JSON.parse(q.get('ls')))) localStorage.setItem(k, v);
+/* &steam=all|none|<comma-separated keys>: your account's achievements as read from Steam's
+   file (hollow.account, source steam), with one fixed unlock date; &acct=hand:<keys>: the
+   account kept by hand instead. &steamview=1 (in the site's hash) opens the steps view. */
+localStorage.removeItem('hollow.account');
+const ALL_ACH = ['CHARMED', 'ENCHANTED', 'BLESSED', 'PROTECTED', 'MASKED', 'SOULFUL', 'WORLDSOUL', 'FK_DEFEAT', 'DREAM_FK', 'HORNET_1', 'HORNET_2', 'SOUL_MASTER_DEFEAT', 'DREAM_SOUL_MASTER_DEFEAT', 'BROKEN_VESSEL', 'DREAM_BROKEN_VESSEL', 'DUNG_DEFENDER', 'MANTIS_LORDS', 'COLLECTOR', 'ZOTE', 'NEGLECT', 'ATTUNEMENT', 'AWAKENING', 'ASCENSION', 'GRUBFRIEND', 'METAMORPHOSIS', 'NAILSMITH_KILL', 'NAILSMITH_SPARE', 'QUIRREL_EPILOGUE', 'MOURNER', 'TRAITOR_LORD', 'STAG_STATION_HALF', 'STAG_STATION_ALL', 'TEACHER', 'WATCHER', 'BEAST', 'MAP', 'COLOSSEUM_1', 'COLOSSEUM_2', 'COLOSSEUM_3', 'ENDING_A', 'ENDING_B', 'ENDING_C', 'VOID', 'SPEEDRUN_1', 'SPEEDRUN_2', 'COMPLETION', 'SPEED_COMPLETION', 'STEELSOUL', 'STEELSOUL_COMPLETION', 'HUNTER_1', 'HUNTER_2', 'MR_MUSHROOM', 'WHITE_DEFENDER', 'GREY_PRINCE', 'GRIMM', 'NIGHTMARE_GRIMM', 'BANISHMENT', 'PANTHEON1', 'PANTHEON2', 'PANTHEON3', 'PANTHEON4', 'ENDINGD', 'COMPLETIONGG'];
+if (q.get('steam') && q.get('steam') !== 'none') {
+  const keys = q.get('steam') === 'all' ? ALL_ACH : q.get('steam').split(',');
+  const unlocked = Object.fromEntries(keys.map((k) => [k, 1760439344]));
+  localStorage.setItem('hollow.account', JSON.stringify({ source: 'steam', unlocked, hand: null, account: '1', name: 'UserGameStats_1_367520.bin', stamp: null, read: 1759900000000 }));
+} else if ((q.get('acct') || '').startsWith('hand:')) {
+  const unlocked = Object.fromEntries(q.get('acct').slice(5).split(',').filter(Boolean).map((k) => [k, 0]));
+  localStorage.setItem('hollow.account', JSON.stringify({ source: 'hand', unlocked }));
+}
 /* &walk=<scene>: the save before rested at that bench (hollow.prev), so that opening the Map
    plays the Knight's walk from it to the bench of hollow.progress (js/app-knight.js). */
 if (q.get('walk')) localStorage.setItem('hollow.prev', JSON.stringify({ snap: { 'hollow.progress': JSON.stringify({ bench: q.get('walk') }) }, saved: null }));

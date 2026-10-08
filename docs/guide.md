@@ -1575,6 +1575,87 @@ on Cornifer's map). It's the tablet chosen among three variants in
   *Troupe Master Grimm* and *Nightmare King Grimm*, whose plate says *Troupe banished* when that's
   how you got its point.
 - With a save linked to the game, the screen follows it: each bench repaints it.
+- **Two tabs under the title** (`pgShow`): *Completion* with the 112% and **Achievements**
+  («Logros», the game's `SCREEN_ACHIEVEMENTS`) with how many of the 63 you have. The
+  achievements' search page (`achievements/`, `es/logros/`) opens on the second.
+- **The achievements** (8 Oct 2026, `js/achievements.js`) are the game's own list, read from its
+  files with `tools/extract-achievements.py` (its "Achievements List": the 63 keys, which 25 it
+  hides until earned, each icon, in `assets/achievements/`). Name and text are the game's
+  (`<KEY>_TITLE`, `<KEY>_TEXT`). They're the same tablet: **one row per group**, the wiki's
+  thirteen (charms, mask shards, vessel fragments, bosses, essence, grubs, Stag Stations,
+  characters and quests, challenges, endings, Hidden Dreams, the Grimm Troupe, Godmaster), each
+  with its icons as pips and its count. Open, each is a plate with its icon, its name and the
+  game's text; a hidden one says *Secret* («Secreto», `HIDDEN_ACHIEVEMENT_TITLE`) but shows
+  everything, since the site is a guide.
+- **Two layers, never mixed.** Achievements belong to the Steam **account**, not to a save: a
+  save deleted or started over doesn't take them away, and two that exclude each other (the
+  Nailsmith's, the Troupe's) can both be the account's from different saves. So the tab keeps
+  *your Steam account's record* and *what this save fulfils* apart, and a save's figures never
+  include the account's. With Steam's file in, the headline is **Achievements on Steam n / 63**
+  and this save's figure is a line under it («Esta partida cumple n», with the hud's mask); the
+  rows and pips follow the account, and each plate says when the account unlocked it and, in a
+  line of its own, what this save does about it (*This save fulfils it* / *Not this save* / *The
+  save can't tell*). Nothing is marked by hand then: the account answers. Without the file, the
+  headline is **This save n / 63** and everything below is the save's.
+- **Steam's file** (`js/steam.js`). Steam keeps the account's record on the PC, in its
+  `appcache/stats` folder: `UserGameStats_<account>_367520.bin` (Windows `C:\Program Files
+  (x86)\Steam\appcache\stats`, macOS `~/Library/Application Support/Steam/appcache/stats`,
+  Linux `~/.local/share/Steam/appcache/stats`, Flatpak under `~/.var/app/com.valvesoftware.Steam`).
+  It's Steam's binary KeyValues: `cache` → stat id (3, 6, 7) → `data`, a 32-bit mask with a bit
+  per achievement, and `AchievementTimes`, when each was unlocked. Which bit is which comes from
+  `UserGameStatsSchema_367520.bin` beside it; that map is fixed in `js/achievements.js` (`STEAM`)
+  and `npm run check-steam` checks it against the schema on this PC and reads the account's file.
+  Steam loads the file at every launch of the game, bringing it up to date from its servers, and
+  writes it on each unlock (`logs/stats_log.txt`); a game played elsewhere shows here after the
+  next launch. The file has no app id inside: its name is the check, and a file whose bits fall
+  where Hollow Knight has no achievement (another game's) is refused. It's read in the browser.
+- **Getting it in**. With no record, under this save's figure sits **the account's row, empty**
+  (`design/33-account-idle-variants.html`, A): the Knight where the medallion will be, *Tu cuenta ·
+  Sin enlazar · Los logros son de la cuenta, no de la partida*, and the two ways as its actions,
+  **Elegir el archivo de Steam** and **Marcar a mano**. Dropping the file anywhere on the tab reads
+  it at once (the row lights up and says *Suéltalo aquí* while you drag). «Elegir el archivo de
+  Steam» turns the tab
+  into **the steps view** the saves screen has (`App.importSteps`, shared): 1 copy Steam's folder
+  (per system, with Copy: Windows `C:\Program Files (x86)\Steam\appcache\stats`, macOS
+  `~/Library/Application Support/Steam/appcache/stats`, Linux `~/.local/share/Steam/appcache/stats`
+  or the Flatpak one), 2 paste it in the picker, 3 pick `UserGameStats_<number>_367520.bin` (not
+  the Schema one); beside them the zone with **Seleccionar archivo** (the classic file input,
+  which works in every folder) and, where the browser can keep a handle (`js/live.js`, under
+  `'steam'` in IndexedDB), **Seguir el archivo**: then it catches up each time Steam writes it,
+  like a linked save. Chrome's picker with a handle refuses Steam's default folders on Windows and
+  macOS (`Program Files`, `~/Library`), so there the view says so and the file is picked again
+  when it changes. Read, the tab comes back with a toast («Steam: 63 de 63 logros») and **the
+  account row** at the tablet's head (`design/32-account-card-variants.html`, B: drawn like Your
+  game's list rows, no box): the Pure Completion medallion, *Cuenta de Steam*, `● Sigue el
+  archivo` (grey with *Reanudar* when paused) · *Leído el…* · the file; at the right *Cambiar* (the
+  steps view again), *Dejar de seguir*, *Quitar*. Escape or the back link leaves the steps view.
+- **By hand** («o márcalos a mano»): the account kept by you, for GOG, Xbox, Switch or whoever
+  won't look for the file. The headline says *Tu cuenta, a mano* with your count, the row
+  *Tu cuenta · Marcada a mano · n logros* with its hint and *Enlazar Steam* and *Quitar*, and **each plate is a
+  mark**: a tap ticks or unticks it (the account's, never this save's, whose line stays under the
+  plate). When Steam's file comes in, it decides and the hand marks wait in the record (`hand`);
+  removing the file brings them back.
+- The record is `hollow.account` (`{ source: 'steam' | 'hand', unlocked, hand, name, account,
+  stamp, read }`), which isn't a slot's key: it stays through slot changes and imports.
+- **Without Steam** (GOG, Xbox, Switch) the save's layer is all there is, read from what the site
+  already keeps, as the 112% is: the bosses from the Journal and the flags the 112% reads, the
+  charms found, masks and vessels, the grubs, the area maps and the stag stations from the
+  collectibles, the rest from the save (Salubra's blessing, Zote, the Nailsmith, Quirrel, the Grey
+  Mourner, Mister Mushroom's seven meetings, the Hollow Knight and the Radiance fallen). **The
+  thresholds are the game's code** (`Assembly-CSharp.dll`): Enchanted at 20 charms, Grubfriend at
+  23 grubs, Connection at 4 stations (not Dirtmouth's nor the Nest), Cartographer with the 13 area
+  maps (not Dirtmouth), Attunement at 600 essence held. A plate marks where its thing is kept (a
+  boss on the Journal, a flag in your progress), or takes you to the screen that keeps it (masks to
+  the Inventory, grubs to the Map); not in a save.
+- **Ten are awarded at an ending**, with the time and the completion of that moment, which the
+  save doesn't keep (Completion, Speed Completion, Pure Completion, Steel Soul, Steel Heart, the
+  two speedruns, Passing of the Age), and the ending against the Hollow Knight doesn't say whether
+  Hornet was there. Without Steam **those are marked by hand**, even in a save, in the slot's
+  `hollow.feats`, which a linked save doesn't overwrite. The save rules out what it can (not
+  finished, not Steel Soul, Mister Mushroom not met seven times), settles what it can (finished in
+  under 5 hours is Speedrun 2: the time only grows; the Hollow Knight fallen without Void Heart is
+  the first ending) and otherwise says *Your save points to yes* when it does (100% now and
+  finished).
 - **The Map is a screen of its own** (`view=map`), the bar's third, in the same section and green;
   Progress is the figure and the fourteen categories, and nothing else.
 - **The Map** is the game's own, drawn from its files (its

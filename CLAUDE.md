@@ -32,6 +32,12 @@ Before touching anything, check whether it's already solved:
   And `js/map-walk.js` (`npm run walk`, `tools/extract-walk.js`, from `assets/map/rooms-full.png`):
   the ground each room's drawing covers and what crossing it costs, which `js/walk.js` walks
   (the Knight's way from bench to bench: corridors, doors, stags, trams and lifts).
+  `js/achievements.js` with `assets/achievements/` too: the game's 63 achievements, their icons
+  extracted by `tools/extract-achievements.py`, which also fails if the module's keys or hidden
+  flags stop matching the game's list (its rules are written by hand, their thresholds read from
+  the game's code). Its `STEAM` map (which bit of Steam's stats file is which achievement) is
+  checked by `npm run check-steam` against the schema Steam writes on this PC; `js/steam.js`
+  reads the account's file.
   `js/hornet-moves.js` with `assets/hornet/` too: Hornet's moves from Silksong's own sprites
   (`tools/extract-hornet.py`), for the sister site's link, `js/app-sister.js` (shown since the
   sister was published: `SISTER = true`).
@@ -44,7 +50,7 @@ Neither folder is part of the page: `index.html` doesn't load them.
 
 ## Hard constraints
 
-- **No framework and no build.** `index.html` loads **forty classic scripts**, not modules.
+- **No framework and no build.** `index.html` loads **forty-two classic scripts**, not modules.
   The page is `js/app.js` (the core) and one script per screen (`js/app-*.js`), sharing the
   `HK.app` object, and `js/app-boot.js` starts it; the rules for sharing are in `js/app.js`'s header.
   Plus Footworn's (`async`, external; github.com/betorzdev/footworn), the visit counter: the

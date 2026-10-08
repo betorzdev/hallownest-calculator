@@ -162,3 +162,17 @@ test('a sync keeps what the game was before it changed, for "Since last time"', 
   assert.equal(S.sync(s, 1, at(3, 400)), 'game');
   assert.deepEqual(JSON.parse(s.getItem('hollow.prev')), { snap: { 'hollow.build': 'v=1&nail=2', 'hollow.owned': '[]' }, saved: 300 });
 });
+
+test('the achievements marked by hand are the site\'s: a sync from the game keeps them', () => {
+  const s = fakeStore();
+  S.importTo(s, 1, { 'hollow.build': 'v=1&nail=1' });
+  S.select(s, 1);
+  s.setItem('hollow.feats', '["speedrun-1"]');
+  assert.equal(S.sync(s, 1, { 'hollow.build': 'v=1&nail=2' }), 'game');
+  assert.equal(s.getItem('hollow.feats'), '["speedrun-1"]');
+  // And they travel with their slot.
+  S.select(s, S.FREE);
+  assert.equal(s.getItem('hollow.feats'), null);
+  S.select(s, 1);
+  assert.equal(s.getItem('hollow.feats'), '["speedrun-1"]');
+});

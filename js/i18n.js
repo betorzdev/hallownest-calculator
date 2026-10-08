@@ -329,6 +329,73 @@
     pgCat_dreamers: { es: 'Soñadores', en: 'Dreamers' },
     pgCat_grimm:    { es: 'La Compañía de Grimm', en: 'The Grimm Troupe' },   // UI_MENU_STYLE_GRIMM
     pgCat_godmaster:{ es: 'Buscador de Dioses', en: 'Godmaster' },   // UI_MENU_STYLE_GG
+    // The achievements (js/achievements.js), Progress's second tab.
+    pgFeats:        { es: 'Logros', en: 'Achievements' },   // SCREEN_ACHIEVEMENTS
+    featSecret:     { es: 'Secreto', en: 'Secret' },   // HIDDEN_ACHIEVEMENT_TITLE
+    featSecretHint: { es: 'Este logro está oculto', en: 'This achievement is hidden' },   // HIDDEN_ACHIEVEMENT
+    featLikely:     { es: 'Tu partida apunta a que sí', en: 'Your save points to yes' },
+    featByHand:     { es: 'Se marca a mano', en: 'Marked by hand' },
+    featHandNote:   { es: 'El juego da estos al terminar la partida, con el tiempo y el porcentaje de ese momento, y la partida no los guarda: márcalos tú. Tus marcas siguen aunque la partida esté enlazada.', en: 'The game awards these when you finish, with the time and the completion of that moment, and the save doesn\'t keep them: mark them yourself. Your marks stay even with a linked save.' },
+    featInInventory:{ es: 'Se marca en el Inventario', en: 'Marked on the Inventory' },
+    featOnMap:      { es: 'Se marca en el Mapa', en: 'Marked on the Map' },
+    featInJournal:  { es: 'Se marca en el Diario', en: 'Marked in the Journal' },
+    featInCompletion:{ es: 'Se marca en Finalización', en: 'Marked on Completion' },
+    featGroup_charms:   { es: 'Amuletos', en: 'Charms' },   // PANE_CHARMS
+    featGroup_masks:    { es: 'Fragmentos de máscara', en: 'Mask Shards' },   // INV_NAME_HEARTPIECE_0
+    featGroup_vessels:  { es: 'Fragmentos de vasija', en: 'Vessel Fragments' },   // INV_NAME_SOULORBS_0
+    featGroup_bosses:   { es: 'Jefes', en: 'Bosses' },
+    featGroup_essence:  { es: 'Esencia', en: 'Essence' },   // INV_NAME_DREAMCORE
+    featGroup_grubs:    { es: 'Larvas', en: 'Grubs' },
+    featGroup_stags:    { es: 'Estaciones de ciervos', en: 'Stag Stations' },
+    featGroup_misc:     { es: 'Personajes y misiones', en: 'Characters and quests' },
+    featGroup_challenges:{ es: 'Desafíos', en: 'Challenges' },
+    featGroup_endings:  { es: 'Finales', en: 'Endings' },
+    featGroup_dreams:   { es: 'Sueños Ocultos', en: 'Hidden Dreams' },   // UI_MENU_STYLE_HD
+    featGroup_grimm:    { es: 'La Compañía de Grimm', en: 'The Grimm Troupe' },   // UI_MENU_STYLE_GRIMM
+    featGroup_godmaster:{ es: 'Buscador de Dioses', en: 'Godmaster' },   // UI_MENU_STYLE_GG
+    // Your account's achievements: Steam's file (js/steam.js) or by hand (js/app-progress.js).
+    steamTitle:     { es: 'Logros de Steam', en: 'Achievements on Steam' },
+    steamSaveTitle: { es: 'Esta partida', en: 'This save' },
+    acctHandTitle:  { es: 'Tu cuenta, a mano', en: 'Your account, by hand' },
+    steamScene:     { es: 'Suelta aquí el archivo de logros de Steam', en: 'Drop Steam\'s achievements file here' },
+    steamChoose:    { es: 'Elegir el archivo', en: 'Choose the file' },
+    acctNone:       { es: 'Sin enlazar', en: 'Not linked' },
+    acctIdleHint:   { es: 'Los logros son de la cuenta, no de la partida', en: 'Achievements belong to the account, not to the save' },
+    steamChooseFile:{ es: 'Elegir el archivo de Steam', en: 'Choose Steam\'s file' },
+    acctHandBtn:    { es: 'Marcar a mano', en: 'Tick by hand' },
+    steamDropHere:  { es: 'Suéltalo aquí', en: 'Drop it here' },
+    steamStepsTitle:{ es: 'El archivo de logros de Steam', en: 'Steam\'s achievements file' },
+    steamStepsLead: { es: 'Los logros son de tu cuenta, no de una partida. Steam los guarda en tu ordenador y el sitio lee ese archivo aquí, en tu navegador.', en: 'Achievements belong to your account, not to a save. Steam keeps them on your computer and the site reads that file here, in your browser.' },
+    steamStep1:     { es: 'Copia la carpeta de Steam', en: 'Copy Steam\'s folder' },
+    steamStep3:     { es: 'Elige el archivo de tu cuenta', en: 'Pick your account\'s file' },
+    steamAccountId: { es: 'número de cuenta', en: 'account number' },
+    steamPrivate:   { es: 'Se lee aquí, en tu navegador: no se envía a ningún sitio.', en: 'Read here, in your browser: it isn\'t sent anywhere.' },
+    steamFileNote:  { es: 'Lleva el número de tu cuenta de Steam en medio. El otro, el que empieza por UserGameStatsSchema, no es este.', en: 'It carries your Steam account\'s number in the middle. The other one, starting with UserGameStatsSchema, isn\'t it.' },
+    steamFlatpak:   { es: 'Steam de Flatpak', en: 'Flatpak Steam' },
+    steamPick:      { es: 'Seleccionar archivo', en: 'Choose file' },
+    steamOther:     { es: 'Elegir otro archivo', en: 'Choose another file' },
+    steamFollow:    { es: 'Seguir el archivo', en: 'Follow the file' },
+    steamFollowHint:{ es: 'Se pone al día cada vez que Steam lo escribe: al desbloquear un logro y al abrir el juego', en: 'Catches up each time Steam writes it: on unlocking an achievement and on opening the game' },
+    steamFollowBlocked: { es: 'El navegador no deja seguir archivos de esa carpeta (Archivos de programa, Library). Elígelo con «Seleccionar archivo» y vuelve a elegirlo cuando cambie.', en: 'The browser won\'t follow files in that folder (Program Files, Library). Pick it with "Choose file" and pick it again when it changes.' },
+    steamFollows:   { es: 'Sigue el archivo', en: 'Follows the file' },
+    steamRead:      { es: 'Leído el {date}', en: 'Read on {date}' },
+    steamBad:       { es: 'No es el archivo de logros de Hollow Knight de Steam', en: 'Not Steam\'s Hollow Knight achievements file' },
+    steamReading:   { es: 'Leyendo el archivo…', en: 'Reading the file…' },
+    steamToast:     { es: 'Steam: {n} de {max} logros', en: 'Steam: {n} of {max} achievements' },
+    steamRemove:    { es: 'Quitar', en: 'Remove' },
+    steamUnlink:    { es: 'Dejar de seguir', en: 'Stop following' },
+    steamChange:    { es: 'Cambiar', en: 'Change' },
+    steamLink:      { es: 'Enlazar Steam', en: 'Link Steam' },
+    acctSteam:      { es: 'Cuenta de Steam', en: 'Steam account' },
+    acctHand:       { es: 'Tu cuenta', en: 'Your account' },
+    acctHandLine:   { es: 'Marcada a mano · {n} logros', en: 'Ticked by hand · {n} achievements' },
+    acctHandHint:   { es: 'Toca un logro para marcarlo o quitarlo. Es tu cuenta, no esta partida: se queda al cambiar de partida.', en: 'Tap an achievement to tick or untick it. It\'s your account, not this save: it stays when you change saves.' },
+    steamSaveDoes:  { es: 'Esta partida cumple {n}', en: 'This save fulfils {n}' },
+    featUnlockedOn: { es: 'Conseguido el {date}', en: 'Unlocked on {date}' },
+    featUnlocked:   { es: 'Conseguido', en: 'Unlocked' },
+    featSaveYes:    { es: 'Esta partida lo cumple', en: 'This save fulfils it' },
+    featSaveNo:     { es: 'Esta partida no', en: 'Not this save' },
+    featSaveUnsure: { es: 'La partida no puede saberlo', en: 'The save can\'t tell' },
     pgSeerNote:     { es: '2400 de esencia', en: '2400 essence' },
     pgTab112:       { es: '112{pct}', en: '112{pct}' },
     pgTabMap:       { es: 'Mapa', en: 'Map' },   // INV_NAME_MAP

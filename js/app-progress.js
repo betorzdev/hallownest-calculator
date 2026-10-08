@@ -9,12 +9,16 @@
    instead (design/19): the shards and fragments mark Your game's figure; the spells, each level
    on its own, and the nail's upgrades set it.
    Its second tab is the Map (js/app-map.js), with the collectibles on it; pgFind, their marking,
-   is here.
+   is here. And inside the screen, two tabs (prefs.pgShow): the 112% and the game's achievements
+   (js/achievements.js), as rows by group like the 112%'s, each achievement a plate with the
+   game's icon and text. Two layers there, never mixed: your Steam account's record, read from
+   Steam's own file (js/steam.js, hollow.steam, imported or followed here), and what this save
+   fulfils (the rules). With Steam in, the account leads and the save is a line under each.
    Shares HK.app with js/app.js (see there). */
 (() => {
   'use strict';
   const HK = globalThis.HK;
-  const D = HK.data, HJ = HK.hunter, F = HK.foes, PN = HK.pantheons, P = HK.progress, CP = HK.completion, CO = HK.collectibles, C = HK.codec;
+  const D = HK.data, HJ = HK.hunter, F = HK.foes, PN = HK.pantheons, P = HK.progress, CP = HK.completion, CO = HK.collectibles, C = HK.codec, A = HK.achievements, ST = HK.steam, L = HK.live;
   const App = HK.app;
   const { t, pick, el, NT, esc, brackets, screenHead, render, actions, prefs, savePrefs, setProgress, setOwned, pctSpace } = App;
 
@@ -221,6 +225,233 @@
     </li>`;
   }
 
+  /* ── The achievements (js/achievements.js): the same tablet, one row per group ── */
+  const feats = () => A.count({ build: App.state, owned: App.owned, book: App.hjBook(), progress: App.progress, meta: App.meta }, App.feats);
+  // Your Steam account's record (hollow.steam), or null: then the save's figures lead.
+  const account = () => (App.account ? A.account(App.account) : null);
+  const fmtDate = (ms) => { try { return new Intl.DateTimeFormat(prefs.lang === 'es' ? 'es-ES' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(ms)); } catch (e) { return ''; } };
+  // Where one is marked when it isn't by hand: the screen that keeps what it reads.
+  const FAR_KEY = { inventory: 'featInInventory', map: 'featOnMap', journal: 'featInJournal', progress: 'featInCompletion' };
+  function featPlate(it, acc) {
+    const a = A.BY_ID[it.id], m = a.mark || {};
+    const name = pick(a.name), text = pick(a.text);
+    const art = `<span class="gplate-art"><img src="${D.art('achievements', a.id)}" alt="" loading="lazy"></span>`;
+    // Hidden by the game until earned: here always shown, with the game's word for it.
+    const tag = a.hidden ? `<span class="ach-tag" title="${esc(t('featSecretHint'))}">${esc(t('featSecret'))}</span>` : '';
+    const label = name + ' · ' + text;
+    if (acc) {
+      /* The account's: lit when it has it (dated, from Steam's file); and what this save does
+         about it, as a line of its own. By hand the plate marks the account; with Steam's file
+         nothing is marked here: the file answers. */
+      const on = acc.has(a.id), when = acc.time(a.id), hand = App.account.source === 'hand';
+      const unlocked = on && !hand ? `<span class="ach-when">${esc(when ? t('featUnlockedOn', { date: fmtDate(when * 1000) }) : t('featUnlocked'))}</span>` : '';
+      const ofSave = t(!it.sure ? 'featSaveUnsure' : it.on ? 'featSaveYes' : 'featSaveNo');
+      const body = `${art}<span class="gplate-name"${NT}>${esc(name)}</span>
+        <span class="gplate-val is-text ach-text">${tag}<span${NT}>${esc(text)}</span>${unlocked}<span class="ach-of-save">${esc(ofSave)}</span></span>`;
+      if (hand) {
+        return `<button type="button" class="gplate ach${on ? ' is-on' : ''}" data-act="pgAcct" data-id="${a.id}" aria-pressed="${on}"
+          title="${esc(label + ' · ' + t(on ? 'pgUnmark' : 'pgMark'))}">${body}</button>`;
+      }
+      return `<button type="button" class="gplate ach${on ? ' is-on' : ''}" disabled aria-pressed="${on}" title="${esc(label)}">${body}</button>`;
+    }
+    const hint = it.sure ? '' : it.hint === 'likely' ? t('featLikely') : t('featByHand');
+    const body = `${art}<span class="gplate-name"${NT}>${esc(name)}</span>
+        <span class="gplate-val is-text ach-text">${tag}<span${NT}>${esc(text)}</span>${hint ? `<span class="ach-hint">${esc(hint)}</span>` : ''}</span>`;
+    const cls = `gplate ach${it.on ? ' is-on' : ''}`;
+    // The ones the save can't always tell: marked by hand, here, even in a save from the game.
+    if (a.hand && !it.sure) {
+      return `<button type="button" class="${cls}" data-act="pgFeat" data-id="${a.id}" aria-pressed="${it.on}"
+        title="${esc(label + ' · ' + t(it.on ? 'pgUnmark' : 'pgMark'))}">${body}</button>`;
+    }
+    // What another screen keeps (masks, grubs, the Journal's count…): the plate takes you there.
+    if (m.far) {
+      const act = m.far === 'progress' ? 'data-act="pgShow" data-value="pct"' : `data-act="view" data-value="${m.far}"`;
+      return `<button type="button" class="${cls} is-far" ${act} title="${esc(label + ' · ' + t(FAR_KEY[m.far]))}">${body}</button>`;
+    }
+    // A progress id or a Journal entry: marked here, where the site keeps it, as the 112% does.
+    // In a save from the game nothing marks it; nor what the save already settled (an ending).
+    const held = !!App.saveLock() || a.hand;
+    return `<button type="button" class="${cls}" data-act="pgAch" data-id="${a.id}" aria-pressed="${it.on}" ${held ? 'disabled' : ''}
+        title="${esc(held ? label : label + ' · ' + t(it.on ? 'pgUnmark' : 'pgMark'))}">${body}</button>`;
+  }
+  function featRow(g, acc) {
+    const key = 'f:' + g.id, open = prefs.pgOpen === key;
+    const name = t('featGroup_' + g.id);
+    // The row counts the account when Steam is in, this save when not: never both.
+    const lit = (it) => (acc ? acc.has(it.id) : it.on);
+    const done = g.items.filter(lit).length;
+    const pips = g.items.map((it) => `<span class="pg-pip${lit(it) ? ' is-on' : ''}"><img src="${D.art('achievements', it.id)}" alt=""></span>`).join('');
+    const hand = !acc && g.items.some((it) => !it.sure);
+    return `<li class="pg-row${open ? ' is-open' : ''}${done === g.max ? ' is-full' : ''}">
+      <button type="button" class="pg-head" data-act="pgRow" data-value="${key}" aria-expanded="${open}"
+        aria-label="${esc(t('pgOpen', { cat: name, got: num(done), max: num(g.max) }))}">
+        <span class="pg-name">${esc(name)}</span>
+        <span class="pg-pips" aria-hidden="true">${pips}</span>
+        <span class="pg-pts"><b>${num(done)}</b><i class="u">/${num(g.max)}</i></span>
+        <span class="disc-ring" aria-hidden="true">${App.chevron(open)}</span>
+      </button>
+      ${!open ? '' : `<div class="pg-open"><div class="pg-plates">${g.items.map((it) => featPlate(it, acc)).join('')}</div>${hand ? `<p class="ach-note">${esc(t('featHandNote'))}</p>` : ''}</div>`}
+    </li>`;
+  }
+  // The 112% · Achievements, under the title: the same text tabs Combat has.
+  function pgTabs(r, n) {
+    const tab = (v, label, x) => `<button type="button" class="pg-tab${prefs.pgShow === v ? ' is-on' : ''}" data-act="pgShow" data-value="${v}" aria-pressed="${prefs.pgShow === v}">${esc(label)} <span class="pg-tab-n">${esc(x)}</span></button>`;
+    return `<div class="pg-tabs">${tab('pct', t('pgCompletion'), pct(r.total))}${tab('feats', t('pgFeats'), `${num(n)}/${num(A.TOTAL)}`)}</div>`;
+  }
+
+  /* ── Your account: Steam's file, or by hand (js/steam.js, js/achievements.js) ──
+     Steam keeps the account's record in appcache/stats, UserGameStats_<account>_367520.bin,
+     written at each launch of the game and on each unlock. Idle, the tab shows the account's
+     row empty (drop the file anywhere on the tab) with «Elegir el archivo de Steam», which opens
+     the steps view (the saves screen's: the folder per system, how to paste it, which file, and the
+     zone with the classic file input, which works in every folder since Chrome's picker refuses
+     Program Files and ~/Library, Steam's own folders on Windows and macOS). Where the browser
+     allows it, «Seguir el archivo» keeps a handle that's followed like a linked save (js/live.js
+     watch, under 'steam' in IndexedDB). Or «o márcalos a mano»: the account kept by hand, each
+     plate a mark, until Steam's file comes in (the marks wait for when it's removed). */
+  const STEAM_SYSTEMS = {
+    win: { name: 'Windows', dirs: [{ path: 'C:\\Program Files (x86)\\Steam\\appcache\\stats' }], how: 'impHowWin', keys: [] },
+    mac: { name: 'macOS', dirs: [{ path: '~/Library/Application Support/Steam/appcache/stats' }], how: 'impHowMac', keys: ['⇧⌘G'] },
+    linux: { name: 'Linux', dirs: [{ path: '~/.local/share/Steam/appcache/stats' }, { label: 'steamFlatpak', path: '~/.var/app/com.valvesoftware.Steam/.local/share/Steam/appcache/stats' }], how: 'impHowLinux', keys: ['Ctrl+L'] },
+  };
+  // view: '' or 'import' (the steps view; #…&steamview=1 opens it, for debug.html's screenshots).
+  // os is picked at the first paint: js/app-saves.js, which knows the system, loads after this script.
+  const steam = { view: /[#&]steamview=1(&|$)/.test(location.hash) ? 'import' : '', os: '', state: 'idle', linked: '', watch: '', watcher: null, copied: -1 };
+  const steamParse = (bytes, name) => { const r = ST.read(bytes, name); return r.ok ? r : null; };
+  // The record from a file read: Steam's, keeping the hand marks a hand record had.
+  const steamRecord = (r, file) => ({ source: 'steam', unlocked: r.unlocked, account: r.account, name: file.name, stamp: L.stampOf(file), read: Date.now(),
+    hand: App.account && App.account.source === 'hand' && Object.keys(App.account.unlocked).length ? App.account.unlocked : (App.account && App.account.hand) || null });
+  const knightImg = () => `<img class="imp-figure" src="${D.art('knight', 'knight')}" alt="" width="240" height="328">`;
+
+  // No record yet: the account's row, empty (design/33, A), with the two ways as its actions.
+  // The whole tab takes a dropped file; the row says so while dragging (is-drag).
+  function sceneHtml() {
+    return `<div class="acct-card is-idle"><img src="${D.art('knight', 'knight')}" alt="">
+        <div class="acct-main"><span class="acct-k">${esc(t('acctHand'))}</span><span class="acct-v"><span class="acct-rest">${esc(t('acctNone'))}</span><span class="acct-drag">${esc(t('steamDropHere'))}</span></span>
+          <span class="acct-v is-hint">${esc(t('acctIdleHint'))}</span></div>
+        <div class="acct-acts"><button type="button" class="btn btn-primary" data-act="steamOpen">${esc(t('steamChooseFile'))}</button><button type="button" class="text-btn" data-act="acctHand">${esc(t('acctHandBtn'))}</button></div>
+      </div>`;
+  }
+  // The steps view: the saves screen's import layout, for Steam's file.
+  function importHtml() {
+    if (!steam.os) steam.os = App.detectOs();
+    const files = `<li translate="no">${App.FILE_ICON}UserGameStats_<i>${esc(t('steamAccountId'))}</i>_367520.bin</li>`;
+    const steps = App.importSteps({ systems: STEAM_SYSTEMS, os: steam.os, files, step1: 'steamStep1', step3: 'steamStep3', note: 'steamFileNote', actOs: 'steamOs', actCopy: 'steamCopy', copied: steam.copied });
+    const inner = steam.state === 'error' ? `<div class="imp-still">
+          <img class="imp-figure is-shade" src="${D.art('knight', 'shade')}" alt="" width="145" height="174">
+          <p class="imp-err" role="alert">${esc(t('steamBad'))}</p>
+          <button type="button" class="btn btn-primary" data-act="steamPick">${esc(t('steamOther'))}</button>
+        </div>` : `<div class="imp-still">
+          ${knightImg()}
+          <p class="imp-drop-title">${esc(t(steam.state === 'reading' ? 'steamReading' : 'steamScene'))}</p>
+          <p class="imp-drop-drag" aria-hidden="true">${esc(t('impDropping'))}</p>
+          ${steam.state === 'reading' ? '' : `<p class="imp-or">${esc(t('impOr'))}</p><button type="button" class="btn btn-primary" data-act="steamPick">${esc(t('steamPick'))}</button>`}
+        </div>`;
+    const follow = L.canLive() && steam.state !== 'reading' ? `<div class="imp-follow"><button type="button" class="text-btn" data-act="steamFollow" title="${esc(t('steamFollowHint'))}">${esc(t('steamFollow'))}</button></div>` : '';
+    const note = steam.state === 'blocked' ? `<p class="imp-note">${esc(t('steamFollowBlocked'))}</p>` : App.isMobile() ? `<p class="imp-note">${esc(t('impMobile'))}</p>` : '';
+    return `<div class="ach-import">
+      <div class="imp-bar"><button type="button" class="text-btn imp-back" data-act="steamClose">${App.BACK}${esc(t('pgFeats'))}</button></div>
+      ${screenHead(esc(t('steamStepsTitle')), `<p class="saves-note">${esc(t('steamStepsLead'))}</p>`)}
+      <div class="imp-grid">${steps}<div><div class="imp-drop" data-state="${steam.state}"><div class="imp-light" aria-hidden="true"></div><div class="imp-drop-in">${inner}</div><p class="imp-private">${esc(t('steamPrivate'))}</p></div>${follow}${note}</div></div>
+    </div>`;
+  }
+  // The account card: Steam's file (followed or read once) or the marks by hand.
+  function acctHtml(acc) {
+    const rec = App.account;
+    if (rec.source === 'hand') {
+      return `<div class="acct-card"><img src="${D.art('achievements', 'charmed')}" alt="">
+          <div class="acct-main"><span class="acct-k">${esc(t('acctHand'))}</span><span class="acct-v">${esc(t('acctHandLine', { n: num(acc.done) }))}</span>
+            <span class="acct-v is-hint">${esc(t('acctHandHint'))}</span></div>
+          <div class="acct-acts"><button type="button" class="text-btn" data-act="steamOpen">${esc(t('steamLink'))}</button><button type="button" class="text-btn" data-act="acctRemove">${esc(t('steamRemove'))}</button></div>
+        </div>`;
+    }
+    const live = steam.linked ? `<span class="acct-dot${steam.watch === 'live' ? '' : ' is-off'}" aria-hidden="true"></span><span>${esc(t('steamFollows'))}</span>${steam.watch === 'paused' || steam.watch === 'lost' ? `<button type="button" class="text-btn" data-act="steamResume">${esc(t('liveResume'))}</button>` : ''}<span class="sep">·</span>` : '';
+    return `<div class="acct-card"><img src="${D.art('achievements', 'pure-completion')}" alt="">
+        <div class="acct-main"><span class="acct-k">${esc(t('acctSteam'))}</span>
+          <span class="acct-v">${live}<span>${esc(rec.read ? t('steamRead', { date: fmtDate(rec.read) }) : '')}</span></span>
+          ${rec.name ? `<code class="acct-file" translate="no">${esc(rec.name)}</code>` : ''}</div>
+        <div class="acct-acts"><button type="button" class="text-btn" data-act="steamOpen">${esc(t('steamChange'))}</button>${steam.linked ? `<button type="button" class="text-btn" data-act="steamUnlink">${esc(t('steamUnlink'))}</button>` : ''}<button type="button" class="text-btn" data-act="acctRemove">${esc(t('steamRemove'))}</button></div>
+      </div>`;
+  }
+  // The file picker, outside the screen (which is redrawn whole), opened from the click itself.
+  const steamPicker = document.createElement('input');
+  steamPicker.type = 'file';
+  steamPicker.accept = '.bin';
+  steamPicker.hidden = true;
+  document.body.appendChild(steamPicker);
+  steamPicker.addEventListener('change', () => { if (steamPicker.files && steamPicker.files[0]) readSteam(steamPicker.files[0]); });
+  function readSteam(file, handle = null) {
+    steam.state = 'reading'; render();
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const r = ST.read(new Uint8Array(reader.result), file.name);
+      if (!r.ok) { steam.state = 'error'; steam.view = 'import'; render(); App.track('steam-bad'); return; }
+      steam.state = 'idle'; steam.view = '';
+      if (handle) await steamLink(handle, file);
+      App.setAccount(steamRecord(r, file));
+      App.toast(t('steamToast', { n: num(A.account(App.account).done), max: num(A.TOTAL) }));
+      App.track('steam-read');
+    };
+    reader.onerror = () => { steam.state = 'error'; steam.view = 'import'; render(); };
+    reader.readAsArrayBuffer(file);
+  }
+  /* The handle stored and asked on its stored copy, inside the click (js/app-saves.js link() says
+     why), then followed. */
+  async function steamLink(handle, file) {
+    const stored = { handle, name: file.name, stamp: L.stampOf(file) };
+    if (!(await L.links.put('steam', stored))) return;
+    const rec = (await L.links.get('steam')) || stored;
+    try { await rec.handle.requestPermission({ mode: 'read' }); } catch (e) { /* the watcher says paused */ }
+    steamWatch(rec);
+    App.track('steam-link');
+  }
+  function steamWatch(rec) {
+    if (steam.watcher) steam.watcher.stop();
+    let stamp = rec.stamp || null;
+    steam.linked = rec.name || rec.handle.name;
+    steam.watcher = L.watch({
+      source: L.fileSource(rec.handle, (bytes) => steamParse(bytes, steam.linked)),
+      since: stamp,
+      async onData(r, next) {
+        stamp = next;
+        await L.links.put('steam', { ...rec, stamp });
+        App.setAccount({ ...(App.account && App.account.source === 'steam' ? App.account : { hand: App.account ? App.account.unlocked : null }),
+          source: 'steam', unlocked: r.unlocked, account: r.account, name: steam.linked, stamp, read: Date.now() });
+      },
+      onState(s) { steam.watch = s; if (prefs.view === 'progress') render(); },
+    });
+  }
+  // At boot: a file followed before is followed again (paused until a click, like a slot's).
+  if (L.canLive()) L.links.get('steam').then((rec) => { if (rec && rec.handle) steamWatch(rec); });
+  async function steamUnlink() {
+    if (steam.watcher) steam.watcher.stop();
+    steam.watcher = null; steam.linked = ''; steam.watch = '';
+    await L.links.drop('steam');
+  }
+  // Dropping Steam's file on the achievements (the scene or the steps view): read, and followed
+  // when the browser gives a handle.
+  let steamDrag = 0;
+  const onFeats = (e) => prefs.view === 'progress' && prefs.pgShow === 'feats' && !!e.dataTransfer && Array.from(e.dataTransfer.types || []).includes('Files');
+  const setSteamDrag = (on) => { const z = el.pg.querySelector('.imp-drop, .acct-card.is-idle'); if (z) z.classList.toggle('is-drag', on); };
+  el.pg.addEventListener('dragenter', (e) => { if (!onFeats(e)) return; e.preventDefault(); steamDrag++; setSteamDrag(true); });
+  el.pg.addEventListener('dragover', (e) => { if (!onFeats(e)) return; e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
+  el.pg.addEventListener('dragleave', () => { steamDrag = Math.max(0, steamDrag - 1); if (!steamDrag) setSteamDrag(false); });
+  el.pg.addEventListener('drop', (e) => {
+    if (!onFeats(e)) return;
+    e.preventDefault();
+    steamDrag = 0; setSteamDrag(false);
+    const item = e.dataTransfer.items && e.dataTransfer.items[0];
+    const file = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (L.canLive() && item && item.getAsFileSystemHandle) {
+      item.getAsFileSystemHandle().then((h) => (h && h.kind === 'file' ? h.getFile().then((f) => readSteam(f, h)) : file && readSteam(file)), () => { if (file) readSteam(file); });
+      return;
+    }
+    if (file) readSteam(file);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && steam.view && prefs.view === 'progress') { steam.view = ''; steam.state = 'idle'; render(); }
+  });
+
   function renderProgress() {
     if (prefs.view !== 'progress' && prefs.view !== 'map') return;
     const r = count();
@@ -234,7 +465,22 @@
       App.pgMapAfterPaint();
       return;
     }
-    const body = `<div class="pg-total">
+    const f = feats(), acc = account();
+    // The steps view takes the tab while Steam's file is being picked.
+    if (prefs.pgShow === 'feats' && steam.view === 'import') {
+      el.pg.innerHTML = `<div class="gear-body pg-body">${head}${pgTabs(r, acc ? acc.done : f.done)}${importHtml()}</div>`;
+      return;
+    }
+    // The account's figure leads when there's a record (Steam's or by hand); this save's is a
+    // line under it, never summed.
+    const total = acc ? `<span class="pg-total-k">${esc(t(App.account.source === 'hand' ? 'acctHandTitle' : 'steamTitle'))}</span>
+          <span class="pg-total-v">${num(acc.done)}<span class="u"> / ${num(acc.total)}</span></span>
+          <span class="ach-save"><img src="${D.art('hud', 'mask')}" alt="">${esc(t('steamSaveDoes', { n: num(f.done) }))}</span>`
+      : `<span class="pg-total-k">${esc(t('steamSaveTitle'))}</span>
+          <span class="pg-total-v">${num(f.done)}<span class="u"> / ${num(f.total)}</span></span>`;
+    const body = prefs.pgShow === 'feats' ? `${pgTabs(r, acc ? acc.done : f.done)}<div class="pg-total">${total}</div>
+        ${acc ? acctHtml(acc) : sceneHtml()}
+        <ol class="pg-rows">${f.groups.map((g) => featRow(g, acc)).join('')}</ol>` : `${pgTabs(r, acc ? acc.done : f.done)}<div class="pg-total">
           <span class="pg-total-k">${esc(t('pgCompletion'))}</span>
           <span class="pg-total-v">${num(r.total)}<span class="u">${esc(pctSpace())} / ${num(r.max)}</span></span>
         </div>
@@ -308,7 +554,7 @@
     setOwned(has ? App.owned.filter((x) => !vs.includes(x)) : [...App.owned, vs[0]]);
   }
   // What writes your game's record: refused in a save from the game (App.saveLock, js/app.js).
-  App.edits('pgFind', 'pgMark');
+  App.edits('pgFind', 'pgMark', 'pgAch');
   Object.assign(actions, {
     pgFind(node) {
       const id = node.dataset.id, next = P.toggleFound(App.progress, id);
@@ -321,6 +567,53 @@
       App.saveProgress();
       App.commit(step.state);
     },
+    pgShow(node) {
+      prefs.pgShow = node.dataset.value === 'feats' ? 'feats' : 'pct';
+      savePrefs();
+      render();
+    },
+    // An achievement the save can't tell, marked by hand (hollow.feats): allowed in a save too,
+    // but not with Steam in: the account answers.
+    pgFeat(node) { if (!App.account) App.setFeats(A.toggle(App.feats, node.dataset.id)); },
+    // The account by hand: a plate marks or unmarks it (never the save's figures).
+    pgAcct(node) { App.setAccount(A.toggleAccount(App.account, node.dataset.id)); },
+    acctHand() { App.setAccount(A.handRecord(App.account && App.account.hand)); },
+    async acctRemove() {
+      const rec = App.account;
+      await steamUnlink();
+      // Removing Steam's file brings back the marks made by hand before it, if any.
+      App.setAccount(rec && rec.source === 'steam' && rec.hand && Object.keys(rec.hand).length ? A.handRecord(rec.hand) : null);
+    },
+    steamOpen() { steam.view = 'import'; steam.state = 'idle'; render(); scrollTo(0, 0); },
+    steamClose() { steam.view = ''; steam.state = 'idle'; render(); },
+    steamOs(node) { steam.os = node.dataset.value in STEAM_SYSTEMS ? node.dataset.value : 'win'; steam.copied = -1; render(); },
+    steamCopy(node) {
+      const i = +node.dataset.value || 0, d = STEAM_SYSTEMS[steam.os].dirs[i];
+      if (!d) return;
+      App.copyText(d.path, el.pg.querySelectorAll('.imp-path code')[i], () => {
+        node.textContent = t('impCopied'); node.classList.add('is-done');
+        setTimeout(() => { node.textContent = t('impCopy'); node.classList.remove('is-done'); }, 2000);
+      });
+    },
+    steamPick() { steamPicker.value = ''; steamPicker.click(); },
+    /* The picker with a handle, so the file can be followed. Refused by the browser (Steam's
+       folder is one it blocks) it says so; cancelled, nothing changes. */
+    async steamFollow() {
+      let h;
+      try {
+        [h] = await showOpenFilePicker({ id: 'hk-steam', multiple: false,
+          types: [{ description: 'Steam', accept: { 'application/octet-stream': ['.bin'] } }] });
+      } catch (e) {
+        if (e && e.name === 'AbortError') return;
+        steam.state = 'blocked'; render();
+        return;
+      }
+      let file;
+      try { file = await h.getFile(); } catch (e) { steam.state = 'blocked'; render(); return; }
+      readSteam(file, h);
+    },
+    async steamResume() { if (steam.watcher) await steam.watcher.resume(); render(); },
+    async steamUnlink() { await steamUnlink(); render(); },
     pgRow(node) {
       const before = foldBefore(node.dataset.value);
       prefs.pgOpen = prefs.pgOpen === node.dataset.value ? '' : node.dataset.value;

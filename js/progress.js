@@ -83,6 +83,13 @@
     // Kingsoul's two halves (the White Fragments), each where it's picked up: the left from the
     // White Lady, the right from the Pale King's body. Kept once they've joined (royalCharmState 3).
     'queen-fragment': 'gotQueenFragment', 'king-fragment': 'gotKingFragment',
+    // What only the achievements read (js/achievements.js): the characters' endings, and the game's.
+    'salubra-blessing': 'salubraBlessing', 'zote-dead': 'zoteDead', 'nailsmith-slain': 'nailsmithKilled',
+    'nailsmith-spared': 'nailsmithSpared', 'quirrel-farewell': 'quirrelEpilogueCompleted', 'mourner-flower': 'xunRewardGiven',
+    // Mister Mushroom met in his seven places: his state goes from 1 (none yet) to 8.
+    'mushroom-seven': (pd) => int(pd.mrMushroomState) >= 8,
+    // The Hollow Knight fallen (the first two endings, and the third's first half) and the Radiance.
+    'ending-vessel': 'killedHollowKnight', 'ending-radiance': 'killedFinalBoss',
   });
   const ID_LIST = Object.keys(IDS);
 

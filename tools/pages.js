@@ -34,11 +34,14 @@ const url = (page, lang) => SITE + rel(page, lang);
 const file = (page, lang) => rel(page, lang) + 'index.html';
 const fullTitle = (page, lang) => page.title[lang] + ' · ' + BRAND[lang];
 
+/* What the site calls a page (js/app.js, pageKey): its view, and the tab it opens on if it has one. */
+const pageKey = (p) => (p.view || '') + (p.tab ? ':' + p.tab : '');
+
 /* The About block: the heading with the query, the text, the questions and the other pages. */
 function about(page, lang) {
   const faq = page.faq.map((f) => `    <h3>${f.q[lang]}</h3>\n    <p>${f.a[lang]}</p>`).join('\n');
   const more = PAGES.filter((p) => p !== page)
-    .map((p) => `      <li><a href="${rel(p, lang) || './'}" data-page="${p.view || ''}">${p.link[lang]}</a></li>`).join('\n');
+    .map((p) => `      <li><a href="${rel(p, lang) || './'}" data-page="${pageKey(p)}">${p.link[lang]}</a></li>`).join('\n');
   // Indented to sit in index.html's .shell, where the region's markers are.
   return `<!-- about -->
 <section class="about" id="about" lang="${lang}" aria-labelledby="about-h">
@@ -81,7 +84,7 @@ function build(html, page, lang) {
   const depth = rel(page, lang).split('/').length - 1;
   const other = lang === 'en' ? 'es' : 'en';
   const swaps = [
-    [/<html lang="[a-z]+"( data-view="[a-z]+")?>/, `<html lang="${lang}"${page.view ? ` data-view="${page.view}"` : ''}>`],
+    [/<html lang="[a-z]+"( data-view="[a-z]+")?( data-tab="[a-z]+")?>/, `<html lang="${lang}"${page.view ? ` data-view="${page.view}"` : ''}${page.tab ? ` data-tab="${page.tab}"` : ''}>`],
     [/(<meta charset="utf-8">\n)(<base href="[^"]*">\n)?/, (m, meta) => meta + (depth ? `<base href="${'../'.repeat(depth)}">\n` : '')],
     [/<title>[^<]*<\/title>/, `<title>${attr(fullTitle(page, lang))}</title>`],
     [/<meta name="description" content="[^"]*">/, `<meta name="description" content="${attr(page.description[lang])}">`],

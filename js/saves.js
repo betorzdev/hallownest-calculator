@@ -2,7 +2,7 @@
    Pure over a Storage-like object (getItem, setItem, removeItem): no DOM and no language.
    A slot is everything that describes one game —the build, the charms found, the Hunter's
    Journal, the Hall's marks, the lifeblood door, the rest of the 112% (js/completion.js), a
-   half-done pantheon and the pinned build—;
+   half-done pantheon, the pinned build and the achievements marked by hand—;
    the preferences (language, screen, enemy) belong to whoever plays, not to the game, and
    aren't in it.
    Free mode (slot 0, FREE) is what shows while no save has been selected: the everything-unlocked
@@ -22,7 +22,7 @@
   const FREE = 0;
   const SAVES_KEY = 'hollow.saves';
   const KEYS = Object.freeze(['hollow.build', 'hollow.owned', 'hollow.journal', 'hollow.hall',
-    'hollow.bindings', 'hollow.progress', 'hollow.run', 'hollow.baseline', 'hollow.meta', 'hollow.prev']);
+    'hollow.bindings', 'hollow.progress', 'hollow.run', 'hollow.baseline', 'hollow.meta', 'hollow.prev', 'hollow.feats']);
   const SLOT_IDS = Array.from({ length: COUNT }, (_, i) => i + 1);
   const ALL_IDS = [FREE, ...SLOT_IDS];
 
@@ -122,8 +122,9 @@
      keys and when that save was made, from hollow.meta), for "Since last time"
      (js/changes.js); a save that only moved the clock (a bench sat at with nothing new) keeps the
      previous one. Returns 'game' when the game changed, 'meta' when only the time, the geo or the
-     save's moment did, and false when nothing did. */
-  const SITE_ONLY = Object.freeze(['hollow.run', 'hollow.baseline']);
+     save's moment did, and false when nothing did. The achievements marked by hand
+     (hollow.feats, js/achievements.js) are the site's too: they're what the save can't tell. */
+  const SITE_ONLY = Object.freeze(['hollow.run', 'hollow.baseline', 'hollow.feats']);
   const OWN = Object.freeze(['hollow.meta', 'hollow.prev']);
   const GAME = Object.freeze(KEYS.filter((k) => !SITE_ONLY.includes(k) && !OWN.includes(k)));
   const same = (a, b, k) => (a[k] == null ? null : a[k]) === (b[k] == null ? null : b[k]);

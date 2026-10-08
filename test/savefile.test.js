@@ -68,12 +68,12 @@ test("the charm numbers are the game's: CHARM_NAME_<n> names the same charm", ()
 test('a new game comes in as the base Knight with nothing found', () => {
   const snap = F.toSnapshot(BASE);
   assert.deepEqual(snap, { 'hollow.build': C.encode(C.PRESETS.base), 'hollow.owned': '[]',
-    'hollow.meta': JSON.stringify({ time: 0, completion: 0, geo: 0, saved: null }) });
+    'hollow.meta': JSON.stringify({ time: 0, completion: 0, geo: 0, steel: false, saved: null }) });
 });
 
 test('the profile screen\'s figures travel with the game, and the moment of the save when known', () => {
   const pd = { ...BASE, playTime: 3725.5, completionPercentage: 48, geo: 1830 };
-  assert.deepEqual(JSON.parse(F.toSnapshot(pd, null, 1758900000000)['hollow.meta']), { time: 3725.5, completion: 48, geo: 1830, saved: 1758900000000 });
+  assert.deepEqual(JSON.parse(F.toSnapshot(pd, null, 1758900000000)['hollow.meta']), { time: 3725.5, completion: 48, geo: 1830, steel: false, saved: 1758900000000 });
   assert.equal(JSON.parse(F.toSnapshot(pd, null, 'x')['hollow.meta']).saved, null);
 });
 

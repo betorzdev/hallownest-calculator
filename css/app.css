@@ -4198,6 +4198,53 @@ kbd {
 .pg-tab { padding: var(--sp-1) 0; font-family: var(--font-body); font-size: var(--fs-md); color: var(--muted); border-bottom: 2px solid transparent; transition: color var(--dur) var(--ease); }
 .pg-tab:hover { color: var(--accent); }
 .pg-tab.is-on { color: var(--ink-strong); border-bottom-color: var(--accent); }
+/* Each tab's figure: the 112%'s and how many achievements. */
+.pg-tab-n { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-sm); color: var(--muted); }
+.pg-tab.is-on .pg-tab-n { color: var(--ink-2); }
+/* The achievements (js/achievements.js): the game's medallions, a little bigger than the 112%'s
+   pictures, and under the name the game's own text; its "Secret" tag and, by hand, the hint. */
+.ach-sub { max-width: 34em; font-size: var(--fs-sm); color: var(--muted); }
+.pg-plates .gplate.ach .gplate-art { height: 64px; }
+.pg-plates .gplate.ach .gplate-art img { max-height: 56px; }
+.ach-text { display: flex; flex-direction: column; align-items: center; gap: var(--sp-1); }
+.ach-tag { font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); }
+.ach-hint { font-style: italic; color: var(--muted); }
+.ach-note { margin: var(--sp-4) 0 0; max-width: 40em; font-size: var(--fs-sm); color: var(--muted); }
+/* Your account's record beside the save's: the account's figure leads, the save's line sits
+   under it in the hud mask's company. Idle, the scene (the saves screen's drop zone, capped) and
+   the hand link under it; with a record, the account card; and the steps view in place of the
+   tablet while a file is being picked (the saves screen's import layout). */
+.ach-save { display: inline-flex; align-items: center; gap: var(--sp-2); font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-sm); color: var(--ink-2); }
+.ach-save img { width: 14px; height: 14px; }
+/* The account, a row at the tablet's head (design/32, B): drawn like Your game's list rows
+   (.hm-item), the medallion at 36 px, the kicker and the state, the actions at the right where
+   the rows keep their figure, and the list's top hairline under it. By hand, the hint is its third
+   line. Empty (no record yet, design/33 A), the Knight stands in for the medallion and the two
+   ways are the actions; the row lights up while a file is dragged over the tab (is-drag). */
+.acct-card { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: var(--sp-2) var(--sp-4); align-items: center;
+  max-width: 900px; padding: var(--sp-3) var(--sp-2) var(--sp-4); margin: 0 auto; }   /* the list's top hairline is the row's bottom one */
+.acct-card > img { width: 36px; height: 36px; object-fit: contain; }
+.acct-card.is-idle { transition: background var(--dur) var(--ease), box-shadow var(--dur) var(--ease); }
+.acct-card.is-idle .acct-drag, .acct-card.is-drag .acct-rest { display: none; }
+.acct-card.is-drag { background: var(--veil); box-shadow: inset 2px 0 0 var(--accent); }
+.acct-card.is-drag .acct-drag { display: inline; color: var(--ink-strong); }
+.acct-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.acct-k { font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); }
+.acct-v { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; font-size: var(--fs-sm); color: var(--ink); }
+.acct-v.is-hint { color: var(--muted); }
+.acct-v .sep { color: var(--muted); }
+.acct-v code, .acct-file { font-family: var(--font-num); font-size: var(--fs-xs); color: var(--ink-2); overflow-wrap: anywhere; }
+/* The file's name is its own line: long, and only on a wide screen does it fit the state's. */
+.acct-file { display: block; }
+.acct-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--good); box-shadow: 0 0 6px var(--good); }
+.acct-dot.is-off { background: var(--muted); box-shadow: none; }
+.acct-acts { display: flex; gap: var(--sp-4); flex-wrap: wrap; font-size: var(--fs-sm); }
+@media (max-width: 560px) { .acct-card { grid-template-columns: 36px minmax(0, 1fr); } .acct-card .acct-acts { grid-column: 2; } }
+.ach-import .imp-grid { margin-top: var(--sp-6); }
+.ach-import .imp-note { margin: var(--sp-3) 0 0; font-size: var(--fs-sm); color: var(--muted); text-align: center; }
+.ach-import .imp-follow { display: flex; justify-content: center; margin-top: var(--sp-3); }
+.ach-when { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-2xs); color: var(--ink-2); }
+.ach-of-save { font-size: var(--fs-2xs); color: var(--muted); }
 
 /* ── The Map (js/app-map.js): the game's own map, black like its map screen, each area in its
    own tint (baked into the drawings). Whole what the Quill drew, rough what you only bought,

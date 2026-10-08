@@ -337,7 +337,8 @@
     const prog = P.fromSave(pd, sd, states.length ? states.filter(([, st]) => st.isUnlocked).map(([id]) => id) : null);
     if (!P.isEmpty(prog)) snap['hollow.progress'] = JSON.stringify(prog);
     const m = meta(pd);
-    snap['hollow.meta'] = JSON.stringify({ time: m.time, completion: m.completion, geo: m.geo,
+    // Steel Soul, for the achievements (js/achievements.js): the profile shows it, the site didn't keep it.
+    snap['hollow.meta'] = JSON.stringify({ time: m.time, completion: m.completion, geo: m.geo, steel: m.steel,
       saved: Number.isFinite(saved) && saved > 0 ? saved : null });
     return snap;
   }

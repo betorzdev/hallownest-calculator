@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Steam import variants</title>
+<!-- Design material, not part of the site: how the achievements tab asks for your Steam
+     account's record (Steam's stats file, js/steam.js) and lets you keep it by hand instead.
+     Today (8 Oct 2026) it's a dashed box full of text and paths under the headline, which reads
+     as noise. Three forms here, each in its three states, with the site's real CSS over mock
+     markup written by the script below in both languages:
+       A · two doors   under the headline, two quiet cards: «Desde Steam» and «A mano». The
+                        folder only shows behind «¿Dónde está el archivo?».
+       B · the scene   the saves screen's drop zone (the Knight, one title, one button) with
+                        «o márcalos a mano» under it; the folder behind a disclosure.
+       C · one line    a single line under the figure: «Cuenta de Steam: sin enlazar · Enlazar ·
+                        Marcar a mano»; «Enlazar» opens a sheet with the three steps.
+     States: idle (nothing yet: this save's figure leads), linked (Steam's file in, followed) and
+     manual (your account kept by hand). The bar at the bottom switches each; the choice is in
+     the URL (?v=a&state=idle&lang=es&w=390). At 390 the page shows itself in an iframe. -->
+<base href="../">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+body { background: var(--page-bg); background-attachment: fixed; margin: 0; }
+.tv-wrap { max-width: 1120px; margin: 0 auto; padding: var(--sp-8) var(--page-pad) 220px; }
+.tv-bar { position: fixed; z-index: 100; left: 0; right: 0; bottom: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-2) var(--sp-8);
+  padding: var(--sp-3) var(--sp-4); background: var(--card); border-top: 1px solid var(--line-panel); font-size: var(--fs-sm); }
+.tv-grp { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-1) var(--sp-3); }
+.tv-lbl { color: var(--muted); font-family: var(--font-num); font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; }
+.tv-bar button { color: var(--ink-2); padding: var(--sp-1) 0; border-bottom: 1px solid transparent; }
+.tv-bar button[aria-pressed="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.tv-frame { display: block; margin: 0 auto; border: 1px solid var(--line-panel); background: var(--page-bg); }
+.tv-notes { max-width: 1120px; margin: var(--sp-10) auto 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--sp-6); }
+.tv-note { padding: var(--sp-4); border: 1px solid var(--line-panel); background: var(--card); font-size: var(--fs-sm); color: var(--ink-2); }
+.tv-note h2 { margin: 0 0 var(--sp-2); font-family: var(--font-display); font-size: var(--fs-md); font-weight: 600; letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--ink-strong); }
+.tv-note p { margin: 0 0 var(--sp-2); }
+.pg { display: block; }
+
+/* ════ Shared: the account under the figure ════ */
+.ach-acct { display: inline-flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-sm); color: var(--ink-2); }
+.ach-acct img { width: 16px; height: 16px; }
+.ach-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--good); box-shadow: 0 0 6px var(--good); }
+.ach-dot.is-paused { background: var(--muted); box-shadow: none; }
+.ach-kicker { display: inline-flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); }
+
+/* ════ A · two doors ════ */
+.doors { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-4); max-width: 44em; margin: 0 auto var(--sp-8); }
+.door { display: flex; flex-direction: column; align-items: center; gap: var(--sp-3); padding: var(--sp-6) var(--sp-5) var(--sp-5); text-align: center;
+  border: 1px solid var(--line-panel); background: var(--card); }
+.door-art { height: 56px; display: grid; place-items: center; }
+.door-art img { height: 56px; }
+.door-art .ach-frame { width: 56px; height: 56px; border: 1px solid var(--line); rotate: 45deg; scale: 0.72; display: grid; place-items: center; }
+.door-art .ach-frame span { rotate: -45deg; font-family: var(--font-display); font-size: var(--fs-lg); color: var(--ink-strong); }
+.door-title { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: var(--fs-md); letter-spacing: var(--track-title); color: var(--ink-strong); }
+.door-text { margin: 0; font-size: var(--fs-sm); color: var(--muted); max-width: 26ch; text-wrap: balance; }
+.door .btn { margin-top: auto; }
+.door-where { margin-top: var(--sp-1); font-size: var(--fs-xs); }
+@media (max-width: 560px) { .doors { grid-template-columns: 1fr; } }
+
+/* ════ B · the scene ════ */
+.scene { max-width: 44em; margin: 0 auto var(--sp-8); }
+.scene .imp-drop { min-height: 0; }
+.scene .imp-drop-in { padding: var(--sp-8) var(--sp-6) var(--sp-6); }
+.scene .imp-figure { height: calc(var(--sp-16) * 1.8); }
+.scene-foot { display: flex; justify-content: center; gap: var(--sp-6); margin-top: var(--sp-3); font-size: var(--fs-sm); flex-wrap: wrap; }
+
+/* ════ C · one line ════ */
+.oneline { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: var(--sp-2) var(--sp-4); margin: 0 auto var(--sp-8); font-size: var(--fs-sm); color: var(--ink-2); }
+.oneline .sep { color: var(--muted); }
+.sheet { max-width: 34em; margin: 0 auto var(--sp-8); padding: var(--sp-5) var(--sp-6); border: 1px solid var(--line-panel); background: var(--card); box-shadow: var(--shadow-md); }
+.sheet h3 { margin: 0 0 var(--sp-3); font-family: var(--font-display); font-weight: 600; font-size: var(--fs-md); letter-spacing: var(--track-title); color: var(--ink-strong); }
+.sheet ol { margin: 0 0 var(--sp-4); padding-left: 1.4em; color: var(--ink-2); font-size: var(--fs-sm); display: grid; gap: var(--sp-2); }
+.sheet .imp-path { margin-top: var(--sp-1); }
+.sheet-acts { display: flex; gap: var(--sp-3); flex-wrap: wrap; align-items: center; }
+
+/* ════ Linked / manual: the account card ════ */
+.acct-card { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: var(--sp-3) var(--sp-4); max-width: 44em; margin: 0 auto var(--sp-8); padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--line-panel); background: var(--card); }
+.acct-card img { width: 36px; height: 36px; }
+.acct-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.acct-k { font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); }
+.acct-v { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; font-size: var(--fs-sm); color: var(--ink); }
+.acct-v code { font-family: var(--font-num); color: var(--ink-2); }
+.acct-acts { display: flex; gap: var(--sp-3); flex-wrap: wrap; font-size: var(--fs-sm); }
+@media (max-width: 560px) { .acct-card { grid-template-columns: auto 1fr; } .acct-acts { grid-column: 1 / -1; } }
+
+/* The plates in manual mode: a quiet hint that they toggle. */
+.manual-note { margin: 0 auto var(--sp-6); max-width: 44em; text-align: center; font-size: var(--fs-sm); color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="tv-wrap" id="root"></div>
+<div class="tv-notes" id="notes"></div>
+<div class="tv-bar" id="bar"></div>
+<script>
+const q = new URLSearchParams(location.search);
+const V = q.get('v') || 'a', STATE = q.get('state') || 'idle', LANG = q.get('lang') || 'es', W = Number(q.get('w') || 0);
+const T = {
+  es: {
+    tabPct: 'Finalización', tabFeats: 'Logros', thisSave: 'Esta partida', onSteam: 'Logros de Steam', byHand: 'Tu cuenta, a mano',
+    saveDoes: 'Esta partida cumple 27', noAcct: 'Cuenta sin enlazar',
+    fromSteam: 'Desde Steam', fromSteamText: 'Steam guarda los logros de tu cuenta en tu ordenador. Elige ese archivo.', choose: 'Elegir el archivo', where: '¿Dónde está el archivo?',
+    manual: 'A mano', manualText: 'Sin Steam (GOG, Xbox, Switch), o si prefieres marcarlos tú.', markMine: 'Marcar yo mismo',
+    dropTitle: 'Suelta aquí el archivo de logros de Steam', or: 'o', orHand: 'o márcalos a mano', private: 'Se lee aquí, en tu navegador: no se envía a ningún sitio.',
+    acct: 'Cuenta de Steam', link: 'Enlazar Steam', hand: 'Marcar a mano', sep: '·',
+    sheetTitle: 'El archivo de logros de Steam', s1: 'Copia la carpeta de Steam', s2: 'Pulsa «Seleccionar archivo» y pega la ruta', s3: 'Elige UserGameStats_<i>número</i>_367520.bin',
+    follow: 'Seguir el archivo', copy: 'Copiar', cancel: 'Cancelar',
+    linkedK: 'Cuenta de Steam', linkedV: 'Leído el 8 oct 2026', follows: 'Sigue el archivo', file: 'UserGameStats_1049278056_367520.bin', update: 'Actualizar', change: 'Cambiar', remove: 'Quitar',
+    manualK: 'Tu cuenta', manualV: 'Marcada a mano · 12 logros', toSteam: 'Enlazar Steam', manualHint: 'Toca un logro para marcarlo o quitarlo. Es tu cuenta, no esta partida: se queda al cambiar de partida.',
+    groups: [['Amuletos', 3, 3], ['Fragmentos de máscara', 2, 2], ['Jefes', 13, 13], ['Finales', 4, 4]],
+  },
+  en: {
+    tabPct: 'Completion', tabFeats: 'Achievements', thisSave: 'This save', onSteam: 'Achievements on Steam', byHand: 'Your account, by hand',
+    saveDoes: 'This save fulfils 27', noAcct: 'Account not linked',
+    fromSteam: 'From Steam', fromSteamText: 'Steam keeps your account\'s achievements on your computer. Pick that file.', choose: 'Choose the file', where: 'Where is the file?',
+    manual: 'By hand', manualText: 'Without Steam (GOG, Xbox, Switch), or if you\'d rather tick them yourself.', markMine: 'Tick them myself',
+    dropTitle: 'Drop Steam\'s achievements file here', or: 'or', orHand: 'or tick them by hand', private: 'Read here, in your browser: sent nowhere.',
+    acct: 'Steam account', link: 'Link Steam', hand: 'Tick by hand', sep: '·',
+    sheetTitle: 'Steam\'s achievements file', s1: 'Copy Steam\'s folder', s2: 'Press "Choose file" and paste the path', s3: 'Pick UserGameStats_<i>number</i>_367520.bin',
+    follow: 'Follow the file', copy: 'Copy', cancel: 'Cancel',
+    linkedK: 'Steam account', linkedV: 'Read on 8 Oct 2026', follows: 'Follows the file', file: 'UserGameStats_1049278056_367520.bin', update: 'Update', change: 'Change', remove: 'Remove',
+    manualK: 'Your account', manualV: 'Ticked by hand · 12 achievements', toSteam: 'Link Steam', manualHint: 'Tap an achievement to tick or untick it. It\'s your account, not this save: it stays when you change saves.',
+    groups: [['Charms', 3, 3], ['Mask Shards', 2, 2], ['Bosses', 13, 13], ['Endings', 4, 4]],
+  },
+}[LANG];
+const ICONS = { 0: ['charmed', 'enchanted', 'blessed'], 1: ['protected', 'masked'], 2: ['falsehood', 'strength', 'test-of-resolve', 'proof-of-resolve', 'illumination', 'mortality', 'release', 'peace', 'honour', 'respect', 'obsession', 'execution', 'rivalry'], 3: ['the-hollow-knight', 'sealed-siblings', 'dream-no-more', 'passing-of-the-age'] };
+const PATH = 'C:\\Program Files (x86)\\Steam\\appcache\\stats';
+const knight = 'assets/knight/knight.png';
+
+function pathRow() {
+  return `<div class="imp-path"><code translate="no">${PATH}</code><button type="button" class="text-btn imp-copy">${T.copy}</button></div>`;
+}
+function whereDisc(open) {
+  return `<details class="door-where"${open ? ' open' : ''}><summary class="text-btn">${T.where}</summary>
+    <div class="seg sm imp-os" style="margin:var(--sp-2) 0"><button type="button" aria-pressed="true">Windows</button><button type="button">macOS</button><button type="button">Linux</button></div>${pathRow()}</details>`;
+}
+function headline(state) {
+  const n = state === 'linked' ? 63 : state === 'manual' ? 12 : 27;
+  const k = state === 'linked' ? T.onSteam : state === 'manual' ? T.byHand : T.thisSave;
+  const sub = state === 'idle' ? '' : `<span class="ach-save"><img src="assets/hud/mask.png" alt="">${T.saveDoes}</span>`;
+  return `<div class="pg-tabs"><button type="button" class="pg-tab">${T.tabPct} <span class="pg-tab-n">91 %</span></button><button type="button" class="pg-tab is-on">${T.tabFeats} <span class="pg-tab-n">${n}/63</span></button></div>
+  <div class="pg-total"><span class="pg-total-k">${k}</span><span class="pg-total-v">${n}<span class="u"> / 63</span></span>${sub}</div>`;
+}
+function acctCard(state) {
+  if (state === 'linked') return `<div class="acct-card"><img src="assets/achievements/pure-completion.png" alt="">
+    <div class="acct-main"><span class="acct-k">${T.linkedK}</span><span class="acct-v"><span class="ach-dot"></span>${T.follows} ${T.sep} ${T.linkedV} ${T.sep} <code>${T.file}</code></span></div>
+    <div class="acct-acts"><button type="button" class="text-btn">${T.change}</button><button type="button" class="text-btn">${T.remove}</button></div></div>`;
+  return `<div class="acct-card"><img src="assets/achievements/charmed.png" alt="">
+    <div class="acct-main"><span class="acct-k">${T.manualK}</span><span class="acct-v">${T.manualV}</span></div>
+    <div class="acct-acts"><button type="button" class="text-btn">${T.toSteam}</button><button type="button" class="text-btn">${T.remove}</button></div></div>
+    <p class="manual-note">${T.manualHint}</p>`;
+}
+function rows(state) {
+  return `<ol class="pg-rows">${T.groups.map(([name, done, max], i) => {
+    const d = state === 'manual' ? Math.max(0, done - 1 - (i % 2)) : state === 'idle' ? Math.max(0, done - 1) : done;
+    const pips = ICONS[i].map((id, j) => `<span class="pg-pip${j < d ? ' is-on' : ''}"><img src="assets/achievements/${id}.png" alt=""></span>`).join('');
+    return `<li class="pg-row${d === max ? ' is-full' : ''}"><button type="button" class="pg-head"><span class="pg-name">${name}</span><span class="pg-pips">${pips}</span><span class="pg-pts"><b>${d}</b><i class="u">/${max}</i></span><span class="disc-ring" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 4.5 6 8.5 10 4.5"/></svg></span></button></li>`;
+  }).join('')}</ol>`;
+}
+function idleA() {
+  return `<div class="doors">
+    <div class="door"><div class="door-art"><img src="assets/achievements/pure-completion.png" alt=""></div><h3 class="door-title">${T.fromSteam}</h3><p class="door-text">${T.fromSteamText}</p><button type="button" class="btn btn-primary">${T.choose}</button>${whereDisc(false)}</div>
+    <div class="door"><div class="door-art"><img src="assets/hud/mask.png" alt=""></div><h3 class="door-title">${T.manual}</h3><p class="door-text">${T.manualText}</p><button type="button" class="btn">${T.markMine}</button></div>
+  </div>`;
+}
+function idleB() {
+  return `<div class="scene"><div class="imp-drop"><div class="imp-light"></div><div class="imp-drop-in"><div class="imp-still">
+      <img class="imp-figure" src="${knight}" alt="">
+      <p class="imp-drop-title">${T.dropTitle}</p>
+      <p class="imp-or">${T.or}</p><button type="button" class="btn btn-primary">${T.choose}</button>
+    </div></div><p class="imp-private">${T.private}</p></div>
+    <div class="scene-foot">${whereDisc(false)}<span class="sep" style="color:var(--muted)">${T.sep}</span><button type="button" class="text-btn">${T.orHand}</button></div></div>`;
+}
+function idleC(open) {
+  return `<div class="oneline"><span class="ach-kicker">${T.acct}</span><span>${T.noAcct}</span><span class="sep">${T.sep}</span><button type="button" class="text-btn">${T.link}</button><span class="sep">${T.sep}</span><button type="button" class="text-btn">${T.hand}</button></div>
+  ${open ? `<div class="sheet"><h3>${T.sheetTitle}</h3>
+    <div class="seg sm imp-os" style="margin-bottom:var(--sp-3)"><button type="button" aria-pressed="true">Windows</button><button type="button">macOS</button><button type="button">Linux</button></div>
+    <ol><li>${T.s1}${pathRow()}</li><li>${T.s2}</li><li>${T.s3}</li></ol>
+    <div class="sheet-acts"><button type="button" class="btn btn-primary">${T.choose}</button><button type="button" class="btn">${T.follow}</button><button type="button" class="text-btn">${T.cancel}</button></div></div>` : ''}`;
+}
+function screen() {
+  const idle = V === 'a' ? idleA() : V === 'b' ? idleB() : idleC(q.get('sheet') === '1');
+  const middle = STATE === 'idle' ? idle : acctCard(STATE);
+  return `<section class="gear pg"><div class="gear-body pg-body" style="padding-top:var(--sp-6)">${headline(STATE)}${middle}${rows(STATE)}</div></section>`;
+}
+const root = document.getElementById('root');
+if (W) {
+  const u = new URL(location.href); u.searchParams.delete('w');
+  root.innerHTML = `<iframe class="tv-frame" src="${u.pathname + u.search}" width="${W}" height="1400"></iframe>`;
+} else {
+  root.innerHTML = screen();
+}
+// The bar
+const opt = (k, v, label) => `<button type="button" aria-pressed="${(q.get(k) || { v: 'a', state: 'idle', lang: 'es', w: '0', sheet: '0' }[k]) === v}" onclick="go('${k}','${v}')">${label}</button>`;
+window.go = (k, v) => { const u = new URL(location.href); if (v === '0' || v === '') u.searchParams.delete(k); else u.searchParams.set(k, v); location.href = u; };
+document.getElementById('bar').innerHTML = `
+  <div class="tv-grp"><span class="tv-lbl">Variant</span>${opt('v', 'a', 'A · two doors')}${opt('v', 'b', 'B · the scene')}${opt('v', 'c', 'C · one line')}</div>
+  <div class="tv-grp"><span class="tv-lbl">State</span>${opt('state', 'idle', 'idle')}${opt('state', 'linked', 'linked')}${opt('state', 'manual', 'manual')}${V === 'c' && STATE === 'idle' ? opt('sheet', '1', 'sheet open') : ''}</div>
+  <div class="tv-grp"><span class="tv-lbl">Lang</span>${opt('lang', 'es', 'ES')}${opt('lang', 'en', 'EN')}</div>
+  <div class="tv-grp"><span class="tv-lbl">Width</span>${opt('w', '0', 'full')}${opt('w', '390', '390')}</div>`;
+document.getElementById('notes').innerHTML = W ? '' : `
+  <div class="tv-note"><h2>A · two doors</h2><p>Under the figure, two quiet cards: <b>Desde Steam</b> (the game's Pure Completion medallion, one sentence, «Elegir el archivo») and <b>A mano</b> (the hud mask, «Marcar yo mismo»). The folder only shows behind «¿Dónde está el archivo?». Both sources at one glance; the figure above stays this save's until one is chosen.</p></div>
+  <div class="tv-note"><h2>B · the scene</h2><p>The saves screen's drop zone again (the Knight, one title, one button), so Steam's file is imported the way a save is: by dropping it or choosing it. «¿Dónde está?» and «o márcalos a mano» as two quiet links under it. One idea per screen; the manual way is secondary.</p></div>
+  <div class="tv-note"><h2>C · one line</h2><p>No block at all: a line under the figure says the account isn't linked and offers «Enlazar Steam» and «Marcar a mano». «Enlazar» opens a sheet with the three steps (the saves screen's), then closes. The tablet keeps the whole screen.</p></div>
+  <div class="tv-note"><h2>Linked and manual</h2><p>The same in the three: an <b>account card</b> (medallion, Steam account · Follows the file ● · Read on… · file; or Your account · Ticked by hand · 12) with Change/Link Steam and Remove. In manual mode the plates toggle and a line says it's your account, not this save.</p></div>`;
+</script>
+</body>
+</html>

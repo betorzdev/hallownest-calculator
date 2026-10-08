@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Account card variants</title>
+<!-- Design material, not part of the site: the account card on the achievements tab (your Steam
+     account's record, or the one kept by hand), today a bordered box with a medallion, two lines
+     and the actions (design/31). Albert (8 Oct 2026): the box with its leading and its gaps don't
+     sit right. Three unboxed forms here, each in both states, with the site's real CSS over mock
+     markup written by the script below in both languages:
+       A · under the figure   part of the headline: a small medallion, the kicker and the state on
+                               one line, the actions as text under it. Nothing boxed; the figure
+                               and its account read as one block.
+       B · the head row       a row of the tablet, above the groups, drawn like Your game's list
+                               rows (.hm-item): the medallion at 36 px, two lines (kicker, state)
+                               and the actions at the right; the same hairline as the rows under it.
+       C · a block head       Your game's block heading (.block-head) with the count beside it, then
+                               one line of state and the actions; left-aligned, the width of the tablet.
+     The bar at the bottom switches each; the choice is in the URL (?v=a&state=steam&lang=es&w=390). -->
+<base href="../">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+body { background: var(--page-bg); background-attachment: fixed; margin: 0; }
+.tv-wrap { max-width: 1120px; margin: 0 auto; padding: var(--sp-8) var(--page-pad) 220px; }
+.tv-bar { position: fixed; z-index: 100; left: 0; right: 0; bottom: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-2) var(--sp-8);
+  padding: var(--sp-3) var(--sp-4); background: var(--card); border-top: 1px solid var(--line-panel); font-size: var(--fs-sm); }
+.tv-grp { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-1) var(--sp-3); }
+.tv-lbl { color: var(--muted); font-family: var(--font-num); font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; }
+.tv-bar button { color: var(--ink-2); padding: var(--sp-1) 0; border-bottom: 1px solid transparent; }
+.tv-bar button[aria-pressed="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.tv-frame { display: block; margin: 0 auto; border: 1px solid var(--line-panel); background: var(--page-bg); }
+.pg { display: block; }
+
+/* ════ shared ════ */
+.acct-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--good); box-shadow: 0 0 6px var(--good); }
+.acct-dot.is-off { background: var(--muted); box-shadow: none; }
+.acct-k { font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); }
+.acct-sep { color: var(--muted); }
+.acct-acts { display: flex; gap: var(--sp-4); flex-wrap: wrap; font-size: var(--fs-sm); }
+code.acct-file { font-family: var(--font-num); font-size: var(--fs-xs); color: var(--ink-2); overflow-wrap: anywhere; }
+
+/* ════ A · under the figure ════ */
+.acct-a { display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); margin: var(--sp-4) 0 0; }
+.acct-a-line { display: inline-flex; align-items: center; gap: var(--sp-3); font-size: var(--fs-sm); color: var(--ink); }
+.acct-a-line img { width: 28px; height: 28px; }
+.acct-a-line .acct-k { margin-right: calc(var(--sp-1) * -1); }
+.acct-a .acct-acts { justify-content: center; }
+.acct-a + .ach-save { margin-top: var(--sp-3); }
+.pg-total.has-acct { margin-bottom: var(--sp-6); }
+
+/* ════ B · the head row ════ */
+.acct-b { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: var(--sp-2) var(--sp-4); align-items: center; padding: var(--sp-3) var(--sp-2) var(--sp-4); margin-bottom: var(--sp-2);
+  border-bottom: 1px solid var(--inv-line); }
+.acct-b img { width: 36px; height: 36px; }
+.acct-b-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.acct-b-v { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; font-size: var(--fs-sm); color: var(--ink); }
+@media (max-width: 560px) { .acct-b { grid-template-columns: 36px minmax(0, 1fr); } .acct-b .acct-acts { grid-column: 2; } }
+
+/* ════ C · a block head ════ */
+.acct-c { display: flex; flex-direction: column; gap: var(--sp-2); margin: 0 var(--sp-2) var(--sp-6); }
+.acct-c .block-head { display: flex; align-items: baseline; gap: var(--sp-3); margin: 0; font-size: var(--fs-md); color: var(--ink-strong); }
+.acct-c .block-note { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-sm); font-weight: 400; color: var(--muted); }
+.acct-c-v { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; font-size: var(--fs-sm); color: var(--ink-2); }
+.acct-c-v img { width: 22px; height: 22px; }
+.acct-hint-c { margin: 0; font-size: var(--fs-sm); color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="tv-wrap" id="root"></div>
+<div class="tv-bar" id="bar"></div>
+<script>
+const q = new URLSearchParams(location.search);
+const V = q.get('v') || 'a', STATE = q.get('state') || 'steam', LANG = q.get('lang') || 'es', W = Number(q.get('w') || 0);
+const T = {
+  es: { tabPct: 'Finalización', tabFeats: 'Logros', onSteam: 'Logros de Steam', byHand: 'Tu cuenta, a mano', saveDoes: 'Esta partida cumple 27',
+    acctSteam: 'Cuenta de Steam', acctHand: 'Tu cuenta', follows: 'Sigue el archivo', read: 'Leído el 8 oct 2026', file: 'UserGameStats_1049278056_367520.bin',
+    handLine: 'Marcada a mano · 12 logros', change: 'Cambiar', unlink: 'Dejar de seguir', remove: 'Quitar', link: 'Enlazar Steam',
+    hint: 'Toca un logro para marcarlo o quitarlo. Es tu cuenta, no esta partida.',
+    groups: [['Amuletos', 3, 3], ['Fragmentos de máscara', 2, 2], ['Jefes', 13, 13]] },
+  en: { tabPct: 'Completion', tabFeats: 'Achievements', onSteam: 'Achievements on Steam', byHand: 'Your account, by hand', saveDoes: 'This save fulfils 27',
+    acctSteam: 'Steam account', acctHand: 'Your account', follows: 'Follows the file', read: 'Read on 8 Oct 2026', file: 'UserGameStats_1049278056_367520.bin',
+    handLine: 'Ticked by hand · 12 achievements', change: 'Change', unlink: 'Stop following', remove: 'Remove', link: 'Link Steam',
+    hint: 'Tap an achievement to tick or untick it. It\'s your account, not this save.',
+    groups: [['Charms', 3, 3], ['Mask Shards', 2, 2], ['Bosses', 13, 13]] },
+}[LANG];
+const ICONS = [['charmed', 'enchanted', 'blessed'], ['protected', 'masked'], ['falsehood', 'strength', 'test-of-resolve', 'proof-of-resolve', 'illumination', 'mortality', 'release', 'peace', 'honour', 'respect', 'obsession', 'execution', 'rivalry']];
+const steam = STATE === 'steam';
+const n = steam ? 63 : 12;
+const medal = `assets/achievements/${steam ? 'pure-completion' : 'charmed'}.png`;
+const tb = (l) => `<button type="button" class="text-btn">${l}</button>`;
+const acts = steam ? [tb(T.change), tb(T.unlink), tb(T.remove)] : [tb(T.link), tb(T.remove)];
+const stateBits = steam
+  ? `<span class="acct-dot" aria-hidden="true"></span><span>${T.follows}</span><span class="acct-sep">·</span><span>${T.read}</span><span class="acct-sep">·</span><code class="acct-file">${T.file}</code>`
+  : `<span>${T.handLine}</span>`;
+
+function tabs() {
+  return `<div class="pg-tabs"><button type="button" class="pg-tab">${T.tabPct} <span class="pg-tab-n">91 %</span></button><button type="button" class="pg-tab is-on">${T.tabFeats} <span class="pg-tab-n">${n}/63</span></button></div>`;
+}
+const saveLine = `<span class="ach-save"><img src="assets/hud/mask.png" alt="">${T.saveDoes}</span>`;
+function total(extra = '') {
+  return `<div class="pg-total${extra ? ' has-acct' : ''}"><span class="pg-total-k">${steam ? T.onSteam : T.byHand}</span><span class="pg-total-v">${n}<span class="u"> / 63</span></span>${saveLine}${extra}</div>`;
+}
+function rows() {
+  return `<ol class="pg-rows">${T.groups.map(([name, done, max], i) => {
+    const d = steam ? done : Math.max(0, done - 1 - (i % 2));
+    const pips = ICONS[i].map((id, j) => `<span class="pg-pip${j < d ? ' is-on' : ''}"><img src="assets/achievements/${id}.png" alt=""></span>`).join('');
+    return `<li class="pg-row${d === max ? ' is-full' : ''}"><button type="button" class="pg-head"><span class="pg-name">${name}</span><span class="pg-pips">${pips}</span><span class="pg-pts"><b>${d}</b><i class="u">/${max}</i></span><span class="disc-ring" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 4.5 6 8.5 10 4.5"/></svg></span></button></li>`;
+  }).join('')}</ol>`;
+}
+function A() {
+  const line = `<div class="acct-a"><span class="acct-a-line"><img src="${medal}" alt=""><span class="acct-k">${steam ? T.acctSteam : T.acctHand}</span>${stateBits}</span><span class="acct-acts">${acts.join('')}</span></div>`;
+  return total(line) + (steam ? "" : `<p class="acct-hint-c" style="text-align:center;margin:0 0 var(--sp-6)">${T.hint}</p>`) + rows();
+}
+function B() {
+  return total() + `<div class="acct-b"><img src="${medal}" alt=""><div class="acct-b-main"><span class="acct-k">${steam ? T.acctSteam : T.acctHand}</span><span class="acct-b-v">${stateBits}</span>${steam ? '' : `<span class="acct-b-v" style="color:var(--muted)">${T.hint}</span>`}</div><span class="acct-acts">${acts.join('')}</span></div>` + rows();
+}
+function C() {
+  return total() + `<div class="acct-c"><h3 class="block-head">${steam ? T.acctSteam : T.acctHand}<span class="block-note">${n}/63</span></h3>
+    <div class="acct-c-v"><img src="${medal}" alt="">${stateBits}</div>
+    ${steam ? '' : `<p class="acct-hint-c">${T.hint}</p>`}
+    <span class="acct-acts">${acts.join('')}</span></div>` + rows();
+}
+const root = document.getElementById('root');
+if (W) {
+  const u = new URL(location.href); u.searchParams.delete('w');
+  root.innerHTML = `<iframe class="tv-frame" src="${u.pathname + u.search}" width="${W}" height="900"></iframe>`;
+} else {
+  root.innerHTML = `<section class="gear pg"><div class="gear-body pg-body" style="padding-top:var(--sp-6)">${tabs()}${V === 'a' ? A() : V === 'b' ? B() : C()}</div></section>`;
+}
+const opt = (k, v, label) => `<button type="button" aria-pressed="${(q.get(k) || { v: 'a', state: 'steam', lang: 'es', w: '0' }[k]) === v}" onclick="go('${k}','${v}')">${label}</button>`;
+window.go = (k, v) => { const u = new URL(location.href); if (v === '0') u.searchParams.delete(k); else u.searchParams.set(k, v); location.href = u; };
+document.getElementById('bar').innerHTML = `
+  <div class="tv-grp"><span class="tv-lbl">Variant</span>${opt('v', 'a', 'A · under the figure')}${opt('v', 'b', 'B · the head row')}${opt('v', 'c', 'C · a block head')}</div>
+  <div class="tv-grp"><span class="tv-lbl">State</span>${opt('state', 'steam', 'Steam')}${opt('state', 'hand', 'by hand')}</div>
+  <div class="tv-grp"><span class="tv-lbl">Lang</span>${opt('lang', 'es', 'ES')}${opt('lang', 'en', 'EN')}</div>
+  <div class="tv-grp"><span class="tv-lbl">Width</span>${opt('w', '0', 'full')}${opt('w', '390', '390')}</div>`;
+</script>
+</body>
+</html>
