@@ -41,6 +41,10 @@ Before touching anything, check whether it's already solved:
   `js/hornet-moves.js` with `assets/hornet/` too: Hornet's moves from Silksong's own sprites
   (`tools/extract-hornet.py`), for the sister site's link, `js/app-sister.js` (shown since the
   sister was published: `SISTER = true`).
+  `js/knight-moves.js` with the strips of `assets/knight/` too: the Knight's moves from the game's
+  own sprites (`tools/extract-knight.py`; `--all --out design/34` draws every clip for the design
+  page), for the Knight who walks the page, `js/app-knight.js`; his three stills (`knight.png`,
+  `shade.png`, `overcharm.png`) still come from the wiki (`npm run knight`).
   `js/people.js`, the characters' meetings, was read by hand from the game's scenes. And
   `js/map-fixes.js`, where a pin really goes when all that places it wrong: written by the Map's
   **admin mode** (`#view=map&admin=1`, dragging the pin; `npm run admin` serves the site and
@@ -50,7 +54,7 @@ Neither folder is part of the page: `index.html` doesn't load them.
 
 ## Hard constraints
 
-- **No framework and no build.** `index.html` loads **forty-two classic scripts**, not modules.
+- **No framework and no build.** `index.html` loads **forty-three classic scripts**, not modules.
   The page is `js/app.js` (the core) and one script per screen (`js/app-*.js`), sharing the
   `HK.app` object, and `js/app-boot.js` starts it; the rules for sharing are in `js/app.js`'s header.
   Plus Footworn's (`async`, external; github.com/betorzdev/footworn), the visit counter: the

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Knight's moves</title>
+<!-- Design material, not part of the site. Albert (8 Oct 2026) asked how to improve the site's
+   "mascot", the Knight who walks the screen bar (js/app-knight.js), and chose to start with the
+   game's own sprites: today he has three clips from the wiki (a GIF cut out by colour, with sawn
+   edges), while Hornet, on the sister link, has 27 moves from Silksong's files. This page shows
+   what the game holds for him: 71 clips drawn by tools/extract-knight.py from the "Knight" sprite
+   collection (patch 1.5.12620) into design/34/ (--all --out; assets/knight/ holds the ones the site
+   plays), each at its own fps and wrap, and the three he had, from the wiki (kept in design/34/wiki/),
+   beside the game's at the sizes the page uses (26 px on the bar, 96 on his bench). Decided the
+   same day: 32 px on the bar, and the bench and run sequences, his life while he rests, and Focus
+   with the build's own time (the slug with Shape of Unn).
+   ?size=bar|half|bench|game (how tall he stands) &speed=1|0.5 &still=1 (first frames only). -->
+<base href="../">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+body { background: var(--page-bg); background-attachment: fixed; margin: 0; }
+.mk { max-width: 1180px; margin: 0 auto; padding: var(--sp-6) var(--page-pad) var(--sp-16); }
+.mk-h1 { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-xl); letter-spacing: var(--track-title); color: var(--ink-strong); margin: 0 0 var(--sp-2); }
+.mk-h2 { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-md); letter-spacing: var(--track-title); color: var(--ink-strong); margin: var(--sp-8) 0 var(--sp-1); }
+.mk-lead { max-width: var(--measure); color: var(--ink-2); font-size: var(--fs-sm); margin: 0 0 var(--sp-4); }
+.mk-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-4); padding: var(--sp-2) 0; margin-bottom: var(--sp-6); border-bottom: 1px solid var(--line); font-size: var(--fs-sm); color: var(--muted); position: sticky; top: 0; background: var(--page-bg); z-index: 2; }
+.mk-bar b { font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); font-weight: 600; }
+.mk-bar button { background: none; border: 0; padding: var(--sp-1) 0; font: inherit; color: var(--muted); cursor: pointer; }
+.mk-bar button[aria-pressed="true"] { color: var(--accent); box-shadow: inset 0 -1px 0 var(--accent-line); }
+.mk-note { color: var(--ink-2); font-size: var(--fs-sm); max-width: var(--measure); margin: 0 0 var(--sp-3); }
+
+/* The clips: a grid of stages, each with its floor line and the move standing on it. */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--sp-3); }
+.card { border: 1px solid var(--line); background: var(--veil); padding: var(--sp-2); cursor: pointer; }
+.card:hover { border-color: var(--line-panel); }
+.stage { position: relative; height: calc(var(--floor) + 12px); overflow: hidden; border-bottom: 1px solid var(--line-panel); }
+.mv { position: absolute; left: 50%; bottom: 0; background-repeat: no-repeat; pointer-events: none; }
+.mv.is-left { scale: -1 1; }
+.lbl { display: flex; justify-content: space-between; gap: var(--sp-2); margin-top: var(--sp-2); font-size: var(--fs-2xs); letter-spacing: var(--track-label); color: var(--ink-2); }
+.lbl .clip { color: var(--muted); font-style: italic; letter-spacing: 0; text-transform: none; }
+.lbl .n { font-family: var(--font-num); font-variant-numeric: tabular-nums; color: var(--muted); white-space: nowrap; }
+
+/* Today against the game: the three he has, from the wiki, beside the same moves from the game, at
+   the bar's 26 px and the bench's 96 px. The wiki's cells are 104 × 140 with his feet on y = 134. */
+.cmp { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--sp-4); }
+.cmp-row { display: flex; align-items: flex-end; gap: var(--sp-6); border: 1px solid var(--line); background: var(--veil); padding: var(--sp-3) var(--sp-4); }
+.cmp-one { flex: 1; display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); }
+.cmp-one .stage { width: 100%; }
+.wk { position: absolute; left: 50%; bottom: 0; translate: -50% 0; background: 0 0 / auto 100% no-repeat; pointer-events: none; }
+.wk.is-run { animation: wk-cycle 600ms steps(6) infinite; }
+@keyframes wk-cycle { to { background-position-x: calc(-6 * var(--cell)); } }
+/* The bar, as the site draws it, with him under the current tab at the two heights to compare. */
+.bar { position: relative; display: flex; gap: var(--sp-6); align-items: baseline; padding: var(--sp-4) var(--sp-5) 0; border: 1px solid var(--line); background: var(--veil); margin-bottom: var(--sp-3); }
+.bar .bt { font-family: var(--font-display); font-size: var(--fs-md); letter-spacing: var(--track-title); color: var(--ink-2); padding-bottom: 36px; }
+.bar .bt.is-on { color: var(--ink-strong); position: relative; }
+.bar .bt .mv, .bar .bt .wk { left: 50%; }
+.bar .cap { margin-left: auto; font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); }
+</style>
+</head>
+<body>
+<div class="mk">
+  <h1 class="mk-h1">The Knight's moves</h1>
+  <p class="mk-lead">What the game holds for the Knight who walks the screen bar: 71 of his clips, read from the game's own files (<code>tools/extract-knight.py</code>), each at its fps and its wrap (looping, looping from a frame on, or once). Click a card to play it again. Then the three he has today, from the wiki, beside the game's, at the sizes the page draws him.</p>
+  <div class="mk-bar">
+    <b>Standing</b>
+    <button data-size="bar" aria-pressed="true">26 px, the bar</button>
+    <button data-size="half">65 px</button>
+    <button data-size="bench">96 px, his bench</button>
+    <button data-size="game">130 px, the game</button>
+    <b>Speed</b>
+    <button data-speed="1" aria-pressed="true">as the game</button>
+    <button data-speed="0.5">half</button>
+    <button data-speed="0">still</button>
+  </div>
+
+  <h2 class="mk-h2">Today against the game</h2>
+  <p class="mk-note">The wiki's three (a still, a GIF of six frames cut out by colour, a still of him resting) and the game's own standing, running and sitting. On the bar he's 26 px tall; on Your game's bench, up to 96.</p>
+  <div class="bar" id="bar"></div>
+  <div class="cmp" id="cmp"></div>
+
+  <div id="groups"></div>
+</div>
+<script src="design/34/knight-moves.js"></script>
+<script>
+(() => {
+  'use strict';
+  const K = HK.KNIGHT, M = K.MOVES;
+  const STAND = 130;                     // his standing height in the game, px (the Idle clip's drawing)
+  const SIZES = { bar: 26, half: 65, bench: 96, game: 130 };
+  const q = new URLSearchParams(location.search);
+  let size = q.get('size') in SIZES ? q.get('size') : 'bar';
+  let speed = q.get('still') === '1' ? 0 : q.get('speed') === '0.5' ? 0.5 : 1;
+
+  // The game's clip behind each name, for the label (tools/extract-knight.py's MOVES).
+  const CLIP = { idle: 'Idle', 'idle-wind': 'Idle Wind', 'look-up': 'LookUp', 'look-up-end': 'LookUpEnd', 'look-down': 'LookDown', 'look-down-end': 'LookDownEnd', turn: 'Turn', 'turn-idle': 'TurnToIdle', stun: 'Stun', recoil: 'Recoil', 'idle-hurt': 'Idle Hurt',
+    walk: 'Walk', run: 'Run', 'run-stop': 'Run To Idle', sprint: 'Sprint', dash: 'Dash', 'dash-stop': 'Dash To Idle', 'shadow-dash': 'Shadow Dash', 'shadow-dash-sharp': 'Shadow Dash Sharp', airborne: 'Airborne', fall: 'Fall', land: 'Land', 'hard-land': 'HardLand', 'double-jump': 'Double Jump',
+    sit: 'Sit', 'sit-idle': 'Sit Idle', 'sit-lean': 'Sit Lean', doze: 'Sit Fall Asleep', asleep: 'Sitting Asleep', 'wake-sit': 'Wake To Sit', wake: 'Wake', 'get-off': 'Get Off', 'map-open': 'Sit Map Open', 'map-close': 'Sit Map Close',
+    'map-idle': 'Map Idle', 'map-walk': 'Map Walk', 'map-update': 'Map Update', 'map-away': 'Map Away', focus: 'Focus', 'focus-get': 'Focus Get', 'focus-end': 'Focus End',
+    'slug-up': 'Slug Up', 'slug-idle': 'Slug Idle', 'slug-walk': 'Slug Walk', 'slug-down': 'Slug Down', 'slug-idle-shell': 'Slug Idle B', 'slug-walk-shell': 'Slug Walk B', 'slug-idle-spore': 'Slug Idle S', 'slug-idle-both': 'Slug Idle BS',
+    'collect-1': 'Collect Normal 1', 'collect-2': 'Collect Normal 2', 'collect-3': 'Collect Normal 3', 'collect-magical-1': 'Collect Magical 1', 'collect-magical-2': 'Collect Magical 2', 'collect-magical-3': 'Collect Magical 3', 'collect-heart': 'Collect Heart Piece', 'collect-heart-end': 'Collect Heart Piece End',
+    'challenge-start': 'Challenge Start', 'challenge-end': 'Challenge End', prostrate: 'Prostrate', 'prostrate-rise': 'Prostrate Rise', 'dn-charge': 'DN Charge', 'dn-slash': 'DN Slash', 'dn-cancel': 'DN Cancel',
+    enter: 'Enter', exit: 'Exit', 'lantern-idle': 'Lantern Idle', 'lantern-run': 'Lantern Run', death: 'Death', 'hazard-respawn': 'Hazard Respawn', 'respawn-wake': 'Respawn Wake' };
+  const GROUPS = [
+    ['Standing', 'What he does on the spot: the cloak settling, a gust, looking up and down, turning, taking a hit.', ['idle', 'idle-wind', 'look-up', 'look-up-end', 'look-down', 'look-down-end', 'turn', 'turn-idle', 'recoil', 'idle-hurt', 'stun']],
+    ['Moving', 'Along the bar and the map: walking, the run (its first six frames are the start; it loops from the seventh), stopping, Sprintmaster\'s sprint, the dashes (Shade Cloak with Sharp Shadow), and the air.', ['walk', 'run', 'run-stop', 'sprint', 'dash', 'dash-stop', 'shadow-dash', 'shadow-dash-sharp', 'airborne', 'fall', 'land', 'hard-land', 'double-jump']],
+    ['The bench', 'Sitting down, resting, leaning, dozing off, asleep, waking up on the bench, the game\'s first waking, getting off; and opening the map while seated.', ['sit', 'sit-idle', 'sit-lean', 'doze', 'asleep', 'wake-sit', 'wake', 'get-off', 'map-open', 'map-close']],
+    ['The map', 'Standing with the map open, walking with it, drawing what he\'s seen with the quill, putting it away.', ['map-idle', 'map-walk', 'map-update', 'map-away']],
+    ['Focus', 'Healing: gathering soul (loops from the third frame), the mask coming back, and letting go. On the page the click is this easter egg, at 900 ms fixed; the engine knows the build\'s own time.', ['focus', 'focus-get', 'focus-end']],
+    ['Shape of Unn', 'The slug while focusing with Shape of Unn: turning into it, idle, walking, turning back; and with Baldur Shell (the shell), Spore Shroom (the cloud) and both.', ['slug-up', 'slug-idle', 'slug-walk', 'slug-down', 'slug-idle-shell', 'slug-walk-shell', 'slug-idle-spore', 'slug-idle-both']],
+    ['Finding something', 'Raising a find and putting it away (three parts), an ability with its light (three), a mask shard.', ['collect-1', 'collect-2', 'collect-3', 'collect-magical-1', 'collect-magical-2', 'collect-magical-3', 'collect-heart', 'collect-heart-end']],
+    ['Godhome', 'The nail raised before a challenge, and lowered; kneeling and rising.', ['challenge-start', 'challenge-end', 'prostrate', 'prostrate-rise']],
+    ['The Dream Nail', 'Charging it, the slash, letting it go.', ['dn-charge', 'dn-slash', 'dn-cancel']],
+    ['Doors and the lantern', 'Going through a door, in and out; standing and running with the Lumafly Lantern.', ['enter', 'exit', 'lantern-idle', 'lantern-run']],
+    ['Death', 'Dying, coming back from a hazard, waking at the bench after.', ['death', 'hazard-respawn', 'respawn-wake']],
+  ];
+
+  const k = () => SIZES[size] / STAND;      // page px per game px
+  const players = [];
+  /* A move's element: its strip, sized by k, his pivot's x on the element's left (the card centres it). */
+  function move(name, px) {           // px: standing height fixed (the bar mock), else the control's
+    const m = M[name], e = document.createElement('div');
+    e.className = 'mv'; e.dataset.name = name;
+    players.push({ e, name, px, t0: performance.now() });
+    return e;
+  }
+  const kOf = (p) => p.px ? p.px / STAND : k();
+  function fit(p) {
+    const m = M[p.name], s = p.e.style, f = kOf(p);
+    s.width = m.w * f + 'px'; s.height = m.h * f + 'px';
+    s.backgroundImage = `url(design/34/${p.name}.png)`;
+    s.backgroundSize = `${m.n * m.w * f}px ${m.h * f}px`;
+    s.marginLeft = -m.px * f + 'px';
+    s.bottom = -(m.h - m.py - K.FLOOR) * f + 'px';   // his feet (pivot + FLOOR) on the floor line
+  }
+  function tick(now) {
+    for (const p of players) {
+      const m = M[p.name];
+      let i = speed ? Math.floor((now - p.t0) / 1000 * m.fps * speed) : 0;
+      if (m.loop < 0) {
+        // Once: holds its last frame a while, then plays again.
+        const hold = Math.round(m.fps * 1.5);
+        if (i >= m.n + hold) { p.t0 = now; i = 0; } else i = Math.min(i, m.n - 1);
+      } else if (i >= m.n) {
+        i = m.loop + (i - m.loop) % (m.n - m.loop);
+      }
+      p.e.style.backgroundPosition = `${-i * m.w * kOf(p)}px 0`;
+    }
+    requestAnimationFrame(tick);
+  }
+  function layout() {
+    document.documentElement.style.setProperty('--floor', SIZES[size] + 'px');
+    for (const p of players) fit(p);
+    document.querySelectorAll('.wk').forEach((e) => {
+      const h = (Number(e.dataset.px) || SIZES[size]) * 140 / 134, cell = h * 104 / 140;   // the wiki's cell, with his feet 6 px up from its bottom
+      e.style.height = h + 'px'; e.style.width = cell + 'px'; e.style.setProperty('--cell', cell + 'px'); e.style.bottom = -6 * h / 140 + 'px';
+    });
+  }
+
+  // The cards.
+  const groups = document.getElementById('groups');
+  for (const [title, note, names] of GROUPS) {
+    const h = document.createElement('h2'); h.className = 'mk-h2'; h.textContent = title; groups.appendChild(h);
+    const p = document.createElement('p'); p.className = 'mk-note'; p.textContent = note; groups.appendChild(p);
+    const g = document.createElement('div'); g.className = 'grid'; groups.appendChild(g);
+    for (const name of names) {
+      const m = M[name], c = document.createElement('div'); c.className = 'card';
+      const st = document.createElement('div'); st.className = 'stage'; st.appendChild(move(name)); c.appendChild(st);
+      const l = document.createElement('div'); l.className = 'lbl';
+      l.innerHTML = `<span>${name}<br><span class="clip">${CLIP[name]}</span></span><span class="n">${m.n} × ${m.fps}<br>${m.loop < 0 ? 'once' : m.loop ? 'loop ' + (m.loop + 1) : 'loop'}</span>`;
+      c.appendChild(l); g.appendChild(c);
+      c.addEventListener('click', () => { const p = players.find((x) => x.e.parentNode === st); p.t0 = performance.now(); });
+    }
+  }
+  // Today against the game: the bar, then the three pairs.
+  const bar = document.getElementById('bar');
+  // Under the tabs, at the bar's height: the wiki's at 26 px, the game's at 26 and at 32.
+  for (const [lbl, who, px] of [['Your game', 'wiki', 26], ['Progress', 'game', 26], ['Map', 'game', 32], ['Journal'], ['Godhome'], ['Charms'], ['Combat']]) {
+    const t = document.createElement('span'); t.className = 'bt' + (who ? ' is-on' : ''); t.textContent = lbl;
+    if (who === 'wiki') { const w = document.createElement('div'); w.className = 'wk'; w.dataset.px = px; w.style.backgroundImage = 'url(design/34/wiki/sit.png)'; t.appendChild(w); }
+    if (who === 'game') t.appendChild(move('sit-idle', px));
+    bar.appendChild(t);
+  }
+  bar.insertAdjacentHTML('beforeend', '<span class="cap">wiki 26 px · game 26 px · game 32 px</span>');
+  const cmp = document.getElementById('cmp');
+  for (const [wiki, cls, game, lbl] of [['idle', '', 'idle', 'standing'], ['run', 'is-run', 'run', 'running'], ['sit', '', 'sit-idle', 'sitting']]) {
+    const row = document.createElement('div'); row.className = 'cmp-row';
+    const a = document.createElement('div'); a.className = 'cmp-one';
+    const sa = document.createElement('div'); sa.className = 'stage';
+    const w = document.createElement('div'); w.className = 'wk ' + cls; w.style.backgroundImage = `url(design/34/wiki/${wiki}.png)`; sa.appendChild(w);
+    a.appendChild(sa); a.insertAdjacentHTML('beforeend', `<span>${lbl} · wiki, today</span>`);
+    const b = document.createElement('div'); b.className = 'cmp-one';
+    const sb = document.createElement('div'); sb.className = 'stage'; sb.appendChild(move(game));
+    b.appendChild(sb); b.insertAdjacentHTML('beforeend', `<span>${lbl} · the game</span>`);
+    row.append(a, b); cmp.appendChild(row);
+  }
+
+  // The controls.
+  document.querySelectorAll('.mk-bar button').forEach((b) => b.addEventListener('click', () => {
+    if (b.dataset.size) size = b.dataset.size; else speed = Number(b.dataset.speed);
+    document.querySelectorAll('.mk-bar button').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.size ? x.dataset.size === size : Number(x.dataset.speed) === speed)));
+    const now = performance.now(); for (const p of players) p.t0 = now;
+    layout();
+  }));
+  document.querySelectorAll('.mk-bar button').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.size ? x.dataset.size === size : Number(x.dataset.speed) === speed)));
+  layout();
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>

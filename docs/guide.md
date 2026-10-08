@@ -80,50 +80,61 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   doesn't animate on return what happened while you were looking at another.
 - **The Knight** (`js/app-knight.js`, css `.kn`): one small animated sprite that says where you
   are, the way his pin does on the game's map. He sits on the screen bar, on the bottom edge of
-  the tab you're on, under the middle of its title (26 px tall, so he doesn't touch its
-  letters), and never leaves it: he is the bar's mark of the current tab, which draws no rule
-  under it on a computer. When you change screens he gets up and runs along the bar to the new
-  tab's title (at 200 px a second, `--dur-run`, never under a response) and sits again. The
-  other Knights on the page are pictures of him: on Your game he sits on the bench under the
-  area's name (css `.hmC-kn`, still), and on the Map his pin is the Knight standing by your
-  bench (drawn by `js/app-map.js`, with your bench's layer); when a save moves your bench the
-  pin goes from the old one to the new one the way `js/walk.js` finds (`find`): on foot along
-  the corridors the map draws (`js/map-walk.js`: each room's drawing as a grid of ground, a
-  fortieth of a unit a cell, read from `assets/map/rooms-full.png` by `npm run walk`, and laid
-  out as one grid of the whole map), keeping to the middle of them, room to room through the
-  game's doors (`DOORS` in `js/rooms.js`, from the randomizer's `transitions.json`; each door on
-  its room's edge, on the side its name says, `doorPoint`), and by the kingdom's rides when
-  they're shorter: the stag stations the save has opened (the Stag Nest and the Hidden Station
-  only with no save, as the site doesn't follow them), the tram lines it has ridden and the
-  City's two lifts. It's Dijkstra over the doors and stops, the cost of crossing a room from one
-  to another, and of stepping through a door to its other side, being the walk on the grid (A*
-  in a window around the two ends; ready in `js/map-walk.js`'s `TABLES` for the doors and stops,
-  so a door whose two drawings only meet farther along is walked round, not through; the two
-  ends are walked on the spot), a stag ride worth
-  ten units of walking whatever the distance (a short hop is walked), a tram half a unit a
-  unit and a lift seven tenths, plus a stop. He walks at four units a second, stepping his
-  run's frames and turning where the way turns; rides the tram or the lift standing still, at
-  the ride's own speed with a stop at each end; and by stag fades out at the one station and in
-  at the other (there's no way between: the game's ride is instant); the whole way is fitted
-  to 2 to 8 s, every leg alike, in the view you have (the map never zooms or moves for him);
-  it plays when the save arrives with the Map in view (60% of it, and it lets go under 10%: no
-  flicker at the edge), or the next time you open it (once per bench, `walked` in the
-  preferences), and not at all where no door leads (Godhome and the White Palace are entered
-  by dream). A point off any ground (a bench pinned off its drawing, a door in the gap between
-  two rooms) stands on the nearest within half a unit, and a door on the ground nearest the
-  other side of it, the corridor's mouth; rock can be walked at two hundred times the cost, so
-  a drawing that seals a way with a line, or leaves a gap in it, is crossed where the crossing
-  is shortest and only where nothing goes round; a room the map doesn't draw (a shop, the
-  Colosseum) is crossed in a straight line.
-  His frames are the wiki's sprites (`assets/knight/idle.png`, `run.png` with six frames stepped
-  at 100 ms, `sit.png`; baked by `npm run knight`, 104 × 140 a cell), drawn with a CSS `steps()`
-  animation and moved with `translate`, linear like the dust motes. The rule he follows
-  (`design/00-system.md`, Motion): he walks along the bar and only fades in and out
-  (`--dur-slow`), never slides. With `prefers-reduced-motion` he only stands or sits. On a phone
-  (below 900 px) the bar has no gap beside a tab, so he isn't on it, and the tab keeps its rule.
-  He's decorative: hidden from screen readers and out of the tab order; a click on him is an
-  easter egg: he focuses soul as the game heals, standing still while the Focus's white light
-  (`--focus-glow`) swells around him and fades, then sits again (counted as `knight`).
+  the tab you're on, under the middle of its title (32 px tall standing; the tab's bottom padding
+  keeps him off its letters), and never leaves it: he is the bar's mark of the current tab, which
+  draws no rule under it on a computer. When you change screens he gets off the bench, turns if
+  the new tab is behind him, runs along the bar (at 200 px a second, `--dur-run`, never under a
+  response), skids to a stop (a hop under 40 px skips it) and sits down again. While he rests he
+  lives a little, every 15 to 25 s with the page in view: he leans forward for a look and sits
+  back, or dozes off and sleeps until something happens (a tab change, a click, a save arriving
+  from the game), and on the Map tab he opens his map, reads it and puts it away. The other
+  Knights on the page are pictures of him: on Your game he sits on the bench under the area's name
+  (css `.hmC-kn`, still, his pivot on the point where the game sits him), and on the Map his pin
+  is the Knight standing by your bench (drawn by `js/app-map.js`, with your bench's layer); when a
+  save moves your bench the pin goes from the old one to the new one the way `js/walk.js` finds
+  (`find`): on foot along the corridors the map draws (`js/map-walk.js`: each room's drawing as a
+  grid of ground, a fortieth of a unit a cell, read from `assets/map/rooms-full.png` by `npm run
+  walk`, and laid out as one grid of the whole map), keeping to the middle of them, room to room
+  through the game's doors (`DOORS` in `js/rooms.js`, from the randomizer's `transitions.json`;
+  each door on its room's edge, on the side its name says, `doorPoint`), and by the kingdom's
+  rides when they're shorter: the stag stations the save has opened (the Stag Nest and the Hidden
+  Station only with no save, as the site doesn't follow them), the tram lines it has ridden and
+  the City's two lifts. It's Dijkstra over the doors and stops, the cost of crossing a room from
+  one to another, and of stepping through a door to its other side, being the walk on the grid
+  (A* in a window around the two ends; ready in `js/map-walk.js`'s `TABLES` for the doors and
+  stops, so a door whose two drawings only meet farther along is walked round, not through; the
+  two ends are walked on the spot), a stag ride worth ten units of walking whatever the distance
+  (a short hop is walked), a tram half a unit a unit and a lift seven tenths, plus a stop. He walks
+  at four units a second, stepping his run's frames and turning where the way turns; rides the
+  tram or the lift standing still, at the ride's own speed with a stop at each end; and by stag
+  fades out at the one station and in at the other (there's no way between: the game's ride is
+  instant); the whole way is fitted to 2 to 8 s, every leg alike, in the view you have (the map
+  never zooms or moves for him); it plays when the save arrives with the Map in view (60% of it,
+  and it lets go under 10%: no flicker at the edge), or the next time you open it (once per
+  bench, `walked` in the preferences), and not at all where no door leads (Godhome and the White
+  Palace are entered by dream). A point off any ground (a bench pinned off its drawing, a door in
+  the gap between two rooms) stands on the nearest within half a unit, and a door on the ground
+  nearest the other side of it, the corridor's mouth; rock can be walked at two hundred times the
+  cost, so a drawing that seals a way with a line, or leaves a gap in it, is crossed where the
+  crossing is shortest and only where nothing goes round; a room the map doesn't draw (a shop,
+  the Colosseum) is crossed in a straight line.
+  His frames are the game's own clips (`js/knight-moves.js` and the strips in `assets/knight/`,
+  drawn by `tools/extract-knight.py` from the "Knight" sprite collection in the game's files, at the
+  game's size: 130 px standing; the 22 the site plays, and `design/34-knight-moves.html` shows the
+  71 the game holds): each a strip of equal cells with its fps, its pivot and where it loops
+  from (the run's first six frames are its start, then it loops; Focus gathers from its third).
+  The frames step as a Web Animation over the strip (`steps()`, one cell a frame) and he moves by
+  `translate`, linear like the dust motes; a mirror about his pivot turns him. The rule he follows
+  (`design/00-system.md`, Motion): he walks along the bar and only fades in and out (`--dur-slow`),
+  never slides. With `prefers-reduced-motion` he only sits or stands. On a phone (below 900 px)
+  the bar has no gap beside a tab, so he isn't on it, and the tab keeps its rule. He's decorative:
+  hidden from screen readers and out of the tab order; a click on him is an easter egg: he
+  focuses soul as the game heals, and for as long as your build's Focus takes
+  (`heal.timePerFocus`: Quick Focus, Deep Focus; with Joni's Blessing he gathers a moment and lets
+  go, as nothing comes back): he gets off the bench and gathers soul in the Focus's white light
+  (`--focus-glow`), the mask comes back, and he sits again; with Shape of Unn he becomes the slug
+  for that time, with Baldur Shell's shell and Spore Shroom's cloud as the game draws them (counted
+  as `knight`).
 - **The sister site's link and Hornet** (`js/app-sister.js`, css `.mh-sister`, `.sis-*`), shown since
   the sister was published (`SISTER = true` in the script; set to false it hides again, and then
   `#…&sister=1` shows it, surviving a reload like `admin=1`). «Silksong ↗» goes in the masthead's brand row, left of the title
@@ -683,6 +694,13 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   Silksong's own sprites (the game installed, UnityPy), not edited by hand: each of Hornet's moves as
   a strip, with its frames, fps, cell and her pivot, and `FLOOR` (her feet under it). Also Clawline's
   needle and thread (with each frame's box), used only by the design pages.
+- `js/knight-moves.js` and the strips in `assets/knight/` — generated by `tools/extract-knight.py`
+  from the game's own sprites (the game installed, UnityPy with its typetree generator: `uv run
+  --with UnityPy --with Pillow --with TypeTreeGeneratorAPI python3 -I tools/extract-knight.py`), not
+  edited by hand: each of the Knight's moves the site plays as a strip, with its frames, fps, cell,
+  his pivot and where it loops from, and `FLOOR` (his feet under the pivot, standing); `--all --out
+  design/34` draws every clip listed, for `design/34-knight-moves.html`. The three stills there
+  (`knight.png`, `shade.png`, `overcharm.png`) are the wiki's, by `npm run knight`.
 - `js/scene-objects.js` — generated by `tools/extract-scenes.py` from the game's own scenes, not
   edited by hand: each scene's tile map size (to place a point in its room, as the game does) and
   what it holds for the Map: enemies per Journal entry, what breaks and stays broken (by the
@@ -830,10 +848,9 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   `apple-touch-icon.png` on the page's background. Regenerate them if the Charms screen changes.
   `knight/` is the artwork for your side of the arena: the Knight, his Shade and the HUD's
   overcharm aura (`npm run knight`; with python3 and Pillow they're quantised on download),
-  and the three strips of the Knight who walks the page (`idle.png`, `run.png`, `sit.png`:
-  cells of 104 × 140, feet on y = 134, facing right), baked by the same script from the wiki's
-  sprites; the run's gif comes on an opaque background, cut out there by colour, and runs to
-  the left, so its frames are mirrored.
+  and the strips of the Knight who walks the page, one per move, the game's own clips
+  (`tools/extract-knight.py`, with `js/knight-moves.js` saying each strip's cells, fps and
+  pivot).
   `journal/` is the Journal list's medallions (`npm run journal`), and `hunter/`, what your
   game's Journal paints: the book (the old button's, no longer used), the Hunter, the complete
   entry's frame, the page's flourish and the portraits of the Shade, the Hunter's Mark and the
@@ -2103,8 +2120,8 @@ linking to the repo), in the footer under every screen
   and the notes and data in `kb/`) keeps that licence. Thanks to their editors.
 - **Artwork** in `assets/` (except `assets/fonts/`): the game's, downloaded from the wikis
   (`npm run icons` and the other `fetch-*` scripts). © Team Cherry. The Knight's strips in
-  `assets/knight/` are baked by `npm run knight` from the wiki's `Knight sprint.gif`,
-  `The Knight Idle.png` and `The Knight Resting.png`.
+  `assets/knight/` are the game's own clips, read from its files like the map
+  (`tools/extract-knight.py`); his three stills there come from the wiki (`npm run knight`).
 - **Which area each room is in, and which rooms its doors lead to** (`js/rooms.js`): from the
   `rooms.json` and `transitions.json` of the community's
   [RandomizerMod](https://github.com/homothetyhk/RandomizerMod) (LGPL-2.1); only those facts are taken.

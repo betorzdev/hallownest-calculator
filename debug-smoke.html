@@ -381,25 +381,31 @@ f.addEventListener('load', async () => {
     ok('on Charms the mini-bar stays', visible() === 'panel' && !q('#minihud').hidden);
     // The Knight (js/app-knight.js): sitting on the bar under the title of the tab you're on, and he runs to the next one.
     const knight = () => q('#nav .nav-tabs > .kn');
+    // His trip to a tab takes a moment (off the bench, the run, sitting down): wait until he's sat.
+    const settled = async () => { for (let i = 0; i < 40 && !knight().classList.contains('is-sit'); i++) await wait(200); };
     const knightBy = (v) => { const k = knight(), a = q('#nav .nav-tabs > .nav-tab[data-value="' + v + '"]'); if (!k || !a) return false;
       const lbl = a.querySelector('.nav-lbl, .nav-long') || a;
-      return Math.abs(parseFloat(k.style.translate) + k.offsetWidth / 2 - (lbl.offsetLeft + lbl.offsetWidth / 2)) < 3; };
+      return Math.abs(parseFloat(k.style.translate) + parseFloat(k.style.transformOrigin) - (lbl.offsetLeft + lbl.offsetWidth / 2)) < 3; };   // his pivot's x (the transform-origin) under the title
+    await settled();
     ok('the Knight is on the bar under the middle of Charms', knightBy('charms') && knight().getAttribute('aria-hidden') === 'true' && knight().tabIndex === -1,
        knight() ? knight().style.translate + ' ' + knight().className : 'no knight');
     w.location.hash = '#view=game';
     await wait(150);
     ok('an old "#view=game" link opens the Inventory, and the URL then says it by its name', visible() === 'gear' && w.location.hash.indexOf('view=inventory') >= 0, visible() + ' · ' + w.location.hash);
+    await settled();                        // sat under the Inventory, so the next trip is rightwards
     await goto('map');
     ok('the Map starts at its normal size', visible() === 'pg' && !q('#pg').classList.contains('is-big') && q('.pgm-big').getAttribute('aria-pressed') === 'false');
-    // From the Inventory's tab, so rightwards: the run itself may already be over under virtual time.
-    ok('the Knight moved along the bar to under Map, facing right (running or sat again)', knightBy('map') && !knight().classList.contains('is-left') && /is-(run|sit)/.test(knight().className),
+    // From the Inventory's tab, so rightwards.
+    await settled();
+    ok('the Knight moved along the bar to under Map, facing right, and sat again', knightBy('map') && !knight().classList.contains('is-left') && knight().classList.contains('is-sit'),
        knight() ? knight().style.translate + ' ' + knight().className : 'no knight');
     await click('[data-act="share"]');
     ok('and from the Map, Share copies the Map\'s page', /\/map\/index\.html(#lang=\w+)?$/.test(copied), copied);
     // The easter egg: a click and he focuses soul (standing, the glow), then sits again.
     await wait(2500); knight().click();
     ok('a click makes the Knight focus soul, standing', knight().classList.contains('is-focus') && !knight().classList.contains('is-sit'), knight().className);
-    await wait(1200);
+    // The build's Focus time, the mask coming back, and the bench: a few seconds.
+    for (let i = 0; i < 40 && !knight().classList.contains('is-sit'); i++) await wait(200);
     ok('and he sits again after it', !knight().classList.contains('is-focus') && knight().classList.contains('is-sit'), knight().className);
     await click('.pgm-big');
     ok('Large map makes it large and is remembered', q('#pg').classList.contains('is-big') && q('.pgm-big').getAttribute('aria-pressed') === 'true'

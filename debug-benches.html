@@ -22,6 +22,7 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-body); 
 <div class="grid" id="grid"></div>
 <script src="js/rooms.js"></script>
 <script src="js/benches.js"></script>
+<script src="js/knight-moves.js"></script>
 <script>
 const R = HK.rooms, B = HK.benches;
 const q = new URLSearchParams(location.search);
@@ -35,12 +36,12 @@ for (const [key] of Object.values(B.SCENES)) uses[key] = (uses[key] || 0) + 1;
 const scenes = Object.entries(B.SCENES).sort((a, b) => a[1][0].localeCompare(b[1][0]) || a[0].localeCompare(b[0]));
 document.getElementById('count').textContent = scenes.length + ' benches · ' + Object.keys(B.ART).length + ' pictures';
 document.getElementById('grid').innerHTML = scenes.map(([scene, [key, y]], i) => {
-  const [w, h, x] = B.ART[key];
+  const [w, h, x] = B.ART[key], m = HK.KNIGHT.MOVES['sit-idle'];
   const area = R.areaOf(scene), a = R.AREAS[area] || {}, lt = a.light || 'crossroads';
   const place = R.placeOf(scene), p = (R.PLACES || {})[place];
   return `<div class="card"><div class="hmC-hero" style="--area-l: var(--area-${lt}-light); --area-m: var(--area-${lt}-mid); --area-d: var(--area-${lt}-deep);">
       <span class="num">${i + 1}</span>
-      <div class="hmC-bench" style="--bw: ${w}; --bh: ${h}; --bx: ${x}; --by: ${y};">
+      <div class="hmC-bench" style="--bw: ${w}; --bh: ${h}; --bx: ${x}; --by: ${y}; --kw: ${m.w}; --kh: ${m.h}; --kpx: ${m.px}; --kpy: ${m.py};">
         <img class="hmC-seat" src="assets/benches/${key}.png" alt="" width="${w}" height="${h}"><span class="hmC-kn"></span><i class="seat"></i></div>
     </div>
     <div class="meta"><b>${a.es || area || '?'}</b>${p ? ' · ' + (p.es || place) : ''}<br>

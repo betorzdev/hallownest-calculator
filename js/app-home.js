@@ -85,7 +85,8 @@
   }
 
   /* ── Pieces ── */
-  /* The bench under the area's name, with the Knight sitting on it (css .hmC-kn, the sit strip):
+  /* The bench under the area's name, with the Knight sitting on it (css .hmC-kn, the game's
+     sit-idle clip, js/knight-moves.js: its cell and his pivot, which goes on the bench's point):
      a picture of him resting there, still; the Knight who moves, and marks the tab you're on,
      stays on the screen bar (js/app-knight.js). The bench is the one you rest at, as the game
      draws it (js/benches.js, from its files), at the Knight's scale and where the game sits him.
@@ -93,7 +94,8 @@
   function benchHtml(scene) {
     const [key, y] = BE.SCENES[scene] || BE.SCENES.Crossroads_30;
     const [w, h, x] = BE.ART[key];
-    return `<div class="hmC-bench" aria-hidden="true" style="--bw: ${w}; --bh: ${h}; --bx: ${x}; --by: ${y};">
+    const m = HK.KNIGHT.MOVES['sit-idle'];
+    return `<div class="hmC-bench" aria-hidden="true" style="--bw: ${w}; --bh: ${h}; --bx: ${x}; --by: ${y}; --kw: ${m.w}; --kh: ${m.h}; --kpx: ${m.px}; --kpy: ${m.py};">
       <img class="hmC-seat" src="assets/benches/${key}.png" alt="" width="${w}" height="${h}"><span class="hmC-kn"></span></div>`;
   }
   const fig = (k, v, big) => `<div class="hm-fig${big ? ' is-big' : ''}"><span class="hm-fig-k">${esc(k)}</span><span class="hm-fig-v">${v}</span></div>`;

@@ -546,33 +546,24 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 .nav-hj:hover .nav-num { color: var(--accent); }
 /* The two groups: your game, then the tools after a thin rule (design/10-restructure.md). */
 .nav-sep { width: 1px; height: 1.4em; align-self: center; background: var(--line-ctl); }
-/* ── The Knight who walks the page (js/app-knight.js) ──────────────────
-   One sprite, drawn from a strip of 104 × 140 cells (assets/knight/, tools/fetch-knight.js):
-   standing, running (six frames, stepped at --dur-step) or sitting; he faces right and turns
-   with a mirror. He sits on the screen bar, --kn-bar tall (--kn-h), his feet on its bottom
-   edge. He moves by translate, linear, like the motes, and reduced
-   motion leaves him on his first frame and, from the JS, only standing or sitting. Decorative:
-   the button only exists for the click (he focuses soul). */
+/* ── The Knight who walks the page (js/app-knight.js) ──────────────────────
+   One sprite, drawn from the game's own clips (js/knight-moves.js; the strips in assets/knight/,
+   tools/extract-knight.py): the script sets the strip, its cell and the frame. He stands --kn-bar
+   tall; each cell's lowest pixel rests on the bar's bottom edge and his pivot's x is the spot under
+   the tab's title (the transform-origin, so a mirror turns him on the spot). He moves by translate,
+   linear, like the motes; reduced motion leaves him sitting or standing. Decorative: the button
+   only exists for the click (he focuses soul). */
 .kn {
-  --n: 1; --kn-h: var(--kn-bar); --cell: calc(var(--kn-h) * 104 / 140);
-  position: absolute; z-index: 1; width: var(--cell); height: var(--kn-h); padding: 0; border: 0; margin: 0;
-  background: url(../assets/knight/idle.png) 0 0 / auto 100% no-repeat; cursor: default;
-  opacity: 1; transition: opacity var(--dur-slow) var(--ease-fade);
+  position: absolute; z-index: 1; bottom: 0; left: 0; padding: 0; border: 0; margin: 0;
+  background: 0 0 / auto 100% no-repeat; cursor: default;
+  opacity: 1; transition: opacity var(--dur-slow) var(--ease-fade), filter var(--dur-slow) var(--ease-fade);
 }
 .kn:focus { outline: none; }
-.kn.is-run { background-image: url(../assets/knight/run.png); --n: 6; }
-.kn.is-sit { background-image: url(../assets/knight/sit.png); }
 .kn.is-left { scale: -1 1; }
 .kn.is-out { opacity: 0; }
-@media (prefers-reduced-motion: no-preference) {
-  .kn.is-run { animation: kn-cycle calc(var(--dur-step) * var(--n)) steps(var(--n)) infinite; }
-  /* Focusing soul (a click): standing still, the Focus's white light swells around him and fades. */
-  .kn.is-focus { animation: kn-focus var(--dur-flash) var(--ease-fade); }
-}
-@keyframes kn-cycle { to { background-position-x: calc(-1 * var(--cell) * var(--n)); } }
-@keyframes kn-focus { 40% { filter: drop-shadow(0 0 3px var(--focus-glow)) drop-shadow(0 0 14px var(--focus-glow)); } }
-/* On the screen bar: sitting at its bottom edge, under the current tab's title. */
-.nav-tabs > .kn { bottom: 0; left: 0; }
+/* Focusing soul (a click): the Focus's white light around him while he gathers it, for as long as
+   the build's Focus takes. */
+.kn.is-focus { filter: drop-shadow(0 0 3px var(--focus-glow)) drop-shadow(0 0 14px var(--focus-glow)); }
 
 /* ── The sister site's link and its Hornet (js/app-sister.js) ──────────────
    «Silksong ↗», a loose word left of the title, the counterweight of your save on its right; instead
@@ -1593,7 +1584,8 @@ button.gplate:is(:hover, :focus-visible) .gplate-art::before, .gplate:has(.lvlpi
   :root:has(#minihud:not([hidden])) { --sticky-h: 110px; }
 }
 @media (min-width: 900px) {
-  .nav-tab { white-space: nowrap; }
+  /* Room under the titles for the Knight at --kn-bar (js/app-knight.js) without touching the letters. */
+  .nav-tab { white-space: nowrap; padding-bottom: 12px; }
 }
 /* In the tabs' row the mini-bar keeps to the right, also if it ever wraps under them (the net above). */
 @media (min-width: 1240px) {
@@ -4529,8 +4521,10 @@ html:has(.pg.is-full:not([hidden])) { overflow: hidden; }
 .hmC-sup { font-family: var(--font-display); font-size: var(--fs-sm); letter-spacing: var(--track-wide); text-transform: uppercase; color: var(--ink-2); }
 .hmC-area { font-family: var(--font-display); font-size: clamp(1.8rem, 5vw, 3.2rem); font-weight: 400; letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--ink-strong); line-height: 1.1; margin: 0; }
 /* The bench under the name (js/app-home.js): the one you rest at, the game's picture (js/benches.js:
-   --bw × --bh of its pixels, where the game sits the Knight at --bx, --by), with him on it (the sit
-   strip, 104 × 140, that point 105 down it: his seat is 11 below), both at the game's scale: the Knight --kn-bench tall. A big
+   --bw × --bh of its pixels, where the game sits the Knight at --bx, --by), with him on it (his
+   sit-idle cell, --kw × --kh, his pivot --kpx, --kpy down it: js/knight-moves.js; that point is
+   SEAT, 0.7 units = 45 of the game's pixels, under his pivot, as tools/extract-benches.py reads it),
+   both at the game's scale: 140 of the game's pixels are --kn-bench. A big
    bench (the Nailmasters', Godhome's roof) shrinks whole to --kn-bench-max tall, and to the width.
    Lit in the area's colour. Still: the Knight who moves, and marks the tab you're on, is the one
    on the screen bar (js/app-knight.js). */
@@ -4541,11 +4535,12 @@ html:has(.pg.is-full:not([hidden])) { overflow: hidden; }
 /* The seat's picture leaves room above for his head where the bench is lower than him (its margin,
    a share of the width); he stands on the bench's foot, raised to its seat (his translate, a
    share of his own 140). */
-.hmC-seat { display: block; width: 100%; height: auto; margin-top: calc(max(0, 105 - var(--by)) / var(--bw) * 100%);
+.hmC-seat { display: block; width: 100%; height: auto; margin-top: calc(max(0, var(--kpy) + 45 - var(--by)) / var(--bw) * 100%);
   filter: drop-shadow(0 0 14px color-mix(in oklab, var(--area-l) 45%, transparent)); }
 .hmC-kn { position: absolute; left: calc(var(--bx) / var(--bw) * 100%); bottom: 0;
-  width: calc(104 / var(--bw) * 100%); aspect-ratio: 104 / 140; translate: -50% calc((var(--bh) - var(--by) - 35) / -140 * 100%);
-  background: url(../assets/knight/sit.png) 0 0 / auto 100% no-repeat; filter: drop-shadow(0 0 18px color-mix(in oklab, var(--area-l) 60%, transparent)); }
+  width: calc(var(--kw) / var(--bw) * 100%); aspect-ratio: var(--kw) / var(--kh);
+  translate: calc(var(--kpx) / var(--kw) * -100%) calc((var(--bh) - var(--by) + 45 - (var(--kh) - var(--kpy))) / var(--kh) * -100%);
+  background: url(../assets/knight/sit-idle.png) 0 0 / 100% 100% no-repeat; filter: drop-shadow(0 0 18px color-mix(in oklab, var(--area-l) 60%, transparent)); }
 .hmC-figs { justify-content: center; margin-top: var(--sp-6); }
 .hmC-figs .hm-fig { align-items: center; }
 /* ── Your game, alive (design/17-home-alive.html) ──

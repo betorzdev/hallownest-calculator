@@ -397,6 +397,13 @@ along a line**: along the bar, and the pin along the map, always by `translate` 
 pace, linear like the motes; he only fades in and out (`--dur-slow`). Never a slide, nothing
 bounces. With `prefers-reduced-motion` he only stands or sits.
 
+**Since 8 October 2026 he is drawn from the game's own clips** (`tools/extract-knight.py`, the
+"Knight" sprite collection; `design/34-knight-moves.html` shows the 71 the game holds), 32 px
+standing (the wiki's rips were 26, with sawn edges), and he behaves as the game's Knight on a
+bench: he gets off, runs, skids and sits down; leans, dozes off and sleeps until something happens;
+opens his map on the Map tab; and the click's Focus lasts what the build's Focus lasts, the slug
+with Shape of Unn. Still along a line, still linear, still nothing bounces.
+
 ## 5. The plan, by value-to-cost ratio
 
 ### Now (hours, not days)

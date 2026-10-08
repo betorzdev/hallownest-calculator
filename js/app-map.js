@@ -747,15 +747,16 @@
     return list.map(pin).join('') + mine.map(mark).join('') + (layers.has('my-bench') ? youSvg() : '');
   }
   /* You: the Knight standing by your bench, with your bench's layer (as the game shows you on
-     its map). Not a pin to pick: nothing to say that the bench doesn't. When your bench moves,
-     js/app-knight.js walks him here from the old one, room by room, stepping his run's frames
-     (assets/knight/run.png) through this svg's viewBox and turning him with the inner group;
-     until he's here, he's painted where that walk has him (pinAt). */
+     its map). Not a pin to pick: nothing to say that the bench doesn't. His picture is the game's
+     own standing clip (js/app-knight.js, pinSvg: a cell of the strip through the svg's viewBox,
+     his feet on the point). When your bench moves, js/app-knight.js walks him here from the old
+     one, room by room, stepping his run's frames through that viewBox and turning him with the
+     inner group; until he's here, he's painted where that walk has him (pinAt). */
   function youSvg() {
-    const pt = App.progress.bench && ((App.knight && App.knight.pinAt()) || benchPoint(App.progress.bench));
+    const pt = App.progress.bench && App.knight && (App.knight.pinAt() || benchPoint(App.progress.bench));
     if (!pt) return '';
     return `<g class="pgm-pin pgm-mark pgm-you" style="--px:${pt[0].toFixed(3)}px;--py:${(-pt[1]).toFixed(3)}px;--ox:0.85px" aria-hidden="true">
-        <g class="pgm-you-art"><svg class="pgm-atlas" x="-0.52" y="-1.25" width="1.04" height="1.4" viewBox="0 0 104 140"><image href="assets/knight/idle.png" width="104" height="140"/></svg></g></g>`;
+        <g class="pgm-you-art">${App.knight.pinSvg('idle', 0)}</g></g>`;
   }
 
   /* ── The view: the SVG's viewBox, kept between repaints ── */
