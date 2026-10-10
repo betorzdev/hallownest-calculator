@@ -169,8 +169,9 @@
     const picked = pickedOf(sd);
     const list = (k) => (Array.isArray(pd[k]) ? pd[k] : []);
     const flames = list('scenesFlameCollected'), roots = list('scenesEncounteredDreamPlantC');
-    // Once the Troupe's ritual is over, every flame was taken, whatever the lists say now.
-    const ritualDone = int(pd.grimmChildLevel) >= 4 || !!pd.killedNightmareGrimm || !!pd.destroyedNightmareLantern;
+    /* Once the Troupe's ritual is over, every flame was taken, whatever the lists say now. Not once
+       it's banished (grimmChildLevel 5): the flames left then were never taken. */
+    const ritualDone = int(pd.grimmChildLevel) === 4 || !!pd.killedNightmareGrimm;
     const has = (it) => {
       const [t, a] = it.how;
       if (t === 'o') return picked.has(it.scene + '|' + a);

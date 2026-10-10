@@ -283,10 +283,9 @@
       return pin(`<button type="button" class="${cls}" data-act="pgFeat" data-id="${a.id}" aria-pressed="${it.on}"
         title="${esc(label + ' · ' + t(it.on ? 'pgUnmark' : 'pgMark'))}">${body}</button>`);
     }
-    // What another screen keeps (masks, grubs, the Journal's count…): the plate takes you there.
+    // What another screen keeps (masks, grubs, the Journal's count…): marked there, not here.
     if (m.far) {
-      const act = m.far === 'progress' ? 'data-act="pgShow" data-value="pct"' : `data-act="view" data-value="${m.far}"`;
-      return pin(`<button type="button" class="${cls} is-far" ${act} data-id="${a.id}" title="${esc(label + ' · ' + t(FAR_KEY[m.far]))}">${body}</button>`);
+      return pin(`<button type="button" class="${cls} is-far" disabled data-id="${a.id}" aria-pressed="${it.on}" title="${esc(label + ' · ' + t(FAR_KEY[m.far]))}">${body}</button>`);
     }
     // A progress id or a Journal entry: marked here, where the site keeps it, as the 112% does.
     // In a save from the game nothing marks it; nor what the save already settled (an ending).
@@ -505,7 +504,7 @@
     const rows = (list) => `<ol class="pg-rows">${list.join('') || App.emptyHtml(esc(t('pgNothingMissing')), '', { tag: 'li' })}</ol>`;
     const body = prefs.pgShow === 'feats' ? `${pgTabs(r, acc ? acc.done : f.done)}<div class="pg-total">${total}</div>
         ${acc ? acctHtml(acc) : sceneHtml()}${opts}
-        ${rows(f.groups.map((g) => featRow(g, acc)))}` : `${pgTabs(r, acc ? acc.done : f.done)}<div class="pg-total">
+        ${rows(f.groups.map((g) => featRow(g, acc)))}` : `${pgTabs(r, acc ? acc.done : f.done)}<div class="pg-total${r.total >= r.max ? ' is-done' : ''}">
           <span class="pg-total-k">${esc(t('pgCompletion'))}</span>
           <span class="pg-total-v">${num(r.total)}<span class="u">${esc(pctSpace())} / ${num(r.max)}</span></span>
         </div>${opts}
@@ -517,9 +516,10 @@
   function paintPgNav() {
     const a = document.getElementById('nav-pg');
     if (!a) return;
-    const total = pct(count().total);
+    const r = count(), total = pct(r.total);
     a.querySelector('.nav-lbl').textContent = t('navProgress');
     a.querySelector('.nav-num').textContent = total;
+    a.querySelector('.nav-num').classList.toggle('is-done', r.total >= r.max);
     const lbl = t('pgNavHint', { pct: total });
     a.setAttribute('aria-label', lbl);
     a.title = lbl;

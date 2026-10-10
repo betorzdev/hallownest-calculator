@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Grimmkin flames on the Map</title>
+<!-- Design material, not part of the site. Albert (10 Oct 2026), on the Map's Quests group: «es
+     confuso. en el juego, matas al enemigo y entonces te da la llama. ahora parece que hay 2 cosas
+     cuando realmente hay una. quizas hay que rediseñar esto. y mostrar solo llamas, y quizas
+     separarlas en las 3 fases.»
+
+     Today: two layers, «Llamas de los Grimarios» (10 pins, the game's flame pins) and «Grimarios»
+     (9 pins, the Journal portrait beside each flame). Decided: one thing, the flame. Open: how the
+     three phases (Novice · Master · Nightmare, the last with Brumm's fourth flame) show.
+       A · one layer, its members   «Llamas de los Grimarios» with the caret the sets already have
+                                     (Keys, Relics…): it opens the three Grimmkin and Brumm, each a
+                                     switch. The pins stay the game's flame.
+       B · three layers             one chip per phase in Quests, each with its Grimmkin's portrait
+                                     and its count; Brumm's flame in the Nightmare's.
+       C · one layer, phase on pin  no switches: the pin itself is the Grimmkin of its phase (its
+                                     Journal portrait), Brumm's the flame; the card says the rest.
+     In all: the card is the flame's, with its guardian under the name and «Ver en el Diario» beside
+     «Marcar». Seeded game: the Novices' three taken, one Master's, nothing of the Nightmare's.
+     The bar switches variant and language; ?v=a&lang=es. -->
+<base href="../">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+body { background: var(--page-bg); background-attachment: fixed; margin: 0; }
+.tv-wrap { max-width: 1180px; margin: 0 auto; padding: var(--sp-8) var(--page-pad) 160px; }
+.tv-bar { position: fixed; z-index: 100; left: 0; right: 0; bottom: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-2) var(--sp-8);
+  padding: var(--sp-3) var(--sp-4); background: var(--card); border-top: 1px solid var(--line-panel); font-size: var(--fs-sm); }
+.tv-grp { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-1) var(--sp-3); }
+.tv-lbl { color: var(--muted); font-family: var(--font-num); font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; }
+.tv-bar button { color: var(--ink-2); padding: var(--sp-1) 0; border-bottom: 1px solid transparent; }
+.tv-bar button[aria-pressed="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.ctx { color: var(--muted); font-size: var(--fs-xs); margin: 0 0 var(--sp-3); max-width: 70ch; }
+
+/* The map: the site's own, captured with every layer off; the pins over it in its pixels. */
+.mp { position: relative; width: 100%; aspect-ratio: 1420 / 920; background: url(design/40/map.png) center / 100% 100% no-repeat; border: 1px solid var(--line-panel); }
+.pin { position: absolute; width: 26px; height: 26px; transform: translate(-50%, -50%); border-radius: 50%; background: var(--bg);
+  border: 1px solid var(--line-ctl); display: grid; place-items: center; cursor: pointer; }
+.pin img { width: 80%; height: 80%; object-fit: contain; }
+.pin.is-on { opacity: 0.4; }
+.pin.is-sel { border-color: var(--accent); border-width: 2px; }
+.mp .pgm-card-wrap { position: absolute; }
+.pgm-card-btns { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-1); }
+
+.flt { margin-top: var(--sp-6); }
+</style>
+</head>
+<body>
+<div class="tv-wrap" id="app"></div>
+<nav class="tv-bar">
+  <span class="tv-grp"><span class="tv-lbl">Variante</span>
+    <button type="button" data-v="a">A · una capa, por fases dentro</button>
+    <button type="button" data-v="b">B · tres capas</button>
+    <button type="button" data-v="c">C · la fase en el pin</button></span>
+  <span class="tv-grp"><span class="tv-lbl">Idioma</span>
+    <button type="button" data-l="es">ES</button><button type="button" data-l="en">EN</button></span>
+</nav>
+<script>
+(() => {
+  const q = new URLSearchParams(location.search);
+  let v = q.get('v') || 'a', lang = q.get('lang') || 'es';
+  const L = (p) => p[lang];
+  // The game's names: NAME_FLAMEBEARER_*, Brumm (IGOR_MAIN); the flame is the site's (js/data.js).
+  const PH = {
+    novice:    { es: 'Grimario Novato', en: 'Grimmkin Novice', pl: { es: 'Grimarios Novatos', en: 'Grimmkin Novices' }, art: 'assets/journal/grimmkin-novice.png' },
+    master:    { es: 'Grimario Maestro', en: 'Grimmkin Master', pl: { es: 'Grimarios Maestros', en: 'Grimmkin Masters' }, art: 'assets/journal/grimmkin-master.png' },
+    nightmare: { es: 'Grimario Pesadilla', en: 'Grimmkin Nightmare', pl: { es: 'Grimarios Pesadilla', en: 'Grimmkin Nightmares' }, art: 'assets/journal/grimmkin-nightmare.png' },
+    brumm:     { es: 'Brumm', en: 'Brumm', art: 'assets/items/grimmkin-flame.png' },
+  };
+  const FLAME = 'assets/items/grimmkin-flame.png';
+  // Each flame: its phase, its place (the map's own names) and where it is on the capture.
+  const F = [
+    ['novice', 347, 320, { es: 'Sendero Verde', en: 'Greenpath' }, true],
+    ['novice', 725, 190, { es: 'Cumbre de Cristal', en: 'Crystal Peak' }, true],
+    ['novice', 710, 420, { es: 'Ciudad de Lágrimas', en: 'City of Tears' }, true],
+    ['master', 483, 203, { es: 'Paso del Rey', en: "King's Pass" }, true],
+    ['master', 1000, 325, { es: 'Tierras de Reposo', en: 'Resting Grounds' }, false],
+    ['master', 1177, 585, { es: 'Límite del Reino', en: "Kingdom's Edge" }, false],
+    ['nightmare', 508, 578, { es: 'Páramos Fúngicos', en: 'Fungal Wastes' }, false],
+    ['nightmare', 893, 663, { es: 'Canales Reales', en: 'Royal Waterways' }, false],
+    ['nightmare', 1147, 648, { es: 'La Colmena', en: 'The Hive' }, false],
+    ['brumm', 35, 630, { es: 'Nido Profundo · Poblado Distante', en: 'Deepnest · Distant Village' }, false],
+  ];
+  const T = {
+    flame: { es: 'Llama de los Grimarios', en: 'Grimmkin Flame' },
+    layer: { es: 'Llamas de los Grimarios', en: 'Grimmkin Flames' },
+    roots: { es: 'Raíces susurrantes', en: 'Whispering Roots' },
+    npcs: { es: 'Encuentros con personajes', en: 'Meetings with characters' },
+    quests: { es: 'Misiones', en: 'Quests' },
+    mark: { es: 'Marcar como conseguido', en: 'Mark as done' },
+    journal: { es: 'Ver en el Diario', en: 'See in the Journal' },
+    choose: { es: 'Elegir cuáles', en: 'Choose which' },
+    ctx: {
+      a: { es: 'Una sola capa. La flecha de al lado (como en Llaves o Reliquias) despliega las tres fases y Brumm, cada una con su interruptor. En el mapa, el pin del juego para todas.',
+           en: 'One layer. The caret beside it (as on Keys or Relics) opens the three phases and Brumm, each with its own switch. On the map, the game\'s pin for all.' },
+      b: { es: 'Tres capas en Misiones, una por fase, con el retrato de su Grimario y su cuenta. La llama de Brumm va con la de los Pesadilla (es la cuarta de esa fase).',
+           en: 'Three layers in Quests, one per phase, with its Grimmkin\'s portrait and its count. Brumm\'s flame goes with the Nightmares\' (it\'s that phase\'s fourth).' },
+      c: { es: 'Una sola capa, sin interruptores por fase: el pin es el Grimario de su fase, y el de Brumm la llama. La ficha dice qué llama es.',
+           en: 'One layer, no switch per phase: the pin is its phase\'s Grimmkin, Brumm\'s the flame. The card says which flame it is.' },
+    },
+  };
+  const n = (got, max) => `<span class="pgm-kind-n${got === max ? ' is-full' : ''}"><b>${got}</b><i class="u">/${max}</i></span>`;
+  const count = (ph) => { const of = F.filter((f) => !ph || ph.includes(f[0])); return [of.filter((f) => f[4]).length, of.length]; };
+  const chip = (art, name, c, extra = '') => `<button type="button" class="pgm-kind is-on" aria-pressed="true"><span class="pgm-kind-art"><img src="${art}" alt=""></span><span class="pgm-kind-t">${name}</span>${n(...c)}</button>${extra}`;
+  const CARET = '<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1 L8 5 L3 9 Z" fill="currentColor"/></svg>';
+  let sel = 1;
+
+  function filterHtml() {
+    const roots = chip('assets/items/whispering-root.png', L(T.roots), [9, 15]);
+    const npcs = `<button type="button" class="pgm-kind is-on" aria-pressed="true"><span class="pgm-kind-art"><i class="pgm-ico" aria-hidden="true"></i></span><span class="pgm-kind-t">${L(T.npcs)}</span>${n(12, 40)}</button>`;
+    let flames;
+    if (v === 'a') {
+      const subs = ['novice', 'master', 'nightmare', 'brumm'].map((k) => `<button type="button" class="pgm-sub is-on" aria-pressed="true"><span class="pgm-inside-art"><img src="${PH[k].art}" alt=""></span><span>${L(PH[k])}</span>${n(...count([k]))}</button>`).join('');
+      flames = `<span class="pgm-set"><button type="button" class="pgm-kind is-on" aria-pressed="true"><span class="pgm-kind-art"><img src="${FLAME}" alt=""></span><span class="pgm-kind-t">${L(T.layer)}</span>${n(...count())}</button><button type="button" class="pgm-more" aria-expanded="true" title="${L(T.choose)}">${CARET}</button></span>
+        <div class="pgm-inside" role="group">${subs}</div>`;
+    } else if (v === 'b') {
+      flames = chip(PH.novice.art, L(PH.novice.pl), count(['novice'])) + chip(PH.master.art, L(PH.master.pl), count(['master'])) + chip(PH.nightmare.art, L(PH.nightmare.pl), count(['nightmare', 'brumm']));
+    } else {
+      flames = chip(FLAME, L(T.layer), count());
+    }
+    const total = [9 + count()[0], 15 + 10];
+    return `<section class="pgm-filter flt"><section class="pgm-sec is-open">
+      <div class="pgm-sec-h"><button type="button" class="pgm-fold" aria-expanded="true"><svg class="pgm-caret" viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1 L8 5 L3 9 Z" fill="currentColor"/></svg></button>
+        <button type="button" class="pgm-sec-sw is-all" role="switch" aria-checked="true"><span class="pgm-sec-t">${L(T.quests)}</span>${n(...total)}</button></div>
+      <div class="pgm-kinds" role="group">${roots}${flames}${npcs}</div></section></section>`;
+  }
+  function pinArt(f) { return v === 'c' ? PH[f[0]].art : FLAME; }
+  function cardHtml(f) {
+    const who = PH[f[0]];
+    const art = v === 'c' ? who.art : FLAME;
+    const jr = f[0] === 'brumm' ? '' : `<button type="button" class="text-btn">${L(T.journal)}</button>`;
+    return `<div class="pgm-card-wrap" style="left:${(f[1] / 1420) * 100}%;top:${(f[2] / 920) * 100}%"><div class="pgm-card">
+      <span class="pgm-card-art"><img src="${art}" alt=""></span>
+      <span class="pgm-card-t"><b>${L(T.flame)}</b><span>${L(f[3])}</span><span>${L(who)}</span></span>
+      <span class="pgm-card-btns"><button type="button" class="text-btn" aria-pressed="${f[4]}">${L(T.mark)}</button>${jr}</span>
+    </div></div>`;
+  }
+  function paint() {
+    document.documentElement.lang = lang;
+    const pins = F.map((f, i) => `<span class="pin${f[4] ? ' is-on' : ''}${i === sel ? ' is-sel' : ''}" data-i="${i}" style="left:${(f[1] / 1420) * 100}%;top:${(f[2] / 920) * 100}%"><img src="${pinArt(f)}" alt=""></span>`).join('');
+    document.getElementById('app').innerHTML = `<p class="ctx">${L(T.ctx[v])}</p>
+      <div class="mp">${pins}${cardHtml(F[sel])}</div>${filterHtml()}`;
+    document.querySelectorAll('[data-v]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.v === v));
+    document.querySelectorAll('[data-l]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.l === lang));
+  }
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-v],[data-l],.pin');
+    if (!b) return;
+    if (b.dataset.v) v = b.dataset.v;
+    if (b.dataset.l) lang = b.dataset.l;
+    if (b.dataset.i) sel = Number(b.dataset.i);
+    paint();
+  });
+  paint();
+})();
+</script>
+</body>
+</html>

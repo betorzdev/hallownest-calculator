@@ -54,7 +54,9 @@
     const pin = name === 'Grubfather' ? pinsOf('grubfather')[0] : null;
     return { p: (pin && [pin[2], pin[3]]) || (NPC_OF[name] && npcPin(NPC_OF[name])) || [sp[0], sp[1]], scene: sp[2] };
   }
-  // A collectible: its own spot; the Grimmkin flames, which ItemChanger doesn't place, on the game's pins.
+  /* A collectible: its own spot; the Grimmkin flames, which ItemChanger doesn't place, on the game's pins.
+     Brumm's, in his room off Distant Village, is the game's pin in the village. */
+  const PIN_ROOM = { Room_spider_small: 'Deepnest_10' };
   const COL_POS = (() => {
     const out = {}, used = {};
     for (const it of CO.ITEMS) {
@@ -63,8 +65,9 @@
       const kind = GAME_PIN[it.kind];
       if (!pt && kind) {
         // The game's pins in that room, in order: two in one room are its two pins.
-        const list = pinsOf(kind).filter((p) => p[1] === it.scene);
-        const k = kind + '|' + it.scene;
+        const room = PIN_ROOM[it.scene] || it.scene;
+        const list = pinsOf(kind).filter((p) => p[1] === room);
+        const k = kind + '|' + room;
         const i = used[k] || 0;
         used[k] = i + 1;
         if (list[i]) pt = [list[i][2], list[i][3]];
@@ -116,16 +119,23 @@
   const DREAM_BOSS_AT = { 'failed-champion': 'Crossroads_10', 'soul-tyrant': 'Ruins1_24', 'lost-kin': 'Abyss_19',
     'white-defender': 'Waterways_15', 'grey-prince-zote': 'Room_Bretta' };
   /* Foes no room places (js/scene-objects.js reads what a scene holds; these come some other way),
-     on the game's pin for where they're fought, with their layer: the Grimmkin, called by the
-     flames of Grimm's ritual (the wiki's page for each; Distant Village's flame is Brumm's), are
-     the ritual's, beside their flames; the Hollow Knight and the Radiance, behind the Black Egg,
-     are other bosses. */
+     on the game's pin for where they're fought, with their layer: the Hollow Knight and the
+     Radiance, behind the Black Egg, are other bosses. */
   const SPAWNED_BOSS_AT = [
-    ['grimmkin-novice', 'flame', 'Fungus1_10', 'grimmkin'], ['grimmkin-novice', 'flame', 'Mines_10', 'grimmkin'], ['grimmkin-novice', 'flame', 'Ruins1_28', 'grimmkin'],
-    ['grimmkin-master', 'flame', 'Tutorial_01', 'grimmkin'], ['grimmkin-master', 'flame', 'RestingGrounds_06', 'grimmkin'], ['grimmkin-master', 'flame', 'Deepnest_East_03', 'grimmkin'],
-    ['grimmkin-nightmare', 'flame', 'Fungus2_30', 'grimmkin'], ['grimmkin-nightmare', 'flame', 'Abyss_02', 'grimmkin'], ['grimmkin-nightmare', 'flame', 'Hive_03', 'grimmkin'],
     ['hollow-knight', 'blackegg', 'Crossroads_02', 'other-bosses'], ['the-radiance', 'blackegg', 'Crossroads_02', 'other-bosses'],
   ];
+  /* The Grimmkin aren't pins of their own: in the game you beat one and it gives you its flame, so
+     the flame is the thing (Albert, 10 Oct 2026; design/40, A). Each flame is of its phase, the
+     Grimmkin that guards it (the wiki's page for each), and Brumm's is the last phase's fourth,
+     given with no fight: the flames' layer opens into those four. */
+  const FLAME_PHASE = {
+    Fungus1_10: 'grimmkin-novice', Mines_10: 'grimmkin-novice', Ruins1_28: 'grimmkin-novice',
+    Tutorial_01: 'grimmkin-master', RestingGrounds_06: 'grimmkin-master', Deepnest_East_03: 'grimmkin-master',
+    Fungus2_30: 'grimmkin-nightmare', Abyss_02: 'grimmkin-nightmare', Hive_03: 'grimmkin-nightmare', Room_spider_small: 'brumm',
+  };
+  const PHASES = ['grimmkin-novice', 'grimmkin-master', 'grimmkin-nightmare', 'brumm'];
+  // A phase's name: its Grimmkin's, as the Journal names it (NAME_FLAMEBEARER_*); Brumm's, his.
+  const phaseName = (k) => (k === 'brumm' ? pick(PE.PEOPLE.find((w) => w.id === 'brumm')) : foeName(k));
   /* Two fights load their own copy of a room the map doesn't draw: the Crystal Guardian's, on its
      bench room, and Flukemarm's, where she leaves Flukenest. */
   const BOSS_SCENE = { Mines_18_boss: () => ({ p: roomPoint('Mines_18'), scene: 'Mines_18' }), Waterways_12_boss: () => spotOf('Flukenest') };
@@ -169,7 +179,7 @@
     // One layer per kind of thing (design/24, C: Equipment, spells and arts and Bosses and trials were two).
     { id: 'c112', layers: ['charms', 'equipment', 'spells', 'arts', 'dream-nail', 'bosses', 'trials', 'grimm-troupe', 'graves', 'dreamers', 'mask-shard', 'vessel-fragment', 'pale-ore'] },
     { id: 'collect', layers: ['grub', 'charm-notch', 'simple-key', 'keys', 'rancid-egg', 'relics', 'map'] },
-    { id: 'quests', layers: ['whispering-root', 'grimmkin-flame', 'grimmkin', 'npcs'] },
+    { id: 'quests', layers: ['whispering-root', 'grimmkin-flame', 'npcs'] },
     { id: 'hunt', layers: ['foes', 'other-bosses'] },
     { id: 'secrets', layers: ['walls', 'hidden', 'chests', 'rocks'] },
     { id: 'places', layers: ['benches', 'stag', 'trams', 'lifts', 'people', 'springs', 'cocoons', 'totems', 'tablets'] },
@@ -192,7 +202,7 @@
   const LAYER_ART = {
     equipment: { src: D.art('items', 'mantis-claw') }, spells: { src: D.art('spells', 'vs') }, arts: { src: D.art('arts', 'cyclone') },
     'dream-nail': { src: D.art('abilities', 'dream1') }, trials: { pin: 'colosseum' }, 'grimm-troupe': { src: D.art('journal', 'grimm') },
-    keys: { src: D.art('items', 'city-crest') }, relics: { src: D.art('items', 'kings-idol') }, foes: { src: D.art('journal', 'crawlid') }, 'other-bosses': { src: D.art('journal', 'vengefly-king') }, grimmkin: { src: D.art('journal', 'grimmkin-novice') }, npcs: { glyph: 'npc' },
+    keys: { src: D.art('items', 'city-crest') }, relics: { src: D.art('items', 'kings-idol') }, foes: { src: D.art('journal', 'crawlid') }, 'other-bosses': { src: D.art('journal', 'vengefly-king') }, npcs: { glyph: 'npc' },
     walls: { glyph: 'wall' }, hidden: { glyph: 'hidden' }, chests: { src: 'assets/world/chest.png' }, rocks: { src: D.art('items', 'geo') },
     totems: { src: 'assets/world/totem.png' }, tablets: { src: 'assets/world/tablet.png' }, charms: { src: 'assets/charms/compass.png' }, bosses: { src: D.art('journal', 'false-knight') },
     graves: { pin: 'grave' }, dreamers: { pin: 'dreamer-monomon' }, benches: { pin: 'bench' }, people: { pin: 'vendor' },
@@ -346,12 +356,14 @@
     const out = [];
     for (const it of CO.ITEMS) {
       if (!COL_POS[it.id]) continue;
-      out.push({ id: it.id, layer: layerOfKind(it.kind), sub: it.kind, p: COL_POS[it.id], scene: it.scene, art: kindArt(it.kind),
-        name: pick(D.COLLECTIBLE_KINDS[it.kind]), where: where(it.scene), act: { find: it.id },
+      // A flame: its phase is its member in the set, and its card says who guards it.
+      const phase = it.kind === 'grimmkin-flame' && FLAME_PHASE[it.scene];
+      out.push({ id: it.id, layer: layerOfKind(it.kind), sub: phase || it.kind, p: COL_POS[it.id], scene: it.scene, art: kindArt(it.kind),
+        name: pick(D.COLLECTIBLE_KINDS[it.kind]), where: where(it.scene), act: { find: it.id, ...(phase && phase !== 'brumm' ? { journal2: phase } : {}) },
         // A stag station is a place too: always on the map, saying whether it's open yet.
         ...(it.kind === 'stag' ? { on: null, closed: !P.hasFound(App.progress, it.id) && !!App.progress.mapped.length, found: P.hasFound(App.progress, it.id),
           note: App.progress.mapped.length ? t(P.hasFound(App.progress, it.id) ? 'pgmOpen' : 'pgmClosed') : '' }
-          : { on: P.hasFound(App.progress, it.id), note: priceOf(it) }) });
+          : { on: P.hasFound(App.progress, it.id), note: phase ? phaseName(phase) : priceOf(it) }) });
     }
     // The 112%'s, read as the tablet reads them (js/app-progress.js).
     const cats = Object.fromEntries(App.pgCount().categories.map((c) => [c.id, c]));
@@ -874,6 +886,8 @@
   const hasIt = (th) => (th.found !== undefined ? th.found : !!th.on);
   function btnHtml(th) {
     const a = th.act;
+    // A flame's card also opens its Grimmkin's entry in the Journal.
+    if (a && a.journal2) return `<span class="pgm-card-btns">${btnHtml({ ...th, act: { ...a, journal2: null } })}${btnHtml({ ...th, act: { journal: a.journal2 } })}</span>`;
     return !a ? ''
       : a.journal ? `<button type="button" class="text-btn" data-act="pgmJournal" data-id="${esc(a.journal)}">${esc(t('pgmInJournal'))}</button>`
       : a.state ? `<span class="pgm-card-state">${esc(t(hasIt(th) ? STATE_ON[th.layer] || 'pgmGot' : STATE_OFF[th.layer] || 'notFound'))}</span>`
@@ -968,14 +982,24 @@
      things on the map (one per member, with its picture), each a switch of its own, so you can
      show just what you want (prefs.pgMapSubOff: 'layer|member' hidden). A member is a stable key,
      not its name: the item, the relic, the foe, the character, the wall's kind, the marker's colour. */
-  const INSIDE = ['keys', 'relics', 'other-bosses', 'npcs', 'people', 'walls', 'markers'];
+  const INSIDE = ['keys', 'relics', 'grimmkin-flame', 'other-bosses', 'npcs', 'people', 'walls', 'markers'];
   const insideOpen = new Set();
   const CARET = '<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1 L8 5 L3 9 Z" fill="currentColor"/></svg>';
+  // How many of a layer (or a set's member) you have: «4/10».
+  const kindN = (got, max) => (max ? `<span class="pgm-kind-n${got === max ? ' is-full' : ''}"><b>${App.NF[0].format(got)}</b><i class="u">/${App.NF[0].format(max)}</i></span>` : '');
   const subOf = (th) => th.sub || String(th.id).split(':').pop();
   const subOff = () => (Array.isArray(prefs.pgMapSubOff) ? prefs.pgMapSubOff : []);
   const subHidden = (th) => INSIDE.includes(th.layer) && subOff().includes(th.layer + '|' + subOf(th));
-  // A set's members: { key, name, art }, each once, in its language's order.
+  /* A set's members: { key, name, art }, each once, in its language's order. The flames' are their
+     phases, in the ritual's order, each with its Grimmkin's picture (Brumm's, his flame) and how
+     many of its flames you have (n: [got, of]). */
   function membersOf(l, things = allThings()) {
+    if (l === 'grimmkin-flame') {
+      return PHASES.map((k) => {
+        const of = things.filter((th) => th.layer === l && th.sub === k);
+        return { key: k, name: phaseName(k), art: k === 'brumm' ? kindArt(l) : { src: D.art('journal', k) }, n: [of.filter(hasIt).length, of.length] };
+      }).filter((m) => m.n[1]);
+    }
     const seen = new Map();
     for (const th of [...things, ...mineThings()]) if (th.layer === l && !seen.has(subOf(th))) seen.set(subOf(th), { key: subOf(th), name: th.name, art: th.art });
     return [...seen.values()].sort((a, b) => a.name.localeCompare(b.name, HK.i18n.current));
@@ -986,7 +1010,7 @@
     const items = membersOf(l, things).map((m) => {
       const on = layerOn && !off.includes(l + '|' + m.key);
       return `<button type="button" class="pgm-sub${on ? ' is-on' : ''}" data-act="pgmSub" data-value="${esc(l + '|' + m.key)}" aria-pressed="${on}">
-        <span class="pgm-inside-art">${m.art ? artHtml(m.art) : ''}</span><span${NT}>${esc(m.name)}</span></button>`;
+        <span class="pgm-inside-art">${m.art ? artHtml(m.art) : ''}</span><span${NT}>${esc(m.name)}</span>${m.n ? kindN(...m.n) : ''}</button>`;
     }).join('');
     return `<div class="pgm-inside" role="group" aria-label="${esc(t('pgmChoose') + ' · ' + layerName(l))}">${items}</div>`;
   }
@@ -995,7 +1019,7 @@
       const of = things.filter((th) => th.layer === l && (th.on !== null || th.found !== undefined));
       return [of.filter(hasIt).length, of.length];
     };
-    const n = (got, max) => (max ? `<span class="pgm-kind-n${got === max ? ' is-full' : ''}"><b>${App.NF[0].format(got)}</b><i class="u">/${App.NF[0].format(max)}</i></span>` : '');
+    const n = kindN;
     const chip = (l) => {
       const art = D.COLLECTIBLE_KINDS[l] ? kindArt(l) : LAYER_ART[l];
       const btn = `<button type="button" class="pgm-kind${layers.has(l) ? ' is-on' : ''}" data-act="pgmLayer" data-value="${l}" aria-pressed="${layers.has(l)}">
@@ -1095,6 +1119,8 @@
         : b === 'dreamgate' ? ['people:seer']   // the Seer gives the Dreamgate
         : b === 'king' ? ['c:queen-fragment', 'c:king-fragment'] : ['c:' + b];   // Kingsoul: its two halves
     } else if (kind === 'key') ids = ['k:' + a, 'c:' + a];   // the King's Brand is the 112%'s
+    // A Grimmkin: the flames it guards.
+    else if (kind === 'foe' && PHASES.includes(a)) ids = CO.ITEMS.filter((it) => FLAME_PHASE[it.scene] === a && it.kind === 'grimmkin-flame').map((it) => it.id);
     else if (kind === 'foe') ids = [...thingIds].filter((id) => id.startsWith('f:') && id.endsWith(':' + a)).concat(['c:' + a, 'd:' + a]);
     else if (kind === 'cloak') ids = ['c:mothwing-cloak', 'c:shade-cloak'];
     else if (kind === 'npc') ids = b !== undefined ? ['n:' + a + ':' + b] : [...thingIds].filter((id) => id.startsWith('n:' + a + ':'));   // one meeting, or all

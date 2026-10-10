@@ -183,8 +183,6 @@
     liveFollowShort: { es: 'Seguir', en: 'Follow' },                 // the same, on a phone
     liveFollowHint: { es: 'Elige el archivo de esta partida: se pone al día con él ahora y cada vez que descanses en un banco',
                       en: 'Pick this save\'s file: it catches up with it now and each time you rest on a bench' },
-    liveFollowing:  { es: 'La Partida {n} sigue ahora a {file}', en: 'Save {n} now follows {file}' },
-    liveFollowNo:   { es: 'Este navegador no deja guardar el vínculo con el archivo', en: 'This browser doesn\'t let the site keep the link to the file' },
     liveUnlink:     { es: 'Dejar de seguir', en: 'Stop following' },
     livePaused:     { es: 'Esta partida sigue a {file}, pero el navegador pide permiso otra vez para leerlo.',
                       en: 'This save follows {file}, but the browser asks for permission again to read it.' },
@@ -435,7 +433,6 @@
     pgmL_map:       { es: 'Mapas', en: 'Maps' },
     'pgmL_whispering-root': { es: 'Raíces susurrantes', en: 'Whispering Roots' },
     'pgmL_grimmkin-flame': { es: 'Llamas de los Grimarios', en: 'Grimmkin Flames' },
-    pgmL_grimmkin:  { es: 'Grimarios', en: 'Grimmkin' },   // NAME_FLAMEBEARER_* («Grimario Novato» / "Grimmkin Novice"), in the plural
     pgmL_stag:      { es: 'Estaciones de ciervo', en: 'Stag Stations' },
     pgmN_chest:     { es: 'Cofre de geo', en: 'Geo chest' },
     pgmN_rock:      { es: 'Roca de geo', en: 'Geo rock' },

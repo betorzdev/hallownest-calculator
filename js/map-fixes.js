@@ -45,7 +45,6 @@
     "distant-village-stag": [-17.251, -4.550],
     "f:Crossroads_02:hollow-knight": [0.178, 6.710],
     "f:Crossroads_02:the-radiance": [0.499, 6.708],
-    "f:Hive_03:grimmkin-nightmare": [14.680, -6.124],
     "f:Mines_32:crystal-guardian": [6.655, 8.702],
     "f:Waterways_12_boss:flukemarm": [2.328, -5.836],
     "greenpath-stag": [-13.153, 5.804],

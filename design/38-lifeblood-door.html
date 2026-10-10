@@ -161,7 +161,7 @@ if (W !== '0' && !EMBED) {
   root.innerHTML = `<p class="ctx">${L('Hoy:', 'Today:')} ${L('20 muescas, «Puerta abierta: llevas 8 de 20 vínculos.», el capullo con una frase y un párrafo de ayuda.', '20 notches, a sentence, the cocoon with a sentence and a help paragraph.')}</p>` + ({ a: A, b: B, c: C, d: D }[V])();
 }
 const cur = { v: V, n: String(N), lang: LANG, w: W };
-const opt = (k, v, label) => `<button type="button" aria-pressed="${cur[k] === v}" onclick="const u=new URL(location.href);u.searchParams.set('${k}','${v}');u.searchParams.delete('embed');location.href=u">${label}</button>`;
+const opt = (k, v, label) => `<button type="button" aria-pressed="${cur[k] === v}" onclick="const u=new window.URL(location.href);u.searchParams.set('${k}','${v}');u.searchParams.delete('embed');location.href=u">${label}</button>`;
 document.getElementById('bar').innerHTML = `
   <div class="tv-grp"><span class="tv-lbl">Variant</span>${opt('v', 'a', 'A · track')}${opt('v', 'b', 'B · the door')}${opt('v', 'c', 'C · steps')}${opt('v', 'd', 'D · in the sum')}</div>
   <div class="tv-grp"><span class="tv-lbl">Bindings</span>${['0', '6', '8', '13', '20'].map((n) => opt('n', n, n)).join('')}</div>

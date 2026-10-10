@@ -50,21 +50,13 @@
   /* The import view: the slot it's for (0: the list shows), the system whose steps it shows,
      and the file: 'idle' (none yet), 'reading', 'ready' (read: { name, snap, meta }) or 'error'.
      fresh: the view has just opened, and its steps come in one after another. */
-  const imp = { n: 0, os: 'win', state: 'idle', file: null, fresh: false, copied: 0, copiedAt: 0, sync: true };
+  const imp = { n: 0, os: 'win', state: 'idle', file: null, fresh: false, copied: 0, copiedAt: 0, sync: true, follow: false };
   /* The link with the game (js/live.js): the linked slots ({ n: file name }, read once at boot),
      and the active slot's watcher and what it says: '' (not linked), 'live', 'paused' or 'lost'. */
   const live = { links: {}, ready: false, n: 0, name: '', state: '', watcher: null };
-  /* The picker for the game's save, the import's and Follow's: it remembers the folder (id), but
-     only once a file has been picked with it, which is noted here (browser-wide, not per game:
-     it isn't in js/saves.js's KEYS). Until then Follow shows where the file is (liveFollow). */
-  const PICKED_KEY = 'hollow.picked';
-  const pickedBefore = () => { try { return localStorage.getItem(PICKED_KEY) === '1'; } catch (e) { return false; } };
-  const pickSave = async () => {
-    const r = await showOpenFilePicker({ id: 'hk-save', multiple: false,
-      types: [{ description: 'Hollow Knight', accept: { 'application/octet-stream': ['.dat'], 'application/json': ['.json'] } }] });
-    try { localStorage.setItem(PICKED_KEY, '1'); } catch (e) { /* the folders show again next time */ }
-    return r;
-  };
+  // The picker for the game's save: it remembers the folder (id) from one pick to the next.
+  const pickSave = () => showOpenFilePicker({ id: 'hk-save', multiple: false,
+    types: [{ description: 'Hollow Knight', accept: { 'application/octet-stream': ['.dat'], 'application/json': ['.json'] } }] });
 
   const parse = (s, def) => { try { const v = JSON.parse(s); return v == null ? def : v; } catch (e) { return def; } };
   /* What a slot's card shows, read from its copy with the same defaults as the loaders: with no
@@ -468,7 +460,7 @@
     saveImport(node) {
       if (!store) { toast(t('savesNoStorage')); return; }
       track('import-open');
-      Object.assign(imp, { n: Number(node.dataset.value), state: 'idle', file: null, fresh: true, copied: 0 });
+      Object.assign(imp, { n: Number(node.dataset.value), state: 'idle', file: null, fresh: true, copied: 0, follow: false });
       if (!imp.chosen) imp.os = detectOs();
       clearing = 0;
       render();
@@ -508,7 +500,7 @@
     async importDo() {
       const n = imp.n, f = imp.file;
       if (!f || !store) return;
-      S.importTo(store, n, f.snap);
+      if (imp.follow) S.sync(store, n, f.snap); else S.importTo(store, n, f.snap);
       track('save-import');
       /* Linked (the browser asks for the file here, in the click), it's entered in place
          (enterHere); if not, the page reloads, and the link goes first. */
@@ -519,30 +511,16 @@
       if (S.read(store).active !== n) S.select(store, n);
       leave(0, rec ? () => enterHere(rec) : null);
     },
-    /* Following a slot that follows nothing: the file is picked, the slot takes it in at once (the
-       game wins, as on every save after) and from then on it follows it. If the picker has never
-       been used here it would open anywhere: the import view goes instead, with the folders and
-       the sync on. */
-    async liveFollow(node) {
+    /* Following a slot that follows nothing: the import view for that slot, with where the file
+       is and the option on. Importing there takes the file in as the game saving would (the
+       site's own keys stay, S.sync) and from then on the slot follows it. */
+    liveFollow(node) {
       const n = Number(node.dataset.value);
       if (!store) return;
-      if (!pickedBefore()) {
-        App.go('saves');
-        imp.sync = true;
-        actions.saveImport({ dataset: { value: String(n) } });
-        return;
-      }
-      let h, file, r;
-      try { [h] = await pickSave(); } catch (e) { return; }
-      try { file = await h.getFile(); r = F.read(new Uint8Array(await file.arrayBuffer())); } catch (e) { r = null; }
-      if (!r || !r.ok) { toast(t('saveImportBad')); return; }
-      S.sync(store, n, F.toSnapshot(r.pd, r.sd, file.lastModified));
-      const active = n === activeSlot();
-      const rec = await link(n, h, file.name, L.stampOf(file), active);
-      if (!rec) { toast(t('liveFollowNo')); return; }
-      if (active) { stopLive(); App.reloadGame(); await liveStart(rec); } else render();
-      toast(t('liveFollowing', { n, file: file.name }));
-      focusIn(`.save[data-slot="${n}"] [data-act="liveUnlink"]`);
+      App.go('saves');
+      imp.sync = true;
+      actions.saveImport({ dataset: { value: String(n) } });
+      imp.follow = true;
     },
     async liveUnlink(node) {
       const n = Number(node.dataset.value);
