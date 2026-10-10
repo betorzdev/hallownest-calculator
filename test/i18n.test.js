@@ -39,6 +39,7 @@ test('every { es, en } pair in the data has both languages', () => {
     FOES: foes.FOES, PANTHEONS: require('../js/pantheons.js').PANTHEONS,
     JOURNAL: require('../js/journal.js').ENTRIES, HALL: require('../js/hall.js').STATUES,
     BOOK: require('../js/journal.js').BOOK, EXTRAS: require('../js/journal.js').EXTRAS,
+    ACHIEVEMENTS: require('../js/achievements.js').ACHIEVEMENTS,
   });
   assert.ok(found.length > 250, `expected many pairs, there are ${found.length}`);
   for (const { path, value } of found) {

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lifeblood door variants</title>
+<!-- Design material, not part of the site. Albert (10 Oct 2026), on the Pantheons tab's
+     «Capullos de saviavida en los bancos» block: «rediseña la parte de lifeblood. ahora es muy fea y
+     con mucho texto». Today: a row of 20 notches, «Puerta abierta: llevas 8 de 20 vínculos.», the
+     cocoon's screenshot with its masks and a sentence, and a help paragraph.
+
+     What it has to say (js/pantheons.js): 20 notches, one per pantheon binding; with 8 the door opens
+     and each pantheon bench carries a cocoon of 3 lifeblood masks, 4 with 12, 5 with 16. Four ways
+     with numbers and the game's pieces instead of sentences (the help goes to a title):
+       A · track      one track of 20 notches; over 8, 12 and 16 the masks that step gives, lit once
+                      reached; the cocoon small at its start, «8/20» at its end.
+       B · the door   the door drawn as an arch with its 20 notches around it, as in Godhome; the
+                      cocoon inside and its masks under it.
+       C · steps      three plates, 8 · 12 · 16, each with its masks, lit when reached; under them the
+                      20 notches as a thin bar.
+       D · in the sum the block goes; the summary's «Capullo» carries the masks and a small 20-notch
+                      track under it, the next step in a title.
+     No screenshot of the cocoon in any of them (Albert: «no quiero la imagen que hay»).
+     The bar switches variant, bindings marked (n) and language; ?v=a&n=8&lang=es&w=390. -->
+<base href="../">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+body { background: var(--page-bg); background-attachment: fixed; margin: 0; }
+.tv-wrap { max-width: 1120px; margin: 0 auto; padding: var(--sp-8) var(--page-pad) 220px; }
+.tv-bar { position: fixed; z-index: 100; left: 0; right: 0; bottom: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-2) var(--sp-8);
+  padding: var(--sp-3) var(--sp-4); background: var(--card); border-top: 1px solid var(--line-panel); font-size: var(--fs-sm); }
+.tv-grp { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-1) var(--sp-3); }
+.tv-lbl { color: var(--muted); font-family: var(--font-num); font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; }
+.tv-bar button { color: var(--ink-2); padding: var(--sp-1) 0; border-bottom: 1px solid transparent; }
+.tv-bar button[aria-pressed="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.tv-frame { display: block; margin: 0 auto; border: 1px solid var(--line-panel); background: var(--page-bg); }
+.embed .tv-wrap { padding: var(--sp-4) var(--sp-3) var(--sp-8); }
+.embed .tv-bar { display: none; }
+.ctx { color: var(--muted); font-size: var(--fs-xs); margin: var(--sp-8) 0 var(--sp-2); }
+
+/* Shared pieces */
+.lb { width: 18px; height: auto; transition: filter var(--dur) var(--ease), opacity var(--dur) var(--ease); }
+.lb.is-off { filter: grayscale(1) brightness(0.45); opacity: 0.6; }
+.num { font-family: var(--font-num); font-variant-numeric: tabular-nums; color: var(--ink-strong); font-weight: 600; }
+.num small { color: var(--muted); font-weight: 400; font-size: 0.7em; }
+.dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--notch-free); flex: none; }
+.dot.is-lit { border-color: var(--lifeblood-line); background: var(--lifeblood-line); box-shadow: 0 0 6px var(--lifeblood-line); }
+
+/* A · track */
+.a { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: var(--sp-4); max-width: 760px; }
+.a-track { position: relative; display: grid; grid-template-columns: repeat(20, minmax(0, 1fr)); align-items: center; padding-top: 30px; }
+.a-track .dot { justify-self: center; }
+.a-step { position: absolute; top: 0; display: flex; gap: 1px; transform: translateX(-50%); }
+.a-step .lb { width: 14px; }
+.a-tick { position: absolute; top: 22px; bottom: 4px; width: 1px; background: var(--line-ctl); transform: translateX(-50%); }
+.a-tick.is-on { background: var(--lifeblood-line); }
+.a .num { font-size: var(--fs-lg); padding-bottom: 2px; }
+
+/* B · the door */
+.b { display: flex; align-items: center; gap: var(--sp-8); flex-wrap: wrap; }
+.b-door { position: relative; width: 220px; height: 244px; flex: none; }
+.b-arch { position: absolute; left: 26px; right: 26px; top: 28px; bottom: 0; border-radius: 999px 999px 0 0; border: 1px solid var(--godhome-line); border-bottom-width: 2px;
+  background: radial-gradient(ellipse at 50% 70%, color-mix(in oklab, var(--lifeblood) 22%, transparent), transparent 70%); display: grid; place-items: center; }
+.b-arch.is-shut { background: none; }
+.b-arch .b-seeds { flex-wrap: wrap; justify-content: center; max-width: 110px; padding-top: var(--sp-8); }
+.b-door .dot { position: absolute; transform: translate(-50%, -50%); }
+.b-door .dot.is-major { width: 14px; height: 14px; }
+.b-side { display: flex; flex-direction: column; gap: var(--sp-3); }
+.b-side .num { font-size: var(--fs-2xl); }
+.b-seeds { display: flex; gap: var(--sp-1); }
+.b-seeds .lb { width: 24px; }
+
+/* C · steps */
+.c { display: flex; flex-direction: column; gap: var(--sp-3); max-width: 620px; }
+.c-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-2); }
+.c-step { display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); padding: var(--sp-3) var(--sp-2); border: 1px solid var(--line); }
+.c-step.is-on { border-color: var(--lifeblood-line); background: color-mix(in oklab, var(--lifeblood) 8%, transparent); }
+.c-step .num { font-size: var(--fs-lg); }
+.c-step.is-off .num { color: var(--muted); }
+.c-masks { display: flex; gap: 2px; }
+.c-bar { display: grid; grid-template-columns: repeat(20, minmax(0, 1fr)); gap: 3px; }
+.c-bar i { height: 4px; background: var(--notch-free); border-radius: 2px; }
+.c-bar i.is-lit { background: var(--lifeblood-line); box-shadow: 0 0 4px var(--lifeblood-line); }
+.c-foot { display: flex; justify-content: space-between; font-size: var(--fs-xs); color: var(--muted); }
+
+/* D · in the summary (the site's .pt-sum, with the cocoon stat grown) */
+.d-stat .door-seeds { display: flex; gap: var(--sp-1); }
+.d-mini { display: grid; grid-template-columns: repeat(20, 6px); gap: 3px; margin-top: var(--sp-1); }
+.d-mini i { width: 6px; height: 6px; border-radius: 50%; border: 1px solid var(--notch-free); }
+.d-mini i.is-lit { background: var(--lifeblood-line); border-color: var(--lifeblood-line); }
+.d-mini i.is-major { outline: 1px solid var(--line-ctl); outline-offset: 1px; }
+</style>
+</head>
+<body>
+<div class="tv-wrap" id="root"></div>
+<div class="tv-bar" id="bar"></div>
+<script>
+'use strict';
+const q = new URLSearchParams(location.search);
+const V = q.get('v') || 'a', N = Math.max(0, Math.min(20, Number(q.get('n') ?? 8))), W = q.get('w') || '0', LANG = q.get('lang') || 'es', EMBED = q.has('embed');
+const L = (es, en) => (LANG === 'en' ? en : es);
+const STEPS = [[8, 3], [12, 4], [16, 5]];
+const germs = N >= 16 ? 5 : N >= 12 ? 4 : N >= 8 ? 3 : 0;
+const MASK = 'assets/hud/mask-lb.png';
+const masks = (n, on) => Array.from({ length: n }, () => `<img class="lb${on ? '' : ' is-off'}" src="${MASK}" alt="">`).join('');
+const title = L('Capullos de saviavida en los bancos', 'Lifeblood cocoons at the benches');
+const help = L('Cada vínculo con que terminas un panteón enciende una muesca; con 8, 12 y 16, el capullo de cada banco da 3, 4 y 5 máscaras de saviavida.',
+  'Each binding you complete a pantheon with lights a notch; with 8, 12 and 16, each bench cocoon gives 3, 4 and 5 Lifeblood masks.');
+const head = `<div class="block-head" title="${help}">${title}</div>`;
+const frac = `<span class="num">${N}<small>/20</small></span>`;
+
+function A() {
+  const dots = Array.from({ length: 20 }, (_, i) => `<i class="dot${i < N ? ' is-lit' : ''}"></i>`).join('');
+  const steps = STEPS.map(([at, g]) => {
+    const x = ((at - 0.5) / 20) * 100;
+    return `<span class="a-step" style="left:${x}%">${masks(g, N >= at)}</span><span class="a-tick${N >= at ? ' is-on' : ''}" style="left:${x}%"></span>`;
+  }).join('');
+  return `${head}<div class="a" title="${help}">
+    <div class="a-track">${steps}${dots}</div>${frac}</div>`;
+}
+
+function B() {
+  // 20 notches round the arch, from the bottom left: 4 up the side, 12 over the top, 4 down the right.
+  const cx = 110, cy = 112, r = 100, side = [232, 202, 172, 142];
+  const pts = [...side.map((y) => [cx - r, y]),
+    ...Array.from({ length: 12 }, (_, k) => { const a = Math.PI * (1 - (k + 0.5) / 12); return [cx + Math.cos(a) * r, cy - Math.sin(a) * r]; }),
+    ...side.slice().reverse().map((y) => [cx + r, y])];
+  const dots = pts.map(([x, y], i) => `<i class="dot${i < N ? ' is-lit' : ''}${[8, 12, 16].includes(i + 1) ? ' is-major' : ''}" style="left:${x}px;top:${y}px"></i>`).join('');
+  return `${head}<div class="b">
+    <div class="b-door" title="${help}"><div class="b-arch${germs ? '' : ' is-shut'}"><div class="b-seeds">${germs ? masks(germs, true) : masks(3, false)}</div></div>${dots}</div>
+    <div class="b-side">${frac}</div></div>`;
+}
+
+function C() {
+  const steps = STEPS.map(([at, g]) => `<div class="c-step ${N >= at ? 'is-on' : 'is-off'}"><span class="num">${at}</span><span class="c-masks">${masks(g, N >= at)}</span></div>`).join('');
+  return `${head}<div class="c" title="${help}"><div class="c-steps">${steps}</div>
+    <div class="c-bar">${Array.from({ length: 20 }, (_, i) => `<i class="${i < N ? 'is-lit' : ''}"></i>`).join('')}</div>
+    <div class="c-foot"><span>${frac}</span></div></div>`;
+}
+
+function D() {
+  const next = STEPS.find(([at]) => N < at);
+  const tip = next ? L(`Con ${next[0]} vínculos, ${next[1]}`, `With ${next[0]} bindings, ${next[1]}`) : '';
+  const mini = Array.from({ length: 20 }, (_, i) => `<i class="${i < N ? 'is-lit' : ''}${[8, 12, 16].includes(i + 1) ? ' is-major' : ''}"></i>`).join('');
+  return `<p class="ctx">${L('(sin bloque propio: el resumen de arriba de la pestaña)', '(no block of its own: the tab\'s summary on top)')}</p>
+    <div class="pt-sum">
+      <div class="pt-stat"><b>2/5</b><span>${L('Panteones', 'Pantheons')}</span></div>
+      <div class="pt-stat"><b>${N}/20</b><span>${L('Vínculos', 'Bindings')}</span></div>
+      <div class="pt-stat d-stat" title="${help}${tip ? ' · ' + tip : ''}"><span class="door-seeds">${germs ? masks(germs, true) : masks(3, false)}</span>
+        <div class="d-mini">${mini}</div><span>${L('Capullo', 'Cocoon')}</span></div>
+    </div>`;
+}
+
+const root = document.getElementById('root');
+if (W !== '0' && !EMBED) {
+  const u = new URL(location.href); u.searchParams.set('embed', '1');
+  root.innerHTML = `<iframe class="tv-frame" src="${u}" width="${W}" height="700"></iframe>`;
+} else {
+  if (EMBED) document.documentElement.classList.add('embed');
+  root.innerHTML = `<p class="ctx">${L('Hoy:', 'Today:')} ${L('20 muescas, «Puerta abierta: llevas 8 de 20 vínculos.», el capullo con una frase y un párrafo de ayuda.', '20 notches, a sentence, the cocoon with a sentence and a help paragraph.')}</p>` + ({ a: A, b: B, c: C, d: D }[V])();
+}
+const cur = { v: V, n: String(N), lang: LANG, w: W };
+const opt = (k, v, label) => `<button type="button" aria-pressed="${cur[k] === v}" onclick="const u=new URL(location.href);u.searchParams.set('${k}','${v}');u.searchParams.delete('embed');location.href=u">${label}</button>`;
+document.getElementById('bar').innerHTML = `
+  <div class="tv-grp"><span class="tv-lbl">Variant</span>${opt('v', 'a', 'A · track')}${opt('v', 'b', 'B · the door')}${opt('v', 'c', 'C · steps')}${opt('v', 'd', 'D · in the sum')}</div>
+  <div class="tv-grp"><span class="tv-lbl">Bindings</span>${['0', '6', '8', '13', '20'].map((n) => opt('n', n, n)).join('')}</div>
+  <div class="tv-grp"><span class="tv-lbl">Lang</span>${opt('lang', 'es', 'ES')}${opt('lang', 'en', 'EN')}</div>
+  <div class="tv-grp"><span class="tv-lbl">Width</span>${opt('w', '0', 'full')}${opt('w', '390', '390')}</div>`;
+</script>
+</body>
+</html>

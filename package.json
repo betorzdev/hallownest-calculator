@@ -16,6 +16,7 @@
     "text": "node tools/game-text.js",
     "pages": "node tools/pages.js",
     "check-pack": "node tools/check-pack.js",
+    "check-steam": "node tools/check-steam.js",
     "rooms": "node tools/fetch-rooms.js",
     "walk": "node tools/extract-walk.js",
     "collectibles": "node tools/fetch-collectibles.js",

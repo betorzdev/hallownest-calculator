@@ -77,6 +77,8 @@
   ];
   // Each of Kingsoul's two halves, before they join: the Map pins each where it's picked up.
   const WHITE_FRAGMENT = { es: 'Fragmento blanco', en: 'White Fragment' };      // CHARM_NAME_36_A
+  // The game never names him (his lines are MR_MUSHROOM_1…7): the wiki's ESname, "Mister Mushroom (Hollow Knight)".
+  const MISTER_MUSHROOM = { es: 'Señor Seta', en: 'Mister Mushroom' };
   /* What you carry, in the Inventory's order: max is the most there can be (js/progress.js),
      sell what Relic Seeker Lemm pays for one (wiki, each relic's page). */
   const CARRIED = [
@@ -235,8 +237,15 @@
      Each group is a folder in assets/ and each key the name of the file saved
      there; the value is the source file on the wiki.
      tools/fetch-icons.js downloads from here; the interface paints with art().
-     Charms aren't in this table: their file goes in CHARMS[].wikiFile. */
+     A charm's file goes in CHARMS[].wikiFile; here only its other drawings. */
   const ART = {
+    // Only the three fragile ones broken, as the charm screen draws them until Leg Eater repairs
+    // them (App.charmArt).
+    charms: {
+      'fheart-broken':    'Broken_Heart.png',
+      'fgreed-broken':    'Broken_Greed.png',
+      'fstrength-broken': 'Broken_Strength.png',
+    },
     nails: {
       0: 'Nail_1_Old_Nail.png',
       1: 'Nail_2_Sharpened_Nail.png',
@@ -851,7 +860,7 @@
   const STAT_BY_ID = Object.fromEntries(STAT_DEFS.map((d) => [d.id, d]));
 
   HK.data = {
-    DARK_ART, NAILS, NAIL, ARTS, ABILITIES, EQUIPMENT, KEY_ITEMS, MAP_ITEMS, WHITE_FRAGMENT, CARRIED, SHARDS, FRAGMENTS, COMPLETION_NAMES, COLLECTIBLE_KINDS, SPELLS, SPELL_COST, SPELL_COST_TWISTER,
+    DARK_ART, NAILS, NAIL, ARTS, ABILITIES, EQUIPMENT, KEY_ITEMS, MAP_ITEMS, WHITE_FRAGMENT, MISTER_MUSHROOM, CARRIED, SHARDS, FRAGMENTS, COMPLETION_NAMES, COLLECTIBLE_KINDS, SPELLS, SPELL_COST, SPELL_COST_TWISTER,
     SOUL, HEALTH, FOCUS, MOVE, PETS, CHARM_NOTCHES,
     CHARMS, CHARM_BY_ID, EFFECT_WHEN, CHARM_EFFECTS, GROUPS, STAT_DEFS, STAT_BY_ID, ART, art,
   };

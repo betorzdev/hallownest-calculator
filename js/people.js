@@ -9,7 +9,8 @@
   'use strict';
   const HK = globalThis.HK || (globalThis.HK = {});
 
-  // [scene, x, y, the bool] — the game's object for that meeting in a comment.
+  // [scene, x, y, the bool] — the game's object for that meeting in a comment. Or, for one that
+  // counts its meetings, [scene, x, y, [the int, at least]].
   const PEOPLE = [
     { id: 'quirrel', es: 'Quirrel', en: 'Quirrel', stops: [   // QUIRREL_MAIN
       ['Room_temple', 30.26, 5.49, 'quirrelEggTemple'],               // Quirrel, the Black Egg Temple
@@ -58,10 +59,37 @@
       ['Ruins1_04', 52.03, 36.45, 'nailsmithCliff'],                  // Nailsmith Cliff NPC, City of Tears
       ['Room_nailmaster_02', 41.37, 5.7, 'nailsmithSheo'],            // Nailsmith Painted NPC, Sheo's hut
     ] },
+    { id: 'mourner', es: 'Doliente Gris', en: 'Grey Mourner', stops: [   // XUN_SUPER + XUN_MAIN
+      ['Room_Mansion', 22.23, 8.38, 'metXun'],                        // Xun NPC, her house in the Resting Grounds
+      ['Fungus3_49', 23.77, 9.42, 'xunFlowerGiven'],                  // Mantis Grave, the Traitors' Child's, Queen's Gardens
+    ] },
+    /* Mister Mushroom, in the order of the Riddle Tablet's poem. Each room's "Mr Mushroom NPC"
+       stays only when mrMushroomState is its own number (its Control FSM, Init), says
+       MR_MUSHROOM_<that number> and, with Spore Shroom on, adds one: met once the state is past it. */
+    { id: 'mushroom', es: 'Señor Seta', en: 'Mister Mushroom', stops: [   // MR_MUSHROOM_SUPER + MR_MUSHROOM_MAIN
+      ['Fungus2_18', 10.81, 36.29, ['mrMushroomState', 2]],           // Fungal Wastes
+      ['Deepnest_East_01', 6.1, 41.22, ['mrMushroomState', 3]],       // Kingdom's Edge
+      ['Deepnest_40', 12.73, 15.18, ['mrMushroomState', 4]],          // Deepnest, by Galien
+      ['Room_nailmaster', 82.73, 5.18, ['mrMushroomState', 5]],       // Mato's hut, Howling Cliffs
+      ['Abyss_21', 125.36, 221.27, ['mrMushroomState', 6]],           // Ancient Basin, by the Monarch Wings
+      ['Fungus3_44', 13.39, 13.41, ['mrMushroomState', 7]],           // Fog Canyon
+      ['Tutorial_01', 36.36, 12.27, ['mrMushroomState', 8]],          // Mr Mushroom NPC (1), King's Pass
+    ] },
+    { id: 'brumm', es: 'Brumm', en: 'Brumm', stops: [   // IGOR_MAIN (his key in the game's text; in Grimm's tent he's not a stop)
+      ['Room_spider_small', 25.48, 14.58, 'gotBrummsFlame'],          // Brumm Torch NPC, Distant Village
+      ['Cliffs_06', 49.42, 5.53, 'destroyedNightmareLantern'],        // Brumm Lantern NPV, the Nightmare Lantern
+    ] },
   ];
-  // Every bool the stops test: what js/progress.js keeps of a save for them.
-  const FLAGS = [...new Set(PEOPLE.flatMap((p) => p.stops.map((s) => s[3])))];
+  // A stop's key: its bool, or "the int>=n". Every key: what js/progress.js keeps of a save for them.
+  const keyOf = (f) => (Array.isArray(f) ? f[0] + '>=' + f[1] : f);
+  const FLAGS = [...new Set(PEOPLE.flatMap((p) => p.stops.map((s) => keyOf(s[3]))))];
+  // The keys a save's playerData has met.
+  const TESTS = new Map(PEOPLE.flatMap((p) => p.stops.map((s) => [keyOf(s[3]), s[3]])));
+  const met = (pd) => FLAGS.filter((k) => {
+    const f = TESTS.get(k);
+    return Array.isArray(f) ? (Number(pd[f[0]]) || 0) >= f[1] : !!pd[f];
+  });
 
-  HK.people = { PEOPLE, FLAGS };
+  HK.people = { PEOPLE, FLAGS, keyOf, met };
   if (typeof module !== 'undefined' && module.exports) module.exports = HK.people;
 })();

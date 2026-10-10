@@ -14,13 +14,13 @@
 (() => {
   'use strict';
   const HK = globalThis.HK;
-  const D = HK.data, E = HK.engine, C = HK.codec, I = HK.i18n, F = HK.foes, PN = HK.pantheons, HG = HK.hall, P = HK.progress;
+  const D = HK.data, E = HK.engine, C = HK.codec, I = HK.i18n, F = HK.foes, PN = HK.pantheons, HG = HK.hall, P = HK.progress, A = HK.achievements;
   const App = HK.app = {};
 
   const t = (k, v) => I.t(k, v);
   const pick = (v) => I.pick(v);
 
-  const KEY = { build: 'hollow.build', baseline: 'hollow.baseline', prefs: 'hollow.prefs', run: 'hollow.run', hall: 'hollow.hall', owned: 'hollow.owned', door: 'hollow.bindings', progress: 'hollow.progress' };
+  const KEY = { build: 'hollow.build', baseline: 'hollow.baseline', prefs: 'hollow.prefs', run: 'hollow.run', hall: 'hollow.hall', owned: 'hollow.owned', door: 'hollow.bindings', progress: 'hollow.progress', feats: 'hollow.feats', meta: 'hollow.meta', account: 'hollow.account' };
   // With no enemy, half of Combat comes out empty: whoever has none starts with the Journal's first entry.
   const DEFAULT_FOE = 'crawlid';
   /* The page's own language: es/index.html is the Spanish copy, with its own address so that
@@ -32,6 +32,8 @@
      bare hash means that screen there, and Charms on the roots. And the page's own <title> and
      description, written for what people search, before render() rewrites them. */
   const PAGE_VIEW = document.documentElement.dataset.view || null;
+  // And the tab it opens on, where the screen has two (Progress: the 112% or the achievements).
+  const PAGE_TAB = document.documentElement.dataset.tab || null;
   const BARE_VIEW = PAGE_VIEW || 'charms';
   const PAGE_HEAD = { title: document.title, description: (document.querySelector('meta[name="description"]') || {}).content || '' };
   const $ = (sel) => document.querySelector(sel);
@@ -208,6 +210,9 @@
     if (!prefs.langChosen || !I.speaks(prefs.lang)) prefs.lang = browserLang();
     if (!['base', 'nocharms', 'pinned'].includes(prefs.compare)) prefs.compare = 'base';
     if (!Array.isArray(prefs.open)) prefs.open = [];
+    // Progress's two tabs: the 112% and the achievements (js/app-progress.js).
+    if (!['pct', 'feats'].includes(prefs.pgShow)) prefs.pgShow = 'pct';
+    prefs.pgMissing = !!prefs.pgMissing;   // Progress's switch: only what's missing (js/app-progress.js)
     delete prefs.diff;   // difficulty no longer belongs to Combat: it belongs to each statue in the Hall
     delete prefs.gearOpen; delete prefs.fightOpen;   // Gear and combat no longer collapse: they are screens
     // The Map was Progress's second tab, and the Hall and the Pantheons Combat's.
@@ -220,10 +225,11 @@
     if (!F.FOE_BY_ID[prefs.foeId]) prefs.foeId = DEFAULT_FOE;
     if (!['all', 'boss', 'enemy'].includes(prefs.foeKind)) prefs.foeKind = 'all';
     if (!['combat', 'hall', 'pantheon'].includes(prefs.fightTab)) prefs.fightTab = 'combat';
-    if ((prefs.view === 'godhome') !== (prefs.fightTab !== 'combat')) prefs.fightTab = prefs.view === 'godhome' ? 'hall' : 'combat';
+    if ((prefs.view === 'godhome') !== (prefs.fightTab !== 'combat')) prefs.fightTab = prefs.view === 'godhome' ? (prefs.godTab === 'hall' ? 'hall' : 'pantheon') : 'combat';
     if (!HG.STATUE_BY_ID[prefs.hallId]) prefs.hallId = HG.STATUES[0].id;
     if (!HG.DIFFS.includes(prefs.hallDiff)) prefs.hallDiff = '';
     if (!PN.PANTHEON_BY_ID[prefs.pantheon]) prefs.pantheon = 'master';
+    if (!PN.PANTHEON_BY_ID[prefs.pantheonOpen]) prefs.pantheonOpen = '';   // the Pantheons' open row (js/app-pantheons.js)
     prefs.melody = Math.max(0, Math.min(99, Math.floor(Number(prefs.melody) || 0)));
     const b = prefs.bindings && typeof prefs.bindings === 'object' ? prefs.bindings : {};
     prefs.bindings = { nail: !!b.nail, shell: !!b.shell, charms: !!b.charms, soul: !!b.soul };
@@ -419,16 +425,13 @@
   const EDITS = new Set();
   const edits = (...names) => { for (const n of names) EDITS.add(n); };
 
-  /* Applies a new state and repaints. In a save from the game it changes nothing (saveLock); in
-     the middle of a pantheon it rejects anything that touches charms or notches (see charmLock).
-     Either way it says so; returns whether it was applied. */
+  /* Applies a new state and repaints. In a save from the game it changes nothing (saveLock) and
+     says so; returns whether it was applied. */
   function commit(next) {
     if (!next) return false;
     const held = saveLock();
     if (held) { toast(held); return false; }
     next = withFixed(next);
-    const lock = App.charmLock();
-    if (lock && App.touchesCharms(next)) { toast(lock); return false; }
     const prev = App.sheet;
     const wasOvercharmed = !!(prev && prev.notches.overcharmed);
     const before = App.state;
@@ -491,6 +494,10 @@
   /* The title's plaque: a double outline with pointed ends, stretched to the title, filled with the
      panel's black so the frame's top line goes behind it. */
   const PLAQUE = '<svg class="screen-plaque" viewBox="0 0 100 30" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><polygon class="is-outer" points="6,1 94,1 99.5,15 94,29 6,29 0.5,15" vector-effect="non-scaling-stroke"/><polygon class="is-inner" points="8,4 92,4 96.5,15 92,26 8,26 3.5,15" vector-effect="non-scaling-stroke"/></svg>';
+  /* A switch (.switch, css/app.css): a choice that changes how a screen shows (the Map's whole map
+     and area names, Progress's "only what's missing"); act and value go to the screen's action. */
+  const switchHtml = (act, value, on, text) =>
+    `<button type="button" class="switch" role="switch" aria-checked="${on}" data-act="${act}" data-value="${value}"><span class="switch-track" aria-hidden="true"></span>${esc(text)}</button>`;
   const chevron = (up) => `<svg class="ic chev ${up ? 'up' : ''}" width="12" height="8" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1.5 L6 6 L11 1.5"/></svg>`;
   // The search fields' lens and the on/off box's tick (css: .search, .check).
   const lens = '<svg class="ic" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="5" cy="5" r="3.6"/><path d="M7.8 7.8 L10.8 10.8"/></svg>';
@@ -565,9 +572,13 @@
   }
   const VIEW_KEY = { home: 'navHome', inventory: 'navGame', charms: 'navCharms', fight: 'navFight', journal: 'navJournal', progress: 'navProgress',
     map: 'navMap', godhome: 'navGodhome', saves: 'savesTitle' };
+  /* The page a screen has (tools/pages.js), as the About block's links name it (data-page):
+     its view, and Progress's achievements tab its own. */
+  const pageKey = () => (prefs.view === 'progress' && prefs.pgShow === 'feats' ? 'progress:feats' : prefs.view);
+  const ownPage = () => pageKey() === (PAGE_VIEW ? PAGE_VIEW + (PAGE_TAB ? ':' + PAGE_TAB : '') : 'home');
   function renderMasthead() {
     // On the page's own screen and language, the head it was served with (tools/pages.js).
-    const own = prefs.lang === PAGE_LANG && prefs.view === (PAGE_VIEW || 'home');
+    const own = prefs.lang === PAGE_LANG && ownPage();
     document.title = own ? PAGE_HEAD.title : prefs.view === 'home' ? t('docTitle') : t(VIEW_KEY[prefs.view]) + ' · ' + t('title');
     const meta = document.querySelector('meta[name="description"]');
     if (meta) meta.setAttribute('content', own ? PAGE_HEAD.description : t('metaDescription'));
@@ -636,7 +647,7 @@
   let aboutOpen = false;
   function renderAbout() {
     if (!el.about) return;
-    el.about.hidden = prefs.lang !== PAGE_LANG || prefs.view !== (PAGE_VIEW || 'home');
+    el.about.hidden = prefs.lang !== PAGE_LANG || !ownPage();
     // With a save the block folds; its button opens it and, open, folds it again.
     const foldable = !!(App.activeSlot && App.activeSlot());
     const folded = !aboutOpen && foldable;
@@ -677,24 +688,9 @@
     } catch (e) { return null; }
   }
 
-  /* Share copies the address of the screen you're on, with no build in it: the page that
-     screen has (tools/pages.js; the About block's links say which screen each one is), or the
-     language's home for the ones with no page of their own (Your game, the Inventory, the
-     saves). Over file:// a folder needs its index.html. */
-  function sharePage() {
-    const page = location.href.split(/[?#]/)[0];
-    const file = location.protocol === 'file:' ? 'index.html' : '';
-    try {
-      let path = (PAGE_LANG === 'es' ? 'es/' : '') + file;
-      if (prefs.view !== 'home') {
-        if (prefs.view === PAGE_VIEW) return page;
-        const a = el.about.querySelector(`a[data-page="${prefs.view}"]`);
-        // renderAbout() may have put the index.html there already.
-        if (a) path = a.getAttribute('href').replace(/index\.html$/, '') + file;
-      }
-      return new URL(path || './', document.baseURI).href;
-    } catch (e) { return page; }
-  }
+  /* Share copies the site's address and nothing else: no screen, no build, no language
+     (tools/pages.js's SITE). */
+  const SITE = 'https://hallownestcalculator.com/';
 
   // GitHub's mark (Octicons mark-github), in currentColor so it takes the links' accent.
   const GITHUB = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>';
@@ -840,28 +836,12 @@
     const over = prefs.view === 'inventory' && App.sheet.notches.overcharmed
       ? `<div class="banner"><span class="banner-tag">${esc(t('overcharmed'))}</span><span class="banner-text">${esc(t('overcharmBanner'))}</span></div>`
       : '';
-    // On the Pantheons tab you're already there: the notice doesn't send you where you are.
-    const lock = prefs.view === 'godhome' && prefs.fightTab === 'pantheon' ? '' : runLockBanner();
     /* The link paused or its file gone is said on every screen, Your game included (its card says
        it too, with the same button, but the line is what's looked for); your shade and the
        invitation to import live on Your game (js/app-home.js). */
-    el.banner.innerHTML = over + lock + App.liveBanner();
+    el.banner.innerHTML = over + App.liveBanner();
   }
 
-  /* The notice that you're in a pantheon, with the button that takes you to the room and the one
-     that abandons it without having to go there. */
-  function runLockBanner() {
-    if (!App.charmLock()) return '';
-    const p = PN.PANTHEON_BY_ID[App.run.pantheon];
-    const where = t('runLockWhere', { name: pick(p.name), n: App.run.room + 1, total: p.rooms.length });
-    const why = t(App.run.bindings.charms ? 'runLockWhyBound' : 'runLockWhy');
-    return `<div class="banner is-run" role="status">
-      <span class="banner-tag">${esc(t('runLockTag'))}</span>
-      <span class="banner-text">${esc(where + ' ' + why)}</span>
-      <button type="button" class="btn" data-act="runLockGo">${esc(t('runLockGo'))}</button>
-      <button type="button" class="btn is-danger" data-act="runQuit">${esc(t('runQuit'))}</button>
-    </div>`;
-  }
   const hudRing = `<svg class="hud-ring" viewBox="-10 -10 120 120" aria-hidden="true"><path fill-rule="evenodd" d="M104 50A54 54 0 1 0-4 50A54 54 0 1 0 104 50ZM101.3 49.2A50.5 50.5 0 1 1 .3 49.2A50.5 50.5 0 1 1 101.3 49.2Z"/></svg>`;
   /* The tail: a brush stroke that thins towards the tip and ends in a curl. */
   const hudTail = `<svg class="hud-tail" viewBox="0 0 230 16" aria-hidden="true"><path d="M0 5.2C50 3.4 120 8 200 6.1L200 7.5C120 9.6 50 6.6 0 10.4Z"/><path class="hud-curl" d="M199 6.8C210 6 218 8.6 216 12C214 15 208 13.6 210 10.6"/></svg>`;
@@ -1034,9 +1014,9 @@
     }
   }
   /* Godhome is Combat's section with its tabs 'hall' and 'pantheon', and Combat its tab 'combat':
-     the view and the tab go together. Godhome comes back to the tab it was left on. */
+     the view and the tab go together. Godhome comes back to the tab it was left on; the first time, the Pantheons. */
   function tabFollowsView() {
-    if (prefs.view === 'godhome' && prefs.fightTab === 'combat') App.setFightTab(prefs.godTab === 'pantheon' ? 'pantheon' : 'hall');
+    if (prefs.view === 'godhome' && prefs.fightTab === 'combat') App.setFightTab(prefs.godTab === 'hall' ? 'hall' : 'pantheon');
     else if (prefs.view === 'fight' && prefs.fightTab !== 'combat') App.setFightTab('combat');
     if (prefs.fightTab !== 'combat') prefs.godTab = prefs.fightTab;
   }
@@ -1112,12 +1092,11 @@
       recompute();
       render();
     },
-    // The link to the screen's page, without the build: the address bar carries that one. The
-    // language only when it isn't the page's (inside a frame, where it changes in place).
+    // The site's bare address: the address bar carries the build.
     share() {
       persist();
       track('share');
-      const url = sharePage() + (prefs.lang !== PAGE_LANG ? '#lang=' + prefs.lang : '');
+      const url = SITE;
       const done = () => toast(t('linkCopied'));
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, () => prompt(t('copyThis'), url));
       else prompt(t('copyThis'), url);
@@ -1244,21 +1223,16 @@
     }
     if (h.lang && h.lang !== prefs.lang) { prefs.lang = I.setLang(h.lang); prefs.langChosen = true; savePrefs(); rebuildNF(); }
     setView(h.view || BARE_VIEW);
-    let kept = false, held = false;
+    let held = false;
     // Not into a save: it's said if the link's build is another one (a reload carries the save's own).
     if (!C.isEmpty(h.build) && saveLock()) held = !C.equal(withFixed(C.decode(h.build)), App.state);
     else if (!C.isEmpty(h.build)) {
-      let next = C.decode(h.build);
-      // Halfway through a pantheon, a link changes the rest of the build but not the charms.
-      kept = App.charmLock() && App.touchesCharms(next);
-      if (kept) next = C.normalize({ ...next, charms: App.state.charms, notches: App.state.notches });
-      next = withFixed(next);
+      const next = withFixed(C.decode(h.build));
       if (!C.equal(next, App.state)) { App.state = next; save(KEY.build, C.encode(App.state)); }
     }
     writeUrl(false);
     recompute();
     render();
-    if (kept) toast(t('runLockUrl'));
     if (held) toast(t('saveLockUrl'));
   }
   window.addEventListener('popstate', onHistory);
@@ -1280,6 +1254,9 @@
   const AWAY = { fheart: ['broken-heart', 'divine-heart'], fgreed: ['broken-greed', 'divine-greed'], fstrength: ['broken-strength', 'divine-strength'] };
   const fragileAway = (id) => (AWAY[id] || []).find((x) => P.has(App.progress, x)) || '';
   const isOwned = (id) => C.ownEquippable(App.owned, id) && !fragileAway(id);
+  // A broken one is still yours: the charm screen draws it cracked in its slot (D.ART.charms).
+  const isBroken = (id) => fragileAway(id).startsWith('broken');
+  const charmArt = (id) => (isBroken(id) ? D.art('charms', id + '-broken') : `assets/charms/${id}.png`);
   /* Void Heart can't be removed (wiki, "Void Heart"): if you have it, it's always equipped. It
      costs 0 notches, and the Pantheons' Charms binding already removes it in the engine. */
   const withFixed = (st) => {
@@ -1294,8 +1271,37 @@
   App.progress = P.normalize(null);
   const loadProgress = () => {
     try { App.progress = P.normalize(JSON.parse(load(KEY.progress) || 'null')); } catch (e) { App.progress = P.normalize(null); }
+    loadFeats();
   };
   const saveProgress = () => save(KEY.progress, P.isEmpty(App.progress) ? null : JSON.stringify(App.progress));
+  /* The achievements marked by hand (js/achievements.js), the ones a save can't tell; and the
+     save's meta (the time played, the completion, Steel Soul), which some of them read. Read with
+     the rest of the game, so a slot change or a new save brings them too. */
+  App.feats = [];
+  App.meta = null;
+  const loadFeats = () => {
+    try { App.feats = A.normalize(JSON.parse(load(KEY.feats) || 'null')); } catch (e) { App.feats = []; }
+    try { const m = JSON.parse(load(KEY.meta) || 'null'); App.meta = m && typeof m === 'object' ? m : null; } catch (e) { App.meta = null; }
+  };
+  /* Your account's achievements (js/achievements.js account()): Steam's, from Steam's own file
+     (js/steam.js), or kept by hand. The account's, not a slot's, so hollow.account isn't one of
+     the slots' keys (HK.saves.KEYS) and stays through slot changes and imports.
+     { source: 'steam' | 'hand', unlocked: { KEY: time }, hand, name, account, stamp, read } or null. */
+  App.account = null;
+  const loadAccount = () => {
+    try { const v = JSON.parse(load(KEY.account) || 'null'); App.account = v && typeof v === 'object' && v.unlocked ? v : null; } catch (e) { App.account = null; }
+  };
+  function setAccount(next) {
+    App.account = next && typeof next === 'object' && next.unlocked ? next : null;
+    save(KEY.account, App.account ? JSON.stringify(App.account) : null);
+    render();
+  }
+  // Marked by hand even in a save from the game: it's what the game's file doesn't say.
+  function setFeats(next) {
+    App.feats = A.normalize(next);
+    save(KEY.feats, App.feats.length ? JSON.stringify(App.feats) : null);
+    render();
+  }
   // A change by hand: kept and repainted, with what changed lighting up (App.was). Not in a save (saveLock).
   function setProgress(next) {
     if (saveLock()) { toast(saveLock()); return; }
@@ -1338,7 +1344,6 @@
     // The stored build, not the link's: the link still carries the one that was on screen.
     const stored = load(KEY.build);
     let next = withFixed(stored ? C.decode(stored) : C.normalize(C.PRESETS.max));
-    if (App.charmLock() && App.touchesCharms(next)) next = C.normalize({ ...next, charms: kept.charms, notches: kept.notches });
     App.state = next;
     persist();
     recompute();
@@ -1349,11 +1354,11 @@
     App.was = null;
   }
 
-  Object.assign(App, { t, pick, KEY, PAGE_LANG, PAGE_VIEW, $, el, hoverable, VIEWS, TOOLS, SPELL_KEYS, ART_KEYS, ART_STAT, POSITIONAL,
+  Object.assign(App, { t, pick, KEY, PAGE_LANG, PAGE_VIEW, PAGE_TAB, $, el, hoverable, VIEWS, TOOLS, SPELL_KEYS, ART_KEYS, ART_STAT, POSITIONAL,
     NEED_KEY, NT, namedSrc, esc, load, save, rebuildNF, pctSpace, fmtValue, fmtStat, fmtStatRich, sign,
     masksText, notchText, spellArt, shortOf, badgeText, goodClass, deltaChip, changeChip, prefs, loadPrefs,
     savePrefs, justWorn, justFound, splitHash, here, loadState, persist, compareLabel, compute, impact, recompute, commit, bindAllFx,
-    brackets, corners, PLAQUE, chevron, cross, lens, tick, FLEURS, rule, emptyHtml, screenHead, hudHtml, restoreFocus, focusDescriptor, safely, render, go, navTo, screenOf,
-    darkCls, underNav, toast, track, actions, isMaxOwned, loadOwned, saveOwned, isOwned, fragileAway, withFixed, isFixed, setOwned, loadProgress, saveProgress, setProgress, reloadGame,
+    brackets, corners, PLAQUE, switchHtml, chevron, cross, lens, tick, FLEURS, rule, emptyHtml, screenHead, hudHtml, restoreFocus, focusDescriptor, safely, render, go, navTo, screenOf,
+    darkCls, underNav, toast, track, actions, isMaxOwned, loadOwned, saveOwned, isOwned, fragileAway, isBroken, charmArt, withFixed, isFixed, setOwned, loadProgress, saveProgress, setProgress, setFeats, loadAccount, setAccount, reloadGame,
     saveLock, edits });
 })();

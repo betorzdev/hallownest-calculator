@@ -7,7 +7,7 @@
   const App = HK.app;
   const { t, pick, el, SPELL_KEYS, ART_KEYS, ART_STAT, NT, esc, fmtStatRich, spellArt, badgeText, compute,
     commit, brackets, screenHead, QUICK_PER_ROW, QUICK_SLOTS, render, actions, isMaxOwned, saveOwned,
-    isOwned, setOwned, justFound, setProgress } = App;
+    isOwned, isBroken, charmArt, setOwned, justFound, setProgress } = App;
 
   /* Right after a change (App.was): what you just got lights up from the dark, and what you just
      lost goes out from its light. "was" reads the value before; with nothing to compare, the current one. */
@@ -250,9 +250,10 @@
 
   /* The charms you've found, on the grid from the game's charm screen: the same one as on
      Charms (QUICK_SLOTS, four rows of ten with the even ones offset and the two-version slots
-     split). Shadowed, the ones you don't have. A tap marks or unmarks; "All" and "None", in
-     one go. */
+     split). Shadowed, the ones you don't have; cracked, a fragile one broken, which is still
+     yours. A tap marks or unmarks; "All" and "None", in one go. */
   function renderOwnedBlock() {
+    const isOwned = (id) => App.isOwned(id) || isBroken(id);
     // Counts the game's slots (40): for the double ones, one of their two versions is enough.
     const n = QUICK_SLOTS.filter((sl) => sl.some((c) => isOwned(c.id))).length;
     const tile = (c) => {
@@ -271,7 +272,7 @@
       const label = cur ? pick(cur) : `${pick(sl[0])} / ${pick(sl[1])} · ${t('notFound')}`;
       const pips = sl.map((c) => `<span class="qc-pip${c === cur ? ' is-on' : ''}"></span>`).join('');
       return `<button type="button" class="qc qc-dual${cur ? '' : ' is-missing'}${cur && justFound(cur.id) ? ' is-new' : ''}" data-act="ownPick" data-value="${shown.group}" data-token="${next}" aria-label="${esc(label)}" title="${esc(label)}">
-        <img src="assets/charms/${shown.id}.png" alt="" loading="lazy">
+        <img src="${charmArt(shown.id)}" alt="" loading="lazy">
         <span class="qc-pips" aria-hidden="true">${pips}</span>
       </button>`;
     };

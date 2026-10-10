@@ -89,6 +89,6 @@
     return { total: categories.reduce((n, c) => n + c.got, 0), max: TOTAL, categories };
   }
 
-  HK.completion = { CATEGORIES, TOTAL, count };
+  HK.completion = { CATEGORIES, TOTAL, BASE, count };
   if (typeof module !== 'undefined' && module.exports) module.exports = HK.completion;
 })();

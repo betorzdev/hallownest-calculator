@@ -18,6 +18,9 @@ Before touching anything, check whether it's already solved:
   comes from here**, and that one is part of the site: the combat simulator's 180 entries. If
   you correct a number in `kb/`, correct it there too. The same goes for `js/pantheons.js`, the
   five Pantheons room by room, and `js/hall.js`, the 44 statues of the Hall of Gods.
+  `kb/achievements.md` is the study of the 63 achievements (what each needs, the exclusive and
+  missable ones, each subject's page on the two wikis): `GUIDE` in `js/achievements.js` (each
+  plate's Map pin) comes from it, and a fact corrected in one is corrected in the other.
   `js/journal.js` (the Hunter's Journal: the combat picker and your game's book) doesn't come
   from `kb/`: `npm run journal` generates it from the two wikis and the dump of the game's texts
   (for what the wikis don't carry cleanly), and it isn't edited by hand. Its marking rules are
@@ -32,6 +35,14 @@ Before touching anything, check whether it's already solved:
   And `js/map-walk.js` (`npm run walk`, `tools/extract-walk.js`, from `assets/map/rooms-full.png`):
   the ground each room's drawing covers and what crossing it costs, which `js/walk.js` walks
   (the Knight's way from bench to bench: corridors, doors, stags, trams and lifts).
+  `js/achievements.js` with `assets/achievements/` too: the game's 63 achievements, their icons
+  extracted by `tools/extract-achievements.py`, which also fails if the module's keys or hidden
+  flags stop matching the game's list (its rules are written by hand, their thresholds read from
+  the game's code). Its `STEAM` map (which bit of Steam's stats file is which achievement) is
+  checked by `npm run check-steam` against the schema Steam writes on this PC; `js/steam.js`
+  reads the account's file.
+  `assets/hud/mask-pieces-*.png` and `vessel-pieces-*.png` too: the Inventory's mask and vessel
+  with each count of shards and fragments in place, Progress's pips (`tools/extract-pieces.py`).
   `js/hornet-moves.js` with `assets/hornet/` too: Hornet's moves from Silksong's own sprites
   (`tools/extract-hornet.py`), for the sister site's link, `js/app-sister.js` (shown since the
   sister was published: `SISTER = true`).
@@ -44,7 +55,7 @@ Neither folder is part of the page: `index.html` doesn't load them.
 
 ## Hard constraints
 
-- **No framework and no build.** `index.html` loads **forty classic scripts**, not modules.
+- **No framework and no build.** `index.html` loads **forty-two classic scripts**, not modules.
   The page is `js/app.js` (the core) and one script per screen (`js/app-*.js`), sharing the
   `HK.app` object, and `js/app-boot.js` starts it; the rules for sharing are in `js/app.js`'s header.
   Plus Footworn's (`async`, external; github.com/betorzdev/footworn), the visit counter: the
@@ -120,6 +131,8 @@ what the game says.
 - To look at the page: `debug-smoke.html` drives the site and writes the result; `debug.html`
   sets the preferences for screenshots; `debug-overflow.html` lists what spills past the width; `debug-benches.html` shows every bench
   of Your game with the Knight on it (`?seat=1` marks the seat);
+  `debug-since.html` lists every row «Since last time» can show, which has no picture, and at
+  which widths a name runs into its tag;
   `debug-walk.html` plays the Knight's walk between two benches you tap, with the way drawn;
   `debug-map.html` draws the whole Map and a click on a room locks, sketches or unlocks it (Shift:
   its second drawing), to check that every state fits its neighbours (no iframe: works over `file://`);

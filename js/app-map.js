@@ -145,11 +145,15 @@
     ['nailsmith', 'Room_nailsmith', { src: D.art('nails', 1) }], ['seer', 'RestingGrounds_07', { src: D.art('items', 'essence') }],
     ['grubfather', 'Crossroads_38', { pin: 'grubfather' }, 'grubfather'], ['colosseum', 'Deepnest_East_09_b', { pin: 'colosseum' }, 'colosseum'],
     ['blackegg', 'Crossroads_02', { pin: 'blackegg' }, 'blackegg'],
+    // Godhome's way in (wiki, "Godhome"): the Godseeker in the Junk Pit, Dream Nailed.
+    ['godseeker', 'GG_Waterways', { pin: 'vendor' }],
   ];
   // Where each stands: their ItemChanger place (a shop's, on its door or on their own pin).
   const PEOPLE_AT = { sly: 'Sly', iselda: 'Iselda', salubra: 'Salubra', legeater: 'Leg_Eater', lemm: 'Lemm', jiji: 'Egg_Shop', seer: 'Seer' };
   // …or the game's own pin for them, when it has one.
   const PEOPLE_NPC = { iselda: 'mapper', legeater: 'leg_eater', lemm: 'relic_dealer', jiji: 'jiji', nailsmith: 'nailsmith', seer: 'dream_moth' };
+  // …or the game's pin of another kind in their room (the Godseeker's is a vendor's).
+  const PEOPLE_GAME = { godseeker: ['vendor', 'GG_Waterways'] };
   // The Dreamers' pins are named by who they are; their rooms, for where they sleep.
   const DREAMER_ROOM = { lurien: 'Ruins2_Watcher_Room', monomon: 'Fungus3_archive_02', herrah: 'Deepnest_Spider_Town' };
 
@@ -333,7 +337,7 @@
       who.stops.forEach(([scene, x, y, flag], i) => {
         const p = scenePoint(scene, x, y);
         if (p) out.push({ id: `n:${who.id}:${i}`, layer: 'npcs', sub: who.id, p, scene, art: { glyph: 'npc' }, name: pick(who), where: where(scene),
-          on: met.has(flag), note: t('pgmMeet', { i: App.NF[0].format(i + 1), n: App.NF[0].format(who.stops.length) }), act: { state: true } });
+          on: met.has(PE.keyOf(flag)), note: t('pgmMeet', { i: App.NF[0].format(i + 1), n: App.NF[0].format(who.stops.length) }), act: { state: true } });
       });
     }
     return out;
@@ -373,6 +377,13 @@
       if (at && at.p) out.push({ id: 'c:' + half, layer: 'charms', p: at.p, scene: at.scene, art: { src: D.art('items', 'white-fragment-' + side) },
         name: pick(D.WHITE_FRAGMENT), where: where(at.scene), note: t(note), on: whole || P.has(App.progress, half), act: { state: true } });
     }
+    /* And where Kingsoul becomes Void Heart (wiki, "Void Heart"): the egg at the end of the
+       Birthplace, Dream Nailed ("Dream Enter Abyss" in Abyss_15, the game's scene). The map doesn't
+       draw the Birthplace: it goes on its door, the floor at the bottom of the Abyss that opens
+       with Kingsoul equipped. */
+    const vh = scenePoint('Abyss_15', 144.9, 12.58);
+    if (vh) out.push({ id: 'c:voidheart', layer: 'charms', p: vh, scene: 'Abyss_15', art: { src: 'assets/charms/voidheart.png' },
+      name: pick(D.CHARM_BY_ID.voidheart), where: where('Abyss_15'), on: App.isOwned('voidheart'), act: { state: true } });
     add112('charms', 'grimm', 'grimmchild', CHARM_AT.grimmchild);
     for (const it of cats.equipment.items) add112('equipment', 'equipment', it.id, EQUIP_AT[it.id]);
     for (const it of cats.arts.items) add112('arts', 'arts', it.id, EQUIP_AT[it.id]);
@@ -426,7 +437,7 @@
       });
     }
     for (const [who, scene, art, pin] of PEOPLE) {
-      const pt = npcPin(PEOPLE_NPC[who]) || (pin && pinsOf(pin)[0] && pinsOf(pin)[0].slice(2))
+      const pt = (PEOPLE_GAME[who] && gamePin(...PEOPLE_GAME[who])) || npcPin(PEOPLE_NPC[who]) || (pin && pinsOf(pin)[0] && pinsOf(pin)[0].slice(2))
         || (PEOPLE_AT[who] && placeAt(PEOPLE_AT[who]).p) || roomPoint(scene);
       if (pt) out.push({ id: 'people:' + who, layer: 'people', p: pt, scene, art, name: t('pgmW_' + who), where: where(scene), on: null });
     }
@@ -894,11 +905,33 @@
   // What the card says of those that aren't picked up: broken, opened, met.
   const STATE_ON = { walls: 'pgmOpened', hidden: 'pgmFoundPlace', chests: 'pgmOpened', rocks: 'pgmBroken', npcs: 'pgmMet' };
   const STATE_OFF = { walls: 'pgmNotOpened', hidden: 'pgmNotFoundPlace', chests: 'pgmNotOpened', rocks: 'pgmNotBroken', npcs: 'pgmNotMet' };
+  /* The achievements a pin is the place of (js/achievements.js, GUIDE's map): a boss, a trial, a
+     Dreamer, a Pantheon, a meeting. Not a layer's or a collectible kind's (each grub would say
+     Grubfriend): only the ones that point at a few things, and among many sources the people
+     (the Seer, Mister Mushroom's meetings; not each root). Built once, on the first card. */
+  let featsAt = null;
+  const SPOT_KINDS = ['c112', 'foe', 'people', 'npc'];
+  function featsOf(id) {
+    if (!featsAt) {
+      featsAt = new Map();
+      for (const a of HK.achievements.ACHIEVEMENTS) {
+        const target = a.guide && a.guide.map;
+        if (!target) continue;
+        const spot = SPOT_KINDS.includes(target.split(':')[0]);
+        if (!spot && !target.startsWith('sources:')) continue;
+        for (const x of mapTargets(target)) if (spot || /^(people|n):/.test(x)) featsAt.set(x, [...(featsAt.get(x) || []), a]);
+      }
+    }
+    return featsAt.get(id) || [];
+  }
+  // «Logro: Liberar» on the card: the name takes you to its detail on the achievements tab.
+  const featLine = (th) => featsOf(th.id).map((a) => `<span class="pgm-card-feat"><img src="${D.art('achievements', a.id)}" alt="">${esc(t('pgmFeat'))}
+    <button type="button" class="text-btn" data-act="pgFeatGo" data-id="${a.id}"${NT}>${esc(pick(a.name))}</button></span>`).join('');
   function cardHtml(th) {
     const btn = btnHtml(th) + routeHtml(th);
     return `<div class="pgm-card${th.text ? ' has-text' : ''}" role="dialog" aria-label="${esc(th.name)}">
       <span class="pgm-card-art">${artHtml(th.art)}</span>
-      <span class="pgm-card-t"><b${NT}>${esc(th.name)}</b>${th.where ? `<span${NT}>${esc(th.where)}</span>` : ''}${th.note ? `<span>${esc(th.note)}</span>` : ''}</span>
+      <span class="pgm-card-t"><b${NT}>${esc(th.name)}</b>${th.where ? `<span${NT}>${esc(th.where)}</span>` : ''}${th.note ? `<span>${esc(th.note)}</span>` : ''}${featLine(th)}</span>
       ${btn}
       <button type="button" class="icon-btn pgm-card-x" data-act="pgmPick" data-id="" aria-label="${esc(t('importHintOff'))}">${App.cross}</button>
       ${th.text ? `<p class="pgm-card-text"${NT}>${esc(th.text)}</p>` : ''}
@@ -930,8 +963,7 @@
      at first) with its total and its own all · none; a layer's picture is its switch, off in
      grey, with its name and how many of its things you have where that's counted ── */
   const openGroups = () => (Array.isArray(prefs.pgMapOpen) ? prefs.pgMapOpen : GROUPS.map((g) => g.id));
-  const switchHtml = (value, on, text) =>
-    `<button type="button" class="switch" role="switch" aria-checked="${on}" data-act="pgmOpt" data-value="${value}"><span class="switch-track" aria-hidden="true"></span>${esc(text)}</button>`;
+  const switchHtml = (value, on, text) => App.switchHtml('pgmOpt', value, on, text);
   /* The sets of one kind (design/24, C): a caret beside them opens what each holds, read from its
      things on the map (one per member, with its picture), each a switch of its own, so you can
      show just what you want (prefs.pgMapSubOff: 'layer|member' hidden). A member is a stable key,
@@ -1060,11 +1092,22 @@
     else if (kind === 'c112') {
       ids = a === 'spells' ? (/\d$/.test(b) ? ['c:' + b] : ['c:' + b + '1', 'c:' + b + '2']) : a === 'masks' ? ofKind('mask-shard') : a === 'vessels' ? ofKind('vessel-fragment')
         : a === 'nail' ? [...ofKind('pale-ore'), 'people:nailsmith'] : b === 'godtuner' ? ['k:godtuner']
-        : b === 'dreamgate' ? ['people:seer'] : ['c:' + b];   // the Seer gives the Dreamgate
+        : b === 'dreamgate' ? ['people:seer']   // the Seer gives the Dreamgate
+        : b === 'king' ? ['c:queen-fragment', 'c:king-fragment'] : ['c:' + b];   // Kingsoul: its two halves
     } else if (kind === 'key') ids = ['k:' + a, 'c:' + a];   // the King's Brand is the 112%'s
     else if (kind === 'foe') ids = [...thingIds].filter((id) => id.startsWith('f:') && id.endsWith(':' + a)).concat(['c:' + a, 'd:' + a]);
     else if (kind === 'cloak') ids = ['c:mothwing-cloak', 'c:shade-cloak'];
-    else if (kind === 'npc') ids = [...thingIds].filter((id) => id.startsWith('n:' + a + ':'));
+    else if (kind === 'npc') ids = b !== undefined ? ['n:' + a + ':' + b] : [...thingIds].filter((id) => id.startsWith('n:' + a + ':'));   // one meeting, or all
+    else if (kind === 'people') ids = ['people:' + a];
+    else if (kind === 'layer') ids = allThings().filter((th) => th.layer === a).map((th) => th.id);   // a whole layer: the charms
+    // Passing of the Age: Mister Mushroom's seven meetings and the Riddle Tablet, the poem of where.
+    else if (kind === 'sources' && a === 'mushroom') ids = [...[...thingIds].filter((id) => id.startsWith('n:mushroom:')), 'tb:Deepnest_East_17:0'];
+    // Void: Kingsoul's two halves and the Birthplace's egg, where it becomes Void Heart.
+    else if (kind === 'sources' && a === 'void') ids = ['c:queen-fragment', 'c:king-fragment', 'c:voidheart'];
+    // Where the Essence is (the wiki's Dream Nail page): the roots, the Warrior Dreams' graves and
+    // the dream bosses. Not the 26 spirits (1 each) nor the enemies' random drops: no place. With
+    // ":seer", the Seer too, for the ones claimed from her.
+    else if (kind === 'sources' && a === 'essence') ids = [...(b === 'seer' ? ['people:seer'] : []), ...ofKind('whispering-root'), ...Object.keys(GRAVE_AT).map((id) => 'c:' + id), ...Object.keys(DREAM_BOSS_AT).map((id) => 'd:' + id)];
     return ids.filter((id) => thingIds.has(id));
   }
   // The view around some points, in the box's proportions (ratio: height / width), a room or two at

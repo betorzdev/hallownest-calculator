@@ -191,3 +191,13 @@ test("the Hall's statues unlocked come with a save, and without one nothing is l
   assert.equal(P.normalize({}).statues, null);
   assert.equal(F.toSnapshot(BASE)['hollow.progress'], undefined);
 });
+
+test('what only the achievements read: the characters\' endings and the game\'s', () => {
+  const ids = (o) => P.fromSave({ ...BASE, ...o }).ids;
+  assert.deepEqual(ids({ salubraBlessing: true, zoteDead: true, nailsmithKilled: true, quirrelEpilogueCompleted: true,
+    xunRewardGiven: true, killedHollowKnight: true, killedFinalBoss: true }),
+  ['salubra-blessing', 'zote-dead', 'nailsmith-slain', 'quirrel-farewell', 'mourner-flower', 'ending-vessel', 'ending-radiance']);
+  // Mister Mushroom's state is 8 after his seventh place (the game's code compares it with 8).
+  assert.deepEqual(ids({ mrMushroomState: 7 }), []);
+  assert.deepEqual(ids({ mrMushroomState: 8, nailsmithSpared: true }), ['nailsmith-spared', 'mushroom-seven']);
+});

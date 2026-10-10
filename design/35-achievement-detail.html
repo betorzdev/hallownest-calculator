@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Achievement detail variants</title>
+<!-- Design material, not part of the site: tapping an achievement on Progress's achievements tab
+     opens its detail. Albert (8 Oct 2026) chose its content after the study (kb/achievements.md):
+     what it needs and what comes before («Necesita»), and the warning when it can be lost or
+     excludes another («Ojo»), as facts with the game's names, no guide prose. A hidden achievement
+     you don't have keeps its steps veiled until asked. The plate's mark (by hand, or the screen
+     that keeps it) moves into the detail.
+     Six examples, one of each kind: a counter (Enchanted), a boss with its way in (Release), a
+     choice (Purity), a secret with warnings (Banishment, veiled), one by hand (Speedrun 2), Godhome
+     (Soul & Shade). Three forms, the site's real CSS over mock markup:
+       A · panel under the plates   like the Charms detail: one fixed place under the row's
+                                    plates, the chosen plate marked; the plates don't move.
+       B · plate opens in place     the chosen plate takes the row's whole width, the detail
+                                    beside its icon; the plates after it move down.
+       C · sheet                    over the page: from the bottom on a phone, at the right on a
+                                    desktop; the tab stays behind a veil.
+     Tap a plate to choose it. The bar switches each; the choice is in the URL (?v=a&ex=release&lang=es&w=390). -->
+<base href="../">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+body { background: var(--page-bg); background-attachment: fixed; margin: 0; }
+.tv-wrap { max-width: 1120px; margin: 0 auto; padding: var(--sp-8) var(--page-pad) 220px; }
+.tv-bar { position: fixed; z-index: 100; left: 0; right: 0; bottom: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-2) var(--sp-8);
+  padding: var(--sp-3) var(--sp-4); background: var(--card); border-top: 1px solid var(--line-panel); font-size: var(--fs-sm); }
+.tv-grp { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-1) var(--sp-3); }
+.tv-lbl { color: var(--muted); font-family: var(--font-num); font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; }
+.tv-bar button { color: var(--ink-2); padding: var(--sp-1) 0; border-bottom: 1px solid transparent; }
+.tv-bar button[aria-pressed="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.tv-frame { display: block; margin: 0 auto; border: 1px solid var(--line-panel); background: var(--page-bg); }
+.pg { display: block; }
+
+/* The chosen plate: a hairline frame around it, the accent's line (it answers the finger). */
+.pg-plates .gplate { position: relative; }
+.pg-plates .gplate.is-picked::after { content: ''; position: absolute; inset: calc(var(--sp-1) * -1); border: 1px solid var(--accent-line); pointer-events: none; }
+
+/* ════ The detail itself (shared) ════ */
+.ad { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: var(--sp-2) var(--sp-4); align-items: start; }
+.ad-art { width: 64px; height: 64px; object-fit: contain; }
+.ad-art.is-off { filter: grayscale(1) brightness(0.55); }
+.ad-main { display: flex; flex-direction: column; gap: var(--sp-1); min-width: 0; }
+.ad-name { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: var(--fs-lg); letter-spacing: var(--track-title); color: var(--ink-strong); }
+.ad-text { margin: 0; font-size: var(--fs-sm); color: var(--ink-2); }
+.ad-state { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-1) var(--sp-3); font-size: var(--fs-xs); color: var(--muted); }
+.ad-state b { font-weight: 600; color: var(--ink-2); }
+.ad-body { grid-column: 1 / -1; display: flex; flex-direction: column; gap: var(--sp-4); }
+@media (min-width: 620px) { .ad-body { grid-column: 2; } }
+.ad-k { margin: 0 0 var(--sp-1); font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); }
+.ad-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--sp-1); font-size: var(--fs-sm); line-height: 1.5; color: var(--ink); max-width: 46em; }
+.ad-warn .ad-k { color: var(--bad); }
+.ad-warn .ad-list li { padding-left: var(--sp-3); box-shadow: inset 2px 0 0 var(--bad); }
+.ad-why { margin: 0; font-size: var(--fs-sm); line-height: 1.5; color: var(--muted); font-style: italic; max-width: 46em; }
+.ad-acts { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-3) var(--sp-6); font-size: var(--fs-sm); }
+.ad-veil { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-2); font-size: var(--fs-sm); color: var(--muted); }
+.ad-close { position: absolute; top: var(--sp-2); right: var(--sp-2); }
+
+/* ════ A · panel under the plates ════ */
+.ad-a { position: relative; margin-top: var(--sp-6); padding-top: var(--sp-6); border-top: 1px solid var(--inv-line); min-height: 260px; }
+.ad-a.is-empty { display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: var(--fs-sm); font-style: italic; min-height: 120px; }
+
+/* ════ B · plate opens in place ════ */
+.ad-b { position: relative; grid-column: 1 / -1; padding: var(--sp-4) var(--sp-4) var(--sp-6); background: var(--veil); border-top: 1px solid var(--inv-line); border-bottom: 1px solid var(--inv-line); }
+
+/* ════ C · sheet ════ */
+.ad-c-veil { position: fixed; inset: 0; z-index: 50; background: color-mix(in oklab, var(--page-bg) 70%, transparent); }
+.ad-c { position: fixed; z-index: 51; right: 0; top: 0; bottom: 0; width: min(440px, 100%); overflow: auto; padding: var(--sp-8) var(--sp-6) var(--sp-16);
+  background: var(--card); border-left: 1px solid var(--line-panel); }
+.ad-c .ad-body { grid-column: 1 / -1; }
+@media (max-width: 620px) {
+  .ad-c { top: auto; left: 0; width: auto; max-height: 78vh; border-left: 0; border-top: 1px solid var(--line-panel); padding-top: var(--sp-6); }
+}
+</style>
+</head>
+<body>
+<div class="tv-wrap" id="root"></div>
+<div class="tv-bar" id="bar"></div>
+<script>
+const q = new URLSearchParams(location.search);
+const V = q.get('v') || 'a', LANG = q.get('lang') || 'es', W = Number(q.get('w') || 0);
+let EX = q.has('ex') ? q.get('ex') : 'release';
+let OPEN = q.get('open') === '1';   // a veiled secret, shown
+const T = {
+  es: { tabPct: 'Finalización', tabFeats: 'Logros', thisSave: 'Esta partida', group: 'Ejemplos', needs: 'Necesita', warn: 'Ojo', why: 'Por qué a mano',
+    on: 'Conseguido', off: 'Sin conseguir', byHand: 'Marcado a mano', secret: 'Secreto', veil: 'Es un logro secreto: sus pasos desvelan parte de la historia.',
+    show: 'Ver los pasos', mark: 'Marcar', unmark: 'Desmarcar', toInv: 'Ir a la Finalización', close: 'Cerrar', pick: 'Toca un logro para ver qué necesita' },
+  en: { tabPct: 'Completion', tabFeats: 'Achievements', thisSave: 'This save', group: 'Examples', needs: 'Needs', warn: 'Watch out', why: 'Why by hand',
+    on: 'Unlocked', off: 'Not yet', byHand: 'Ticked by hand', secret: 'Secret', veil: 'A secret achievement: its steps give away part of the story.',
+    show: 'Show the steps', mark: 'Mark', unmark: 'Unmark', toInv: 'Go to Completion', close: 'Close', pick: 'Tap an achievement to see what it needs' },
+}[LANG];
+/* The six examples: name and text are the game's (js/achievements.js); needs and warnings are
+   kb/achievements.md's facts, with the game's names (keys in comments there). */
+const EXAMPLES = [
+  { id: 'enchanted', on: true, act: 'far',
+    name: { es: 'Encantado', en: 'Enchanted' }, text: { es: 'Adquiere la mitad de los amuletos de Hallownest', en: 'Acquire half of Hallownest\'s Charms' },
+    needs: { es: ['20 amuletos.'], en: ['20 charms.'] },
+    warn: { es: ['Un amuleto frágil que tenga Divine no cuenta, ni Niño de Grimm tras el Destierro, hasta que los recuperas.'],
+      en: ['A fragile charm Divine is holding doesn\'t count, nor Grimmchild after Banishment, until you get them back.'] } },
+  { id: 'release', on: false, act: 'mark',
+    name: { es: 'Liberar', en: 'Release' }, text: { es: 'Derrota al Receptáculo Roto', en: 'Defeat the Broken Vessel' },
+    needs: { es: ['El Receptáculo Roto, al oeste de la Cuenca Antigua.', 'Para cruzar hasta él, el Corazón de cristal.'],
+      en: ['The Broken Vessel, at the far west of the Ancient Basin.', 'To cross to it, the Crystal Heart.'] } },
+  { id: 'purity', on: false, act: 'mark', hidden: true,
+    name: { es: 'Pureza', en: 'Purity' }, text: { es: 'Vence al Forjaguijones con el Aguijón puro', en: 'Slay the Nailsmith with the Pure Nail' },
+    needs: { es: ['El aguijón mejorado hasta el Aguijón puro (las cuatro mejoras).', 'El Forjaguijones, en la Ciudad de Lágrimas, te pide que lo derribes: golpéalo.'],
+      en: ['The nail upgraded to the Pure Nail (all four upgrades).', 'The Nailsmith, in the City of Tears, asks you to cut him down: strike him.'] },
+    warn: { es: ['Excluye Parejita feliz en la misma partida: el juego guarda nada más golpearlo.'],
+      en: ['Rules out Happy Couple in the same save: the game saves right after the strike.'] } },
+  { id: 'banishment', on: false, act: 'mark', hidden: true,
+    name: { es: 'Destierro', en: 'Banishment' }, text: { es: 'Destierra a la compañía de Grimm de Hallownest', en: 'Banish the Grimm Troupe from Hallownest' },
+    needs: { es: ['Gran Actuación antes.', 'Brumm, en el Nido Profundo, te cita en el farol de los Acantilados Aulladores: ayúdale a romperlo.'],
+      en: ['Grand Performance first.', 'Brumm, in Deepnest, asks to meet you at the lantern in the Howling Cliffs: help him break it.'] },
+    warn: { es: ['Excluye Ritual en la misma partida.', 'Si sales de la sala del farol después de hablar con Brumm y sin romperlo, lo pierdes para siempre.',
+      'Los amuletos irrompibles que no hayas comprado a Divine ya no se pueden conseguir. Niño de Grimm se va: Nymm te da Melodía Despreocupada.'],
+      en: ['Rules out Ritual in the same save.', 'Leaving the lantern\'s room after talking to Brumm, without breaking it, loses it forever.',
+      'Any Unbreakable charm not yet bought from Divine can no longer be had. Grimmchild goes: Nymm gives you Carefree Melody.'] } },
+  { id: 'speedrun-2', on: true, act: 'hand',
+    name: { es: 'Speedrun 2', en: 'Speedrun 2' }, text: { es: 'Completa el juego en menos de 5 horas', en: 'Complete the game in under 5 hours' },
+    needs: { es: ['Un final con menos de 5 h de partida.'], en: ['An ending with under 5 h of game time.'] },
+    why: { es: 'La partida no guarda el tiempo de cada final. Si la acabaste y aún marca menos de 5 h, se marca sola; si no, a mano.',
+      en: 'The save doesn\'t keep each ending\'s time. Finished and still under 5 h, it\'s marked by itself; if not, by hand.' } },
+  { id: 'soul-shade', on: false, act: 'mark', hidden: true,
+    name: { es: 'Alma y Sombra', en: 'Soul & Shade' }, text: { es: 'Completa el Panteón del Caballero', en: 'Complete the Pantheon of the Knight' },
+    needs: { es: ['El Panteón del Caballero, en el Hogar de Dioses.', 'Se abre al completar los tres panteones anteriores.'],
+      en: ['The Pantheon of the Knight, in Godhome.', 'It opens once the three Pantheons before it are complete.'] } },
+];
+const L = (o) => (o ? o[LANG] : null);
+const ex = EXAMPLES.find((e) => e.id === EX) || null;
+
+function plate(e) {
+  const tag = e.hidden ? `<span class="ach-tag">${T.secret}</span>` : '';
+  return `<button type="button" class="gplate ach${e.on ? ' is-on' : ''}${e.id === EX ? ' is-picked' : ''}" onclick="pick('${e.id}')" aria-expanded="${e.id === EX}">
+    <span class="gplate-art"><img src="assets/achievements/${e.id}.png" alt=""></span>
+    <span class="gplate-name">${L(e.name)}</span>
+    <span class="gplate-val is-text ach-text">${tag}<span>${L(e.text)}</span></span></button>`;
+}
+function detail(e, closable) {
+  if (!e) return '';
+  const veiled = e.hidden && !e.on && !OPEN;
+  const state = `<span class="ad-state"><b>${e.on ? (e.act === 'hand' ? T.byHand : T.on) : T.off}</b>${e.hidden ? `<span class="ach-tag">${T.secret}</span>` : ''}</span>`;
+  const list = (k, items, cls = '') => (items && items.length ? `<div class="${cls}"><p class="ad-k">${k}</p><ul class="ad-list">${items.map((x) => `<li>${x}</li>`).join('')}</ul></div>` : '');
+  const act = e.act === 'far' ? `<button type="button" class="text-btn">${T.toInv}</button>`
+    : `<button type="button" class="btn">${e.on ? T.unmark : T.mark}</button>`;
+  const body = veiled
+    ? `<div class="ad-veil"><span>${T.veil}</span><button type="button" class="text-btn" onclick="reveal()">${T.show}</button></div><div class="ad-acts">${act}</div>`
+    : `${list(T.needs, L(e.needs))}${e.why ? `<div><p class="ad-k">${T.why}</p><p class="ad-why">${L(e.why)}</p></div>` : ''}${list(T.warn, L(e.warn), 'ad-warn')}<div class="ad-acts">${act}</div>`;
+  const close = closable ? `<button type="button" class="icon-btn ad-close" aria-label="${T.close}" onclick="pick('')">✕</button>` : '';
+  return `${close}<div class="ad"><img class="ad-art${e.on ? '' : ' is-off'}" src="assets/achievements/${e.id}.png" alt="">
+    <div class="ad-main"><p class="ad-name">${L(e.name)}</p><p class="ad-text">${L(e.text)}</p>${state}</div>
+    <div class="ad-body">${body}</div></div>`;
+}
+
+const root = document.getElementById('root');
+function render() {
+  if (W) {
+    const u = new URL(location.href); u.searchParams.delete('w');
+    root.innerHTML = `<iframe class="tv-frame" src="${u.pathname + u.search}" width="${W}" height="860"></iframe>`;
+    return;
+  }
+  const tabs = `<div class="pg-tabs"><button type="button" class="pg-tab">${T.tabPct} <span class="pg-tab-n">91 %</span></button><button type="button" class="pg-tab is-on">${T.tabFeats} <span class="pg-tab-n">27/63</span></button></div>`;
+  const total = `<div class="pg-total"><span class="pg-total-k">${T.thisSave}</span><span class="pg-total-v">27<span class="u"> / 63</span></span></div>`;
+  const pips = EXAMPLES.map((e) => `<span class="pg-pip${e.on ? ' is-on' : ''}"><img src="assets/achievements/${e.id}.png" alt=""></span>`).join('');
+  let plates;
+  if (V === 'b') {
+    plates = EXAMPLES.map((e) => plate(e) + (e.id === EX ? `<div class="ad-b">${detail(e, true)}</div>` : '')).join('');
+  } else plates = EXAMPLES.map(plate).join('');
+  const under = V === 'a' ? `<div class="ad-a${ex ? '' : ' is-empty'}">${ex ? detail(ex, false) : T.pick}</div>` : '';
+  const head = `<button type="button" class="pg-head" aria-expanded="true"><span class="pg-name">${T.group}</span><span class="pg-pips">${pips}</span><span class="pg-pts"><b>2</b><i class="u">/6</i></span><span class="disc-ring" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 7.5 6 3.5 10 7.5"/></svg></span></button>`;
+  const sheet = V === 'c' && ex ? `<div class="ad-c-veil" onclick="pick('')"></div><aside class="ad-c">${detail(ex, true)}</aside>` : '';
+  root.innerHTML = `<section class="gear pg"><div class="gear-body pg-body" style="padding-top:var(--sp-6)">${tabs}${total}
+    <ol class="pg-rows"><li class="pg-row is-open">${head}<div class="pg-open"><div class="pg-plates">${plates}</div>${under}</div></li></ol></div></section>${sheet}`;
+}
+window.pick = (id) => { EX = EX === id ? '' : id; OPEN = false; sync(); render(); };
+window.reveal = () => { OPEN = true; sync(); render(); };
+function sync() { const u = new URL(location.href); u.searchParams.set('ex', EX); if (OPEN) u.searchParams.set('open', '1'); else u.searchParams.delete('open'); history.replaceState(null, '', u); }
+render();
+const opt = (k, v, label) => `<button type="button" aria-pressed="${(q.get(k) || { v: 'a', lang: 'es', w: '0', ex: 'release' }[k]) === v}" onclick="go('${k}','${v}')">${label}</button>`;
+window.go = (k, v) => { const u = new URL(location.href); if (v === '0') u.searchParams.delete(k); else u.searchParams.set(k, v); location.href = u; };
+if (window !== window.parent) document.getElementById('bar').remove();
+else document.getElementById('bar').innerHTML = `
+  <div class="tv-grp"><span class="tv-lbl">Variant</span>${opt('v', 'a', 'A · panel under')}${opt('v', 'b', 'B · opens in place')}${opt('v', 'c', 'C · sheet')}</div>
+  <div class="tv-grp"><span class="tv-lbl">Example</span>${EXAMPLES.map((e) => opt('ex', e.id, e.id)).join('')}</div>
+  <div class="tv-grp"><span class="tv-lbl">Lang</span>${opt('lang', 'es', 'ES')}${opt('lang', 'en', 'EN')}</div>
+  <div class="tv-grp"><span class="tv-lbl">Width</span>${opt('w', '0', 'full')}${opt('w', '390', '390')}</div>`;
+</script>
+</body>
+</html>

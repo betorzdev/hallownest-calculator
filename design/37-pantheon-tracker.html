@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pantheons as a progress tracker</title>
+<!-- Design material, not part of the site. Albert (10 Oct 2026): «hay que re-estructurar la tab
+     de PANTHEONS. ahora es más un simulador, y yo quiero que sea sobretodo un seguidor de progreso
+     de tu partida». Today the tab opens on the run picker (pantheon, bindings, Enter, the path) and
+     your game is only the small binding pips under each card and the door at the bottom.
+
+     What a save says of each pantheon (bossDoorStateTier1…5, read on user1.dat):
+       unlocked · completed · boundNail/Shell/Charms/Soul · allBindings (gold) · noHits
+     The site reads today only the bindings and allBindings; unlocked and noHits would be new.
+     Locked: which of its bosses you haven't beaten in the kingdom comes from the Hall's statues
+     (statueState<X>.isUnlocked, js/progress.js statues); the Knight needs the three before and
+     Hallownest the four and Void Heart (kb/05-godhome.md). Each has its achievement.
+
+     Three layouts, the site's real CSS over mock markup, mock game: Master done with all four
+     at once and hitless, Artist done with the four one by one (bronze, not gold), Sage open, Knight and Hallownest locked.
+       A · doors      the five doors stay the tab's head, each one its state: locked dark with what's
+                      missing, open, done with its seal; the bindings big under it. The simulator is
+                      a «Simular» link on each door.
+       B · ledger     a summary line and one row per pantheon, its marks in columns as in the game's
+                      door; a row opens its rooms (lit if you've beaten the boss) and «Simular».
+       C · the door   the lifeblood door drawn big: 5 columns × 4 notches, each notch a pantheon's
+                      binding, the cocoon beside it; the pantheons as the column heads. The simulator
+                      goes below, closed.
+     The bar switches each; the choice is in the URL (?v=a&w=390&lang=es). -->
+<base href="../">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+body { background: var(--page-bg); background-attachment: fixed; margin: 0; }
+.tv-wrap { max-width: 1120px; margin: 0 auto; padding: var(--sp-8) var(--page-pad) 220px; }
+.tv-bar { position: fixed; z-index: 100; left: 0; right: 0; bottom: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-2) var(--sp-8);
+  padding: var(--sp-3) var(--sp-4); background: var(--card); border-top: 1px solid var(--line-panel); font-size: var(--fs-sm); }
+.tv-grp { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-1) var(--sp-3); }
+.tv-lbl { color: var(--muted); font-family: var(--font-num); font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; }
+.tv-bar button { color: var(--ink-2); padding: var(--sp-1) 0; border-bottom: 1px solid transparent; }
+.tv-bar button[aria-pressed="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.tv-frame { display: block; margin: 0 auto; border: 1px solid var(--line-panel); background: var(--page-bg); }
+.embed .tv-wrap { padding: var(--sp-4) var(--sp-3) var(--sp-8); }
+.embed .tv-bar { display: none; }
+
+/* Shared: the summary strip on top (A and B). */
+.pt-sum { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-3) var(--sp-8); padding: var(--sp-3) 0 var(--sp-6); }
+.pt-stat { display: flex; flex-direction: column; gap: var(--sp-half); }
+.pt-stat b { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-xl); color: var(--ink-strong); font-weight: 600; }
+.pt-stat span { font-size: var(--fs-2xs); color: var(--muted); letter-spacing: var(--track-label); text-transform: uppercase; }
+.pt-stat .door-seeds img { width: 18px; }
+.pt-achs { display: flex; gap: var(--sp-2); margin-left: auto; }
+.pt-achs img { width: 36px; height: 36px; }
+.pt-achs img.is-off { filter: var(--missing-art); opacity: .5; }
+.pt-sim { font-size: var(--fs-sm); color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+.pt-hitless { font-family: var(--font-num); font-size: var(--fs-2xs); color: var(--godhome); letter-spacing: var(--track-label); text-transform: uppercase; }
+.pt-miss { display: flex; justify-content: center; gap: var(--sp-1); }
+.pt-miss img { width: 26px; height: 26px; filter: var(--missing-art); }
+.pt-state { font-size: var(--fs-2xs); color: var(--muted); letter-spacing: var(--track-label); text-transform: uppercase; }
+.pt-state.is-done { color: var(--godhome); }
+.pt-state.is-open { color: var(--ink-2); }
+
+/* A · doors: the cards are states, not choices. */
+.v-a .pcard { cursor: default; }
+.v-a .pcard:hover { background: none; }
+.v-a .pcard.is-locked .pcard-art { background: none; filter: grayscale(1) brightness(.35); }
+.v-a .pcard.is-done .pcard-art { background-image: var(--pantheon-door); }
+.v-a .pdone-bind img { width: 28px; height: 28px; }
+.v-a .pdone-bind, .v-a .pdone-all { width: 38px; height: 38px; }
+.v-a .pcard-foot { display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); padding-top: var(--sp-1); }
+
+/* B · ledger */
+.pl { display: flex; flex-direction: column; }
+.pl-row { display: grid; grid-template-columns: 56px minmax(0, 1fr) repeat(4, 40px) 44px 72px 40px; align-items: center; gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-2); border-bottom: 1px solid var(--line-row); }
+.pl-row:hover { background: var(--veil); }
+.pl-row.is-open { background: var(--picked); }
+.pl-head { border-bottom-color: var(--line); padding-block: var(--sp-1); }
+.pl-head span { font-size: var(--fs-2xs); color: var(--muted); letter-spacing: var(--track-label); text-transform: uppercase; text-align: center; }
+.pl-art { width: 56px; height: 48px; object-fit: contain; object-position: 50% 100%; border-radius: 999px 999px 0 0; background: var(--pantheon-door-rest); border-bottom: 2px solid var(--godhome-line); }
+.pl-row.is-locked .pl-art { background: none; filter: grayscale(1) brightness(.35); }
+.pl-row.is-done .pl-art { background-image: var(--pantheon-door); }
+.pl-name { display: flex; flex-direction: column; gap: var(--sp-half); min-width: 0; }
+.pl-name b { font-weight: 400; color: var(--ink); }
+.pl-cell { display: grid; place-items: center; }
+.pl-cell img { width: 26px; height: 26px; filter: var(--missing-art); }
+.pl-cell img.is-on { filter: drop-shadow(0 0 4px var(--notch-used-glow)); }
+.pl-row.is-all .pl-cell img.is-on { filter: sepia(.35) saturate(.9) brightness(1.9) drop-shadow(0 0 4px var(--godhome-glow)); }
+.pl-x4 { font-family: var(--font-num); font-size: var(--fs-xs); font-weight: 600; color: var(--muted); opacity: .45; }
+.pl-x4.is-on { color: var(--godhome); opacity: 1; }
+.pl-ach img { width: 30px; height: 30px; }
+.pl-ach img.is-off { filter: var(--missing-art); opacity: .5; }
+.pl-open { padding: var(--sp-4) var(--sp-2) var(--sp-6); border-bottom: 1px solid var(--line-row); background: var(--picked); display: flex; flex-direction: column; gap: var(--sp-3); }
+.pl-open .tl.is-locked .tl-art { filter: var(--missing-art); }
+.pl-open-foot { display: flex; align-items: center; gap: var(--sp-6); }
+@media (max-width: 640px) {
+  .pl-row { grid-template-columns: 44px minmax(0, 1fr) repeat(4, 28px) 32px; }
+  .pl-head span:nth-child(n+8), .pl-row .pl-hl, .pl-row .pl-ach { display: none; }
+  .pl-art { width: 44px; height: 38px; }
+  .pl-cell img { width: 22px; height: 22px; }
+}
+
+/* C · the door */
+.gd { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: var(--sp-8); align-items: start; }
+.gd-door { position: relative; padding: var(--sp-6) var(--sp-4) var(--sp-4); border: 1px solid var(--godhome-line); border-bottom-width: 2px; border-radius: 240px 240px 0 0;
+  background: radial-gradient(ellipse at 50% 0%, var(--godhome-glow), transparent 70%); }
+.gd-cols { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--sp-2); }
+.gd-col { display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); text-align: center; min-width: 0; }
+.gd-col > img { width: 64px; height: 56px; object-fit: contain; object-position: 50% 100%; }
+.gd-col.is-locked > img { filter: grayscale(1) brightness(.35); }
+.gd-name { font-size: var(--fs-xs); color: var(--ink); min-height: 2.6em; }
+.gd-notch { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; border: 2px solid var(--notch-free); }
+.gd-notch img { width: 26px; height: 26px; filter: var(--missing-art); }
+.gd-notch.is-on { border-color: var(--lifeblood-line); box-shadow: 0 0 10px var(--lifeblood-line); }
+.gd-notch.is-on img { filter: none; }
+.gd-col.is-all .gd-notch.is-on { border-color: var(--godhome); box-shadow: 0 0 10px var(--godhome-glow); }
+.gd-col.is-all .gd-notch.is-on img { filter: sepia(.35) saturate(.9) brightness(1.9); }
+.gd-side { display: flex; flex-direction: column; gap: var(--sp-4); }
+.gd-count b { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-2xl); color: var(--ink-strong); font-weight: 600; }
+.gd-count span { color: var(--muted); font-size: var(--fs-sm); }
+.gd-sim { margin-top: var(--sp-8); border-top: 1px solid var(--line); padding-top: var(--sp-3); }
+.gd-sim summary { cursor: pointer; color: var(--ink-2); font-size: var(--fs-sm); }
+@media (max-width: 640px) {
+  .gd { grid-template-columns: minmax(0, 1fr); }
+  .gd-door { padding-inline: var(--sp-1); }
+  .gd-col > img { width: 44px; height: 40px; }
+  .gd-notch { width: 32px; height: 32px; } .gd-notch img { width: 20px; height: 20px; }
+  .gd-name { font-size: var(--fs-2xs); }
+}
+</style>
+</head>
+<body>
+<div class="tv-wrap" id="root"></div>
+<div class="tv-bar" id="bar"></div>
+<script>
+'use strict';
+const q = new URLSearchParams(location.search);
+const V = q.get('v') || 'a', W = q.get('w') || '0', LANG = q.get('lang') || 'es', EMBED = q.has('embed');
+const L = (es, en) => (LANG === 'en' ? en : es);
+const BINDS = ['nail', 'shell', 'charms', 'soul'];
+const BNAME = { nail: L('Aguijón', 'Nail'), shell: L('Coraza', 'Shell'), charms: L('Amuletos', 'Charms'), soul: L('Alma', 'Soul') };
+// Mock game: what bossDoorStateTier1…5 + the Hall's statues would say.
+const P = [
+  { id: 'master', name: L('Panteón del Maestro', 'Pantheon of the Master'), last: 'oro-mato', ach: 'brotherhood',
+    state: 'done', binds: BINDS, all: true, noHits: true, rooms: 12, bosses: 10 },
+  { id: 'artist', name: L('Panteón del Artista', 'Pantheon of the Artist'), last: 'sheo', ach: 'inspiration',
+    state: 'done', binds: BINDS, all: false, noHits: false, rooms: 12, bosses: 10 },
+  { id: 'sage', name: L('Panteón del Sabio', 'Pantheon of the Sage'), last: 'sly', ach: 'focus',
+    state: 'open', binds: [], all: false, noHits: false, rooms: 12, bosses: 10 },
+  { id: 'knight', name: L('Panteón del Caballero', 'Pantheon of the Knight'), last: 'pure-vessel', ach: 'soul-shade',
+    state: 'locked', need: L('Panteón del Sabio', 'Pantheon of the Sage'), missing: [], binds: [], rooms: 12, bosses: 10 },
+  { id: 'hallownest', name: L('Panteón de Hallownest', 'Pantheon of Hallownest'), last: 'absolute-radiance', ach: 'embrace-the-void',
+    state: 'locked', need: L('Corazón del Vacío', 'Void Heart'), missing: [], binds: [], rooms: 53, bosses: 42 },
+];
+P[2].missing = ['uumuu', 'galien'];   // Sage shown open, but its rooms dim the two you haven't beaten (B)
+const notches = P.reduce((n, p) => n + p.binds.length, 0), doneN = P.filter((p) => p.state === 'done').length;
+const germs = notches >= 16 ? 5 : notches >= 12 ? 4 : notches >= 8 ? 3 : 0;
+const stateLbl = (p) => p.state === 'done' ? L('Completado', 'Completed') : p.state === 'open' ? L('Abierto', 'Open') : L('Cerrado', 'Locked');
+const bindImg = (k) => `assets/pantheon/bind-${k}.png`;
+const pips = (p) => `<div class="pdone ${p.all ? 'is-all' : ''}">${BINDS.map((k) => `<button type="button" class="pdone-bind ${p.binds.includes(k) ? 'is-on' : ''}" title="${BNAME[k]}"><img src="${bindImg(k)}" alt="${BNAME[k]}"></button>`).join('')}<button type="button" class="pdone-all ${p.all ? 'is-on' : ''}">×4</button></div>`;
+const summary = () => `<div class="pt-sum">
+  <div class="pt-stat"><b>${doneN}/5</b><span>${L('Panteones', 'Pantheons')}</span></div>
+  <div class="pt-stat"><b>${notches}/20</b><span>${L('Vínculos', 'Bindings')}</span></div>
+  <div class="pt-stat"><span class="door-seeds">${'<img src="assets/hud/mask-lb.png" alt="">'.repeat(germs)}</span><span>${L('Capullo', 'Cocoon')} · ${germs}</span></div>
+  <div class="pt-achs">${P.map((p) => `<img class="${p.state === 'done' ? '' : 'is-off'}" src="assets/achievements/${p.ach}.png" alt="">`).join('')}</div>
+</div>`;
+
+function variantA() {
+  const cards = P.map((p) => `<div class="pcard-wrap"><div class="pcard is-${p.state}">
+      <img class="pcard-art" src="assets/enemies/${p.last}.png" alt="">
+      <span class="pcard-body">
+        <span class="pcard-name">${p.name}</span>
+        <span class="pt-state is-${p.state}">${stateLbl(p)}${p.noHits ? ' · <span class="pt-hitless">' + L('sin golpes', 'hitless') + '</span>' : ''}</span>
+        <span class="pcard-meta">${p.state === 'locked' ? L('Falta: ', 'Needs: ') + p.need : p.rooms + L(' salas · ', ' rooms · ') + p.bosses + L(' jefes', ' bosses')}</span>
+      </span></div>
+      <div class="pcard-foot">${p.state === 'locked' ? '' : pips(p)}<a class="pt-sim" href="#">${L('Simular', 'Simulate')}</a></div>
+    </div>`).join('');
+  return `<div class="block-head">${L('Tu partida', 'Your game')}</div>${summary()}
+    <div class="pcards">${cards}</div>
+    <div class="block-head" style="margin-top:var(--sp-8)">${L('Capullos de saviavida en los bancos', 'Lifeblood cocoons at the benches')}</div>
+    <div class="door"><div class="door-notches">${Array.from({ length: 20 }, (_, i) => `<i class="dn ${i < notches ? 'is-lit' : ''} ${[8, 12, 16].includes(i + 1) ? 'is-major' : ''}"></i>`).join('')}</div>
+    <p class="door-state">${L(`Puerta abierta: llevas ${notches} de 20 vínculos. El capullo de cada banco suelta ${germs} gérmenes.`, `Door open: ${notches} of 20 bindings. Each bench's cocoon gives ${germs} germs.`)}</p></div>`;
+}
+
+function variantB() {
+  const open = 'sage';
+  const head = `<div class="pl-row pl-head"><span></span><span style="text-align:left">${L('Panteón', 'Pantheon')}</span>${BINDS.map((k) => `<span>${BNAME[k].slice(0, 4)}</span>`).join('')}<span>×4</span><span>${L('Sin golpes', 'Hitless')}</span><span>${L('Logro', 'Ach.')}</span></div>`;
+  const rows = P.map((p) => {
+    const row = `<div class="pl-row is-${p.state}${p.all ? ' is-all' : ''}${p.id === open ? ' is-open' : ''}">
+      <img class="pl-art" src="assets/enemies/${p.last}.png" alt="">
+      <span class="pl-name"><b>${p.name}</b><span class="pt-state is-${p.state}">${stateLbl(p)}${p.state === 'locked' ? ' · ' + L('falta ', 'needs ') + p.need : ''}</span></span>
+      ${BINDS.map((k) => `<span class="pl-cell"><img class="${p.binds.includes(k) ? 'is-on' : ''}" src="${bindImg(k)}" alt="${BNAME[k]}"></span>`).join('')}
+      <span class="pl-cell pl-x4 ${p.all ? 'is-on' : ''}">×4</span>
+      <span class="pl-cell pl-hl">${p.noHits ? '<span class="pt-hitless">✓</span>' : '<span class="pt-state">—</span>'}</span>
+      <span class="pl-cell pl-ach"><img class="${p.state === 'done' ? '' : 'is-off'}" src="assets/achievements/${p.ach}.png" alt=""></span>
+    </div>`;
+    if (p.id !== open) return row;
+    const ids = ['hive-knight', 'elder-hu', 'the-collector', 'god-tamer', 'grimm', 'bench', 'galien', 'grey-prince-zote', 'uumuu', 'hornet-sentinel', 'godseeker', 'sly'];
+    const tl = ids.map((id, i) => {
+      const art = id === 'bench' ? 'assets/pantheon/bench.png' : id === 'godseeker' ? 'assets/pantheon/godseeker.png' : `assets/enemies/${id}.png`;
+      const type = id === 'bench' ? 'rest' : id === 'godseeker' ? 'godseeker' : 'fight';
+      const locked = p.missing.includes(id);
+      return `<li class="tl tl-${type} ${locked ? 'is-locked' : 'is-preview'}${i === ids.length - 1 ? ' is-final' : ''}"><span class="tl-thread"></span><span class="tl-go"><span class="tl-medal"><img class="tl-art" src="${art}" alt=""></span><span class="tl-n">${i + 1}</span></span></li>`;
+    }).join('');
+    return row + `<div class="pl-open"><ol class="timeline is-preview">${tl}</ol>
+      <div class="pl-open-foot"><span class="pt-state">${L('Sin vencer en el reino: ', 'Not beaten in the kingdom: ')}Uumuu, ${L('Galien', 'Galien')}</span><a class="pt-sim" href="#">${L('Simular este panteón', 'Simulate this pantheon')}</a></div></div>`;
+  }).join('');
+  return `<div class="block-head">${L('Tu partida', 'Your game')}</div>${summary()}<div class="pl">${head}${rows}</div>`;
+}
+
+function variantC() {
+  const cols = P.map((p) => `<div class="gd-col is-${p.state}${p.all ? ' is-all' : ''}">
+      <img src="assets/enemies/${p.last}.png" alt="">
+      <span class="gd-name">${p.name}</span>
+      <span class="pt-state is-${p.state}">${stateLbl(p)}</span>
+      ${BINDS.map((k) => `<span class="gd-notch ${p.binds.includes(k) ? 'is-on' : ''}" title="${BNAME[k]}"><img src="${bindImg(k)}" alt="${BNAME[k]}"></span>`).join('')}
+      ${p.noHits ? `<span class="pt-hitless">${L('sin golpes', 'hitless')}</span>` : ''}
+    </div>`).join('');
+  return `<div class="block-head">${L('Tu partida', 'Your game')}</div>
+    <div class="gd">
+      <div class="gd-door"><div class="gd-cols">${cols}</div></div>
+      <div class="gd-side">
+        <div class="gd-count"><b>${notches}/20</b> <span>${L('vínculos', 'bindings')}</span></div>
+        <div class="gd-count"><b>${doneN}/5</b> <span>${L('panteones', 'pantheons')}</span></div>
+        <div class="door-cocoon"><img class="door-cocoon-art" src="assets/pantheon/rest-cocoon.png" alt="" width="560" height="315">
+          <div class="door-cocoon-body"><span class="door-seeds">${'<img src="assets/hud/mask-lb.png" alt="">'.repeat(germs)}</span></div></div>
+        <div class="pt-achs" style="margin-left:0">${P.map((p) => `<img class="${p.state === 'done' ? '' : 'is-off'}" src="assets/achievements/${p.ach}.png" alt="">`).join('')}</div>
+      </div>
+    </div>
+    <details class="gd-sim"><summary>${L('Simulador de panteón', 'Pantheon simulator')}</summary><p class="foecard-note">${L('(el selector de hoy: panteón, vínculos, Entrar, el recorrido)', '(today\'s picker: pantheon, bindings, Enter, the path)')}</p></details>`;
+}
+
+const root = document.getElementById('root');
+if (W !== '0' && !EMBED) {
+  const u = new URL(location.href); u.searchParams.set('embed', '1');
+  root.innerHTML = `<iframe class="tv-frame" src="${u}" width="${W}" height="1500"></iframe>`;
+} else {
+  if (EMBED) document.documentElement.classList.add('embed');
+  root.innerHTML = `<div class="v-${V}">${{ a: variantA, b: variantB, c: variantC }[V]()}</div>`;
+}
+const opt = (k, v, label) => `<button type="button" aria-pressed="${q.get(k) === v || (!q.get(k) && ['a', '0', 'es'].includes(v) && { v: 'a', w: '0', lang: 'es' }[k] === v)}" onclick="const u=new URL(location.href);u.searchParams.set('${k}','${v}');u.searchParams.delete('embed');location.href=u">${label}</button>`;
+document.getElementById('bar').innerHTML = `
+  <div class="tv-grp"><span class="tv-lbl">Variant</span>${opt('v', 'a', 'A · doors')}${opt('v', 'b', 'B · ledger')}${opt('v', 'c', 'C · the door')}</div>
+  <div class="tv-grp"><span class="tv-lbl">Lang</span>${opt('lang', 'es', 'ES')}${opt('lang', 'en', 'EN')}</div>
+  <div class="tv-grp"><span class="tv-lbl">Width</span>${opt('w', '0', 'full')}${opt('w', '390', '390')}</div>`;
+</script>
+</body>
+</html>

@@ -68,12 +68,12 @@ test("the charm numbers are the game's: CHARM_NAME_<n> names the same charm", ()
 test('a new game comes in as the base Knight with nothing found', () => {
   const snap = F.toSnapshot(BASE);
   assert.deepEqual(snap, { 'hollow.build': C.encode(C.PRESETS.base), 'hollow.owned': '[]',
-    'hollow.meta': JSON.stringify({ time: 0, completion: 0, geo: 0, saved: null }) });
+    'hollow.meta': JSON.stringify({ time: 0, completion: 0, geo: 0, steel: false, saved: null }) });
 });
 
 test('the profile screen\'s figures travel with the game, and the moment of the save when known', () => {
   const pd = { ...BASE, playTime: 3725.5, completionPercentage: 48, geo: 1830 };
-  assert.deepEqual(JSON.parse(F.toSnapshot(pd, null, 1758900000000)['hollow.meta']), { time: 3725.5, completion: 48, geo: 1830, saved: 1758900000000 });
+  assert.deepEqual(JSON.parse(F.toSnapshot(pd, null, 1758900000000)['hollow.meta']), { time: 3725.5, completion: 48, geo: 1830, steel: false, saved: 1758900000000 });
   assert.equal(JSON.parse(F.toSnapshot(pd, null, 'x')['hollow.meta']).saved, null);
 });
 
@@ -105,10 +105,12 @@ test('the Journal, the Hall and the lifeblood door', () => {
     statueStateGruzMother: { completedTier1: true, completedTier2: true, completedTier3: false },
     statueStateFailedChampion: { completedTier1: false, completedTier2: false, completedTier3: false },
     bossDoorStateTier1: { completed: true, boundNail: true, boundSoul: true },
+    bossDoorStateTier2: { unlocked: true },
     bossDoorStateTier4: { completed: true, allBindings: true } };
   assert.deepEqual(F.journal(pd), { 'vengefly': 12, 'false-knight': 0 });
   assert.deepEqual(F.hall(pd), { 'gruz-mother': ['at', 'asra'] });
-  assert.deepEqual(F.door(pd), { done: { master: ['nail', 'soul'], knight: ['nail', 'shell', 'charms', 'soul'] }, all: ['knight'] });
+  assert.deepEqual(F.door(pd), { done: { master: ['nail', 'soul'], knight: ['nail', 'shell', 'charms', 'soul'] }, all: ['knight'],
+    unlocked: ['master', 'artist', 'knight'] });
   const snap = F.toSnapshot(pd);
   assert.deepEqual(Object.keys(snap).sort(), ['hollow.bindings', 'hollow.build', 'hollow.hall', 'hollow.journal', 'hollow.meta', 'hollow.owned', 'hollow.progress']);
   // The pantheons cleared are part of the 112%, not of the door (js/completion.js).

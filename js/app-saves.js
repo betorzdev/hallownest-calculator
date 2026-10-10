@@ -189,27 +189,29 @@
   const FILE_ICON = '<svg class="imp-ficon" width="14" height="18" viewBox="0 0 14 18" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" aria-hidden="true"><path d="M1 1 H9 L13 5 V17 H1 Z"/><path d="M9 1 V5 H13"/></svg>';
   const BACK = '<svg class="ic" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.5 L3.5 6 L8 10.5"/></svg>';
 
-  function steps() {
-    const sys = SYSTEMS[imp.os];
+  /* The three steps of getting a file of the game's in: its folder on each system (with Copy),
+     how to paste it in the picker, and which file. Shared with the achievements' Steam file
+     (js/app-progress.js): cfg = { systems, os, files (the chips' html), step1 and step3 (the
+     titles' keys), note (the text's key), actOs, actCopy, copied (the index copied just now, or -1) }. */
+  function importSteps(cfg) {
+    const sys = cfg.systems[cfg.os];
     const keys = sys.keys.map(kbd);
     const how = esc(t(sys.how, { k1: '\u0001', k2: '\u0002' }))
       .replace('\u0001', keys[0] || kbd(t('impEnter'))).replace('\u0002', kbd(t('impEnter')));
-    const tabs = Object.entries(SYSTEMS).map(([id, x]) =>
-      `<button type="button" data-act="importOs" data-value="${id}" aria-pressed="${id === imp.os}">${x.name}</button>`).join('');
+    const tabs = Object.entries(cfg.systems).map(([id, x]) =>
+      `<button type="button" data-act="${cfg.actOs}" data-value="${id}" aria-pressed="${id === cfg.os}">${x.name}</button>`).join('');
     const paths = sys.dirs.map((d, i) => {
-      const done = imp.copied && imp.copiedAt === i;
+      const done = cfg.copied === i;
       return `<div class="imp-path-w">${d.label ? `<span class="imp-path-k">${esc(t(d.label))}</span>` : ''}<div class="imp-path">
             <code translate="no">${esc(d.path)}</code>
-            <button type="button" class="text-btn imp-copy${done ? ' is-done' : ''}" data-act="importCopy" data-value="${i}">${esc(t(done ? 'impCopied' : 'impCopy'))}</button>
+            <button type="button" class="text-btn imp-copy${done ? ' is-done' : ''}" data-act="${cfg.actCopy}" data-value="${i}">${esc(t(done ? 'impCopied' : 'impCopy'))}</button>
           </div></div>`;
     }).join('');
-    const files = [1, 2, 3, 4].map((k) => `<li translate="no">${FILE_ICON}user${k}.dat</li>`).join('')
-      + `<li class="is-bak" translate="no">${FILE_ICON}user1.dat.bak1</li>`;
     return `<ol class="imp-steps">
       <li class="imp-step" style="--i:0">
         <span class="imp-num" aria-hidden="true">1</span>
         <div class="imp-step-body">
-          <h3 class="imp-step-title">${esc(t('impStep1'))}</h3>
+          <h3 class="imp-step-title">${esc(t(cfg.step1 || 'impStep1'))}</h3>
           <div class="seg sm imp-os" role="group" aria-label="${esc(t('impOs'))}">${tabs}</div>
           ${paths}
         </div>
@@ -224,12 +226,18 @@
       <li class="imp-step" style="--i:2">
         <span class="imp-num" aria-hidden="true">3</span>
         <div class="imp-step-body">
-          <h3 class="imp-step-title">${esc(t('impStep3'))}</h3>
-          <ul class="imp-files" aria-hidden="true">${files}</ul>
-          <p class="imp-text">${esc(t('impFiles'))}</p>
+          <h3 class="imp-step-title">${esc(t(cfg.step3))}</h3>
+          <ul class="imp-files" aria-hidden="true">${cfg.files}</ul>
+          <p class="imp-text">${esc(t(cfg.note))}</p>
         </div>
       </li>
     </ol>`;
+  }
+  function steps() {
+    const files = [1, 2, 3, 4].map((k) => `<li translate="no">${FILE_ICON}user${k}.dat</li>`).join('')
+      + `<li class="is-bak" translate="no">${FILE_ICON}user1.dat.bak1</li>`;
+    return importSteps({ systems: SYSTEMS, os: imp.os, files, step3: 'impStep3', note: 'impFiles', actOs: 'importOs', actCopy: 'importCopy',
+      copied: imp.copied ? imp.copiedAt : -1 });
   }
 
   /* What the drop zone holds in each state. The file's contents go in the preview, as a slot card
@@ -445,6 +453,10 @@
       setTimeout(() => enter('home', swap), 250);
     }, wait);
   }
+
+  // Shared with the Steam block of the achievements (js/app-progress.js): the system and copying.
+  const OS_NAMES = Object.fromEntries(Object.entries(SYSTEMS).map(([id, x]) => [id, x.name]));
+  Object.assign(App, { detectOs, isDesktop, isMobile, OS_NAMES, copyText, kbd, importSteps, FILE_ICON, BACK });
 
   Object.assign(actions, {
     savePick(node) {
@@ -707,8 +719,21 @@
     if (e.key === 'Escape' && imp.n && prefs.view === 'saves') actions.importClose();
   });
 
-  /* Copy folder i. The clipboard API where there is one; if not (or it's refused), selecting
-     the text and the old copy command. Its button says it's done for a moment. */
+  /* Copies a text: the clipboard API where there is one; if not (or it's refused), selecting
+     the element's text and the old copy command. onDone when it worked. Shared with the Steam
+     block (js/app-progress.js). */
+  function copyText(text, code, onDone) {
+    const fallback = () => {
+      if (!code) return;
+      try {
+        const range = document.createRange(); range.selectNodeContents(code);
+        const sel = getSelection(); sel.removeAllRanges(); sel.addRange(range);
+        if (document.execCommand('copy')) onDone();
+      } catch (e) { /* the text stays selected: it can be copied by hand */ }
+    };
+    try { navigator.clipboard.writeText(text).then(onDone, fallback); } catch (e) { fallback(); }
+  }
+  /* Copy folder i. Its button says it's done for a moment. */
   function copyPath(i) {
     const text = SYSTEMS[imp.os].dirs[i].path;
     const btn = (x) => el.saves.querySelector(`.imp-copy[data-value="${x}"]`);
@@ -724,15 +749,7 @@
         reset(i);
       }, 2000);
     };
-    const fallback = () => {
-      const code = el.saves.querySelectorAll('.imp-path code')[i];
-      try {
-        const range = document.createRange(); range.selectNodeContents(code);
-        const sel = getSelection(); sel.removeAllRanges(); sel.addRange(range);
-        if (document.execCommand('copy')) done();
-      } catch (e) { /* the text stays selected: it can be copied by hand */ }
-    };
-    try { navigator.clipboard.writeText(text).then(done, fallback); } catch (e) { fallback(); }
+    copyText(text, el.saves.querySelectorAll('.imp-path code')[i], done);
   }
   const focusIn = (sel) => { const b = el.saves.querySelector(sel); if (b) b.focus(); };
   /* The preview read from its first line (it isn't imported yet) down to the Import, which takes

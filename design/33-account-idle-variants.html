@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Account idle variants</title>
+<!-- Design material, not part of the site: the achievements tab before any account record is in,
+     today the saves screen's dashed drop zone (the Knight, «Suelta aquí el archivo de logros de
+     Steam», «Elegir el archivo») with «o márcalos a mano» under it (design/31, B). Albert (8 Oct
+     2026): the box with the Steam file drop reads as another square to fix. Three forms, with the
+     site's real CSS over mock markup written by the script below in both languages:
+       A · the head row     the account's row of design/32 (B), in its empty state: the Knight
+                             small at the left, «Tu cuenta · Sin enlazar» and the two ways as the
+                             row's actions: «Elegir el archivo de Steam» and «Marcar a mano». The
+                             whole tab still takes a dropped file; the row lights up while dragging.
+       B · open scene       the scene without its box: the Knight, one title, the button and the
+                             hand link, over the page itself; the dashed edge only while dragging.
+       C · tighter scene    the dashed zone kept but half the height, the Knight at 56 px beside
+                             the words (not above), the button and the hand link on the same line.
+     The bar at the bottom switches each; the choice is in the URL (?v=a&lang=es&w=390&drag=1). -->
+<base href="../">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+body { background: var(--page-bg); background-attachment: fixed; margin: 0; }
+.tv-wrap { max-width: 1120px; margin: 0 auto; padding: var(--sp-8) var(--page-pad) 220px; }
+.tv-bar { position: fixed; z-index: 100; left: 0; right: 0; bottom: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-2) var(--sp-8);
+  padding: var(--sp-3) var(--sp-4); background: var(--card); border-top: 1px solid var(--line-panel); font-size: var(--fs-sm); }
+.tv-grp { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-1) var(--sp-3); }
+.tv-lbl { color: var(--muted); font-family: var(--font-num); font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; }
+.tv-bar button { color: var(--ink-2); padding: var(--sp-1) 0; border-bottom: 1px solid transparent; }
+.tv-bar button[aria-pressed="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.tv-frame { display: block; margin: 0 auto; border: 1px solid var(--line-panel); background: var(--page-bg); }
+.pg { display: block; }
+
+/* ════ A · the head row, empty ════ */
+.idle-a { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: var(--sp-2) var(--sp-4); align-items: center; max-width: 900px;
+  padding: var(--sp-3) var(--sp-2) var(--sp-4); margin: 0 auto var(--sp-2); border-bottom: 1px solid var(--inv-line); transition: background var(--dur) var(--ease), box-shadow var(--dur) var(--ease); }
+.idle-a.is-drag { background: var(--veil); box-shadow: inset 2px 0 0 var(--accent); }
+.idle-a img { width: 36px; height: 36px; object-fit: contain; }
+.idle-a-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.idle-a-v { font-size: var(--fs-sm); color: var(--ink); }
+.idle-a-v.is-hint { color: var(--muted); }
+.idle-a-acts { display: flex; align-items: center; gap: var(--sp-4); flex-wrap: wrap; font-size: var(--fs-sm); }
+@media (max-width: 560px) { .idle-a { grid-template-columns: 36px minmax(0, 1fr); } .idle-a-acts { grid-column: 2; } }
+
+/* ════ B · open scene ════ */
+.idle-b { position: relative; display: flex; flex-direction: column; align-items: center; gap: var(--sp-3); max-width: 900px; margin: 0 auto var(--sp-8); padding: var(--sp-4) var(--sp-6) var(--sp-6); text-align: center;
+  border: 1px dashed transparent; transition: border-color var(--dur) var(--ease); }
+.idle-b.is-drag { border-color: var(--accent-line); background: var(--veil); }
+.idle-b img { height: calc(var(--sp-16) * 1.4); width: auto; }
+.idle-b-title { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: var(--fs-lg); letter-spacing: var(--track-title); color: var(--ink-strong); }
+.idle-b-acts { display: flex; align-items: center; gap: var(--sp-4); flex-wrap: wrap; justify-content: center; font-size: var(--fs-sm); }
+.idle-b-note { margin: 0; font-size: var(--fs-xs); color: var(--muted); }
+
+/* ════ C · tighter scene ════ */
+.idle-c { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--sp-2) var(--sp-5); align-items: center; max-width: 900px; margin: 0 auto var(--sp-8); padding: var(--sp-4) var(--sp-5);
+  border: 1px dashed color-mix(in oklab, var(--tint) 32%, transparent); background: var(--scene-bg); transition: border-color var(--dur) var(--ease); }
+.idle-c.is-drag { border-style: solid; border-color: var(--accent-line); }
+.idle-c img { height: 56px; width: auto; grid-row: 1 / 3; }
+.idle-c-title { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: var(--fs-md); letter-spacing: var(--track-title); color: var(--ink-strong); }
+.idle-c-acts { display: flex; align-items: center; gap: var(--sp-4); flex-wrap: wrap; font-size: var(--fs-sm); }
+@media (max-width: 560px) { .idle-c { grid-template-columns: 1fr; text-align: center; } .idle-c img { grid-row: auto; margin: 0 auto; } .idle-c-acts { justify-content: center; } }
+</style>
+</head>
+<body>
+<div class="tv-wrap" id="root"></div>
+<div class="tv-bar" id="bar"></div>
+<script>
+const q = new URLSearchParams(location.search);
+const V = q.get('v') || 'a', LANG = q.get('lang') || 'es', W = Number(q.get('w') || 0), DRAG = q.get('drag') === '1';
+const T = {
+  es: { tabPct: 'Finalización', tabFeats: 'Logros', thisSave: 'Esta partida', acct: 'Tu cuenta', none: 'Sin enlazar', hint: 'Los logros son de la cuenta, no de la partida',
+    choose: 'Elegir el archivo de Steam', hand: 'Marcar a mano', scene: 'El archivo de logros de Steam', drop: 'Suéltalo aquí', or: 'o', orHand: 'o márcalos a mano',
+    note: 'Suelta aquí el archivo, o elígelo. Se lee en tu navegador.', groups: [['Amuletos', 2, 3], ['Fragmentos de máscara', 1, 2], ['Jefes', 13, 13]] },
+  en: { tabPct: 'Completion', tabFeats: 'Achievements', thisSave: 'This save', acct: 'Your account', none: 'Not linked', hint: 'Achievements belong to the account, not to the save',
+    choose: 'Choose Steam\'s file', hand: 'Tick by hand', scene: 'Steam\'s achievements file', drop: 'Drop it here', or: 'or', orHand: 'or tick them by hand',
+    note: 'Drop the file here, or choose it. It\'s read in your browser.', groups: [['Charms', 2, 3], ['Mask Shards', 1, 2], ['Bosses', 13, 13]] },
+}[LANG];
+const ICONS = [['charmed', 'enchanted', 'blessed'], ['protected', 'masked'], ['falsehood', 'strength', 'test-of-resolve', 'proof-of-resolve', 'illumination', 'mortality', 'release', 'peace', 'honour', 'respect', 'obsession', 'execution', 'rivalry']];
+const knight = 'assets/knight/knight.png';
+const drag = DRAG ? ' is-drag' : '';
+const tabs = `<div class="pg-tabs"><button type="button" class="pg-tab">${T.tabPct} <span class="pg-tab-n">91 %</span></button><button type="button" class="pg-tab is-on">${T.tabFeats} <span class="pg-tab-n">27/63</span></button></div>`;
+const total = `<div class="pg-total"><span class="pg-total-k">${T.thisSave}</span><span class="pg-total-v">27<span class="u"> / 63</span></span></div>`;
+const rows = `<ol class="pg-rows">${T.groups.map(([name, d, max], i) => {
+  const pips = ICONS[i].map((id, j) => `<span class="pg-pip${j < d ? ' is-on' : ''}"><img src="assets/achievements/${id}.png" alt=""></span>`).join('');
+  return `<li class="pg-row${d === max ? ' is-full' : ''}"><button type="button" class="pg-head"><span class="pg-name">${name}</span><span class="pg-pips">${pips}</span><span class="pg-pts"><b>${d}</b><i class="u">/${max}</i></span><span class="disc-ring" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 4.5 6 8.5 10 4.5"/></svg></span></button></li>`;
+}).join('')}</ol>`;
+const A = `<div class="idle-a${drag}"><img src="${knight}" alt=""><div class="idle-a-main"><span class="acct-k">${T.acct}</span><span class="idle-a-v">${DRAG ? T.drop : T.none}</span><span class="idle-a-v is-hint">${T.hint}</span></div>
+  <div class="idle-a-acts"><button type="button" class="btn btn-primary">${T.choose}</button><button type="button" class="text-btn">${T.hand}</button></div></div>`;
+const B = `<div class="idle-b${drag}"><img src="${knight}" alt=""><p class="idle-b-title">${DRAG ? T.drop : T.scene}</p>
+  <div class="idle-b-acts"><button type="button" class="btn btn-primary">${T.choose}</button><span style="color:var(--muted)">${T.or}</span><button type="button" class="text-btn">${T.hand}</button></div>
+  <p class="idle-b-note">${T.note}</p></div>`;
+const C = `<div class="idle-c${drag}"><img src="${knight}" alt=""><p class="idle-c-title">${DRAG ? T.drop : T.scene}</p>
+  <div class="idle-c-acts"><button type="button" class="btn btn-primary">${T.choose}</button><button type="button" class="text-btn">${T.orHand}</button></div></div>`;
+const root = document.getElementById('root');
+if (W) {
+  const u = new URL(location.href); u.searchParams.delete('w');
+  root.innerHTML = `<iframe class="tv-frame" src="${u.pathname + u.search}" width="${W}" height="820"></iframe>`;
+} else {
+  root.innerHTML = `<section class="gear pg"><div class="gear-body pg-body" style="padding-top:var(--sp-6)">${tabs}${total}${V === 'a' ? A : V === 'b' ? B : C}${rows}</div></section>`;
+}
+const opt = (k, v, label) => `<button type="button" aria-pressed="${(q.get(k) || { v: 'a', lang: 'es', w: '0', drag: '0' }[k]) === v}" onclick="go('${k}','${v}')">${label}</button>`;
+window.go = (k, v) => { const u = new URL(location.href); if (v === '0') u.searchParams.delete(k); else u.searchParams.set(k, v); location.href = u; };
+document.getElementById('bar').innerHTML = `
+  <div class="tv-grp"><span class="tv-lbl">Variant</span>${opt('v', 'a', 'A · the head row')}${opt('v', 'b', 'B · open scene')}${opt('v', 'c', 'C · tighter scene')}</div>
+  <div class="tv-grp"><span class="tv-lbl">Drag</span>${opt('drag', '0', 'rest')}${opt('drag', '1', 'dragging')}</div>
+  <div class="tv-grp"><span class="tv-lbl">Lang</span>${opt('lang', 'es', 'ES')}${opt('lang', 'en', 'EN')}</div>
+  <div class="tv-grp"><span class="tv-lbl">Width</span>${opt('w', '0', 'full')}${opt('w', '390', '390')}</div>`;
+</script>
+</body>
+</html>

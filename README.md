@@ -41,7 +41,8 @@ are tried in free mode).
 
 ### Progress and the Map
 The **112% exactly as the game counts it**, category by category, and the **game's own map**, drawn
-from its files, with every grub, shard, relic and root on it, found or not.
+from its files, with every grub, shard, relic and root on it, found or not. And the **63 achievements**, with
+the game's icons and text: your Steam account's from Steam's own file, and what your save fulfils.
 
 </td>
 <td valign="top">
