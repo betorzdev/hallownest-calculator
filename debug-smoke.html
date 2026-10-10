@@ -1523,6 +1523,26 @@ function heldPhase() {
         ok('[held] Progress reads without marking', txt('#pg .pg-lead').indexOf('marcar') < 0 && !!q('#pg .pg-lead'), txt('#pg .pg-lead'));
         await click('#pg [data-act="pgRow"][data-value="charms"]');
         ok('[held] and its plates are inert', !!q('#pg .pg-plates.is-held') && all('#pg .pg-plates [data-act="pgMark"]').every((b) => b.disabled), all('#pg .pg-plates [data-act="pgMark"]').length + ' plates');
+        // "Only what's missing" is a preference, not a mark: it works on a held save too.
+        const pgRows = all('#pg .pg-row').length, pgFull = all('#pg .pg-row.is-full').length;
+        await click('#pg [data-act="pgMissing"]');
+        ok('[held] Only what\'s missing takes the full rows away and hides the plates you have', !!q('#pg .pg-body.is-missing') && all('#pg .pg-row').length === pgRows - pgFull
+           && !q('#pg .pg-row.is-full') && !!q('#pg .pg-row.is-open .pg-plates')
+           && all('#pg .pg-plates .gplate.is-on').length > 0 && all('#pg .pg-plates .gplate.is-on').every((b) => b.offsetParent === null),
+           all('#pg .pg-row').length + ' rows · ' + all('#pg .pg-plates .gplate.is-on').length + ' had, hidden');
+        await click('[data-act="pgShow"][data-value="feats"]');
+        ok('[held] and the Achievements tab carries the same switch, still on', q('#pg [data-act="pgMissing"]') && q('#pg [data-act="pgMissing"]').getAttribute('aria-checked') === 'true' && !!q('#pg .pg-body.is-missing'));
+        await click('#pg [data-act="pgMissing"]');
+        // A plate's warnings and its pin (GUIDE, js/achievements.js): the game's names, no detail.
+        const pgWas = w.HK.app.prefs.pgOpen;   // the 112%'s open row, given back after
+        if (w.HK.app.prefs.pgOpen !== 'f:misc') await click('#pg [data-act="pgRow"][data-value="f:misc"]');
+        ok('Purity\'s plate warns that it rules out Happy Couple', txt('#pg .gplate.ach[data-id="purity"] .ach-warn') === 'Excluye: Parejita feliz',
+           txt('#pg .gplate.ach[data-id="purity"] .ach-warn'));
+        ok('a plate with a place on the Map carries its pin', !!q('#pg .gplate-wrap:has(.gplate.ach[data-id="purity"]) > .map-pin'));
+        await click('[data-act="pgShow"][data-value="pct"]');
+        if (pgWas && w.HK.app.prefs.pgOpen !== pgWas) await click(`#pg [data-act="pgRow"][data-value="${pgWas}"]`);
+        ok('[held] switched off, everything is back', !q('#pg .pg-body.is-missing') && all('#pg .pg-row').length === pgRows && all('#pg .pg-row.is-full').length === pgFull && !!q('#pg .pg-row.is-open'),
+           all('#pg .pg-row').length + ' rows · ' + all('#pg .pg-row.is-full').length + ' full');
 
         await goto('journal');
         ok('[held] the Journal has no bulk marking and says how it stands', !q('#hj .hj-bulk-toggle') && txt('#hj .hj-howto') === 'Cada entrada va como en tu partida.', txt('#hj .hj-howto'));

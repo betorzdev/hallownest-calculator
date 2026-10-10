@@ -39,12 +39,23 @@ test('every lore tablet carries its text in both languages', () => {
   for (const rows of Object.values(SO.TABLETS)) for (const [name, , , , text] of rows) assert.ok(text.es && text.en, name);
 });
 
-test("the characters' meetings: each in a room the map places, with its own bool", () => {
+test("the characters' meetings: each in a room the map places, with its own bool or count", () => {
   for (const who of PE.PEOPLE) {
     assert.ok(who.es && who.en, who.id);
-    for (const [scene, , , flag] of who.stops) assert.ok(placed(scene) && /^[a-zA-Z0-9_]+$/.test(flag), `${who.id} ${scene}`);
+    for (const [scene, , , flag] of who.stops) {
+      const ok = Array.isArray(flag) ? /^[a-zA-Z0-9_]+$/.test(flag[0]) && Number.isInteger(flag[1]) : /^[a-zA-Z0-9_]+$/.test(flag);
+      assert.ok(placed(scene) && ok, `${who.id} ${scene}`);
+    }
   }
   assert.equal(PE.FLAGS.length, new Set(PE.FLAGS).size);
+});
+
+test('Mister Mushroom: each meeting is met once his state is past it', () => {
+  const of = (n) => PE.met({ mrMushroomState: n }).filter((k) => k.startsWith('mrMushroomState'));
+  assert.equal(of(1).length, 0);   // none yet
+  assert.equal(of(4).length, 3);   // Fungal Wastes, Kingdom's Edge, Deepnest
+  assert.equal(of(8).length, 7);   // all seven
+  assert.deepEqual(PE.met({ metXun: true }), ['metXun']);
 });
 
 test('the Map has the pictures it asks for', () => {

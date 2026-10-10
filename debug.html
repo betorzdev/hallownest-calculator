@@ -27,7 +27,8 @@
    presses that list tab, &jseed=mix|seen|ready|mark|<n> seeds the game (mix: a bit of everything; seen:
    all encountered; ready: the 146 complete; mark: and the Hunter's Mark; <n>: n encountered), and
    &jmark=none|seen|done presses that state on the entry being read (the game's notice shows) and
-   &jtop=<px> (the same as &top) scrolls the screen up to see further down. With &marks=radiant, the Idol on Radiant. */
+   &jtop=<px> (the same as &top) scrolls the screen up to see further down. With &marks=radiant, the Idol on Radiant.
+   Progress: &view=progress, &pgshow=pct|feats, &pgopen=<row> opens it, &pgmissing=1 turns "Only what's missing" on. */
 const q = new URLSearchParams(location.search);
 const w = Number(q.get('w') || 1280);
 const h = Number(q.get('h') || 6000);
@@ -48,6 +49,7 @@ localStorage.setItem('hollow.prefs', JSON.stringify({
   /* Progress: &pgshow=feats opens the achievements tab, &pgopen=<row> opens that row (f:<group> for an achievements one). */
   pgShow: q.get('pgshow') || 'pct',
   pgOpen: q.get('pgopen') || '',
+  pgMissing: q.get('pgmissing') === '1',   // Progress's "Only what's missing"
   cocoon: Number(q.get('cocoon') || 0),
   /* &binds=all or &binds=nail,soul: the bindings chosen on the choose-a-pantheon screen. */
   bindings: Object.fromEntries(['nail', 'shell', 'charms', 'soul'].map((k) =>

@@ -17,7 +17,10 @@
      { kind: 'found', id }             a collectible (js/collectibles.js): a grub, a shard, a root…
      { kind: 'statue', id, diff }      a Hall of Gods symbol won (at, asra, radiant)
      { kind: 'pct', from, to }         the completion went up (js/completion.js)
-   Losses (a charm given to the Divine, geo spent) aren't told: the block is about what you got. */
+   Losses (a charm given to the Divine, geo spent) aren't told: the block is about what you got.
+   Nor is what another row already tells or the Map keeps (UNTOLD): a fragile charm broken or
+   given to the Divine, a tram line opened (the Tram Pass is the gain), and the two endings (the
+   Hollow Knight and the Radiance fallen are Journal entries, told as such). */
 (() => {
   'use strict';
   const HK = globalThis.HK || (globalThis.HK = {});
@@ -42,6 +45,9 @@
     };
   }
 
+  const UNTOLD = new Set(['divine-heart', 'divine-greed', 'divine-strength', 'broken-heart', 'broken-greed',
+    'broken-strength', 'tram-upper', 'tram-lower', 'ending-vessel', 'ending-radiance']);
+
   const pct = (g) => CP.count({ build: g.build, owned: g.owned, book: g.book, progress: g.progress }).total;
 
   function diff(a, b) {
@@ -56,7 +62,7 @@
       else if (now.done && !was.done) out.push({ kind: 'journal', id: r.id, done: true, was: true });
     }
     for (const id of b.owned) if (!a.owned.includes(id)) out.push({ kind: 'charm', id });
-    for (const id of b.progress.ids) if (!a.progress.ids.includes(id)) out.push({ kind: 'item', id });
+    for (const id of b.progress.ids) if (!UNTOLD.has(id) && !a.progress.ids.includes(id)) out.push({ kind: 'item', id });
     for (const k of ['masks', 'vessels', 'notches', 'nail']) if (b.build[k] > a.build[k]) out.push({ kind: 'upgrade', id: k, to: b.build[k] });
     for (const k of Object.keys(b.build.spells)) if (b.build.spells[k] > a.build.spells[k]) out.push({ kind: 'spell', id: k, to: b.build.spells[k] });
     for (const k of Object.keys(b.build.arts)) if (b.build.arts[k] && !a.build.arts[k]) out.push({ kind: 'art', id: k });
@@ -71,6 +77,6 @@
     return out;
   }
 
-  HK.changes = { fromSnap, diff, pct };
+  HK.changes = { UNTOLD, fromSnap, diff, pct };
   if (typeof module !== 'undefined' && module.exports) module.exports = HK.changes;
 })();

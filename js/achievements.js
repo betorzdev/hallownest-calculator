@@ -286,7 +286,67 @@
     PANTHEON4: [6, 30], ENDINGD: [6, 31], COMPLETIONGG: [7, 0],
   });
 
-  const ACHIEVEMENTS = Object.freeze(LIST.map((a) => Object.freeze({ hidden: false, hand: false, ...a, mark: MARK[a.id] || null })));
+  /* What a plate adds to the game's own text (Progress's achievements tab): where the Map shows it
+     (js/app-map.js mapTargets), when it has a place. From kb/achievements.md. */
+  const GUIDE = {
+    charmed: { map: 'layer:charms' },
+    enchanted: { map: 'layer:charms' },
+    blessed: { map: 'people:salubra' },
+    protected: { map: 'collect:mask-shard' },
+    masked: { map: 'collect:mask-shard' },
+    soulful: { map: 'collect:vessel-fragment' },
+    worldsoul: { map: 'collect:vessel-fragment' },
+    falsehood: { map: 'c112:bosses:false-knight' },
+    strength: { map: 'foe:failed-champion' },
+    'test-of-resolve': { map: 'c112:bosses:hornet-protector' },
+    'proof-of-resolve': { map: 'c112:bosses:hornet-sentinel' },
+    illumination: { map: 'c112:bosses:soul-master' },
+    mortality: { map: 'foe:soul-tyrant' },
+    release: { map: 'c112:bosses:broken-vessel' },
+    peace: { map: 'foe:lost-kin' },
+    honour: { map: 'c112:bosses:dung-defender' },
+    respect: { map: 'c112:bosses:mantis-lords' },
+    obsession: { map: 'c112:bosses:the-collector' },
+    execution: { map: 'c112:bosses:traitor-lord' },
+    rivalry: { map: 'c112:colosseum:trial-warrior' },
+    attunement: { map: 'sources:essence' },
+    awakening: { map: 'sources:essence:seer' },
+    ascension: { map: 'sources:essence:seer' },
+    grubfriend: { map: 'collect:grub' },
+    metamorphosis: { map: 'collect:grub' },
+    connection: { map: 'collect:stag' },
+    hope: { map: 'collect:stag' },
+    neglect: { map: 'npc:zote:0' },
+    witness: { map: 'npc:quirrel:9' },
+    purity: { map: 'npc:nailsmith:0' },
+    'happy-couple': { map: 'npc:nailsmith:1' },
+    void: { map: 'sources:void' },
+    'passing-of-the-age': { map: 'sources:mushroom' },
+    banishment: { map: 'npc:brumm' },
+    // The Pantheons are in Godhome, which the map doesn't draw: its way in, the Godseeker.
+    brotherhood: { map: 'people:godseeker' },
+    inspiration: { map: 'people:godseeker' },
+    focus: { map: 'people:godseeker' },
+    'soul-shade': { map: 'people:godseeker' },
+    'embrace-the-void': { map: 'people:godseeker' },
+    solace: { map: 'npc:mourner' },
+    teacher: { map: 'c112:dreamers:monomon' },
+    watcher: { map: 'c112:dreamers:lurien' },
+    beast: { map: 'c112:dreamers:herrah' },
+    cartographer: { map: 'collect:map' },
+    warrior: { map: 'c112:colosseum:trial-warrior' },
+    conqueror: { map: 'c112:colosseum:trial-conqueror' },
+    fool: { map: 'c112:colosseum:trial-fool' },
+    'the-hollow-knight': { map: 'foe:hollow-knight' },
+    'sealed-siblings': { map: 'foe:hollow-knight' },
+    'dream-no-more': { map: 'foe:the-radiance' },
+    memory: { map: 'foe:white-defender' },
+    'dark-romance': { map: 'foe:grey-prince-zote' },
+    'grand-performance': { map: 'c112:grimm:troupe-master-grimm' },
+    ritual: { map: 'c112:grimm:nkg' },
+  };
+
+  const ACHIEVEMENTS = Object.freeze(LIST.map((a) => Object.freeze({ hidden: false, hand: false, ...a, mark: MARK[a.id] || null, guide: GUIDE[a.id] || {} })));
   const BY_ID = Object.freeze(Object.fromEntries(ACHIEVEMENTS.map((a) => [a.id, a])));
   const TOTAL = ACHIEVEMENTS.length;   // 63
   const HAND = Object.freeze(ACHIEVEMENTS.filter((a) => a.hand).map((a) => a.id));
@@ -357,6 +417,6 @@
     return { ...rec, unlocked };
   }
 
-  HK.achievements = { GROUPS, ACHIEVEMENTS, BY_ID, BY_KEY, TOTAL, HAND, RULES, STEAM, normalize, toggle, count, account, handRecord, toggleAccount };
+  HK.achievements = { GROUPS, ACHIEVEMENTS, BY_ID, BY_KEY, TOTAL, HAND, RULES, STEAM, GUIDE, normalize, toggle, count, account, handRecord, toggleAccount };
   if (typeof module !== 'undefined' && module.exports) module.exports = HK.achievements;
 })();

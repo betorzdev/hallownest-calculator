@@ -969,6 +969,10 @@ button.hud-mask { padding: 0; border: 0; background: none; cursor: pointer; }
 /* One that doesn't fit now (no free notch) looks like any you don't wear, as in the game: not
    fitting is said where it's tried —the cursor, its title, the notice— (design/22, A). */
 .qc.is-locked:hover img { opacity: 0.7; filter: grayscale(0.3); transform: none; }
+/* A fragile one broken: its cracked drawing (App.charmArt), whole, but it can't be worn
+   until Leg Eater repairs it, so it doesn't rise under the mouse. */
+.qc.is-broken { cursor: not-allowed; }
+.qc.is-broken:is(:hover, :focus-visible) img { transform: none; }
 /* The one you haven't found in your game stays shadowed in every state —under the mouse, in
    the detail (is-sel), highlighted by a chip (is-hot) or warning of overcharm—: otherwise
    those rules gave it its colour back and it looked found. That's why it comes after all of
@@ -4151,6 +4155,10 @@ kbd {
 .pg-pts b { font-size: var(--fs-md); font-weight: 700; color: var(--ink-strong); }
 .pg-pts .u { font-size: var(--fs-xs); font-style: normal; color: var(--muted); }
 .pg-row.is-full .pg-pts b { color: var(--good); }
+/* "Only what's missing" (.is-missing on the body): the full rows aren't drawn (js/app-progress.js);
+   in the open one, the plates you have and the groups all had go. */
+.pg-opts { display: flex; justify-content: flex-end; max-width: 900px; margin: 0 auto var(--sp-2); }
+.pg-body.is-missing .pg-plates :is(.gplate.is-on, .gplate-wrap:has(> .gplate.is-on)), .pg-body.is-missing .pg-group.is-full { display: none; }
 /* The pips: each thing's picture, small; in shadow what's missing, dimmed what's half done. */
 .pg-pips { display: flex; flex-wrap: wrap; gap: var(--sp-1); }
 .pg-pip { width: 18px; height: 18px; display: grid; grid-template-rows: minmax(0, 1fr); place-items: center; }
@@ -4183,10 +4191,10 @@ kbd {
 .pg-plates .gplate-art img { max-height: 48px; }
 .pg-plates .gplate.is-part .gplate-art img { filter: brightness(0.6) saturate(0.6); }
 .pg-plates .gplate.is-part .gplate-art::before { background: var(--halo-plate-off); }
-/* The rows that count pieces (masks, vessels, the nail): a pip lit by a fraction, cut from the
-   bottom up (--f); open, the pieces in groups under a quiet label, and the link to see them all. */
-.pg-pip.is-fill { position: relative; }
-.pg-pip.is-fill img + img { position: absolute; inset: 0; margin: auto; filter: none; opacity: 1; clip-path: inset(calc((1 - var(--f)) * 100%) 0 0 0); }
+/* The rows that count pieces (masks, vessels, the nail): the masks and vessels as the game's
+   Inventory assembles them, a little bigger than the other pips so its shards read; open, the
+   pieces in groups under a quiet label, and the link to see them all. */
+.pg-pip.is-pieces { width: 22px; height: 22px; }
 .pg-all { display: flex; justify-content: flex-end; margin: 0 0 var(--sp-2); font-size: var(--fs-sm); }
 .pg-group + .pg-group { margin-top: var(--sp-6); }
 .pg-sub { margin: 0 0 var(--sp-3); font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); }
@@ -4244,7 +4252,16 @@ kbd {
 .ach-import .imp-note { margin: var(--sp-3) 0 0; font-size: var(--fs-sm); color: var(--muted); text-align: center; }
 .ach-import .imp-follow { display: flex; justify-content: center; margin-top: var(--sp-3); }
 .ach-when { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-2xs); color: var(--ink-2); }
-.ach-of-save { font-size: var(--fs-2xs); color: var(--muted); }
+/* What a plate costs, in red (GUIDE): «Excluye: Pureza», «Se pierde: Niño de Grimm». */
+/* The pin at an achievement's corner never on its icon (56px): a column needs 56 + two rings, 108px.
+   On a desktop the columns start at 112px; the phone's three columns, narrower under 348px
+   (3 × 108 + the two gaps), drop the icon below the pin, as the 112%'s plates do; the ones with
+   no pin drop as well, so a line's icons stay level. */
+.pg-plates:has(.gplate.ach) { grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); container: feats / inline-size; }
+@container feats (width < 348px) {
+  .pg-plates .gplate.ach .gplate-art { box-sizing: content-box; padding-top: calc(var(--sp-6) + var(--sp-half)); }
+  .pg-plates .gplate.ach .gplate-art::before { top: calc(var(--sp-6) + var(--sp-half)); }
+}
 
 /* ── The Map (js/app-map.js): the game's own map, black like its map screen, each area in its
    own tint (baked into the drawings). Whole what the Quill drew, rough what you only bought,
@@ -4452,6 +4469,10 @@ html:has(.pg.is-full:not([hidden])) { overflow: hidden; }
 .pgm-card.has-text { flex-wrap: wrap; white-space: normal; }
 .pgm-card-text { flex-basis: 100%; white-space: pre-line; max-height: 14em; overflow-y: auto; margin: 0; font-size: var(--fs-sm); color: var(--ink); line-height: 1.45; }
 .pgm-card-t b { color: var(--ink-strong); font-weight: 600; }
+/* The achievement the pin is the place of: its icon small, «Logro:», and its name to its detail. */
+.pgm-card-feat { display: inline-flex; align-items: center; gap: var(--sp-1); margin-top: var(--sp-1); font-size: var(--fs-xs); color: var(--muted); }
+.pgm-card-feat img { width: 16px; height: 16px; object-fit: contain; }
+.pgm-card-feat .text-btn { font-size: var(--fs-xs); }
 
 
 /* The Map's filter by kind: chips in a row, the chosen ones with the accent's line. */
@@ -4469,7 +4490,7 @@ html:has(.pg.is-full:not([hidden])) { overflow: hidden; }
   .pg-area { flex: none; }
   .pg-head { grid-template-columns: minmax(0, 1fr) auto auto; }
   .pg-pips { grid-column: 1 / -1; grid-row: 2; }
-  .pg-plates { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .pg-plates, .pg-plates:has(.gplate.ach) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 /* ── Your game, the start screen (js/app-home.js; design/10-restructure.md, C · the bench) ──
@@ -4488,8 +4509,27 @@ html:has(.pg.is-full:not([hidden])) { overflow: hidden; }
 .hm-fig.is-big .hm-fig-v { font-size: calc(var(--fs-xl) * 2); }
 .hm-block { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-3); min-width: 0; }
 .hm-block .block-head { display: flex; align-items: baseline; gap: var(--sp-3); flex-wrap: wrap; margin: 0; }
-.hm-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; align-self: stretch; }
+.hm-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; align-self: stretch; container-type: inline-size; }
 .hm-item { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto auto; gap: var(--sp-3); align-items: center; padding: var(--sp-2) 0; border-bottom: 1px solid var(--inv-line); }
+/* The list's sum line (design/34, A): the completion's points, apart from the rows under a
+   stronger rule, the label in the figures' small caps, the two figures in the numbers' face and
+   the gain's bar under them (the same bar the figures above use). */
+.hm-sum { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--sp-1) var(--sp-3); align-items: baseline;
+  margin-top: var(--sp-2); padding-top: var(--sp-3); border-top: 1px solid var(--ink-2); }
+.hm-sum-k { font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); }
+.hm-sum-v { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-sm); color: var(--ink-strong); white-space: nowrap; }
+.hm-sum-v b { font-weight: 700; }
+.hm-sum-v .u { font-size: 0.85em; font-weight: 400; color: var(--muted); }
+.hm-sum .hmC-bar { grid-column: 1 / -1; width: 100%; margin-top: var(--sp-1); }
+/* A narrow list (the three columns between 900 and 1100 px, a small phone): the tag or the value
+   goes under the name instead of squeezing it to nothing, and the pin keeps the row's right. */
+@container (max-width: 320px) {
+  .hm-item { grid-template-columns: 36px minmax(0, 1fr) auto; row-gap: var(--sp-1); }
+  .hm-item-art { grid-row: 1 / span 2; }
+  .hm-item-name { grid-column: 2; }
+  .hm-item-k, .hm-item-v { grid-column: 2; grid-row: 2; justify-content: flex-start; justify-self: start; text-align: left; }
+  .hm-item > .map-pin { grid-column: 3; grid-row: 1 / span 2; }
+}
 .hm-item:last-child { border-bottom: 0; }
 /* The picture's cell is the box itself (minmax(0, 1fr)): in an auto track it grew to the picture's
    own height, and the max-height below, a percentage of that track, held nothing back. */
@@ -4610,7 +4650,7 @@ html:has(.pg.is-full:not([hidden])) { overflow: hidden; }
   .hm.is-enter .hmC-bar i.is-new { transform-origin: left;
     animation: hm-grow var(--dur-card-count) var(--delay-card-count) var(--ease-count) both,
     hm-glow var(--dur-card-bench) calc(var(--delay-card-count) + var(--dur-card-count)) var(--ease-fade) 2 alternate; }
-  .hm.is-enter .hm-list > .hm-item { position: relative; animation: hm-fade var(--dur-slow) calc(var(--delay-card-new) + var(--i, 0) * var(--dur-card-step)) var(--ease-fade) both; }
+  .hm.is-enter .hm-list > :is(.hm-item, .hm-sum) { position: relative; animation: hm-fade var(--dur-slow) calc(var(--delay-card-new) + var(--i, 0) * var(--dur-card-step)) var(--ease-fade) both; }
   .hm.is-enter .hm-list > .hm-item::after { content: ''; position: absolute; inset: 0; pointer-events: none;
     background: linear-gradient(100deg, transparent 30%, color-mix(in oklab, var(--ink-strong) 22%, transparent) 50%, transparent 70%) no-repeat;
     background-size: 250% 100%; animation: hm-shine var(--dur-flash) calc(var(--delay-card-new) + var(--i, 0) * var(--dur-card-step)) var(--ease) both; }

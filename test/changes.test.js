@@ -5,6 +5,7 @@ const assert = require('node:assert');
 
 const C = require('../js/codec.js');
 const CH = require('../js/changes.js');
+const P = require('../js/progress.js');
 
 const snap = (o = {}) => ({
   'hollow.build': C.encode(C.normalize({ nail: 1, masks: 5, vessels: 0, notches: 3, spells: { vs: 1, dd: 0, hw: 0 },
@@ -46,6 +47,13 @@ test('losses are not told: a charm given away, a lower nail', () => {
   const a = CH.fromSnap(snap({ build: { nail: 3 }, owned: ['compass', 'fheart'] }));
   const b = CH.fromSnap(snap({ build: { nail: 2 }, owned: ['compass'] }));
   assert.deepEqual(CH.diff(a, b), []);
+});
+
+test('what is not a gain, or another row tells, stays out: a broken charm, a tram line, an ending', () => {
+  const a = CH.fromSnap(snap({ progress: { ids: [] } }));
+  const b = CH.fromSnap(snap({ progress: { ids: ['broken-heart', 'divine-greed', 'tram-upper', 'ending-vessel', 'ending-radiance', 'zote-dead', 'queen-fragment'] } }));
+  assert.deepEqual(kinds(CH.diff(a, b).filter((c) => c.kind !== 'pct')), ['item:queen-fragment', 'item:zote-dead']);
+  for (const id of CH.UNTOLD) assert.ok(id in P.IDS, id + ' is a progress id');
 });
 
 test('a snapshot with keys missing reads as an empty game', () => {

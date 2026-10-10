@@ -13,7 +13,9 @@
    (js/achievements.js), as rows by group like the 112%'s, each achievement a plate with the
    game's icon and text. Two layers there, never mixed: your Steam account's record, read from
    Steam's own file (js/steam.js, hollow.steam, imported or followed here), and what this save
-   fulfils (the rules). With Steam in, the account leads and the save is a line under each.
+   fulfils (the rules). With Steam in, the account leads and the save is a figure under its headline.
+   A switch over the rows, "Only what's missing" (prefs.pgMissing, both tabs), takes away the full
+   rows and the plates you have; an open row's pips stay, they're its summary.
    Shares HK.app with js/app.js (see there). */
 (() => {
   'use strict';
@@ -23,6 +25,7 @@
   const { t, pick, el, NT, esc, brackets, screenHead, render, actions, prefs, savePrefs, setProgress, setOwned, pctSpace } = App;
 
   const count = () => CP.count({ build: App.state, owned: App.owned, book: App.hjBook(), progress: App.progress });
+  const missingOnly = () => !!prefs.pgMissing;
   const num = (n) => App.NF[0].format(n);
   const pct = (n) => num(n) + pctSpace();
 
@@ -46,10 +49,12 @@
     if (cat === 'bosses' || cat === 'dreams' || id === 'nkg') return { name: pick(bookName(id)), art: D.art('journal', id) };
     if (cat === 'charms' || ['dreamshield', 'sprintmaster', 'weaversong', 'grimmchild'].includes(id)) {
       const v = versionOf(id === 'grimmchild' ? 'grimm' : id);
-      return { name: pick(D.CHARM_BY_ID[v]), art: `assets/charms/${v}.png` };
+      return { name: pick(D.CHARM_BY_ID[v]), art: App.charmArt(v) };
     }
-    const item = [...D.EQUIPMENT, ...D.KEY_ITEMS].find((x) => x.id === id);
+    const item = [...D.EQUIPMENT, ...D.KEY_ITEMS, ...D.MAP_ITEMS].find((x) => x.id === id);
     if (item) return { name: pick(item), art: D.art('items', id) };
+    // Kingsoul's two halves, each as the Map draws it.
+    if (id === 'queen-fragment' || id === 'king-fragment') return { name: pick(D.WHITE_FRAGMENT), art: D.art('items', id === 'queen-fragment' ? 'white-fragment-left' : 'white-fragment-right') };
     if (id === 'mothwing-cloak' || id === 'shade-cloak') {
       const c = id === 'mothwing-cloak' ? 1 : 2;
       return { name: pick(D.ABILITIES.cloaks[c]), art: D.art('abilities', 'cloak' + c) };
@@ -73,6 +78,12 @@
     // The Dreamers and the Colosseum's trials: the game's own pins for them on its map.
     if (cat === 'dreamers') return { name: pick(D.COMPLETION_NAMES[id]), art: '', pin: 'dreamer-' + id };
     if (cat === 'colosseum') return { name: pick(D.COMPLETION_NAMES[id]), art: '', pin: 'colosseum' };
+    // Mister Mushroom met in his seven places: Passing of the Age's icon is his.
+    if (id === 'mushroom-seven') return { name: pick(D.MISTER_MUSHROOM), art: D.art('achievements', 'passing-of-the-age') };
+    // What only an achievement reads (Salubra's blessing, Zote dead, the Nailsmith's fate…):
+    // the achievement it earns, by its name and icon.
+    const feat = A.ACHIEVEMENTS.find((a) => a.mark && a.mark.progress === id);
+    if (feat) return { name: pick(feat.name), art: D.art('achievements', feat.id), note: t('homeFeat') };
     return { name: pick(D.COMPLETION_NAMES[id]) || id, art: '' };
   }
 
@@ -120,8 +131,8 @@
      pieces Your game has; open, every piece with its place and its pin, grouped by how you get
      it, and a link to see them all on the Map. In free mode the pieces lead (pieceStep). */
   const PIECES = {
-    masks: { kind: 'mask-shard', key: 'masks', base: D.HEALTH.baseMasks, max: D.HEALTH.maxMasks, loose: 'shards', per: 4, art: ['hud', 'mask'], piece: ['hud', 'mask-shard'] },
-    vessels: { kind: 'vessel-fragment', key: 'vessels', base: 0, max: D.SOUL.maxVessels, loose: 'fragments', per: 3, art: ['hud', 'vessel'], piece: ['hud', 'vessel-frag'] },
+    masks: { kind: 'mask-shard', key: 'masks', base: D.HEALTH.baseMasks, max: D.HEALTH.maxMasks, loose: 'shards', per: 4, art: ['hud', 'mask'], piece: ['hud', 'mask-shard'], pips: 'mask-pieces' },
+    vessels: { kind: 'vessel-fragment', key: 'vessels', base: 0, max: D.SOUL.maxVessels, loose: 'fragments', per: 3, art: ['hud', 'vessel'], piece: ['hud', 'vessel-frag'], pips: 'vessel-pieces' },
   };
   const PIECE_OF = { 'mask-shard': PIECES.masks, 'vessel-fragment': PIECES.vessels };
   // The pieces Your game has: the whole ones' and the loose ones.
@@ -129,18 +140,21 @@
   // The Nailsmith's prices (kb/02-arsenal.md): geo and Pale Ore for each upgrade.
   const NAIL_COST = [null, [250, 0], [800, 1], [2000, 2], [4000, 3]];
   const itemsOf = (kind) => CO.ITEMS.filter((it) => it.kind === kind);
-  // A pip lit by a fraction (0 to 1): the shadowed picture, and the lit one cut from the bottom up.
-  const fillPip = (src, f) => (f >= 1 ? `<span class="pg-pip is-on${darkCls(src)}"><img src="${src}" alt=""></span>`
-    : f <= 0 ? `<span class="pg-pip${darkCls(src)}"><img src="${src}" alt=""></span>`
-    : `<span class="pg-pip is-fill" style="--f:${f.toFixed(3)}"><img src="${src}" alt=""><img src="${src}" alt=""></span>`);
+  const pip = (src, on) => `<span class="pg-pip${on ? ' is-on' : ''}${darkCls(src)}"><img src="${src}" alt=""></span>`;
   // The spells, each level its own thing (its name, picture and pin), in the game's order.
   const SPELL_LEVELS = ['vs', 'dd', 'hw'].flatMap((k) => [[k, 1], [k, 2]]);
   const spellArt = (k, l) => D.art('spells', l === 2 ? k + '2' : k);
   function piecePips(cat) {
-    if (cat === 'spells') return SPELL_LEVELS.map(([k, l]) => fillPip(spellArt(k, l), App.state.spells[k] >= l ? 1 : 0)).join('');
-    if (cat === 'nail') return [1, 2, 3, 4].map((l) => fillPip(D.art('nails', l), App.state.nail >= l ? 1 : 0)).join('');
+    if (cat === 'spells') return SPELL_LEVELS.map(([k, l]) => pip(spellArt(k, l), App.state.spells[k] >= l)).join('');
+    if (cat === 'nail') return [1, 2, 3, 4].map((l) => pip(D.art('nails', l), App.state.nail >= l)).join('');
+    /* The masks and vessels as the game's Inventory assembles them (tools/extract-pieces.py): each
+       pip the empty one and its shards or fragments laid in one by one, the game's own pictures
+       of each count. They carry their light: none takes the shadow of what's missing. */
     const pc = PIECES[cat], had = piecesHad(pc);
-    return Array.from({ length: pc.max - pc.base }, (_, i) => fillPip(D.art(...pc.art), Math.min(1, Math.max(0, (had - i * pc.per) / pc.per)))).join('');
+    return Array.from({ length: pc.max - pc.base }, (_, i) => {
+      const n = Math.min(pc.per, Math.max(0, had - i * pc.per));
+      return `<span class="pg-pip is-on is-pieces"><img src="${D.art('hud', `${pc.pips}-${n}`)}" alt=""></span>`;
+    }).join('');
   }
   // A piece: where it is, and what it asks for while you don't have it; a tap marks it.
   function piecePlate(it, art) {
@@ -153,8 +167,11 @@
         <span class="gplate-val is-none">${esc(on ? '' : App.priceOf(it))}</span></button>`;
     return App.pinned(plate, 'collect:' + it.id, name);
   }
-  const group = (label, list, plates) => `<div class="pg-group"><p class="pg-sub">${esc(label)}<span>${num(list.filter((it) => P.hasFound(App.progress, it.id)).length)}/${num(list.length)}</span></p>
+  const group = (label, list, plates) => {
+    const n = list.filter((it) => P.hasFound(App.progress, it.id)).length;
+    return `<div class="pg-group${n === list.length ? ' is-full' : ''}"><p class="pg-sub">${esc(label)}<span>${num(n)}/${num(list.length)}</span></p>
     <div class="pg-plates">${plates}</div></div>`;
+  };
   function piecesOpen(cat) {
     if (cat === 'spells') {
       /* A tap sets the spell's level (as Your game's picker): marking an upgrade brings the first
@@ -180,7 +197,7 @@
       }).join('');
       // The upgrades aren't collectibles: their group counts your nail.
       return all('c112:nail:nail', ores.length + 1)
-        + `<div class="pg-group"><p class="pg-sub">${esc(t('pgUpgrades'))}<span>${num(App.state.nail)}/4</span></p><div class="pg-plates">${nails}</div></div>`
+        + `<div class="pg-group${App.state.nail === 4 ? ' is-full' : ''}"><p class="pg-sub">${esc(t('pgUpgrades'))}<span>${num(App.state.nail)}/4</span></p><div class="pg-plates">${nails}</div></div>`
         + group(pick(D.COLLECTIBLE_KINDS['pale-ore']), ores, ores.map((it) => piecePlate(it, D.art('items', 'pale-ore'))).join(''));
     }
     const pc = PIECES[cat], list = itemsOf(pc.kind), art = D.art(...pc.piece);
@@ -203,7 +220,11 @@
     return { state: whole !== App.state[pc.key] ? C.set(App.state, pc.key, whole) : null, progress: P.setCount(prog, pc.loose, n % pc.per) };
   }
 
+  // With the switch on, a full row isn't drawn; the pref keeps it open, so switching off brings
+  // it back as it was.
   function row(c) {
+    const full = c.got === c.max;
+    if (missingOnly() && full) return '';
     const open = prefs.pgOpen === c.id;
     const name = t('pgCat_' + c.id);
     const pieces = c.id === 'nail' || c.id === 'spells' || PIECES[c.id];
@@ -211,7 +232,6 @@
       const m = meta(c.id, it.id);
       return `<span class="pg-pip ${stateOf(it)}${darkCls(m.art)}">${artHtml(m)}</span>`;
     }).join('');
-    const full = c.got === c.max;
     return `<li class="pg-row${open ? ' is-open' : ''}${full ? ' is-full' : ''}">
       <button type="button" class="pg-head" data-act="pgRow" data-value="${c.id}" aria-expanded="${open}"
         aria-label="${esc(t('pgOpen', { cat: name, got: num(c.got), max: num(c.max) }))}">
@@ -239,20 +259,20 @@
     // Hidden by the game until earned: here always shown, with the game's word for it.
     const tag = a.hidden ? `<span class="ach-tag" title="${esc(t('featSecretHint'))}">${esc(t('featSecret'))}</span>` : '';
     const label = name + ' · ' + text;
+    // Its pin to the Map at the corner, as the 112%'s plates carry (App.pinned), where the Map has its place.
+    const pin = (plate) => (a.guide && a.guide.map ? App.pinned(plate, a.guide.map, name) : plate);
     if (acc) {
-      /* The account's: lit when it has it (dated, from Steam's file); and what this save does
-         about it, as a line of its own. By hand the plate marks the account; with Steam's file
-         nothing is marked here: the file answers. */
+      /* The account's: lit when it has it (dated, from Steam's file). By hand the plate marks
+         the account; with Steam's file nothing is marked here: the file answers. */
       const on = acc.has(a.id), when = acc.time(a.id), hand = App.account.source === 'hand';
       const unlocked = on && !hand ? `<span class="ach-when">${esc(when ? t('featUnlockedOn', { date: fmtDate(when * 1000) }) : t('featUnlocked'))}</span>` : '';
-      const ofSave = t(!it.sure ? 'featSaveUnsure' : it.on ? 'featSaveYes' : 'featSaveNo');
       const body = `${art}<span class="gplate-name"${NT}>${esc(name)}</span>
-        <span class="gplate-val is-text ach-text">${tag}<span${NT}>${esc(text)}</span>${unlocked}<span class="ach-of-save">${esc(ofSave)}</span></span>`;
+        <span class="gplate-val is-text ach-text">${tag}<span${NT}>${esc(text)}</span>${unlocked}</span>`;
       if (hand) {
-        return `<button type="button" class="gplate ach${on ? ' is-on' : ''}" data-act="pgAcct" data-id="${a.id}" aria-pressed="${on}"
-          title="${esc(label + ' · ' + t(on ? 'pgUnmark' : 'pgMark'))}">${body}</button>`;
+        return pin(`<button type="button" class="gplate ach${on ? ' is-on' : ''}" data-act="pgAcct" data-id="${a.id}" aria-pressed="${on}"
+          title="${esc(label + ' · ' + t(on ? 'pgUnmark' : 'pgMark'))}">${body}</button>`);
       }
-      return `<button type="button" class="gplate ach${on ? ' is-on' : ''}" disabled aria-pressed="${on}" title="${esc(label)}">${body}</button>`;
+      return pin(`<button type="button" class="gplate ach${on ? ' is-on' : ''}" disabled data-id="${a.id}" aria-pressed="${on}" title="${esc(label)}">${body}</button>`);
     }
     const hint = it.sure ? '' : it.hint === 'likely' ? t('featLikely') : t('featByHand');
     const body = `${art}<span class="gplate-name"${NT}>${esc(name)}</span>
@@ -260,26 +280,28 @@
     const cls = `gplate ach${it.on ? ' is-on' : ''}`;
     // The ones the save can't always tell: marked by hand, here, even in a save from the game.
     if (a.hand && !it.sure) {
-      return `<button type="button" class="${cls}" data-act="pgFeat" data-id="${a.id}" aria-pressed="${it.on}"
-        title="${esc(label + ' · ' + t(it.on ? 'pgUnmark' : 'pgMark'))}">${body}</button>`;
+      return pin(`<button type="button" class="${cls}" data-act="pgFeat" data-id="${a.id}" aria-pressed="${it.on}"
+        title="${esc(label + ' · ' + t(it.on ? 'pgUnmark' : 'pgMark'))}">${body}</button>`);
     }
     // What another screen keeps (masks, grubs, the Journal's count…): the plate takes you there.
     if (m.far) {
       const act = m.far === 'progress' ? 'data-act="pgShow" data-value="pct"' : `data-act="view" data-value="${m.far}"`;
-      return `<button type="button" class="${cls} is-far" ${act} title="${esc(label + ' · ' + t(FAR_KEY[m.far]))}">${body}</button>`;
+      return pin(`<button type="button" class="${cls} is-far" ${act} data-id="${a.id}" title="${esc(label + ' · ' + t(FAR_KEY[m.far]))}">${body}</button>`);
     }
     // A progress id or a Journal entry: marked here, where the site keeps it, as the 112% does.
     // In a save from the game nothing marks it; nor what the save already settled (an ending).
     const held = !!App.saveLock() || a.hand;
-    return `<button type="button" class="${cls}" data-act="pgAch" data-id="${a.id}" aria-pressed="${it.on}" ${held ? 'disabled' : ''}
-        title="${esc(held ? label : label + ' · ' + t(it.on ? 'pgUnmark' : 'pgMark'))}">${body}</button>`;
+    return pin(`<button type="button" class="${cls}" data-act="pgAch" data-id="${a.id}" aria-pressed="${it.on}" ${held ? 'disabled' : ''}
+        title="${esc(held ? label : label + ' · ' + t(it.on ? 'pgUnmark' : 'pgMark'))}">${body}</button>`);
   }
   function featRow(g, acc) {
-    const key = 'f:' + g.id, open = prefs.pgOpen === key;
+    const key = 'f:' + g.id;
     const name = t('featGroup_' + g.id);
     // The row counts the account when Steam is in, this save when not: never both.
     const lit = (it) => (acc ? acc.has(it.id) : it.on);
     const done = g.items.filter(lit).length;
+    if (missingOnly() && done === g.max) return '';
+    const open = prefs.pgOpen === key;
     const pips = g.items.map((it) => `<span class="pg-pip${lit(it) ? ' is-on' : ''}"><img src="${D.art('achievements', it.id)}" alt=""></span>`).join('');
     const hand = !acc && g.items.some((it) => !it.sure);
     return `<li class="pg-row${open ? ' is-open' : ''}${done === g.max ? ' is-full' : ''}">
@@ -478,14 +500,17 @@
           <span class="ach-save"><img src="${D.art('hud', 'mask')}" alt="">${esc(t('steamSaveDoes', { n: num(f.done) }))}</span>`
       : `<span class="pg-total-k">${esc(t('steamSaveTitle'))}</span>
           <span class="pg-total-v">${num(f.done)}<span class="u"> / ${num(f.total)}</span></span>`;
+    // Over the rows, on both tabs: only what's missing.
+    const opts = `<div class="pg-opts">${App.switchHtml('pgMissing', 'missing', missingOnly(), t('pgOnlyMissing'))}</div>`;
+    const rows = (list) => `<ol class="pg-rows">${list.join('') || App.emptyHtml(esc(t('pgNothingMissing')), '', { tag: 'li' })}</ol>`;
     const body = prefs.pgShow === 'feats' ? `${pgTabs(r, acc ? acc.done : f.done)}<div class="pg-total">${total}</div>
-        ${acc ? acctHtml(acc) : sceneHtml()}
-        <ol class="pg-rows">${f.groups.map((g) => featRow(g, acc)).join('')}</ol>` : `${pgTabs(r, acc ? acc.done : f.done)}<div class="pg-total">
+        ${acc ? acctHtml(acc) : sceneHtml()}${opts}
+        ${rows(f.groups.map((g) => featRow(g, acc)))}` : `${pgTabs(r, acc ? acc.done : f.done)}<div class="pg-total">
           <span class="pg-total-k">${esc(t('pgCompletion'))}</span>
           <span class="pg-total-v">${num(r.total)}<span class="u">${esc(pctSpace())} / ${num(r.max)}</span></span>
-        </div>
-        <ol class="pg-rows">${r.categories.map(row).join('')}</ol>`;
-    el.pg.innerHTML = `<div class="gear-body pg-body">${head}${body}</div>`;
+        </div>${opts}
+        ${rows(r.categories.map(row))}`;
+    el.pg.innerHTML = `<div class="gear-body pg-body${missingOnly() ? ' is-missing' : ''}">${head}${body}</div>`;
   }
 
   // The screen bar's tab carries the figure, as the Journal's carries its entries.
@@ -620,6 +645,17 @@
       savePrefs();
       render();
       unfold(node.dataset.value, before);
+    },
+    pgMissing() { prefs.pgMissing = !prefs.pgMissing; savePrefs(); render(); },
+    // From a Map card's «Logro: …»: the achievements tab, its group open, its plate in view.
+    pgFeatGo(node) {
+      const a = A.BY_ID[node.dataset.id];
+      if (!a) return;
+      Object.assign(prefs, { pgShow: 'feats', pgOpen: 'f:' + a.group });
+      savePrefs();
+      actions.view({ dataset: { value: 'progress' }, closest: () => null });
+      const plate = document.querySelector(`.gplate.ach[data-id="${CSS.escape(a.id)}"]`);
+      if (plate) { plate.scrollIntoView({ block: 'center' }); plate.focus({ preventScroll: true }); }
     },
     pgMark(node) {
       const cat = node.dataset.key, id = node.dataset.id;

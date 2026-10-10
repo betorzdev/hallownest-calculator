@@ -212,6 +212,7 @@
     if (!Array.isArray(prefs.open)) prefs.open = [];
     // Progress's two tabs: the 112% and the achievements (js/app-progress.js).
     if (!['pct', 'feats'].includes(prefs.pgShow)) prefs.pgShow = 'pct';
+    prefs.pgMissing = !!prefs.pgMissing;   // Progress's switch: only what's missing (js/app-progress.js)
     delete prefs.diff;   // difficulty no longer belongs to Combat: it belongs to each statue in the Hall
     delete prefs.gearOpen; delete prefs.fightOpen;   // Gear and combat no longer collapse: they are screens
     // The Map was Progress's second tab, and the Hall and the Pantheons Combat's.
@@ -495,6 +496,10 @@
   /* The title's plaque: a double outline with pointed ends, stretched to the title, filled with the
      panel's black so the frame's top line goes behind it. */
   const PLAQUE = '<svg class="screen-plaque" viewBox="0 0 100 30" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><polygon class="is-outer" points="6,1 94,1 99.5,15 94,29 6,29 0.5,15" vector-effect="non-scaling-stroke"/><polygon class="is-inner" points="8,4 92,4 96.5,15 92,26 8,26 3.5,15" vector-effect="non-scaling-stroke"/></svg>';
+  /* A switch (.switch, css/app.css): a choice that changes how a screen shows (the Map's whole map
+     and area names, Progress's "only what's missing"); act and value go to the screen's action. */
+  const switchHtml = (act, value, on, text) =>
+    `<button type="button" class="switch" role="switch" aria-checked="${on}" data-act="${act}" data-value="${value}"><span class="switch-track" aria-hidden="true"></span>${esc(text)}</button>`;
   const chevron = (up) => `<svg class="ic chev ${up ? 'up' : ''}" width="12" height="8" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1.5 L6 6 L11 1.5"/></svg>`;
   // The search fields' lens and the on/off box's tick (css: .search, .check).
   const lens = '<svg class="ic" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="5" cy="5" r="3.6"/><path d="M7.8 7.8 L10.8 10.8"/></svg>';
@@ -1288,6 +1293,9 @@
   const AWAY = { fheart: ['broken-heart', 'divine-heart'], fgreed: ['broken-greed', 'divine-greed'], fstrength: ['broken-strength', 'divine-strength'] };
   const fragileAway = (id) => (AWAY[id] || []).find((x) => P.has(App.progress, x)) || '';
   const isOwned = (id) => C.ownEquippable(App.owned, id) && !fragileAway(id);
+  // A broken one is still yours: the charm screen draws it cracked in its slot (D.ART.charms).
+  const isBroken = (id) => fragileAway(id).startsWith('broken');
+  const charmArt = (id) => (isBroken(id) ? D.art('charms', id + '-broken') : `assets/charms/${id}.png`);
   /* Void Heart can't be removed (wiki, "Void Heart"): if you have it, it's always equipped. It
      costs 0 notches, and the Pantheons' Charms binding already removes it in the engine. */
   const withFixed = (st) => {
@@ -1390,7 +1398,7 @@
     NEED_KEY, NT, namedSrc, esc, load, save, rebuildNF, pctSpace, fmtValue, fmtStat, fmtStatRich, sign,
     masksText, notchText, spellArt, shortOf, badgeText, goodClass, deltaChip, changeChip, prefs, loadPrefs,
     savePrefs, justWorn, justFound, splitHash, here, loadState, persist, compareLabel, compute, impact, recompute, commit, bindAllFx,
-    brackets, corners, PLAQUE, chevron, cross, lens, tick, FLEURS, rule, emptyHtml, screenHead, hudHtml, restoreFocus, focusDescriptor, safely, render, go, navTo, screenOf,
-    darkCls, underNav, toast, track, actions, isMaxOwned, loadOwned, saveOwned, isOwned, fragileAway, withFixed, isFixed, setOwned, loadProgress, saveProgress, setProgress, setFeats, loadAccount, setAccount, reloadGame,
+    brackets, corners, PLAQUE, switchHtml, chevron, cross, lens, tick, FLEURS, rule, emptyHtml, screenHead, hudHtml, restoreFocus, focusDescriptor, safely, render, go, navTo, screenOf,
+    darkCls, underNav, toast, track, actions, isMaxOwned, loadOwned, saveOwned, isOwned, fragileAway, isBroken, charmArt, withFixed, isFixed, setOwned, loadProgress, saveProgress, setProgress, setFeats, loadAccount, setAccount, reloadGame,
     saveLock, edits });
 })();

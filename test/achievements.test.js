@@ -143,3 +143,9 @@ test('the account by hand: a record of its own, toggled plate by plate, never wi
   // And the marks it kept come back as a hand record.
   assert.deepEqual(A.handRecord(steam.hand), { source: 'hand', unlocked: { ZOTE: 0 } });
 });
+
+test('a map target is one of the kinds the Map reads', () => {
+  for (const a of A.ACHIEVEMENTS) {
+    if (a.guide.map) assert.match(a.guide.map, /^(c112|foe|people|npc|collect|layer|sources):[a-z0-9-]+(:[a-z0-9-]+)?$/, a.id);
+  }
+});

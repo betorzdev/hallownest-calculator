@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Since last time · the completion row</title>
+<!-- Design material, not part of the site: the last row of Your game's «Since last time» list, the
+     completion's points (js/app-home.js, changesBlock, kind 'pct'). Today it's a row like the
+     others with an empty picture slot: «Completion   87 → 89 %». Albert (8 Oct 2026): it looks like
+     one more item. It isn't one: it's the sum of the items above. Three forms, with the site's
+     real CSS over mock markup, each at the list's two widths (331 px: the column at 1280; 254 px:
+     the column at 1000, where the tag goes under the name):
+       A · the sum line   not a row: a closing line set apart by a stronger rule, the label in
+                           small caps as the figures' («Completion»), the two figures in the
+                           numbers' face and the gain's bar under them (the same bar the figures
+                           above use, hmC-bar), so it reads as the list's total.
+       B · a row, drawn   the row kept, with the grub as its picture: the site's own sign for
+                           Progress (the invitation's feature list uses it). Cheapest, same shape.
+       C · in the head    no row: the gain goes into the block's head as its note («+2 % since
+                           the save 1 hour ago»); the figures above already count the completion
+                           up from the save before, with the bar.
+     The bar at the bottom switches each; the choice is in the URL (?v=a&lang=es). -->
+<base href="../">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+body { background: var(--page-bg); background-attachment: fixed; margin: 0; }
+.tv-wrap { max-width: 1120px; margin: 0 auto; padding: var(--sp-8) var(--page-pad) 220px; }
+.tv-bar { position: fixed; z-index: 100; left: 0; right: 0; bottom: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-2) var(--sp-8);
+  padding: var(--sp-3) var(--sp-4); background: var(--card); border-top: 1px solid var(--line-panel); font-size: var(--fs-sm); }
+.tv-grp { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-1) var(--sp-3); }
+.tv-lbl { color: var(--muted); font-family: var(--font-num); font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; }
+.tv-bar button { color: var(--ink-2); padding: var(--sp-1) 0; border-bottom: 1px solid transparent; }
+.tv-bar button[aria-pressed="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.tv-title { font-family: var(--font-num); font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); margin: 0 0 var(--sp-6); }
+.tv-cols { display: flex; flex-wrap: wrap; gap: var(--sp-12); align-items: flex-start; }
+.tv-col { flex: none; }
+.tv-col .hm-block { width: var(--w); }
+.tv-w { display: block; margin-top: var(--sp-6); color: var(--muted); font-size: var(--fs-xs); font-family: var(--font-num); }
+
+/* ════ A · the sum line: the list's total, apart from its rows ════ */
+.hm-sum { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--sp-1) var(--sp-3); align-items: baseline;
+  margin-top: var(--sp-2); padding-top: var(--sp-3); border-top: 1px solid var(--ink-2); }
+.hm-sum-k { font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); }
+.hm-sum-v { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-sm); color: var(--ink-strong); white-space: nowrap; }
+.hm-sum-v b { font-weight: 700; }
+.hm-sum .hmC-bar { grid-column: 1 / -1; width: 100%; margin-top: var(--sp-1); }
+
+/* ════ C · in the head: the note carries the gain ════ */
+.hm-gain { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; color: var(--ink-strong); }
+</style>
+</head>
+<body>
+<div class="tv-wrap"><p class="tv-title" id="title"></p><div class="tv-cols" id="root"></div></div>
+<div class="tv-bar" id="bar"></div>
+<script>
+const q = new URLSearchParams(location.search);
+const V = q.get('v') || 'a', LANG = q.get('lang') || 'es';
+const T = {
+  es: { since: 'Desde la última vez', note: 'desde el guardado de hace 1 hora', gainNote: '+2 % desde el guardado de hace 1 hora', done: 'Diario, completa', seen: 'Diario',
+        charm: 'Amuleto', pct: 'Finalización', rows: ['Maestro de Almas', 'Retorcedor de hechizos', 'Inmersión desoladora', 'Larva cautiva'], sub: 'Ciudad de las Lágrimas', val: '87 → 89 %', tot: 'de 112' },
+  en: { since: 'Since last time', note: 'since the save 1 hour ago', gainNote: '+2% since the save 1 hour ago', done: 'Journal, complete', seen: 'Journal',
+        charm: 'Charm', pct: 'Completion', rows: ['Soul Master', 'Spell Twister', 'Desolate Dive', 'Captive Grub'], sub: 'City of Tears', val: '87 → 89%', tot: 'of 112' },
+}[LANG];
+const PIN = '<button type="button" class="icon-btn map-pin" aria-label="Map"><svg class="ic" width="12" height="14" viewBox="0 0 12 14" fill="currentColor" aria-hidden="true"><path d="M6 0.6a4.9 4.9 0 0 0-4.9 4.9c0 3.5 4.9 8 4.9 8s4.9-4.5 4.9-8A4.9 4.9 0 0 0 6 0.6zm0 6.7a1.8 1.8 0 1 1 0-3.6 1.8 1.8 0 0 1 0 3.6z"/></svg></button>';
+const row = (art, name, tag, sub = '') => `<li class="hm-item"><span class="hm-item-art"><img src="${art}" alt=""></span><span class="hm-item-name">${name}${sub ? `<small>${sub}</small>` : ''}</span>${tag ? `<span class="tag hm-item-k">${tag}</span>` : ''}${PIN}</li>`;
+const items = [row('assets/journal/soul-master.png', T.rows[0], T.done), row('assets/charms/twister.png', T.rows[1], T.charm),
+  row('assets/spells/dd.png', T.rows[2], ''), row('assets/effects/grub.png', T.rows[3], '', T.sub)].join('');
+const bar = '<div class="hmC-bar" aria-hidden="true"><i class="is-had" style="width: 77.68%"></i><i class="is-new" style="width: 1.79%"></i></div>';
+const today = `<li class="hm-item"><span class="hm-item-art"></span><span class="hm-item-name">${T.pct}</span><span class="hm-item-v">${T.val}</span></li>`;
+const A = `<ul class="hm-list">${items}</ul><div class="hm-sum"><span class="hm-sum-k">${T.pct}</span><span class="hm-sum-v"><b>${T.val}</b> <span class="u">${T.tot}</span></span>${bar}</div>`;
+const B = `<ul class="hm-list">${items}<li class="hm-item"><span class="hm-item-art"><img src="assets/effects/grub.png" alt=""></span><span class="hm-item-name">${T.pct}</span><span class="hm-item-v">${T.val}</span></li></ul>`;
+const C = `<ul class="hm-list">${items}</ul>`;
+const note = V === 'c' ? `<span class="block-note"><span class="hm-gain">${T.gainNote.split(' ')[0]}</span> ${T.gainNote.split(' ').slice(1).join(' ')}</span>` : `<span class="block-note">${T.note}</span>`;
+const body = { a: A, b: B, c: C, today: `<ul class="hm-list">${items}${today}</ul>` }[V];
+const block = `<section class="hm-block"><h3 class="block-head">${T.since}${note}</h3>${body}</section>`;
+document.getElementById('root').innerHTML = [331, 254].map((w) => `<div class="tv-col" style="--w: ${w}px"><div class="gear-body" style="margin:0;padding:0">${block}</div><span class="tv-w">${w} px</span></div>`).join('');
+document.getElementById('title').textContent = { a: 'A · the sum line', b: 'B · a row, drawn (the grub)', c: 'C · in the head', today: 'Today' }[V];
+const opt = (k, v, label) => `<button type="button" aria-pressed="${(q.get(k) || { v: 'a', lang: 'es' }[k]) === v}" onclick="go('${k}','${v}')">${label}</button>`;
+window.go = (k, v) => { const u = new URL(location.href); u.searchParams.set(k, v); location.href = u; };
+document.getElementById('bar').innerHTML = `<div class="tv-grp"><span class="tv-lbl">Form</span>${opt('v', 'today', 'Today')}${opt('v', 'a', 'A · sum line')}${opt('v', 'b', 'B · row + grub')}${opt('v', 'c', 'C · in the head')}</div>
+  <div class="tv-grp"><span class="tv-lbl">Lang</span>${opt('lang', 'es', 'ES')}${opt('lang', 'en', 'EN')}</div>`;
+</script>
+</body>
+</html>

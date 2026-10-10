@@ -77,6 +77,7 @@
     homeJournalSeen:{ es: 'Diario', en: 'Journal' },
     homeCharm:      { es: 'Amuleto', en: 'Charm' },
     homeJournalDone:{ es: 'Diario, completa', en: 'Journal, complete' },
+    homeFeat:       { es: 'Logro', en: 'Achievement' },
     homeMore:       { es: 'y {n} más', en: 'and {n} more' },
     homeToastAt:    { es: 'Banco en {area}:', en: 'Bench in {area}:' },
     homeOnMap:      { es: 'Verlo en el mapa', en: 'See it on the map' },
@@ -331,10 +332,14 @@
     pgCat_godmaster:{ es: 'Buscador de Dioses', en: 'Godmaster' },   // UI_MENU_STYLE_GG
     // The achievements (js/achievements.js), Progress's second tab.
     pgFeats:        { es: 'Logros', en: 'Achievements' },   // SCREEN_ACHIEVEMENTS
+    pgOnlyMissing:  { es: 'Solo lo que falta', en: "Only what's missing" },
+    pgNothingMissing: { es: 'No te falta nada', en: 'Nothing missing' },
     featSecret:     { es: 'Secreto', en: 'Secret' },   // HIDDEN_ACHIEVEMENT_TITLE
     featSecretHint: { es: 'Este logro está oculto', en: 'This achievement is hidden' },   // HIDDEN_ACHIEVEMENT
     featLikely:     { es: 'Tu partida apunta a que sí', en: 'Your save points to yes' },
     featByHand:     { es: 'Se marca a mano', en: 'Marked by hand' },
+    // What a plate warns of, in red: the site's label before the game's names.
+    pgmFeat:        { es: 'Logro:', en: 'Achievement:' },
     featHandNote:   { es: 'El juego da estos al terminar la partida, con el tiempo y el porcentaje de ese momento, y la partida no los guarda: márcalos tú. Tus marcas siguen aunque la partida esté enlazada.', en: 'The game awards these when you finish, with the time and the completion of that moment, and the save doesn\'t keep them: mark them yourself. Your marks stay even with a linked save.' },
     featInInventory:{ es: 'Se marca en el Inventario', en: 'Marked on the Inventory' },
     featOnMap:      { es: 'Se marca en el Mapa', en: 'Marked on the Map' },
@@ -393,9 +398,6 @@
     steamSaveDoes:  { es: 'Esta partida cumple {n}', en: 'This save fulfils {n}' },
     featUnlockedOn: { es: 'Conseguido el {date}', en: 'Unlocked on {date}' },
     featUnlocked:   { es: 'Conseguido', en: 'Unlocked' },
-    featSaveYes:    { es: 'Esta partida lo cumple', en: 'This save fulfils it' },
-    featSaveNo:     { es: 'Esta partida no', en: 'Not this save' },
-    featSaveUnsure: { es: 'La partida no puede saberlo', en: 'The save can\'t tell' },
     pgSeerNote:     { es: '2400 de esencia', en: '2400 essence' },
     pgTab112:       { es: '112{pct}', en: '112{pct}' },
     pgTabMap:       { es: 'Mapa', en: 'Map' },   // INV_NAME_MAP
@@ -537,6 +539,7 @@
     pgmW_grubfather:{ es: 'Padre Larva', en: 'Grubfather' },   // no game text: the Spanish wiki's name
     pgmW_colosseum: { es: 'Coliseo de los Insensatos', en: 'Colosseum of Fools' },   // COLOSSEUM
     pgmW_blackegg:  { es: 'Templo del Huevo Negro', en: 'Black Egg Temple' },   // KEY_BLACKEGG
+    pgmW_godseeker: { es: 'Buscador de Dioses', en: 'Godseeker' },   // GODSEEKER_MAIN
     pgZoomIn:       { es: 'Acercar', en: 'Zoom in' },
     pgZoomOut:      { es: 'Alejar', en: 'Zoom out' },
     pgMapBig:       { es: 'Mapa grande', en: 'Large map' },

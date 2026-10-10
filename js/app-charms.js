@@ -9,7 +9,7 @@
   const { t, pick, KEY, el, hoverable, SPELL_KEYS, ART_KEYS, ART_STAT, NEED_KEY, NT, namedSrc, esc, save,
     pctSpace, fmtValue, fmtStat, fmtStatRich, sign, masksText, notchText, spellArt, shortOf, goodClass,
     deltaChip, changeChip, justWorn, justFound, prefs, savePrefs, compareLabel, compute, impact, recompute, commit, brackets,
-    chevron, cross, screenHead, hudHtml, render, underNav, toast, actions, isOwned, isFixed, setOwned, fragileAway } = App;
+    chevron, cross, screenHead, hudHtml, render, underNav, toast, actions, isOwned, isFixed, setOwned, fragileAway, isBroken, charmArt } = App;
 
   /* ── Sheet panel: figures, meters, spells and arts ───────────────────── */
   // The flash class: only on the repaint that follows a change (flashIds, in commit()).
@@ -251,7 +251,9 @@
     if (ctx.sel === c.id) cls.push('is-sel');
     // One you don't have in your game is shadowed: it can be looked at, but not equipped.
     const missing = !imp.equipped && !isOwned(c.id);
-    if (!isOwned(c.id)) cls.push('is-missing');
+    // A broken one isn't shadowed: it shows cracked, as in the game, and can't be worn either.
+    if (isBroken(c.id)) cls.push('is-broken');
+    else if (!isOwned(c.id)) cls.push('is-missing');
     const away = fragileAway(c.id);
     const title = away ? pick(c) + ' · ' + t(away.startsWith('broken') ? 'fragBroken' : 'fragDivine')
       : missing ? pick(c) + ' · ' + t('inspMissing')
@@ -261,9 +263,9 @@
       : a.action === 'swap' ? t('swapTitle', { old: pick(D.CHARM_BY_ID[a.partner]), new: pick(c) })
       : t('equipTitle', { charm: pick(c) });
     // In a save from the game (held) the title only says what it is: nothing here equips it.
-    const heldTitle = pick(c) + (imp.equipped ? ' · ' + t('equipped') : missing ? ' · ' + t('notFound') : '');
+    const heldTitle = pick(c) + (imp.equipped ? ' · ' + t('equipped') : isBroken(c.id) ? ' · ' + t('fragBroken') : missing ? ' · ' + t('notFound') : '');
     return `<button type="button" class="${cls.join(' ')}" data-act="${ctx.act}" data-id="${c.id}" aria-pressed="${imp.equipped}" title="${esc(ctx.held ? heldTitle : ctx.locked || title)}" ${ctx.locked || missing || a.action === 'blocked' ? 'aria-disabled="true"' : ''}>
-      <img src="assets/charms/${c.id}.png" alt="${esc(pick(c))}" loading="lazy">
+      <img src="${charmArt(c.id)}" alt="${esc(pick(c))}" loading="lazy">
     </button>`;
   }
 
@@ -397,7 +399,7 @@
       ? `<span class="detail-cost" role="img" aria-label="${esc(notchText(c.notches))}" title="${esc(notchText(c.notches))}">${`<i class="notch ${over ? 'is-over' : 'is-used'}"></i>`.repeat(c.notches)}</span>`
       : `<span>${esc(t('notchFree'))}</span>`;
     return `<div class="insp-head">
-        <span class="medal"><img src="assets/charms/${c.id}.png" alt=""></span>
+        <span class="medal"><img src="${charmArt(c.id)}" alt=""></span>
         <div class="insp-id">
           <div class="insp-name"${NT}>${esc(pick(c))}</div>
           <div class="insp-notch"><span class="insp-en">${esc(I.current === 'en' ? c.es : c.en)}</span>${cost}${c.fragile ? `<span>${esc(t('breaksOnDeath'))}</span>` : ''}</div>

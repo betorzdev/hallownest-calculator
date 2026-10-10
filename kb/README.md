@@ -14,6 +14,7 @@ For answering combat questions without going back to the wiki. It isn't part of 
 | `05-godhome.md` | Bindings, the 5 Pantheons in full order, the Hall of Gods with health values and arena changes |
 | `06-colosseum.md` | The 3 Trials wave by wave, and the Eternal Ordeal |
 | `07-builds.md` | Builds by scenario, with their notch cost, and the costly mistakes |
+| `achievements.md` | The 63 achievements: what each needs, where, the progress the site can show, exclusive and missable ones, source pages EN · ES |
 
 ## `data/` — raw material
 

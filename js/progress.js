@@ -202,7 +202,7 @@
     const rocks = (sd && Array.isArray(sd.geoRocks) ? sd.geoRocks : [])
       .filter((r) => r && typeof r.sceneName === 'string' && typeof r.id === 'string' && int(r.hitsLeft) <= 0)
       .map((r) => r.sceneName + '|' + r.id);
-    const met = PE.FLAGS.filter((f) => !!pd[f]);
+    const met = PE.met(pd);
     /* Where you'll wake: the save's respawnScene, a bench's room once you rest (respawnType 1, with
        its RestBench, BoneBench… marker). Dreaming of a dreamer moves it to the dreamer's body
        (its room's FSM "Set Death Respawn": HeroController.SetBenchRespawn with a "Death Respawn

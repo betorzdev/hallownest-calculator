@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Picked plate variants</title>
+<!-- Design material, not part of the site: the achievement whose detail is open (design/35, B)
+     carries today a hairline frame in --accent-line around the whole plate. Albert (8 Oct 2026):
+     «la línea exterior azul cuando se selecciona uno es muy fea». Four ways without the box,
+     the site's real CSS over mock markup (the detail is the site's .ad-b):
+       A · halo and lift    the plate's own hover light (--halo-plate) held while its detail is open,
+                            and the icon a touch larger, as the Charms grid's chosen slot; the name in strong ink.
+       B · tab              the plate shares the detail's ground (--veil): a tab that grows out of
+                            the panel up to the plate, so they read as one piece. No line.
+       C · pointer          the panel's top edge carries a small notch under the plate's icon.
+       D · ink only         nothing but the name in strong ink and the icon lit; the panel says the rest.
+     The bar switches each; the choice is in the URL (?v=a&w=390&lang=es). -->
+<base href="../">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+body { background: var(--page-bg); background-attachment: fixed; margin: 0; }
+.tv-wrap { max-width: 1120px; margin: 0 auto; padding: var(--sp-8) var(--page-pad) 220px; }
+.tv-bar { position: fixed; z-index: 100; left: 0; right: 0; bottom: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-2) var(--sp-8);
+  padding: var(--sp-3) var(--sp-4); background: var(--card); border-top: 1px solid var(--line-panel); font-size: var(--fs-sm); }
+.tv-grp { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-1) var(--sp-3); }
+.tv-lbl { color: var(--muted); font-family: var(--font-num); font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; }
+.tv-bar button { color: var(--ink-2); padding: var(--sp-1) 0; border-bottom: 1px solid transparent; }
+.tv-bar button[aria-pressed="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.tv-frame { display: block; margin: 0 auto; border: 1px solid var(--line-panel); background: var(--page-bg); }
+.pg { display: block; }
+
+/* Today's frame off in every variant. */
+.pg-plates .gplate.ach.is-picked::after { content: none; }
+.pg-plates .gplate.ach.is-picked .gplate-name { color: var(--ink-strong); }
+
+/* A · halo and lift */
+.v-a .gplate.ach.is-picked .gplate-art::before { opacity: 1; }   /* the hover's halo, held while open */
+.v-a .gplate.ach.is-picked .gplate-art img { transform: scale(1.09); }
+
+/* B · tab: the plate on the detail's ground, open at the bottom into the panel */
+.v-b .gplate.ach.is-picked { background: var(--veil); box-shadow: 0 var(--sp-3) 0 var(--veil); }
+.v-b .pg-plates { row-gap: var(--sp-3); }
+
+/* C · pointer: a notch in the panel's top edge, under the plate (left set by the script) */
+.v-c .ad-b::before { content: ''; position: absolute; top: calc(var(--sp-2) * -1); left: var(--x, 50%); width: var(--sp-4); height: var(--sp-4);
+  transform: translateX(-50%) rotate(45deg); background: var(--veil); border-left: 1px solid var(--inv-line); border-top: 1px solid var(--inv-line); }
+
+/* D · ink only: the icon lit (no dimming) */
+.v-d .gplate.ach.is-picked .gplate-art img { filter: brightness(1.15); }
+</style>
+</head>
+<body>
+<div class="tv-wrap" id="root"></div>
+<div class="tv-bar" id="bar"></div>
+<script>
+const q = new URLSearchParams(location.search);
+const V = q.get('v') || 'a', LANG = q.get('lang') || 'es', W = Number(q.get('w') || 0);
+const T = {
+  es: { group: 'La Compañía de Grimm', needs: 'Necesita', on: 'Conseguido el 14 sept 2025', save: 'Esta partida no', secret: 'Secreto',
+    items: [['grand-performance', 'Gran Actuación', 'Derrota al Líder de la Compañía: Grimm', true], ['ritual', 'Ritual', 'Derrota al Rey Pesadilla y completa el Ritual', true], ['banishment', 'Destierro', 'Destierra a la compañía de Grimm de Hallownest', false]],
+    list: ['En los Acantilados Aulladores, golpea con el Aguijón Onírico el cuerpo de un gran insecto, y luego su brasero: llega la compañía de Grimm.', 'Grimm, en Bocasucia, te da el Niño de Grimm. Con él equipado, las llamas de 3 Grimarios Novatos y luego de 3 Grimarios Maestros; vuelve a Grimm y derrótalo.'], map: 'Ver en el mapa' },
+  en: { group: 'The Grimm Troupe', needs: 'Needs', on: 'Unlocked on 14 Sept 2025', save: 'Not this save', secret: 'Secret',
+    items: [['grand-performance', 'Grand Performance', 'Defeat Troupe Leader Grimm', true], ['ritual', 'Ritual', 'Defeat the Nightmare King and complete the Ritual', true], ['banishment', 'Banishment', 'Banish the Grimm Troupe from Hallownest', false]],
+    list: ['In the Howling Cliffs, strike a large bug\'s body with the Dream Nail, then its brazier: the Grimm Troupe arrives.', 'Grimm, in Dirtmouth, gives you Grimmchild. With it equipped, the flames of 3 Grimmkin Novices, then of 3 Grimmkin Masters; go back to Grimm and defeat him.'], map: 'See on the map' },
+}[LANG];
+const root = document.getElementById('root');
+if (W) {
+  const u = new URL(location.href); u.searchParams.delete('w');
+  root.innerHTML = `<iframe class="tv-frame" src="${u.pathname + u.search}" width="${W}" height="820"></iframe>`;
+} else {
+  const plates = T.items.map(([id, name, text, on], i) => `<button type="button" class="gplate ach${on ? ' is-on' : ''}${i === 0 ? ' is-picked' : ''}" aria-expanded="${i === 0}">
+    <span class="gplate-art"><img src="assets/achievements/${id}.png" alt=""></span><span class="gplate-name">${name}</span>
+    <span class="gplate-val is-text ach-text"><span class="ach-tag">${T.secret}</span><span>${text}</span>${on ? `<span class="ach-when">${T.on}</span>` : ''}<span class="ach-of-save">${T.save}</span></span></button>`).join('');
+  const [id, name, text] = T.items[0];
+  const detail = `<div class="ad-b"><button type="button" class="icon-btn ad-close">✕</button><div class="ad"><img class="ad-art" src="assets/achievements/${id}.png" alt="">
+    <div class="ad-main"><p class="ad-name">${name}</p><p class="ad-text">${text}</p><span class="ad-state"><b>${T.on}</b><span class="ach-tag">${T.secret}</span></span></div>
+    <div class="ad-body"><div><p class="ad-k">${T.needs}</p><ul class="ad-list">${T.list.map((x) => `<li>${x}</li>`).join('')}</ul></div>
+    <div class="ad-acts"><button type="button" class="text-btn map-link">${T.map}</button></div></div></div></div>`;
+  const head = `<button type="button" class="pg-head" aria-expanded="true"><span class="pg-name">${T.group}</span><span class="pg-pips"></span><span class="pg-pts"><b>2</b><i class="u">/3</i></span><span class="disc-ring" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 7.5 6 3.5 10 7.5"/></svg></span></button>`;
+  root.innerHTML = `<section class="gear pg v-${V}"><div class="gear-body pg-body" style="padding-top:var(--sp-6)"><ol class="pg-rows"><li class="pg-row is-open">${head}<div class="pg-open"><div class="pg-plates">${plates}${detail}</div></div></li></ol></div></section>`;
+  // C: the notch under the picked plate's centre.
+  const p = root.querySelector('.is-picked'), d = root.querySelector('.ad-b');
+  const place = () => d.style.setProperty('--x', (p.offsetLeft + p.offsetWidth / 2 - d.offsetLeft) + 'px');
+  place(); addEventListener('resize', place);
+}
+const opt = (k, v, label) => `<button type="button" aria-pressed="${(q.get(k) || { v: 'a', lang: 'es', w: '0' }[k]) === v}" onclick="go('${k}','${v}')">${label}</button>`;
+window.go = (k, v) => { const u = new URL(location.href); if (v === '0') u.searchParams.delete(k); else u.searchParams.set(k, v); location.href = u; };
+if (window !== window.parent) document.getElementById('bar').remove();
+else document.getElementById('bar').innerHTML = `
+  <div class="tv-grp"><span class="tv-lbl">Variant</span>${opt('v', 'a', 'A · halo and lift')}${opt('v', 'b', 'B · tab')}${opt('v', 'c', 'C · pointer')}${opt('v', 'd', 'D · ink only')}</div>
+  <div class="tv-grp"><span class="tv-lbl">Lang</span>${opt('lang', 'es', 'ES')}${opt('lang', 'en', 'EN')}</div>
+  <div class="tv-grp"><span class="tv-lbl">Width</span>${opt('w', '0', 'full')}${opt('w', '390', '390')}</div>`;
+</script>
+</body>
+</html>

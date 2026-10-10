@@ -9,7 +9,8 @@
 
    The CDN path follows MediaWiki's convention: /<md5[0]>/<md5[0..2]>/<File>.
    The 192 px thumbnail is requested first (the spell icons weigh up to 320 KB as
-   originals); when the original is already 192 px or smaller the thumbnail gives 404 and the original is downloaded. */
+   originals); when the original is already 192 px or smaller the thumbnail gives 404 and the original is downloaded.
+   After a --force, run tools/pad-broken.py: the broken fragile charms come cropped to the edge. */
 'use strict';
 const fs = require('fs');
 const path = require('path');

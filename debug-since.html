@@ -1,0 +1,72 @@
+<!doctype html><html><head><meta charset="utf-8"><title>since</title></head><body>
+<pre id="out">…</pre>
+<script>
+/* Every row "Since last time" (Your game, js/app-home.js) can show: a game with everything (slot 1)
+   against an empty save before (hollow.prev), each row with its picture (IMG), its map pin (PIN)
+   or none (NO ART), and the completion's sum line closing the list with its bar; then, at fifteen widths, the
+   rows whose name runs into the tag, the value or the pin (OVERLAP) or past its own cell (SPILL):
+   under 320 px of list the tag goes under the name (css .hm-item's container query). Read it with:
+   google-chrome --headless --dump-dom --allow-file-access-from-files --virtual-time-budget=10000 debug-since.html
+   (the iframe needs the file access flag; without it the site can't load over file://). */
+const out = [];
+const f = document.createElement('iframe');
+f.style.cssText = 'width:1280px;height:900px;border:0';
+let phase = 0;
+f.addEventListener('load', async () => {
+  const w = f.contentWindow, d = f.contentDocument, HK = w.HK;
+  if (phase === 0) {
+    phase = 1;
+    const C = HK.codec, HJ = HK.hunter, HG = HK.hall, P = HK.progress, CO = HK.collectibles, D = HK.data;
+    const ls = w.localStorage;
+    ls.clear();
+    const book = {};
+    for (const r of HJ.BOOK) { const k = HJ.kindOf(r.id); if (k !== 'start' && k !== 'idol' && k !== 'mark') book[r.id] = 0; }
+    ls.setItem('hollow.journal', JSON.stringify(book));
+    ls.setItem('hollow.owned', JSON.stringify(C.OWN_MAX));
+    const hall = {}; for (const s of HG.STATUES) hall[s.id] = HG.DIFFS.slice();
+    ls.setItem('hollow.hall', JSON.stringify(hall));
+    const ids = Object.keys(P.IDS || {});
+    const prog = P.normalize({ ids: ids.length ? ids : null, found: CO.ITEMS.map((it) => it.id) });
+    out.push('progress ids: ' + prog.ids.length + ' · found: ' + prog.found.length);
+    ls.setItem('hollow.progress', JSON.stringify(prog));
+    ls.setItem('hollow.saves', JSON.stringify({ active: 1, slots: {} }));
+    ls.setItem('hollow.prev', JSON.stringify({ snap: {}, saved: Date.now() - 3600e3 }));
+    const st = C.normalize({ ...C.PRESETS.base, nail: 4, masks: 9, vessels: 3, notches: 11, spells: { vs: 2, dd: 2, hw: 2 }, arts: { cyclone: true, dash: true, great: true }, cloak: 2, dream: true, charms: [] });
+    f.src = 'index.html?full=1#view=home&' + C.encode(st);
+    return;
+  }
+  await new Promise((r) => setTimeout(r, 600));
+  const rows = [...d.querySelectorAll('.hm-list .hm-item')];
+  out.push('rows: ' + rows.length);
+  const bad = [];
+  for (const li of rows) {
+    const art = li.querySelector('.hm-item-art');
+    const name = (li.querySelector('.hm-item-name') || {}).textContent || '?';
+    const img = art.querySelector('img'), svg = art.querySelector('svg');
+    if (img) out.push('IMG  ' + img.getAttribute('src') + '  ' + name.trim());
+    else if (svg) out.push('PIN  ' + name.trim());
+    else bad.push('NO ART        ' + name.trim());
+  }
+  out.push(...bad, bad.length ? bad.length + ' without a picture' : 'all drawn');
+  const sum = d.querySelector('.hm-list > .hm-sum');
+  out.push(sum && sum.querySelector('.hmC-bar') ? 'sum line: ' + sum.textContent.trim().replace(/\s+/g, ' ') : 'NO SUM LINE');
+  // Each width: the rows whose name runs into the tag, the value or the pin at its right.
+  for (const wd of [1280, 1250, 1200, 1150, 1100, 1000, 900, 800, 600, 480, 400, 390, 380, 360, 330]) {
+    f.style.width = wd + 'px';
+    await new Promise((r) => setTimeout(r, 80));
+    const hits = [];
+    for (const li of d.querySelectorAll('.hm-list .hm-item')) {
+      const name = li.querySelector('.hm-item-name'); if (!name) continue;
+      const n = name.getBoundingClientRect();
+      const right = [...li.children].filter((c) => c !== name && !c.classList.contains('hm-item-art')).map((c) => c.getBoundingClientRect()).filter((r) => r.width);
+      const over = right.some((r) => n.right > r.left + 1 && n.left < r.right && n.bottom > r.top + 1 && n.top < r.bottom - 1);
+      const spill = name.scrollWidth > name.clientWidth + 1;
+      if (over || spill) hits.push((over ? 'OVERLAP ' : 'SPILL   ') + name.textContent.trim().slice(0, 40));
+    }
+    out.push('width ' + wd + ' (list ' + Math.round(d.querySelector('.hm-list').clientWidth) + 'px): ' + hits.length + ' rows' + (hits.length ? '  e.g. ' + hits.slice(0, 3).join(' | ') : ''));
+  }
+  document.getElementById('out').textContent = out.join('\n');
+});
+f.src = 'index.html';
+document.body.appendChild(f);
+</script></body></html>

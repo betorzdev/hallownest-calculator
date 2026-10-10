@@ -46,12 +46,14 @@
       case 'charm': return { name: pick(D.CHARM_BY_ID[c.id]), note: t('homeCharm'), art: `assets/charms/${c.id}.png` };
       case 'item': {
         const cat = catOf(c.id);
-        const m = cat ? App.pgMeta(cat, c.id) : null;
         // A dream boss with no Journal entry (js/progress.js): its name and picture as a foe.
-        const foe = !m && F.FOE_BY_ID[c.id];
+        const foe = !cat && F.FOE_BY_ID[c.id];
         if (foe) return { name: pick(foe.name), note: '', art: D.art('enemies', c.id) };
-        // The Dreamers have no picture of their own: their pins on the game's map.
-        return { name: m ? m.name : c.id, note: '', art: m ? m.art : '', pin: cat === 'dreamers' ? 'dreamer-' + c.id : '' };
+        // The rest as Progress names and draws it (whether in the 112% or not: a key item, a
+        // White Fragment, an achievement's deed). The Dreamers and the Colosseum's trials have no
+        // picture of their own: their pins on the game's map.
+        const m = App.pgMeta(cat, c.id);
+        return { name: m.name, note: m.note || '', art: m.art, pin: m.pin || '' };
       }
       case 'upgrade':
         if (c.id === 'nail') return { name: pick(D.NAILS[c.to]), note: '', art: D.art('nails', c.to) };
@@ -139,14 +141,16 @@
   }
   function changesBlock() {
     const g = gained();
-    const rows = g.list.map((c, i) => {
-      if (c.kind === 'pct') return `<li class="hm-item" style="--i: ${i}"><span class="hm-item-art"></span><span class="hm-item-name">${esc(t('pgCompletion'))}</span>
-        <span class="hm-item-v">${num(c.from)} → ${num(c.to)}${esc(pctSpace())}</span></li>`;
+    // The completion's points aren't a row: the list's sum, closing it (design/34, A).
+    const pct = g.list.find((c) => c.kind === 'pct');
+    const sum = pct ? `<li class="hm-sum" style="--i: ${g.list.length - 1}"><span class="hm-sum-k">${esc(t('pgCompletion'))}</span>
+        <span class="hm-sum-v"><b>${num(pct.from)} → ${num(pct.to)}</b><span class="u">${esc(pctSpace())} / ${num(CP.TOTAL)}</span></span>${pctBar(pct.from, pct.to, CP.TOTAL)}</li>` : '';
+    const rows = g.list.filter((c) => c.kind !== 'pct').map((c, i) => {
       const m = describe(c);
       return `<li class="hm-item" style="--i: ${i}"><span class="hm-item-art">${m.art ? `<img src="${m.art}" alt="" loading="lazy">` : m.pin ? App.pinArtHtml(m.pin) : ''}</span>
         <span class="hm-item-name"${NT}>${esc(m.name)}${m.sub ? `<small>${esc(m.sub)}</small>` : ''}</span>
         ${m.value ? `<span class="hm-item-v">${esc(m.value)}</span>` : m.note ? `<span class="tag hm-item-k">${esc(m.note)}</span>` : ''}${targetOf(c) ? App.mapPinHtml(targetOf(c), m.name) : ''}</li>`;
-    }).join('');
+    }).join('') + sum;
     const when = g.saved && g.list.length ? `<span class="block-note">${esc(t('homeSinceNote', { when: ago(g.saved) }))}</span>` : '';
     return `<section class="hm-block"><h3 class="block-head">${esc(t('homeSince'))}${when}</h3>
       ${rows ? `<ul class="hm-list">${rows}</ul>` : App.emptyHtml(esc(t('homeSinceNone')))}</section>`;
