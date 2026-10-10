@@ -52,10 +52,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const q = new URLSearchParams({ view: 'map', ls: fs.readFileSync(lsFile, 'utf8'), walk: from, way: '1', wayat: '12000', lang, w: W, h: H });
   await send('Page.startScreencast', { format: 'png', everyNthFrame: 1 });
   await send('Page.navigate', { url: 'file://' + path.join(ROOT, 'debug.html') + '?' + q });
-  // The way's debug lines are hidden: the trailer shows only the map and him.
+  // The way's debug lines and the pins are hidden: the trailer shows only the map and him.
   for (let i = 0; i < 40; i++) {
     await sleep(100);
-    await send('Runtime.evaluate', { expression: `(() => { const f = document.querySelector('iframe'); const d = f && f.contentDocument; if (!d || !d.head || d.getElementById('trl')) return; const s = d.createElement('style'); s.id = 'trl'; s.textContent = '#dbg-way { display: none }'; d.head.appendChild(s); })()` }).catch(() => {});
+    await send('Runtime.evaluate', { expression: `(() => { const f = document.querySelector('iframe'); const d = f && f.contentDocument; if (!d || !d.head || d.getElementById('trl')) return; const s = d.createElement('style'); s.id = 'trl'; s.textContent = '#dbg-way, .pgm-pin:not(.pgm-you) { display: none }'; d.head.appendChild(s); })()` }).catch(() => {});
   }
   await sleep(8000);
   await send('Page.stopScreencast');

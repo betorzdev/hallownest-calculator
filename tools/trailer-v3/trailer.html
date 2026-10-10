@@ -2,11 +2,12 @@
 <html><head><meta charset="utf-8"><meta name="robots" content="noindex"><title>Trailer</title>
 <link rel="stylesheet" href="../../css/tokens.css">
 <style>
-/* tools/trailer-v2/trailer.html — the second promo trailer, one frame at a time. It opens on what
-   sets the site apart: your save dropped on the import, and the game's map emptying of all you
-   already have, pin by pin, until only what's missing is left.
+/* tools/trailer-v3/trailer.html — the third promo trailer, one frame at a time. It opens as the
+   second did (your save dropped on the import, the game's map emptying of all you already have),
+   then shows Your game at its bench and the Knight walking the map to it, the charms, and a
+   montage of Achievements, Pantheons, Inventory and Combat.
    ?lang=es|en&ratio=wide|tall&t=<s>. Nothing moves on its own: seek(t) paints the exact frame of
-   second t, so tools/trailer-v2/render.js can step through it at 30 fps without dropping one.
+   second t, so tools/trailer-v3/render.js can step through it at 30 fps without dropping one.
    The timeline follows the music (Laments of the War, Cethiel, CC0, from its 3 s): a quiet
    phrase until 9 s, then a drum hit every 3 s (beats of 0.75 s) and the full orchestra at 24 s. */
 html, body { margin: 0; background: var(--bg); overflow: hidden; }
@@ -92,14 +93,15 @@ const T = {
   missing: { es: 'Solo lo que te falta', en: 'Only what you’re missing' },
   missingSub: { es: 'Y se pone al día cada vez que te sientas en un banco', en: 'And it catches up every time you sit on a bench' },
   left: { es: 'por encontrar', en: 'left to find' },
+  home: { es: 'Tu partida', en: 'Your game' },
+  homeSub: { es: 'Justo donde la dejaste, con su banco', en: 'Right where you left it, bench and all' },
+  walkSub: { es: 'Y el Caballero camina hasta tu nuevo banco', en: 'And the Knight walks to your new bench' },
   charms: { es: 'Cada amuleto, cada número', en: 'Every charm, every number' },
   charmsSub: { es: 'Cómo cambia el Caballero con cada uno', en: 'How the Knight changes with each one' },
-  fight: { es: 'Pon tu build a prueba', en: 'Put your build to the test' },
-  fightSub: { es: 'Contra los 180 enemigos y jefes', en: 'Against 180 enemies and bosses' },
-  journal: { es: 'Diario del Cazador', en: 'Hunter’s Journal' },           // INV_NAME_JOURNAL
-  hall: { es: 'Salón de los Dioses', en: 'Hall of Gods' },                 // wiki ESname
+  achievements: { es: 'Logros', en: 'Achievements' },                     // SCREEN_ACHIEVEMENTS
   pantheon: { es: 'Panteones', en: 'Pantheons' },                          // wiki ESname
-  progress: { es: 'Progreso', en: 'Progress' },
+  inventory: { es: 'Inventario', en: 'Inventory' },                        // PANE_INVENTORY
+  fight: { es: 'Combate', en: 'Combat' },
   p112: { es: 'Tal y como lo cuenta el juego', en: 'Counted the way the game does' },
   title: { es: 'Calculadora de Hallownest', en: 'Hallownest Calculator' },
   perks: { es: 'Gratis · Sin registro · Español e inglés', en: 'Free · No sign-up · English and Spanish' },
@@ -120,12 +122,13 @@ const CAM = TALL ? {
 } : {
   drop: [{ x: .56, y: .6, w: .86 }, { x: .64, y: .62, w: .62 }],
   map: [{ x: .5, y: .6, w: .92 }, { x: .66, y: .63, w: .52 }],
+  home: [{ x: .5, y: .55, w: .86 }, { x: .4, y: .55, w: .62 }],
+  walk: [{ x: .5, y: .5, w: .84 }, { x: .56, y: .5, w: .78 }],
   charms: [{ x: .5, y: .45, w: .86 }, { x: .5, y: .4, w: .64 }],
-  fight: [{ x: .5, y: .55, w: .86 }, { x: .5, y: .58, w: .64 }],
-  journal: [{ x: .5, y: .55, w: .86 }, { x: .5, y: .55, w: .78 }],
-  hall: [{ x: .5, y: .55, w: .86 }, { x: .5, y: .55, w: .78 }],
-  pantheon: [{ x: .5, y: .55, w: .86 }, { x: .5, y: .55, w: .78 }],
-  progress: [{ x: .5, y: .5, w: .86 }, { x: .5, y: .5, w: .78 }],
+  achievements: [{ x: .5, y: .5, w: .86 }, { x: .5, y: .5, w: .78 }],
+  pantheon: [{ x: .5, y: .5, w: .86 }, { x: .5, y: .5, w: .78 }],
+  inventory: [{ x: .5, y: .55, w: .86 }, { x: .5, y: .55, w: .78 }],
+  fight: [{ x: .5, y: .55, w: .86 }, { x: .5, y: .58, w: .78 }],
 };
 
 // The music's hits (video seconds): each one flashes and nudges the camera.
@@ -240,22 +243,27 @@ S.left = el('div', 'left', S.map, `<b></b><span>${tr(T.left)}</span>`);
 for (const src of [SHOT('map-all').replace(/\.png$/, '-pins.js'), SHOT('idle').replace(/\.png$/, '-zone.js')]) {
   loads.push(new Promise((r) => { const sc = document.createElement('script'); sc.onload = r; sc.onerror = r; sc.src = src; document.head.appendChild(sc); }));
 }
-// 4 · charms
+/* 4 · Your game at its bench, then the Map with the Knight walking to it: walk.js filmed it in
+   real time, frame by frame, with each frame's time (WALK). */
+S.home = el('div', 'layer scene', stage);
+S.homeShot = shotFrame(S.home, 'home');
+S.walkShot = shotFrame(S.home, 'walk');
+S.walkShot.i.src = '';
+S.walkFrames = [];
+S.homeCap = caption(S.home, tr(T.home), `<span>${tr(T.homeSub)}</span><span>${tr(T.walkSub)}</span>`);
+loads.push(new Promise((r) => { const sc = document.createElement('script'); sc.onload = r; sc.onerror = r; sc.src = `out/shots/${LANG}-wide-walk.js`; document.head.appendChild(sc); }));
+// 5 · charms
 S.charms = el('div', 'layer scene', stage);
 S.charmsShot = shotFrame(S.charms, 'charms');
 S.charmsCap = caption(S.charms, tr(T.charms), tr(T.charmsSub));
-// 5 · fight
-S.fight = el('div', 'layer scene', stage);
-S.fightShot = shotFrame(S.fight, 'fight');
-S.fightCap = caption(S.fight, tr(T.fight), tr(T.fightSub));
-// 6 · montage: Journal → Hall of Gods → Pantheons → Progress
-S.mont = ['journal', 'hall', 'pantheon', 'progress'].map((name) => {
+// 6 · montage: Achievements → Pantheons → Inventory → Combat
+S.mont = ['achievements', 'pantheon', 'inventory', 'fight'].map((name) => {
   const s = el('div', 'layer scene', stage);
   return { s, shot: shotFrame(s, name), cap: caption(s, tr(T[name])) };
 });
 // 7 · 112 %
 S.p112 = el('div', 'layer scene', stage);
-S.p112bg = img(SHOT('map'), S.p112);
+S.p112bg = img(SHOT('map-missing'), S.p112);
 css(S.p112bg, { position: 'absolute', left: '50%', top: '50%', width: (TALL ? 1200 : 2100) + 'px', filter: 'blur(14px) brightness(.3)', transformOrigin: '50% 30%' });
 S.p112num = el('p', 'big-num', S.p112);
 css(S.p112num, { position: 'absolute', left: 0, right: 0, top: (TALL ? 700 : 300) + 'px', fontSize: (TALL ? 300 : 320) + 'px' });
@@ -375,6 +383,42 @@ function seekMap(t) {
   S.missCap.style.transform = `translateY(${lerp(-24, 0, ease(span(t, 9.1, 9.6)))}px)`;
 }
 
+/* ---------- Your game and the walk ---------- */
+const WALK_AT = 13.2, WALK_FROM = .75, WALK_SPEED = 1.7;   // the film from its 0.75 s (the map fitted to his way), 1.7× fast
+function prepWalk() {
+  const times = (window.WALK || {})[`${LANG}-wide`] || [];
+  S.walkTimes = times;
+  // Every frame preloaded: the flipbook swaps their src and must never wait.
+  S.walkFrames = times.map((_, i) => { const im = new Image(); im.src = `out/shots/${LANG}-wide-walk/${String(i).padStart(3, '0')}.png`; return im; });
+  if (S.walkFrames[0]) S.walkShot.i.src = S.walkFrames[0].src;
+  return Promise.all(S.walkFrames.map((im) => (im.complete ? 1 : new Promise((r) => { im.onload = r; im.onerror = r; }))));
+}
+let pending = null;   // a frame still decoding, which seek(t) waits for
+function seekHome(t) {
+  const walk = t >= WALK_AT;
+  S.homeShot.p.style.display = walk ? 'none' : '';
+  S.walkShot.p.style.display = walk ? '' : 'none';
+  const [a, b] = S.homeCap.querySelector('.cap-sub').children;
+  a.style.display = walk ? 'none' : ''; b.style.display = walk ? '' : 'none';
+  S.homeCap.style.opacity = ease(span(t, 12, 12.4));
+  S.homeCap.style.transform = `translateY(${lerp(-24, 0, ease(span(t, 12, 12.5)))}px)`;
+  if (!walk) {
+    const k = span(t, 12, WALK_AT);
+    frameMotion(S.homeShot, k, .6);
+    camera(S.homeShot, k);
+    return;
+  }
+  const at = WALK_FROM + (t - WALK_AT) * WALK_SPEED, times = S.walkTimes;
+  let i = 0;
+  while (i < times.length - 1 && times[i + 1] <= at) i++;
+  const f = S.walkFrames[i];
+  // A swapped frame is decoded before seek() returns, so render.js never captures the one before.
+  if (f && S.walkShot.i.src !== f.src) { S.walkShot.i.src = f.src; pending = S.walkShot.i.decode().catch(() => {}); }
+  const k = span(t, WALK_AT, 15);
+  frameMotion(S.walkShot, .6 + .4 * k, .5);
+  camera(S.walkShot, k);
+}
+
 /* ---------- the clock ---------- */
 // A scene's opacity: in over `fi` from a, out over `fo` to b (0 = a hard cut).
 const vis = (t, a, b, fi = .3, fo = .3) => (t < a || t >= b ? 0 : Math.min(fi ? span(t, a, a + fi) : 1, fo ? 1 - span(t, b - fo, b) : 1));
@@ -404,8 +448,11 @@ function seek(t) {
   S.map.style.opacity = vis(t, 6.6, 12, .3, 0);
   if (t >= 6.6 && t < 12) seekMap(t);
 
-  // 4–5 · charms, fight: a hard cut on each hit
-  for (const [sc, shot, cap, a] of [[S.charms, S.charmsShot, S.charmsCap, 12], [S.fight, S.fightShot, S.fightCap, 15]]) {
+  // 4 · Your game 12–15: its bench, then on the beat at 13.2 the Map and the walk
+  S.home.style.opacity = vis(t, 12, 15, 0, 0);
+  if (t >= 12 && t < 15) seekHome(t);
+  // 5 · charms: a hard cut on the hit
+  for (const [sc, shot, cap, a] of [[S.charms, S.charmsShot, S.charmsCap, 15]]) {
     sc.style.opacity = vis(t, a, a + 3, 0, 0);
     if (t < a || t >= a + 3) continue;
     const k = span(t, a, a + 3);
@@ -448,9 +495,11 @@ function seek(t) {
   S.ctaPerks.style.opacity = ease(span(tc, 1.6, 2.3));
 
   fade.style.opacity = span(t, 29, 30).toFixed(3);
+  const p = pending; pending = null;
+  return p;
 }
 
 window.seek = seek;
-window.ready = Promise.all([...loads, document.fonts.ready]).then(() => document.fonts.load('700 40px Cinzel')).then(() => { prepDrop(); prepMap(); seek(Number(q.get('t') || 0)); return true; });
+window.ready = Promise.all([...loads, document.fonts.ready]).then(() => document.fonts.load('700 40px Cinzel')).then(() => { prepDrop(); prepMap(); return prepWalk(); }).then(() => { seek(Number(q.get('t') || 0)); return true; });
 </script>
 </body></html>
