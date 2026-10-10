@@ -292,10 +292,10 @@
     },
     runStart(node) {
       if (node.dataset.value && PN.PANTHEON_BY_ID[node.dataset.value]) { prefs.pantheon = node.dataset.value; savePrefs(); }
-      startRun(); render(); navTo(false);
+      startRun(); App.track('pantheon-run', { pantheon: prefs.pantheon }); render(); navTo(false);
     },
     // From an open row's rooms: enter the pantheon in that room.
-    runStartAt(node) { startRun(Number(node.dataset.value) || 0); render(); navTo(false); },
+    runStartAt(node) { startRun(Number(node.dataset.value) || 0); App.track('pantheon-run', { pantheon: prefs.pantheon }); render(); navTo(false); },
     runExit() { leaveRun(); render(); navTo(true); },
     runNext() { goRoom(App.run.room + 1); render(); },
     runJump(node) { goRoom(Number(node.dataset.value)); render(); },

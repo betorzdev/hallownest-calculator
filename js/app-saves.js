@@ -454,6 +454,7 @@
     savePick(node) {
       const n = Number(node.dataset.value);
       if (!store) { toast(t('savesNoStorage')); return; }
+      track('save-pick', { slot: n === S.FREE ? 'free' : 'save' });
       if (S.read(store).active === n) { App.go('home', true); return; }
       if (S.select(store, n)) leave(n);
     },
@@ -475,6 +476,7 @@
       focusIn(`[data-act="saveImport"][data-value="${n}"]`);
     },
     importOs(node) {
+      if (imp.os !== node.dataset.value) track('import-os', { os: node.dataset.value, detected: detectOs() });
       imp.os = node.dataset.value; imp.chosen = true; imp.copied = 0;
       render();
       focusIn(`[data-act="importOs"][data-value="${imp.os}"]`);

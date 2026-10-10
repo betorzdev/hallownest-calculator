@@ -374,6 +374,7 @@
     hallFight(node) {
       const d = node.dataset.value;
       if (!HG.DIFFS.includes(d)) return;
+      App.track('hall-fight', { boss: prefs.hallId, diff: d });
       prefs.hallDiff = d;
       App.hallTablet = false;           // on returning from the fight, to the plaque
       savePrefs();

@@ -603,9 +603,12 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
 - `index.html` — the page; forty classic scripts (it works over `file://`) and Footworn's,
   the visit counter: no cookies, one visit per page load and, as events, the screen switches
   (`screen`, with the view and the language as properties), the language (`lang`), a part that
-  failed to render (`error`, with the part), *Share*, the Knight's walk (`knight`), the sister
-  site's link (`sister`) and the way into a save, as a funnel: the import
-  opened (`import-open`), a file read (`import-read`) or refused (`import-bad`), the game imported
+  failed to render (`error`, with the part), *Share*, a click on the Knight, who focuses soul (`knight`), the
+  sister site's link (`sister`), a game picked on Saves (`save-pick`, with `slot`: `free` for
+  free mode, `save` for a slot), the simulators (`fight-foe` with the enemy picked in Combat,
+  `pantheon-run` with the pantheon entered, `hall-fight` with the statue's boss and difficulty)
+  and the way into a save, as a funnel: the import opened (`import-open`), its system tab changed
+  (`import-os`, with the one picked and the one detected), a file read (`import-read`) or refused (`import-bad`), the game imported
   (`save-import`), its slot linked to the file (`save-link`) and a live update received
   (`save-sync`, once per visit). The hash with the build is never sent, and it
   counts nothing over `file://`, on `localhost` or in an iframe. Without it the site works the
