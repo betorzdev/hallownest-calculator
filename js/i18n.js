@@ -183,8 +183,6 @@
     liveFollowShort: { es: 'Seguir', en: 'Follow' },                 // the same, on a phone
     liveFollowHint: { es: 'Elige el archivo de esta partida: se pone al día con él ahora y cada vez que descanses en un banco',
                       en: 'Pick this save\'s file: it catches up with it now and each time you rest on a bench' },
-    liveFollowing:  { es: 'La Partida {n} sigue ahora a {file}', en: 'Save {n} now follows {file}' },
-    liveFollowNo:   { es: 'Este navegador no deja guardar el vínculo con el archivo', en: 'This browser doesn\'t let the site keep the link to the file' },
     liveUnlink:     { es: 'Dejar de seguir', en: 'Stop following' },
     livePaused:     { es: 'Esta partida sigue a {file}, pero el navegador pide permiso otra vez para leerlo.',
                       en: 'This save follows {file}, but the browser asks for permission again to read it.' },
@@ -326,9 +324,11 @@
     pgUpgrades:     { es: 'Mejoras', en: 'Upgrades' },
     pgNailCost:     { es: '{geo} geo · {ore} de Mineral Pálido', en: '{geo} geo · {ore} Pale Ore' },   // the ore's name as the game's (pgmL_pale-ore)
     pgCat_dreamNail:{ es: 'Aguijón Onírico y esencia', en: 'Dream Nail and Essence' },
-    pgBanished:     { es: 'Compañía desterrada', en: 'Troupe banished' },
     pgCat_dreamers: { es: 'Soñadores', en: 'Dreamers' },
     pgCat_grimm:    { es: 'La Compañía de Grimm', en: 'The Grimm Troupe' },   // UI_MENU_STYLE_GRIMM
+    // The Troupe's two endings, one point: between them, and the one the other closed.
+    pgOr:           { es: 'o', en: 'or' },
+    pgClosed:       { es: 'Cerrado', en: 'Closed' },
     pgCat_godmaster:{ es: 'Buscador de Dioses', en: 'Godmaster' },   // UI_MENU_STYLE_GG
     // The achievements (js/achievements.js), Progress's second tab.
     pgFeats:        { es: 'Logros', en: 'Achievements' },   // SCREEN_ACHIEVEMENTS
@@ -435,7 +435,6 @@
     pgmL_map:       { es: 'Mapas', en: 'Maps' },
     'pgmL_whispering-root': { es: 'Raíces susurrantes', en: 'Whispering Roots' },
     'pgmL_grimmkin-flame': { es: 'Llamas de los Grimarios', en: 'Grimmkin Flames' },
-    pgmL_grimmkin:  { es: 'Grimarios', en: 'Grimmkin' },   // NAME_FLAMEBEARER_* («Grimario Novato» / "Grimmkin Novice"), in the plural
     pgmL_stag:      { es: 'Estaciones de ciervo', en: 'Stag Stations' },
     pgmN_chest:     { es: 'Cofre de geo', en: 'Geo chest' },
     pgmN_rock:      { es: 'Roca de geo', en: 'Geo rock' },

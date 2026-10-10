@@ -4114,6 +4114,11 @@ kbd {
 .pg-pts b { font-size: var(--fs-md); font-weight: 700; color: var(--ink-strong); }
 .pg-pts .u { font-size: var(--fs-xs); font-style: normal; color: var(--muted); }
 .pg-row.is-full .pg-pts b { color: var(--good); }
+/* The whole 112%: the figure stays bone but lit, the soul's white glow (design/39, B), here, on
+   Your game's figure and its bar, and on the screen bar's tab. */
+.pg-total.is-done .pg-total-v, .hm-fig.is-done .hm-fig-v > b { text-shadow: 0 0 18px var(--focus-glow), 0 0 4px var(--focus-glow); }
+.pg-total.is-done .pg-total-v .u { text-shadow: none; }
+.nav-num.is-done { color: var(--ink-strong); }
 /* "Only what's missing" (.is-missing on the body): the full rows aren't drawn (js/app-progress.js);
    in the open one, the plates you have and the groups all had go. */
 .pg-opts { display: flex; justify-content: flex-end; max-width: 900px; margin: 0 auto var(--sp-2); }
@@ -4150,6 +4155,19 @@ kbd {
 .pg-plates .gplate-art img { max-height: 48px; }
 .pg-plates .gplate.is-part .gplate-art img { filter: brightness(0.6) saturate(0.6); }
 .pg-plates .gplate.is-part .gplate-art::before { background: var(--halo-plate-off); }
+/* The Grimm Troupe's last point, «Nightmare King Grimm / Banishment» (design/41, A): two plates in
+   two cells with «o» between them on a short rule at the pictures' height. The ending the other
+   closed goes further back than what's missing, its name struck. */
+.pg-pair { grid-column: span 2; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); grid-row: span 3; grid-template-rows: subgrid; column-gap: var(--sp-1); }
+.pg-pair > * { grid-row: 1 / -1; }
+.pg-pair > .pg-or { grid-row: 1; align-self: center; display: flex; align-items: center; gap: var(--sp-1); color: var(--muted); font-size: var(--fs-xs); }
+.pg-or::before, .pg-or::after { content: ''; width: var(--sp-2); height: 1px; background: var(--line-ctl); }
+.gplate.is-closed .gplate-art img { opacity: 0.35; }
+.gplate.is-closed .gplate-name { color: var(--muted); text-decoration: line-through; text-decoration-color: color-mix(in oklab, var(--muted) 60%, transparent); }
+.pg-body.is-missing .pg-pair:has(.gplate.is-on) { display: none; }
+.pg-pip-pair { display: inline-flex; align-items: center; gap: var(--sp-half); }
+.pg-pip-pair .pg-pip { width: 14px; height: 14px; }
+.pg-pip-pair i { color: var(--muted); font-size: var(--fs-2xs); font-style: normal; }
 /* The rows that count pieces (masks, vessels, the nail): the masks and vessels as the game's
    Inventory assembles them, a little bigger than the other pips so its shards read; open, the
    pieces in groups under a quiet label, and the link to see them all. */
@@ -4308,14 +4326,28 @@ kbd {
    only the large map, out of the frame over the page, keeps a plate. */
 .pgm-box { position: relative; height: min(72vh, 720px, 62vw + 120px); overflow: hidden; }
 .pg.is-big .pgm-box { background: var(--bg); border: 1px solid var(--inv-line); }
-/* Focus (js/app-map.js, showOnMap): several things from another screen, only them on the map, and
-   this bar at the box's foot: what, how many, ‹ i of n ›, out. */
-.pgm-focus { position: absolute; z-index: 3; left: var(--sp-3); right: var(--sp-3); bottom: var(--sp-3); display: flex; align-items: center; flex-wrap: wrap; gap: var(--sp-2) var(--sp-3);
-  padding: var(--sp-2) var(--sp-3); background: var(--card); border: 1px solid var(--line-panel); box-shadow: var(--shadow-md); }
-.pgm-focus-t { display: flex; flex-direction: column; flex: 1 1 10em; min-width: 0; font-size: var(--fs-sm); color: var(--ink-2); }
-.pgm-focus-t b { color: var(--ink-strong); font-weight: 600; }
+/* Focus (js/app-map.js, showOnMap): several things from another screen, only them on the map. The
+   search field says what they are, as a map app keeps your search in its box (a tap types a new
+   one, its × leaves), its rule doubled in the accent: there's something in it to undo. Beside it,
+   ‹ i of n ›, as wide before the first step («– of n») as after; on a phone the counts leave the
+   field for the row under it, with the arrows. (It was a bar at the box's foot, off screen on a
+   computer: design/42.) */
+.pgm-search.is-focus { max-width: 36rem; }
+.search.is-on { padding-right: 0; border-bottom-color: var(--accent); box-shadow: inset 0 -1px 0 var(--accent); }
+.pgm-fq { display: flex; align-items: center; gap: var(--sp-2); flex: 1 1 auto; min-width: 0; min-height: var(--ctl); padding: 0;
+  cursor: text; text-align: left; font-size: var(--fs-md); color: var(--ink-2); }
+.pgm-fq .pgm-card-art, .pgm-fq .pgm-card-art img, .pgm-fq .pgm-card-art svg { flex: none; width: 24px; height: 24px; }
+.pgm-fq b { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink-strong); font-weight: 600; }
+.pgm-fq-n, .pgm-focus-n { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-sm); color: var(--ink-2); }
+.pgm-focus-n { display: none; }
 .pgm-focus-step { display: inline-flex; align-items: center; gap: var(--sp-1); }
-.pgm-focus-i { min-width: 4.5em; text-align: center; font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-sm); color: var(--ink); }
+.pgm-focus-i { min-width: 5em; text-align: center; font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-sm); color: var(--ink); }
+@media (max-width: 599px) {
+  .pgm-bar:has(.is-focus) { column-gap: var(--sp-3); }
+  .pgm-search.is-focus { flex-basis: 100%; max-width: none; }
+  .pgm-fq-n { display: none; }
+  .pgm-focus-n { display: block; flex: 1 1 0; white-space: normal; }
+}
 /* The large map, a choice (the zoom's third button, ⤢ / ⤡): on a computer it takes the window's whole
    width (--page-w, set by js/app-map.js), centred over the page's column, and its box the
    window's height under the bar: the map is 3:2, so the height is what makes it bigger. On a
@@ -4338,6 +4370,11 @@ kbd {
 .pg.is-full .pgm-big { display: none; }
 .pg.is-full .pgm-bar { position: fixed; z-index: 5; top: var(--sp-3); left: var(--sp-3); right: calc(var(--sp-3) * 2 + 3 * var(--ctl-sm) + var(--sp-2)); pointer-events: none; }
 .pg.is-full .pgm-search { pointer-events: auto; box-shadow: var(--shadow-md); }
+/* Focus's arrows and counts over the map there: on the zoom's ground. */
+.pg.is-full :is(.pgm-focus-step, .pgm-focus-n) { pointer-events: auto; padding: 0 var(--sp-2); background: var(--card); border: 1px solid var(--line-ctl); box-shadow: var(--shadow-md); }
+.pg.is-full .pgm-focus-n { line-height: var(--ctl-sm); }
+/* On a phone, beside the zoom, there's no room for them: the arrows' «of n» says how many. */
+@media (max-width: 599px) { .pg.is-full .pgm-focus-n { display: none; } }
 html:has(.pg.is-full:not([hidden])) { overflow: hidden; }
 .pgm-svg { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; user-select: none; }
 .pgm-svg:active { cursor: grabbing; }
@@ -4428,6 +4465,8 @@ html:has(.pg.is-full:not([hidden])) { overflow: hidden; }
 .pgm-card.has-text { flex-wrap: wrap; white-space: normal; }
 .pgm-card-text { flex-basis: 100%; white-space: pre-line; max-height: 14em; overflow-y: auto; margin: 0; font-size: var(--fs-sm); color: var(--ink); line-height: 1.45; }
 .pgm-card-t b { color: var(--ink-strong); font-weight: 600; }
+/* Two buttons on one card (a Grimmkin flame: Mark, and its Grimmkin in the Journal), one over the other. */
+.pgm-card-btns { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-1); }
 /* The achievement the pin is the place of: its icon small, «Logro:», and its name to its detail. */
 .pgm-card-feat { display: inline-flex; align-items: center; gap: var(--sp-1); margin-top: var(--sp-1); font-size: var(--fs-xs); color: var(--muted); }
 .pgm-card-feat img { width: 16px; height: 16px; object-fit: contain; }
@@ -4579,6 +4618,7 @@ html:has(.pg.is-full:not([hidden])) { overflow: hidden; }
 .hmC-bar { display: flex; width: min(420px, 100%); height: 6px; margin-top: var(--sp-3); background: var(--inv-line); overflow: hidden; }
 .hmC-bar i { display: block; height: 100%; background: var(--ink-2); }
 .hmC-bar i.is-new { background: var(--ink-strong); box-shadow: 0 0 10px var(--ink-strong); }
+.hmC-bar.is-done i { background: var(--ink-strong); box-shadow: 0 0 10px var(--ink-strong); }
 .hmB-map { margin: 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); }
 .hmB-svg { display: block; width: 100%; max-height: 360px; }
 /* The example's map, under its figures: a computer only (on a phone the example is long enough). */

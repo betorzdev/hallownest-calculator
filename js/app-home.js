@@ -98,7 +98,7 @@
     return `<div class="hmC-bench" aria-hidden="true" style="--bw: ${w}; --bh: ${h}; --bx: ${x}; --by: ${y};">
       <img class="hmC-seat" src="assets/benches/${key}.png" alt="" width="${w}" height="${h}"><span class="hmC-kn"></span></div>`;
   }
-  const fig = (k, v, big) => `<div class="hm-fig${big ? ' is-big' : ''}"><span class="hm-fig-k">${esc(k)}</span><span class="hm-fig-v">${v}</span></div>`;
+  const fig = (k, v, big, done) => `<div class="hm-fig${big ? ' is-big' : ''}${done ? ' is-done' : ''}"><span class="hm-fig-k">${esc(k)}</span><span class="hm-fig-v">${v}</span></div>`;
   const played = (s) => (s >= 3600 ? `${num(Math.floor(s / 3600))}<span class="u">h</span> ` : '') + `${num(Math.floor(s / 60) % 60)}<span class="u">min</span>`;
   function ago(ms) {
     if (!ms) return '';
@@ -253,7 +253,7 @@
   const orn = (cls) => `<img class="hmA-orn${cls}" src="${D.art('hunter', 'fleur')}" alt="" width="237" height="37">`;
   const pctBar = (had, now, max) => {
     const w = (v) => (v / max * 100).toFixed(2);
-    return `<div class="hmC-bar" aria-hidden="true"><i class="is-had" style="width: ${w(had)}%"></i><i class="is-new" style="width: ${w(now - had)}%"></i></div>`;
+    return `<div class="hmC-bar${now >= max ? ' is-done' : ''}" aria-hidden="true"><i class="is-had" style="width: ${w(had)}%"></i><i class="is-new" style="width: ${w(now - had)}%"></i></div>`;
   };
 
   /* ── The screen ── */
@@ -279,7 +279,7 @@
         <div class="hm-link-row">${linkLine(n)}</div>
         ${area ? `<span class="hm-when">${esc(slot)}${when}</span>` : ''}
         <div class="hm-figs hmC-figs">
-          ${fig(t('pgCompletion'), `${up('pct', r.total)}<span class="u">${esc(pctSpace())} / ${num(r.max)}</span>`, true)}
+          ${fig(t('pgCompletion'), `${up('pct', r.total)}<span class="u">${esc(pctSpace())} / ${num(r.max)}</span>`, true, r.total >= r.max)}
           ${meta.time ? fig(t('homeTime'), played(meta.time)) : ''}
           ${meta.geo != null && meta.time ? fig('Geo', num(meta.geo)) : ''}
           ${fig(t('navJournal'), `${up('journal', hj.completed)}<span class="u">/ ${num(hj.total)}</span>`)}

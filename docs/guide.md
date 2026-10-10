@@ -1528,7 +1528,8 @@ on Cornifer's map). It's the tablet chosen among three variants in
 - **The figure**, under the title: *Completion* («Finalización», the game's word), large and
   in bone over 112. It's the figure the game's map shows with World Sense, counted by
   `js/completion.js` from what the site keeps, and it was checked against the game's own in 51
-  real saves: all match. The screen bar's tab carries it too.
+  real saves: all match. The screen bar's tab carries it too. At 112 it lights up: the figure
+  with the soul's white glow, the tab's in full bone (here and on Your game, its bar too).
 - **One row per category**, fourteen (bosses 15, warrior dreams 7, Colosseum 3, charms 39,
   equipment 14, spells 6, nail arts 3, mask shards 4, vessel fragments 3, nail upgrades 4, Dream
   Nail and essence 3, Dreamers 3, the Grimm Troupe 3, Godmaster 5). The wiki's are fifteen, by
@@ -1554,8 +1555,14 @@ on Cornifer's map). It's the tablet chosen among three variants in
   boss or a warrior dream is its Hunter's Journal entry (as its first defeat; unmarking clears
   it), a charm is your collection (a two-version one, as its first version), and the rest
   —equipment, Dreamers, trials, Hornet Sentinel, the Awoken Dream Nail, the Seer, the
-  Godtuner, the pantheons cleared— is `hollow.progress`. Nightmare King Grimm is its Journal
-  entry *or* the banishment; unmarking takes both away. **The spells go one by one**: six pips and
+  Godtuner, the pantheons cleared— is `hollow.progress`. **The Troupe's last point has two
+  endings** (the wiki's «Nightmare King Grimm / Banishment», `design/41`, A): two plates with «o»
+  between them, the King (his Journal entry, his pin the tent) and *Destierro*, the Banishment
+  (its achievement's name and icon, `hollow.progress`, its pin Brumm), still one point and one pip
+  until you choose. Once one is done, the other is **Cerrado**: further back than what's missing,
+  its name struck, no pin. Marking one unmarks the other, as in the game, where one closes the
+  other; on the Map, the King's card says *Cerrado* when the Troupe was banished, with nothing to
+  mark. **The spells go one by one**: six pips and
   six plates, each level its own thing as in the game (Vengeful Spirit, Shade Soul, Desolate Dive,
   Descending Dark, Howling Wraiths, Abyss Shriek), with its name, picture and pin; a tap sets the
   spell's level, so marking an upgrade brings its first level and unmarking the first level takes
@@ -1675,8 +1682,8 @@ on Cornifer's map). It's the tablet chosen among three variants in
   thresholds are the game's code** (`Assembly-CSharp.dll`): Enchanted at 20 charms, Grubfriend at
   23 grubs, Connection at 4 stations (not Dirtmouth's nor the Nest), Cartographer with the 13 area
   maps (not Dirtmouth), Attunement at 600 essence held. A plate marks where its thing is kept (a
-  boss on the Journal, a flag in your progress), or takes you to the screen that keeps it (masks to
-  the Inventory, grubs to the Map); not in a save.
+  boss on the Journal, a flag in your progress); what another screen keeps (masks on the Inventory,
+  grubs on the Map) is marked there, and its plate only says where; not in a save.
 - **Ten are awarded at an ending**, with the time and the completion of that moment, which the
   save doesn't keep (Completion, Speed Completion, Pure Completion, Steel Soul, Steel Heart, the
   two speedruns, Passing of the Age), and the ending against the Hollow Knight doesn't say whether
@@ -1730,7 +1737,7 @@ on Cornifer's map). It's the tablet chosen among three variants in
   and arts* and *Bosses and trials* were two—, warriors' graves,
   Dreamers, mask shards, vessel fragments, pale ore: the masks, vessels and nail it counts) ·
   **Collectibles** (grubs, charm notches, simple keys, key items, rancid eggs, **relics** —the four
-  in one layer—, maps) · **Quests** (whispering roots, Grimmkin flames, the Grimmkin, meetings with characters) ·
+  in one layer—, maps) · **Quests** (whispering roots, Grimmkin flames, meetings with characters) ·
   **Enemies and bosses** (enemies, other bosses) · **Secrets and geo** (walls and floors, hidden places, geo chests, geo
   rocks) · **Places** (benches, stag stations, trams, lifts, shops and characters, hot springs,
   cocoons, soul totems, lore tablets) · **Your game** (only with a save: your bench, shade,
@@ -1770,7 +1777,8 @@ on Cornifer's map). It's the tablet chosen among three variants in
     goes once the save has it (`gotQueenFragment`, `gotKingFragment`) or has the whole charm;
     their cards only say whether you have them. And **Void Heart** where Kingsoul becomes it: the
     egg at the end of the Birthplace, which the map doesn't draw either, so its pin stands on the
-    floor that opens with Kingsoul at the bottom of the Abyss; done once you have it.
+    floor that opens with Kingsoul at the bottom of the Abyss; done once you have it. The charm's
+    plate on Progress (Kingsoul, or Void Heart once it is) opens the Map's focus on all three.
   - **Places**: benches, tram stations (open with their line: `openedTramLower`, `openedTramRestingGrounds`…),
     the lifts between areas (both ends; the game has no pin for them, so the site draws one, and its
     flags for them aren't clear enough to say which are working; Dirtmouth's, to Crystal Peak,
@@ -1789,11 +1797,15 @@ on Cornifer's map). It's the tablet chosen among three variants in
     draw: the Crystal Guardian goes on its bench room and Flukemarm where she leaves Flukenest; the
     Crystal Guardian's second fight, at the top of the Peak, is named *Enraged Guardian* (same
     Journal entry). The Hollow Knight and the Radiance, which no room places, go on the game's pin
-    for the Black Egg. The nine **Grimmkin** aren't here but in *Quests*, a layer of their own
-    beside their flames (1 Oct 2026): they're Grimm's ritual's, each on the game's pin for its
-    flame (Novice: Greenpath, Crystal Peak, City of Tears; Master: King's Pass, Resting Grounds,
-    Kingdom's Edge; Nightmare: Fungal Core, Ancient Basin, the Hive; the wiki's pages). The
-    Godhome-only bosses have no place on the map. The **enemies**, each entry where it lives, one pin per room with how many
+    for the Black Egg. The nine **Grimmkin** have no pin of their own: in the game you beat one
+    and it gives you its flame, so the flame is the thing (10 Oct 2026, `design/40`, A). *Grimmkin
+    Flames*, in *Quests*, opens like the sets into its four phases, each a switch with its count
+    and its Grimmkin's portrait, in the ritual's order: *Grimmkin Novice* (Greenpath, Crystal
+    Peak, City of Tears), *Grimmkin Master* (King's Pass, Resting Grounds, Kingdom's Edge),
+    *Grimmkin Nightmare* (Fungal Core, Ancient Basin, the Hive; the wiki's pages) and *Brumm*,
+    the last phase's fourth flame, given with no fight. A flame's card names its Grimmkin and
+    carries *See in the Journal* beside *Mark*; the Journal's *See on the map* on a Grimmkin
+    shows its three flames. The Godhome-only bosses have no place on the map. The **enemies**, each entry where it lives, one pin per room with how many
     there are (`js/scene-objects.js`, read from the game's scenes: every object with the game's
     `EnemyDeathEffects` counts for the entry its `playerDataName` names), saying what's left of it
     in your Journal and with *See in the Journal*; complete entries hide like what you have. And
@@ -1837,9 +1849,12 @@ on Cornifer's map). It's the tablet chosen among three variants in
   *Since last time* rows and the *Missing nearby* cells (the cell itself). What has no place on
   the map (a pantheon's door, geo, essence) has no pin. One place: the map centres on it and
   opens its card, its layer shown if you'd hidden it. Several (a Mask Shard's sixteen, an
-  enemy's rooms): **focus** — only those on the map, fitted to them, and a bar at the box's foot
-  with its name, how many and how many you're missing, ‹ i of n › (the missing first, the
-  nearest to your bench first) and *Exit*. Either way, the pins you came to see ring out three
+  enemy's rooms): **focus** — only those on the map, fitted to them, and the search field over it
+  saying what they are (its picture, its name, how many and how many you're missing; on a phone
+  the counts go to the row under it), with a × to leave (*Exit*), as a map app keeps your search in
+  its box. A tap on the field types a new search: picking a result replaces the focus, and leaving
+  it empty (or Escape) brings the focus back. Beside it, ‹ i of n › steps through them (the missing
+  first, the nearest to your bench first), reading «– of n» before the first step. Either way, the pins you came to see ring out three
   times as you arrive (a ring in the pins' bone swelling out and fading, `--dur-arrive` each; with
   reduced motion, just the ring). Focus isn't saved (`js/app-map.js`: `mapTargets`,
   `showOnMap`, `mapPinHtml`).
@@ -1860,7 +1875,9 @@ on Cornifer's map). It's the tablet chosen among three variants in
   you enter it from; the characters with a pin of their own on the game's map (Iselda, Jiji,
   Lemm, the Nailsmith, the Seer, Leg Eater) stand there, with what they sell; the Grubfather's
   and the Seer's rewards on them. The Grimmkin flames, which ItemChanger doesn't place, keep the
-  game's pins; the bosses, their fight's room.
+  game's pins (Brumm's, in his room, the game's pin in Distant Village); a save after the Nightmare
+  King has them all taken, but one that banished the Troupe only the ones it took; the bosses,
+  their fight's room.
 - **A search over the map**, above it: every thing it can show (the hidden layers'
   and what you have too) and the map's own titles, by name or place, whatever the case and the
   accents (*huevo negro*, *larva ciudad*). Up to eight results under the box, with the arrows and
@@ -2021,12 +2038,10 @@ masks, the nails and the buttons line up from one slot to the next.
   slot). Clearing the slot, or importing into it with the option off, ends the link.
   A full slot that follows no file (imported with the option off, made on the site, or after
   *Stop following*) carries **Follow the game** (*Follow* on a narrow screen) above *Import from
-  the game*, its icon two arrows chasing each other that turn on hover: it opens the picker,
-  the slot takes that file in at once (the game wins) and follows it from then on; on the save
-  you're in, the browser asks for the file on that click too, and the link starts live. The
-  picker only remembers the save folder once a file has been picked with it (`hollow.picked`), so
-  until then *Follow the game* opens the import view for that slot instead, with the folders to
-  copy and the option on.
+  the game*, its icon two arrows chasing each other that turn on hover: it opens the import view
+  for that slot, with where the file is and the option on. Importing there takes the file in as
+  the game saving would (the game wins, but the site's own keys stay) and the slot follows it
+  from then on.
 - **The import's preview** also says, quietly at the end of its line, the game's version that
   wrote the save and the mods it had (a save from before 1.5 counts some things otherwise:
   Oblobbles needed three defeats).

@@ -16,6 +16,7 @@ node_modules/
 # download it again, pinned to patch 1.5.12620, the first time they need it
 kb/data/all_text.json
 
-# The trailers' captures, frames and videos (tools/trailer/, tools/trailer-v2/)
+# The trailers' captures, frames and videos (tools/trailer/, tools/trailer-v2/, tools/trailer-v3/)
 tools/trailer/out/
 tools/trailer-v2/out/
+tools/trailer-v3/out/

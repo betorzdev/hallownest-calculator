@@ -54,7 +54,9 @@
     const pin = name === 'Grubfather' ? pinsOf('grubfather')[0] : null;
     return { p: (pin && [pin[2], pin[3]]) || (NPC_OF[name] && npcPin(NPC_OF[name])) || [sp[0], sp[1]], scene: sp[2] };
   }
-  // A collectible: its own spot; the Grimmkin flames, which ItemChanger doesn't place, on the game's pins.
+  /* A collectible: its own spot; the Grimmkin flames, which ItemChanger doesn't place, on the game's pins.
+     Brumm's, in his room off Distant Village, is the game's pin in the village. */
+  const PIN_ROOM = { Room_spider_small: 'Deepnest_10' };
   const COL_POS = (() => {
     const out = {}, used = {};
     for (const it of CO.ITEMS) {
@@ -63,8 +65,9 @@
       const kind = GAME_PIN[it.kind];
       if (!pt && kind) {
         // The game's pins in that room, in order: two in one room are its two pins.
-        const list = pinsOf(kind).filter((p) => p[1] === it.scene);
-        const k = kind + '|' + it.scene;
+        const room = PIN_ROOM[it.scene] || it.scene;
+        const list = pinsOf(kind).filter((p) => p[1] === room);
+        const k = kind + '|' + room;
         const i = used[k] || 0;
         used[k] = i + 1;
         if (list[i]) pt = [list[i][2], list[i][3]];
@@ -116,16 +119,23 @@
   const DREAM_BOSS_AT = { 'failed-champion': 'Crossroads_10', 'soul-tyrant': 'Ruins1_24', 'lost-kin': 'Abyss_19',
     'white-defender': 'Waterways_15', 'grey-prince-zote': 'Room_Bretta' };
   /* Foes no room places (js/scene-objects.js reads what a scene holds; these come some other way),
-     on the game's pin for where they're fought, with their layer: the Grimmkin, called by the
-     flames of Grimm's ritual (the wiki's page for each; Distant Village's flame is Brumm's), are
-     the ritual's, beside their flames; the Hollow Knight and the Radiance, behind the Black Egg,
-     are other bosses. */
+     on the game's pin for where they're fought, with their layer: the Hollow Knight and the
+     Radiance, behind the Black Egg, are other bosses. */
   const SPAWNED_BOSS_AT = [
-    ['grimmkin-novice', 'flame', 'Fungus1_10', 'grimmkin'], ['grimmkin-novice', 'flame', 'Mines_10', 'grimmkin'], ['grimmkin-novice', 'flame', 'Ruins1_28', 'grimmkin'],
-    ['grimmkin-master', 'flame', 'Tutorial_01', 'grimmkin'], ['grimmkin-master', 'flame', 'RestingGrounds_06', 'grimmkin'], ['grimmkin-master', 'flame', 'Deepnest_East_03', 'grimmkin'],
-    ['grimmkin-nightmare', 'flame', 'Fungus2_30', 'grimmkin'], ['grimmkin-nightmare', 'flame', 'Abyss_02', 'grimmkin'], ['grimmkin-nightmare', 'flame', 'Hive_03', 'grimmkin'],
     ['hollow-knight', 'blackegg', 'Crossroads_02', 'other-bosses'], ['the-radiance', 'blackegg', 'Crossroads_02', 'other-bosses'],
   ];
+  /* The Grimmkin aren't pins of their own: in the game you beat one and it gives you its flame, so
+     the flame is the thing (Albert, 10 Oct 2026; design/40, A). Each flame is of its phase, the
+     Grimmkin that guards it (the wiki's page for each), and Brumm's is the last phase's fourth,
+     given with no fight: the flames' layer opens into those four. */
+  const FLAME_PHASE = {
+    Fungus1_10: 'grimmkin-novice', Mines_10: 'grimmkin-novice', Ruins1_28: 'grimmkin-novice',
+    Tutorial_01: 'grimmkin-master', RestingGrounds_06: 'grimmkin-master', Deepnest_East_03: 'grimmkin-master',
+    Fungus2_30: 'grimmkin-nightmare', Abyss_02: 'grimmkin-nightmare', Hive_03: 'grimmkin-nightmare', Room_spider_small: 'brumm',
+  };
+  const PHASES = ['grimmkin-novice', 'grimmkin-master', 'grimmkin-nightmare', 'brumm'];
+  // A phase's name: its Grimmkin's, as the Journal names it (NAME_FLAMEBEARER_*); Brumm's, his.
+  const phaseName = (k) => (k === 'brumm' ? pick(PE.PEOPLE.find((w) => w.id === 'brumm')) : foeName(k));
   /* Two fights load their own copy of a room the map doesn't draw: the Crystal Guardian's, on its
      bench room, and Flukemarm's, where she leaves Flukenest. */
   const BOSS_SCENE = { Mines_18_boss: () => ({ p: roomPoint('Mines_18'), scene: 'Mines_18' }), Waterways_12_boss: () => spotOf('Flukenest') };
@@ -169,7 +179,7 @@
     // One layer per kind of thing (design/24, C: Equipment, spells and arts and Bosses and trials were two).
     { id: 'c112', layers: ['charms', 'equipment', 'spells', 'arts', 'dream-nail', 'bosses', 'trials', 'grimm-troupe', 'graves', 'dreamers', 'mask-shard', 'vessel-fragment', 'pale-ore'] },
     { id: 'collect', layers: ['grub', 'charm-notch', 'simple-key', 'keys', 'rancid-egg', 'relics', 'map'] },
-    { id: 'quests', layers: ['whispering-root', 'grimmkin-flame', 'grimmkin', 'npcs'] },
+    { id: 'quests', layers: ['whispering-root', 'grimmkin-flame', 'npcs'] },
     { id: 'hunt', layers: ['foes', 'other-bosses'] },
     { id: 'secrets', layers: ['walls', 'hidden', 'chests', 'rocks'] },
     { id: 'places', layers: ['benches', 'stag', 'trams', 'lifts', 'people', 'springs', 'cocoons', 'totems', 'tablets'] },
@@ -192,7 +202,7 @@
   const LAYER_ART = {
     equipment: { src: D.art('items', 'mantis-claw') }, spells: { src: D.art('spells', 'vs') }, arts: { src: D.art('arts', 'cyclone') },
     'dream-nail': { src: D.art('abilities', 'dream1') }, trials: { pin: 'colosseum' }, 'grimm-troupe': { src: D.art('journal', 'grimm') },
-    keys: { src: D.art('items', 'city-crest') }, relics: { src: D.art('items', 'kings-idol') }, foes: { src: D.art('journal', 'crawlid') }, 'other-bosses': { src: D.art('journal', 'vengefly-king') }, grimmkin: { src: D.art('journal', 'grimmkin-novice') }, npcs: { glyph: 'npc' },
+    keys: { src: D.art('items', 'city-crest') }, relics: { src: D.art('items', 'kings-idol') }, foes: { src: D.art('journal', 'crawlid') }, 'other-bosses': { src: D.art('journal', 'vengefly-king') }, npcs: { glyph: 'npc' },
     walls: { glyph: 'wall' }, hidden: { glyph: 'hidden' }, chests: { src: 'assets/world/chest.png' }, rocks: { src: D.art('items', 'geo') },
     totems: { src: 'assets/world/totem.png' }, tablets: { src: 'assets/world/tablet.png' }, charms: { src: 'assets/charms/compass.png' }, bosses: { src: D.art('journal', 'false-knight') },
     graves: { pin: 'grave' }, dreamers: { pin: 'dreamer-monomon' }, benches: { pin: 'bench' }, people: { pin: 'vendor' },
@@ -346,12 +356,14 @@
     const out = [];
     for (const it of CO.ITEMS) {
       if (!COL_POS[it.id]) continue;
-      out.push({ id: it.id, layer: layerOfKind(it.kind), sub: it.kind, p: COL_POS[it.id], scene: it.scene, art: kindArt(it.kind),
-        name: pick(D.COLLECTIBLE_KINDS[it.kind]), where: where(it.scene), act: { find: it.id },
+      // A flame: its phase is its member in the set, and its card says who guards it.
+      const phase = it.kind === 'grimmkin-flame' && FLAME_PHASE[it.scene];
+      out.push({ id: it.id, layer: layerOfKind(it.kind), sub: phase || it.kind, p: COL_POS[it.id], scene: it.scene, art: kindArt(it.kind),
+        name: pick(D.COLLECTIBLE_KINDS[it.kind]), where: where(it.scene), act: { find: it.id, ...(phase && phase !== 'brumm' ? { journal2: phase } : {}) },
         // A stag station is a place too: always on the map, saying whether it's open yet.
         ...(it.kind === 'stag' ? { on: null, closed: !P.hasFound(App.progress, it.id) && !!App.progress.mapped.length, found: P.hasFound(App.progress, it.id),
           note: App.progress.mapped.length ? t(P.hasFound(App.progress, it.id) ? 'pgmOpen' : 'pgmClosed') : '' }
-          : { on: P.hasFound(App.progress, it.id), note: priceOf(it) }) });
+          : { on: P.hasFound(App.progress, it.id), note: phase ? phaseName(phase) : priceOf(it) }) });
     }
     // The 112%'s, read as the tablet reads them (js/app-progress.js).
     const cats = Object.fromEntries(App.pgCount().categories.map((c) => [c.id, c]));
@@ -416,6 +428,9 @@
     for (const it of cats.bosses.items) add112('bosses', 'bosses', it.id, BOSS_AT[it.id]);
     for (const it of cats.colosseum.items) add112('trials', 'colosseum', it.id, BOSS_AT[it.id]);
     for (const id of ['troupe-master-grimm', 'nkg']) add112('grimm-troupe', 'grimm', id, BOSS_AT[id]);
+    // The King's point taken by the Banishment (js/app-progress.js): his fight closed, nothing to mark.
+    const nkg = App.pgGrimmEnd() === 'banishment' && out.find((th) => th.id === 'c:nkg');
+    if (nkg) Object.assign(nkg, { note: t('pgClosed'), act: null });
     for (const it of cats.dreams.items) add112('graves', 'dreams', it.id, GRAVE_AT[it.id], gamePin('grave', GRAVE_AT[it.id]));
     for (const it of cats.dreamers.items) {
       const pt = gamePin('dreamer', it.id), m = App.pgMeta('dreamers', it.id);
@@ -874,6 +889,8 @@
   const hasIt = (th) => (th.found !== undefined ? th.found : !!th.on);
   function btnHtml(th) {
     const a = th.act;
+    // A flame's card also opens its Grimmkin's entry in the Journal.
+    if (a && a.journal2) return `<span class="pgm-card-btns">${btnHtml({ ...th, act: { ...a, journal2: null } })}${btnHtml({ ...th, act: { journal: a.journal2 } })}</span>`;
     return !a ? ''
       : a.journal ? `<button type="button" class="text-btn" data-act="pgmJournal" data-id="${esc(a.journal)}">${esc(t('pgmInJournal'))}</button>`
       : a.state ? `<span class="pgm-card-state">${esc(t(hasIt(th) ? STATE_ON[th.layer] || 'pgmGot' : STATE_OFF[th.layer] || 'notFound'))}</span>`
@@ -968,14 +985,24 @@
      things on the map (one per member, with its picture), each a switch of its own, so you can
      show just what you want (prefs.pgMapSubOff: 'layer|member' hidden). A member is a stable key,
      not its name: the item, the relic, the foe, the character, the wall's kind, the marker's colour. */
-  const INSIDE = ['keys', 'relics', 'other-bosses', 'npcs', 'people', 'walls', 'markers'];
+  const INSIDE = ['keys', 'relics', 'grimmkin-flame', 'other-bosses', 'npcs', 'people', 'walls', 'markers'];
   const insideOpen = new Set();
   const CARET = '<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1 L8 5 L3 9 Z" fill="currentColor"/></svg>';
+  // How many of a layer (or a set's member) you have: «4/10».
+  const kindN = (got, max) => (max ? `<span class="pgm-kind-n${got === max ? ' is-full' : ''}"><b>${App.NF[0].format(got)}</b><i class="u">/${App.NF[0].format(max)}</i></span>` : '');
   const subOf = (th) => th.sub || String(th.id).split(':').pop();
   const subOff = () => (Array.isArray(prefs.pgMapSubOff) ? prefs.pgMapSubOff : []);
   const subHidden = (th) => INSIDE.includes(th.layer) && subOff().includes(th.layer + '|' + subOf(th));
-  // A set's members: { key, name, art }, each once, in its language's order.
+  /* A set's members: { key, name, art }, each once, in its language's order. The flames' are their
+     phases, in the ritual's order, each with its Grimmkin's picture (Brumm's, his flame) and how
+     many of its flames you have (n: [got, of]). */
   function membersOf(l, things = allThings()) {
+    if (l === 'grimmkin-flame') {
+      return PHASES.map((k) => {
+        const of = things.filter((th) => th.layer === l && th.sub === k);
+        return { key: k, name: phaseName(k), art: k === 'brumm' ? kindArt(l) : { src: D.art('journal', k) }, n: [of.filter(hasIt).length, of.length] };
+      }).filter((m) => m.n[1]);
+    }
     const seen = new Map();
     for (const th of [...things, ...mineThings()]) if (th.layer === l && !seen.has(subOf(th))) seen.set(subOf(th), { key: subOf(th), name: th.name, art: th.art });
     return [...seen.values()].sort((a, b) => a.name.localeCompare(b.name, HK.i18n.current));
@@ -986,7 +1013,7 @@
     const items = membersOf(l, things).map((m) => {
       const on = layerOn && !off.includes(l + '|' + m.key);
       return `<button type="button" class="pgm-sub${on ? ' is-on' : ''}" data-act="pgmSub" data-value="${esc(l + '|' + m.key)}" aria-pressed="${on}">
-        <span class="pgm-inside-art">${m.art ? artHtml(m.art) : ''}</span><span${NT}>${esc(m.name)}</span></button>`;
+        <span class="pgm-inside-art">${m.art ? artHtml(m.art) : ''}</span><span${NT}>${esc(m.name)}</span>${m.n ? kindN(...m.n) : ''}</button>`;
     }).join('');
     return `<div class="pgm-inside" role="group" aria-label="${esc(t('pgmChoose') + ' · ' + layerName(l))}">${items}</div>`;
   }
@@ -995,7 +1022,7 @@
       const of = things.filter((th) => th.layer === l && (th.on !== null || th.found !== undefined));
       return [of.filter(hasIt).length, of.length];
     };
-    const n = (got, max) => (max ? `<span class="pgm-kind-n${got === max ? ' is-full' : ''}"><b>${App.NF[0].format(got)}</b><i class="u">/${App.NF[0].format(max)}</i></span>` : '');
+    const n = kindN;
     const chip = (l) => {
       const art = D.COLLECTIBLE_KINDS[l] ? kindArt(l) : LAYER_ART[l];
       const btn = `<button type="button" class="pgm-kind${layers.has(l) ? ' is-on' : ''}" data-act="pgmLayer" data-value="${l}" aria-pressed="${layers.has(l)}">
@@ -1051,9 +1078,9 @@
     return `<div class="pgm">
       <div class="pgm-bar">
         ${searchHtml()}
+        ${focusHtml()}
       </div>
       <div class="pgm-box">
-        ${focusHtml()}
         ${admin() ? adminHtml() : ''}
         <span class="pgm-zoom">
           <button type="button" class="step" data-act="pgmZoom" data-value="in" aria-label="${esc(t('pgZoomIn'))}" title="${esc(t('pgZoomIn'))}">+</button>
@@ -1080,8 +1107,9 @@
      A thing elsewhere on the site (a Progress plate, the Inventory, a Journal entry, Your game's
      lists) names what it is as a target, "kind:id"; mapTargets says which of the map's things
      those are. One: the map centres on it and opens its card. Several: focus, the map shows only
-     them, fitted, with a bar to step through them (the missing first, the nearest to your bench
-     first) and to leave. Nothing on the map: no button (mapPinHtml). */
+     them, fitted, the search field saying what they are (its × leaves) and ‹ › beside it to step
+     through them (the missing first, the nearest to your bench first). Nothing on the map: no
+     button (mapPinHtml). */
   let thingIds = null;   // every thing's id, once (they don't change with your game)
   function mapTargets(target) {
     if (!thingIds) thingIds = new Set([...allThings(), ...mineThings()].map((th) => th.id));
@@ -1093,8 +1121,10 @@
       ids = a === 'spells' ? (/\d$/.test(b) ? ['c:' + b] : ['c:' + b + '1', 'c:' + b + '2']) : a === 'masks' ? ofKind('mask-shard') : a === 'vessels' ? ofKind('vessel-fragment')
         : a === 'nail' ? [...ofKind('pale-ore'), 'people:nailsmith'] : b === 'godtuner' ? ['k:godtuner']
         : b === 'dreamgate' ? ['people:seer']   // the Seer gives the Dreamgate
-        : b === 'king' ? ['c:queen-fragment', 'c:king-fragment'] : ['c:' + b];   // Kingsoul: its two halves
+        : b === 'king' ? ['c:queen-fragment', 'c:king-fragment', 'c:voidheart'] : ['c:' + b];   // Kingsoul: its two halves, and the egg that makes it Void Heart
     } else if (kind === 'key') ids = ['k:' + a, 'c:' + a];   // the King's Brand is the 112%'s
+    // A Grimmkin: the flames it guards.
+    else if (kind === 'foe' && PHASES.includes(a)) ids = CO.ITEMS.filter((it) => FLAME_PHASE[it.scene] === a && it.kind === 'grimmkin-flame').map((it) => it.id);
     else if (kind === 'foe') ids = [...thingIds].filter((id) => id.startsWith('f:') && id.endsWith(':' + a)).concat(['c:' + a, 'd:' + a]);
     else if (kind === 'cloak') ids = ['c:mothwing-cloak', 'c:shade-cloak'];
     else if (kind === 'npc') ids = b !== undefined ? ['n:' + a + ':' + b] : [...thingIds].filter((id) => id.startsWith('n:' + a + ':'));   // one meeting, or all
@@ -1110,11 +1140,10 @@
     else if (kind === 'sources' && a === 'essence') ids = [...(b === 'seer' ? ['people:seer'] : []), ...ofKind('whispering-root'), ...Object.keys(GRAVE_AT).map((id) => 'c:' + id), ...Object.keys(DREAM_BOSS_AT).map((id) => 'd:' + id)];
     return ids.filter((id) => thingIds.has(id));
   }
-  // The view around some points, in the box's proportions (ratio: height / width), a room or two at
-  // least; a little more room below, where focus's bar lies.
+  // The view around some points, in the box's proportions (ratio: height / width), a room or two at least.
   function fitBox(pts, ratio) {
     const xs = pts.map((p) => p[0]), ys = pts.map((p) => -p[1]);
-    const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys) + 2.5;
+    const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
     const w = Math.min(FIT.w * 1.2, Math.max(6, x1 - x0 + 3, (y1 - y0 + 3) / ratio)), h = w * ratio;
     return { x: (x0 + x1) / 2 - w / 2, y: (y0 + y1) / 2 - h / 2, w, h };
   }
@@ -1123,7 +1152,7 @@
     if (!ids.length) return;
     const all = new Map([...allThings(), ...mineThings()].map((th) => [th.id, th]));
     const things = ids.map((id) => all.get(id)).filter(Boolean);
-    query = ''; found = []; route = null;
+    query = ''; found = []; route = null; editing = false;
     if (things.length === 1) {
       // Its layer shown, if you'd hidden it (as the search does).
       const l = things[0].layer;
@@ -1157,23 +1186,24 @@
   }
   // A plate with its pin beside it (css .gplate-wrap), or the plate as it was.
   const pinned = (plate, target, name) => { const pin = mapPinHtml(target, name); return pin ? `<span class="gplate-wrap">${plate}${pin}</span>` : plate; };
-  // The bar over the map while in focus: what it is, how many (and how many you're missing), ‹ i of n ›, and out.
-  function focusHtml() {
-    if (!focus) return '';
+  // In focus, how many are on the map and how many you're missing.
+  function focusCounts() {
     const all = new Map(allThings().map((th) => [th.id, th]));
     const things = focus.ids.map((id) => all.get(id)).filter(Boolean);
     const missing = things.filter((th) => th.on === false || th.found === false).length;
+    return esc(t('pgmFocusCount', { n: App.NF[0].format(things.length) })) + (missing ? ' · ' + esc(t('pgmFocusMissing', { n: App.NF[0].format(missing) })) : '');
+  }
+  /* Beside the field while in focus: ‹ i of n › («– of n» before the first step, so the arrows
+     never move), and the counts again, which the field drops on a phone (css .pgm-focus-n). */
+  function focusHtml() {
+    if (!focus) return '';
     const n = focus.order.length, i = focus.i;
-    return `<div class="pgm-focus" role="group" aria-label="${esc(focus.name)}">
-      <span class="pgm-card-art">${artHtml(focus.art)}</span>
-      <span class="pgm-focus-t"><b${NT}>${esc(focus.name)}</b><span>${esc(t('pgmFocusCount', { n: App.NF[0].format(things.length) }))}${missing ? ' · ' + esc(t('pgmFocusMissing', { n: App.NF[0].format(missing) })) : ''}</span></span>
-      <span class="pgm-focus-step">
+    return `<span class="pgm-focus-n">${focusCounts()}</span>
+      <span class="pgm-focus-step" role="group" aria-label="${esc(focus.name)}">
         <button type="button" class="icon-btn" data-act="pgmStep" data-value="-1" aria-label="${esc(t('pgmFocusPrev'))}">‹</button>
-        <span class="pgm-focus-i">${i < 0 ? '' : esc(t('pgmFocusOf', { i: App.NF[0].format(i + 1), n: App.NF[0].format(n) }))}</span>
+        <span class="pgm-focus-i">${esc(t('pgmFocusOf', { i: i < 0 ? '–' : App.NF[0].format(i + 1), n: App.NF[0].format(n) }))}</span>
         <button type="button" class="icon-btn" data-act="pgmStep" data-value="1" aria-label="${esc(t('pgmFocusNext'))}">›</button>
-      </span>
-      <button type="button" class="text-btn" data-act="pgmUnfocus">${esc(t('pgmFocusExit'))}</button>
-    </div>`;
+      </span>`;
   }
   Object.assign(actions, {
     toMap(node) { showOnMap(node.dataset.target, node.dataset.name); },
@@ -1185,7 +1215,7 @@
       if (th) { selected = th.id; lookAt(th.p); }
       render();
     },
-    pgmUnfocus() { focus = null; selected = ''; render(); },
+    pgmUnfocus() { focus = null; editing = false; selected = ''; render(); },
   });
 
   /* ── The search, over the map: everything it can show (the hidden layers' and what you have
@@ -1193,14 +1223,27 @@
      Typing repaints only the list (a repaint would take the focus); picking one shows its layer
      if hidden, centres the map on it close up and opens its card. A title only takes you there. */
   let query = '', found = [], cursor = 0;
+  let editing = false;   // in focus, typing a new search: the field is the input again until it's left empty
   const fold = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+  /* In focus, the field holds what you're seeing, as a map app keeps your search in its box: a tap
+     on it types a new one, its × leaves (Albert, 10 Oct 2026, design/42: the bar at the box's foot
+     was off screen on a computer). */
   function searchHtml() {
-    return `<div class="pgm-search" role="search">
+    const list = '<ul class="pgm-results" id="pgm-results" role="listbox" hidden></ul>';
+    if (focus && !editing) return `<div class="pgm-search is-focus" role="search">
+      <div class="search is-on">
+        <button type="button" class="pgm-fq" data-act="pgmEdit" aria-label="${esc(t('pgmSearch'))}"><span class="pgm-card-art">${artHtml(focus.art)}</span><b${NT}>${esc(focus.name)}</b><span class="pgm-fq-n">${focusCounts()}</span></button>
+        <button type="button" class="icon-btn" data-act="pgmUnfocus" aria-label="${esc(t('pgmFocusExit'))}" title="${esc(t('pgmFocusExit'))}">${App.cross}</button>
+      </div>${list}
+    </div>`;
+    return `<div class="pgm-search${focus ? ' is-focus' : ''}" role="search">
       <label class="search">${App.lens}<input type="search" class="pgm-q" value="${esc(query)}" placeholder="${esc(t('pgmSearch'))}" aria-label="${esc(t('pgmSearch'))}"
         autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="pgm-results" aria-autocomplete="list"></label>
-      <ul class="pgm-results" id="pgm-results" role="listbox" hidden></ul>
+      ${list}
     </div>`;
   }
+  // Only the field, repainted (the rest of the screen as it is): going in and out of typing.
+  const paintSearch = () => { const s = el.pg.querySelector('.pgm-search'); if (s) s.outerHTML = searchHtml(); };
   function searchPool() {
     const things = [...allThings(), ...mineThings()].map((th) => ({ th, name: th.name, where: th.where || '', art: th.art }));
     const areas = M.AREA_IDS.map((id, i) => (id && R.AREAS[id] ? { p: AREA_AT[i], name: pick(R.AREAS[id]), where: t('pgmSearchTitle') } : null));
@@ -1244,7 +1287,7 @@
     vb = { x: p[0] - w / 2, y: -p[1] - h / 2, w, h };
   }
   function go(r) {
-    query = ''; found = []; cursor = 0; focus = null;
+    query = ''; found = []; cursor = 0; focus = null; editing = false;
     if (r.th) {
       const l = r.th.layer;
       if (Array.isArray(prefs.pgMapOff) && prefs.pgMapOff.includes(l)) { prefs.pgMapOff = prefs.pgMapOff.filter((x) => x !== l); savePrefs(); }
@@ -1277,18 +1320,33 @@
       query = ''; found = []; cursor = 0;
       e.target.value = '';
       paintResults();
+    } else if (e.key === 'Escape' && editing) {
+      // Empty, in focus: back to what you were seeing, the keys on it.
+      e.preventDefault();
+      editing = false; paintSearch();
+      const fq = el.pg.querySelector('.pgm-fq');
+      if (fq) fq.focus({ preventScroll: true });
     }
   });
-  // A tap on the list keeps the focus in the box (the click then picks); leaving the box closes it.
+  // A tap on the list keeps the focus in the box (the click then picks); leaving the box closes it,
+  // and, empty in focus, gives the field back what you were seeing.
   el.pg.addEventListener('mousedown', (e) => { if (e.target.closest && e.target.closest('.pgm-results')) e.preventDefault(); });
   el.pg.addEventListener('focusout', (e) => {
     if (!e.target.matches || !e.target.matches('.pgm-q')) return;
     const list = el.pg.querySelector('.pgm-results');
-    if (list && !list.contains(e.relatedTarget)) { list.hidden = true; e.target.setAttribute('aria-expanded', 'false'); }
+    if (list && list.contains(e.relatedTarget)) return;
+    if (editing && !fold(query)) { editing = false; query = ''; paintSearch(); return; }
+    if (list) { list.hidden = true; e.target.setAttribute('aria-expanded', 'false'); }
   });
   el.pg.addEventListener('focusin', (e) => { if (e.target.matches && e.target.matches('.pgm-q') && fold(query)) { found = search(query); paintResults(); } });
   Object.assign(actions, {
     pgmGo(node) { const r = found[Number(node.dataset.i)]; if (r) go(r); },
+    pgmEdit() {
+      editing = true; query = ''; found = []; cursor = 0;
+      paintSearch();
+      const q = el.pg.querySelector('.pgm-q');
+      if (q) q.focus({ preventScroll: true });
+    },
   });
 
   /* ── Moving around ── */

@@ -87,10 +87,15 @@ def drawn(tr, sprite, root=False):
     return sprite.image.convert('RGBA').resize((round(w), round(h)), Image.LANCZOS), x, y
 
 def canvas(layers):
-    size = 4 * PX
+    """The layers on one canvas, big enough for the mask (4.4 units tall): Pillow would crop
+    what spills past an edge without a word, so that fails instead."""
+    size = 8 * PX
     c = Image.new('RGBA', (size, size))
     for im, x, y in layers:
-        c.alpha_composite(im, (round(size / 2 + x - im.width / 2), round(size / 2 + y - im.height / 2)))
+        left, top = round(size / 2 + x - im.width / 2), round(size / 2 + y - im.height / 2)
+        if min(left, top) < 0 or max(left + im.width, top + im.height) > size:
+            raise SystemExit(f'a {im.width}x{im.height} piece spills past the {size} px canvas')
+        c.alpha_composite(im, (left, top))
     return c
 
 def save(stem, images):

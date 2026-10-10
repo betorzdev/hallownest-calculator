@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Grimm Troupe's two endings in the 112%</title>
+<!-- Design material, not part of the site. Albert (10 Oct 2026): «The Grimm Troupe tiene 2 finales
+     posibles. como harias su apartado en la tab de progress, completion, para que no genere
+     confusion».
+
+     The rule (wiki, "Completion (Hollow Knight)"; the game's CountGameCompletion): the Troupe's last
+     point is «Nightmare King Grimm / Banishment», 1% for either (killedNightmareGrimm or
+     destroyedNightmareLantern), and one closes the other. Grimmchild's point is «Grimmchild /
+     Carefree Melody»: the banishment turns the charm into the Melody, the same 1%.
+
+     Today the third plate is always Nightmare King Grimm: at the fork nothing says the banishment
+     counts too, and a banished game sees the King lit (never fought) with «Compañía desterrada»
+     under it, cut on desktop. By hand, the banishment can't be marked from the tablet.
+       0 · Today                     as the site draws it now, for comparison.
+       A · two plates and «o»        the last point is a pair, the King and Destierro (the
+                                     achievement's icon and title, BANISHMENT_TITLE), joined by
+                                     «o»; once one is done the other is «Cerrado», no pin.
+       B · one plate, a choice       three plates as now; the last one is «Rey Pesadilla Grimm /
+                                     Destierro» (the wiki's row) with the site's level picker under
+                                     it (— · King · Destierro), and becomes the one you did.
+       C · the Ritual's path         the row opens as the quest goes: Grimmchild → Troupe Master
+                                     Grimm → the fork, the two endings one above the other.
+     Each in three games: at the fork (Grimmchild and the Troupe Master done), the Ritual done, the
+     Troupe banished. The bar switches variant, width and language; ?v=a&w=phone&lang=es. -->
+<base href="../">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+body { background: var(--page-bg); background-attachment: fixed; margin: 0; }
+.tv-wrap { max-width: 1180px; margin: 0 auto; padding: var(--sp-8) var(--page-pad) 160px; }
+.tv-wrap.is-phone { max-width: 390px; padding-left: var(--sp-3); padding-right: var(--sp-3); }
+.tv-bar { position: fixed; z-index: 100; left: 0; right: 0; bottom: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-2) var(--sp-8);
+  padding: var(--sp-3) var(--sp-4); background: var(--card); border-top: 1px solid var(--line-panel); font-size: var(--fs-sm); }
+.tv-grp { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-1) var(--sp-3); }
+.tv-lbl { color: var(--muted); font-family: var(--font-num); font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; }
+.tv-bar button { color: var(--ink-2); padding: var(--sp-1) 0; border-bottom: 1px solid transparent; }
+.tv-bar button[aria-pressed="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.ctx { color: var(--muted); font-size: var(--fs-xs); margin: 0 auto var(--sp-6); max-width: 900px; }
+.state { max-width: 900px; margin: var(--sp-8) auto var(--sp-2); color: var(--muted); font-family: var(--font-num); font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; }
+.pg-row .pg-head { pointer-events: none; }
+
+/* A · the pair: the King and Destierro side by side, «o» between them on a rule at the pictures' height. */
+.gx-pair { grid-column: span 2; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); grid-row: span 3; grid-template-rows: subgrid; column-gap: var(--sp-1); }
+.gx-pair > * { grid-row: 1 / -1; }
+.gx-or { grid-row: 1; align-self: center; display: flex; align-items: center; gap: var(--sp-1); color: var(--muted); font-size: var(--fs-xs); }
+.gx-or::before, .gx-or::after { content: ''; width: var(--sp-2); height: 1px; background: var(--line-ctl); }
+/* The ending that closed: further back than what's missing, and it says so. */
+.gplate.is-closed .gplate-art img { filter: var(--missing-art); opacity: 0.35; }
+.gplate.is-closed .gplate-name { color: var(--muted); text-decoration: line-through; text-decoration-color: color-mix(in oklab, var(--muted) 60%, transparent); }
+.gx-pips { display: inline-flex; align-items: center; gap: 2px; }
+.gx-pips .pg-pip { width: 14px; height: 14px; }
+.gx-pips i { color: var(--muted); font-size: var(--fs-2xs); font-style: normal; }
+
+/* B · two pictures in one plate while neither is done. */
+.gx-two { display: flex; justify-content: center; align-items: center; gap: var(--sp-1); }
+.pg-plates .gx-two img { max-height: 40px; max-width: 44px; }
+
+/* C · the path: the steps in a line, the fork at its end (the King's arm level with the line in,
+   Destierro's below it). The lines meet the pictures' middle (56px tall art, no pin ring here). */
+.gx-path { display: flex; align-items: flex-start; --mid: 28px; }
+.gx-path .gplate-wrap { grid-row: auto; grid-template-rows: auto auto auto; width: 120px; flex: none; }
+.gx-link { flex: 0 0 var(--sp-8); height: 1px; margin-top: var(--mid); background: var(--ink-2); }
+.gx-fork { display: grid; grid-template-columns: var(--sp-8) auto; row-gap: var(--sp-4); }
+.gx-end { grid-column: 2; }
+.gx-arm { grid-column: 1; position: relative; }
+.gx-arm::before, .gx-arm::after { content: ''; position: absolute; background: var(--line-ctl); }
+.gx-arm::before { left: 0; right: 0; top: var(--mid); height: 1px; }
+.gx-arm::after { left: 0; width: 1px; }
+.gx-arm.is-up::after { top: var(--mid); bottom: calc(-1 * var(--sp-4)); }
+.gx-arm.is-down::after { top: 0; height: var(--mid); }
+.gx-fork.is-nkg .gx-arm.is-up::before, .gx-fork.is-ban .gx-arm.is-up::after, .gx-fork.is-ban .gx-arm.is-down::before, .gx-fork.is-ban .gx-arm.is-down::after { background: var(--ink-2); }
+/* On a phone the path goes down, and the fork opens into two columns. */
+.is-phone .gx-path { flex-direction: column; align-items: center; }
+.is-phone .gx-link { flex: 0 0 var(--sp-4); width: 1px; height: auto; margin: 0; }
+.is-phone .gx-fork { grid-template-columns: 140px 140px; grid-template-rows: var(--sp-4) auto; row-gap: 0; }
+.is-phone .gx-arm { grid-row: 1; }
+.is-phone .gx-arm.is-up { grid-column: 1; }
+.is-phone .gx-arm.is-down { grid-column: 2; }
+.is-phone .gx-end { grid-row: 2; display: flex; justify-content: center; }
+.is-phone .gx-end.is-up { grid-column: 1; }
+.is-phone .gx-end.is-down { grid-column: 2; }
+.is-phone .gx-arm::before { top: 0; }
+.is-phone .gx-arm.is-up::before { left: 50%; right: 0; }
+.is-phone .gx-arm.is-down::before { left: 0; right: 50%; }
+.is-phone .gx-arm.is-up::after, .is-phone .gx-arm.is-down::after { left: 50%; top: 0; bottom: 0; height: auto; }
+.is-phone .gx-fork.is-ban .gx-arm.is-up::before, .is-phone .gx-fork.is-ban .gx-arm.is-up::after { background: var(--line-ctl); }
+.is-phone .gx-fork.is-nkg .gx-arm.is-up::after { background: var(--ink-2); }
+</style>
+</head>
+<body>
+<div class="tv-wrap" id="app"></div>
+<nav class="tv-bar">
+  <span class="tv-grp"><span class="tv-lbl">Variante</span>
+    <button type="button" data-v="0">0 · Hoy</button>
+    <button type="button" data-v="a">A · dos placas y «o»</button>
+    <button type="button" data-v="b">B · una placa que elige</button>
+    <button type="button" data-v="c">C · el camino del Ritual</button></span>
+  <span class="tv-grp"><span class="tv-lbl">Ancho</span>
+    <button type="button" data-w="desk">Escritorio</button><button type="button" data-w="phone">Móvil</button></span>
+  <span class="tv-grp"><span class="tv-lbl">Idioma</span>
+    <button type="button" data-l="es">ES</button><button type="button" data-l="en">EN</button></span>
+</nav>
+<script>
+(() => {
+  const q = new URLSearchParams(location.search);
+  let v = q.get('v') || 'a', w = q.get('w') || 'desk', lang = q.get('lang') || 'es';
+  const L = (p) => p[lang];
+  // The game's names: CHARM_NAME_40 / _N, GRIMM_ and NIGHTMARE_GRIMM_ SUPER + MAIN, BANISHMENT_TITLE,
+  // UI_MENU_STYLE_GRIMM. The rest are the site's labels.
+  const N = {
+    row: { es: 'La Compañía de Grimm', en: 'The Grimm Troupe' },
+    child: { es: 'Niño de Grimm', en: 'Grimmchild', art: 'assets/charms/grimmchild.png' },
+    melody: { es: 'Melodía Despreocupada', en: 'Carefree Melody', art: 'assets/charms/melody.png' },
+    tmg: { es: 'Maestro de la Compañía Grimm', en: 'Troupe Master Grimm', art: 'assets/journal/grimm.png' },
+    nkg: { es: 'Rey Pesadilla Grimm', en: 'Nightmare King Grimm', art: 'assets/journal/nkg.png' },
+    ban: { es: 'Destierro', en: 'Banishment', art: 'assets/achievements/banishment.png' },
+  };
+  const T = {
+    or: { es: 'o', en: 'or' },
+    closed: { es: 'Cerrado', en: 'Closed' },
+    banished: { es: 'Compañía desterrada', en: 'Troupe banished' },   // pgBanished, today's note
+    none: { es: 'Sin hacer', en: 'Not done' },
+    states: {
+      fork: { es: 'En la bifurcación · Niño de Grimm y Maestro hechos', en: 'At the fork · Grimmchild and the Troupe Master done' },
+      ritual: { es: 'Ritual completado · Rey Pesadilla vencido', en: 'Ritual done · Nightmare King defeated' },
+      ban: { es: 'Compañía desterrada · con Brumm', en: 'Troupe banished · with Brumm' },
+    },
+    ctx: {
+      0: { es: 'Hoy. La tercera placa es siempre el Rey Pesadilla: en la bifurcación nada dice que el Destierro también cuenta, y una partida desterrada ve al Rey encendido (no lo luchó) con «Compañía desterrada» debajo, cortado. A mano, el Destierro no se puede marcar desde aquí.',
+           en: 'Today. The third plate is always the Nightmare King: at the fork nothing says the Banishment counts too, and a banished game sees the King lit (never fought) with «Troupe banished» under it, cut. By hand, the Banishment can\'t be marked from here.' },
+      a: { es: 'El último punto es una pareja: Rey Pesadilla Grimm «o» Destierro (el icono y el título del logro del juego), cada uno con su pin (la tienda / Brumm) y su marca. Hecho uno, el otro queda «Cerrado» y sin pin. En la cabecera, las dos pepitas juntas hasta que eliges; luego, la tuya. Sigue siendo 3 puntos: la pareja ocupa dos casillas pero vale uno.',
+           en: 'The last point is a pair: Nightmare King Grimm «or» Banishment (the game\'s achievement icon and title), each with its pin (the tent / Brumm) and its mark. Once one is done, the other is «Closed», no pin. In the head, both pips together until you choose; then yours. Still 3 points: the pair takes two cells but is worth one.' },
+      b: { es: 'Tres placas, como ahora. La tercera, sin hacer, lleva las dos imágenes y el nombre de la fila de la wiki, «Rey Pesadilla Grimm / Destierro», y debajo el selector de niveles del sitio (— · Rey · Destierro), el mismo de las capas o los hechizos en el Inventario. Hecha, es la que hiciste: su imagen y su nombre.',
+           en: 'Three plates, as now. The third, not done, carries both pictures and the wiki row\'s name, «Nightmare King Grimm / Banishment», and under it the site\'s level picker (— · King · Banishment), the same as the cloaks\' or the spells\' on the Inventory. Done, it\'s the one you did: its picture and its name.' },
+      c: { es: 'La fila se abre como va la misión: Niño de Grimm → Maestro de la Compañía Grimm → la bifurcación, los dos finales uno encima del otro. El tramo que tomaste se ilumina; el otro queda «Cerrado». Es la única fila del 112 % con esta forma.',
+           en: 'The row opens as the quest goes: Grimmchild → Troupe Master Grimm → the fork, the two endings one above the other. The branch you took lights up; the other is «Closed». The only row of the 112% with this shape.' },
+    },
+  };
+  const PIN = '<svg class="ic" width="12" height="14" viewBox="0 0 12 14" fill="currentColor" aria-hidden="true"><path d="M6 0.6a4.9 4.9 0 0 0-4.9 4.9c0 3.5 4.9 8 4.9 8s4.9-4.5 4.9-8A4.9 4.9 0 0 0 6 0.6zm0 6.7a1.8 1.8 0 1 1 0-3.6 1.8 1.8 0 0 1 0 3.6z"/></svg>';
+  const CHEV = '<svg class="ic chev up" width="12" height="8" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1.5 L6 6 L11 1.5"/></svg>';
+  const pin = '<button type="button" class="icon-btn map-pin">' + PIN + '</button>';
+
+  // The three games: what's done in each.
+  const GAMES = { fork: { end: '' }, ritual: { end: 'nkg' }, ban: { end: 'ban' } };
+  // A plate: { n: the name, art, on, closed, val, pin, art2 (B: two pictures), pick (B: the chooser) }.
+  function plate(o) {
+    const art = o.art2 ? `<span class="gx-two"><img src="${o.art}" alt=""><img src="${o.art2}" alt=""></span>` : `<img src="${o.art}" alt="">`;
+    const p = `<button type="button" class="gplate${o.on ? ' is-on' : ''}${o.closed ? ' is-closed' : ''}" aria-pressed="${!!o.on}">
+      <span class="gplate-art">${art}</span>
+      <span class="gplate-name" translate="no">${o.n}</span>
+      <span class="gplate-val ${o.on && o.val ? 'is-text' : 'is-none'}">${o.val || ''}</span>${o.pick || ''}</button>`;
+    return o.pin === false ? p : `<span class="gplate-wrap">${p}${pin}</span>`;
+  }
+  const pip = (art, on) => `<span class="pg-pip${on ? ' is-on' : ''}"><img src="${art}" alt=""></span>`;
+  const child = (g) => (g.end === 'ban' ? N.melody : N.child);
+
+  function rowHtml(g) {
+    const done = g.end ? 3 : 2;
+    let pips, plates;
+    const c = child(g);
+    const first = plate({ n: L(c), art: c.art, on: true }) + plate({ n: L(N.tmg), art: N.tmg.art, on: true });
+    if (v === '0') {
+      pips = pip(c.art, true) + pip(N.tmg.art, true) + pip(N.nkg.art, !!g.end);
+      plates = `<div class="pg-plates">${first}${plate({ n: L(N.nkg), art: N.nkg.art, on: !!g.end, val: g.end === 'ban' ? L(T.banished) : '' })}</div>`;
+    } else if (v === 'a') {
+      pips = pip(c.art, true) + pip(N.tmg.art, true) + (g.end ? pip(N[g.end].art, true)
+        : `<span class="gx-pips">${pip(N.nkg.art, false)}<i>/</i>${pip(N.ban.art, false)}</span>`);
+      const end = (k) => plate({ n: L(N[k]), art: N[k].art, on: g.end === k, closed: g.end && g.end !== k, pin: !(g.end && g.end !== k),
+        val: g.end && g.end !== k ? L(T.closed) : '' });
+      // The closed one's word shows though it isn't "on": its line is .is-text by hand here.
+      plates = `<div class="pg-plates">${first}<span class="gx-pair">${end('nkg')}<span class="gx-or">${L(T.or)}</span>${end('ban')}</span></div>`
+        .replace(/is-closed"([^]*?)gplate-val is-none/g, 'is-closed"$1gplate-val is-text');
+    } else if (v === 'b') {
+      pips = pip(c.art, true) + pip(N.tmg.art, true) + pip(g.end ? N[g.end].art : N.nkg.art, !!g.end);
+      const levels = [['', L(T.none)], ['nkg', L(N.nkg)], ['ban', L(N.ban)]];
+      const pick = `<span class="lvlpick" role="group">${levels.map(([k, title]) => `<span class="lvl${g.end === k ? ' is-on' : ''}${k ? '' : ' is-none'}" title="${title}">${k ? `<img src="${N[k].art}" alt="">` : '<span aria-hidden="true">—</span>'}</span>`).join('')}</span>`;
+      const third = g.end ? plate({ n: L(N[g.end]), art: N[g.end].art, on: true, pick })
+        : plate({ n: `${L(N.nkg)} / ${L(N.ban)}`, art: N.nkg.art, art2: N.ban.art, on: false, pick });
+      plates = `<div class="pg-plates">${first}${third}</div>`;
+    } else {
+      pips = pip(c.art, true) + pip(N.tmg.art, true) + (g.end ? pip(N[g.end].art, true)
+        : `<span class="gx-pips">${pip(N.nkg.art, false)}<i>/</i>${pip(N.ban.art, false)}</span>`);
+      const end = (k) => plate({ n: L(N[k]), art: N[k].art, on: g.end === k, closed: g.end && g.end !== k, pin: !(g.end && g.end !== k), val: g.end && g.end !== k ? L(T.closed) : '' })
+        .replace(/is-closed"([^]*?)gplate-val is-none/, 'is-closed"$1gplate-val is-text');
+      const fork = g.end ? ' is-' + g.end : '';
+      plates = `<div class="gx-path">${plate({ n: L(c), art: c.art, on: true })}<span class="gx-link"></span>${plate({ n: L(N.tmg), art: N.tmg.art, on: true })}<span class="gx-link"></span>
+        <div class="gx-fork${fork}"><span class="gx-arm is-up"></span><div class="gx-end is-up">${end('nkg')}</div><span class="gx-arm is-down"></span><div class="gx-end is-down">${end('ban')}</div></div></div>`;
+    }
+    return `<ul class="pg-rows"><li class="pg-row is-open${done === 3 ? ' is-full' : ''}">
+      <button type="button" class="pg-head" aria-expanded="true"><span class="pg-name">${L(N.row)}</span>
+        <span class="pg-pips" aria-hidden="true">${pips}</span>
+        <span class="pg-pts"><b>${done}</b><i class="u">/3</i></span>
+        <span class="disc-ring" aria-hidden="true">${CHEV}</span></button>
+      <div class="pg-open">${plates}</div></li></ul>`;
+  }
+
+  function paint() {
+    document.documentElement.lang = lang;
+    const app = document.getElementById('app');
+    app.className = 'tv-wrap' + (w === 'phone' ? ' is-phone' : '');
+    app.innerHTML = `<p class="ctx">${L(T.ctx[v])}</p>` + Object.entries(GAMES).map(([k, g]) => `<p class="state">${L(T.states[k])}</p>${rowHtml(g)}`).join('');
+    document.querySelectorAll('[data-v]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.v === v));
+    document.querySelectorAll('[data-w]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.w === w));
+    document.querySelectorAll('[data-l]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.l === lang));
+  }
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-v],[data-w],[data-l]');
+    if (!b) return;
+    if (b.dataset.v) v = b.dataset.v;
+    if (b.dataset.w) w = b.dataset.w;
+    if (b.dataset.l) lang = b.dataset.l;
+    paint();
+  });
+  paint();
+})();
+</script>
+</body>
+</html>

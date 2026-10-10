@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Full completion variants</title>
+<!-- Design material, not part of the site. Albert (10 Oct 2026): «cuando un usuario tiene el 112 %
+     podríamos cambiar el color del número o hacer algo para que resalte».
+
+     Where the figure shows: Your game's hero (the big «Finalización» figure and its bar out of 112),
+     Progress's total over the rows, and the screen bar's Progress tab. Today it's bone like any
+     figure; only a full category's points turn to --good (css/app.css, .pg-row.is-full). Three ways,
+     none with words of its own (no own text in content), only on r.total >= r.max:
+       A · green      the figure and the bar in --good, as a full category's points already are; the
+                      tab's number too. The rule the tablet already has, carried to the total.
+       B · soul       bone still, but lit: the soul's white glow the bar's «just gained» has, on the
+                      figure and on the whole bar; the tab's number in --ink-strong.
+       C · green, lit A's colour plus one slow breath of light (the Focus glow) when the screen
+                      paints; nothing moves with reduced motion.
+     The bar switches variant, the figure (112 or 104 to compare) and language; ?v=a&p=112&lang=es&w=390. -->
+<base href="../">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+body { background: var(--page-bg); background-attachment: fixed; margin: 0; }
+.tv-wrap { max-width: 1120px; margin: 0 auto; padding: var(--sp-8) var(--page-pad) 220px; }
+.tv-bar { position: fixed; z-index: 100; left: 0; right: 0; bottom: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-2) var(--sp-8);
+  padding: var(--sp-3) var(--sp-4); background: var(--card); border-top: 1px solid var(--line-panel); font-size: var(--fs-sm); }
+.tv-grp { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-1) var(--sp-3); }
+.tv-lbl { color: var(--muted); font-family: var(--font-num); font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; }
+.tv-bar button { color: var(--ink-2); padding: var(--sp-1) 0; border-bottom: 1px solid transparent; }
+.tv-bar button[aria-pressed="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.tv-frame { display: block; margin: 0 auto; border: 1px solid var(--line-panel); background: var(--page-bg); }
+.embed .tv-wrap { padding: var(--sp-4) var(--sp-3) var(--sp-8); }
+.embed .tv-bar { display: none; }
+.ctx { color: var(--muted); font-size: var(--fs-xs); margin: var(--sp-8) 0 var(--sp-3); }
+.ctx:first-child { margin-top: 0; }
+.mock-nav { display: inline-flex; align-items: baseline; gap: var(--sp-2); padding: var(--sp-2) var(--sp-4); border: 1px solid var(--line-panel); }
+.mock-nav .nav-lbl { color: var(--ink); }
+
+/* A · green */
+.v-a .is-done .hm-fig-v > b, .v-a .is-done.pg-total .pg-total-v, .v-a .is-done .nav-num { color: var(--good); }
+.v-a .is-done.hmC-bar i { background: var(--good); box-shadow: none; }
+
+/* B · soul */
+.v-b .is-done .hm-fig-v > b, .v-b .is-done.pg-total .pg-total-v { text-shadow: 0 0 18px var(--focus-glow), 0 0 4px var(--focus-glow); }
+.v-b .is-done.hmC-bar i { background: var(--ink-strong); box-shadow: 0 0 10px var(--ink-strong); }
+.v-b .is-done .nav-num { color: var(--ink-strong); }
+.pg-total-v .u { text-shadow: none; }   /* the glow on the figure, not on its «% / 112» */
+
+/* C · green, lit */
+.v-c .is-done .hm-fig-v > b, .v-c .is-done.pg-total .pg-total-v, .v-c .is-done .nav-num { color: var(--good); }
+.v-c .is-done.hmC-bar i { background: var(--good); box-shadow: 0 0 10px var(--good-soft); }
+@media (prefers-reduced-motion: no-preference) {
+  .v-c .is-done .hm-fig-v > b, .v-c .is-done.pg-total .pg-total-v { animation: full-breath calc(var(--dur-arrive) * 2.4) var(--ease-fade) 2 alternate; }
+}
+@keyframes full-breath { to { text-shadow: 0 0 18px var(--good), 0 0 4px var(--good-soft); } }
+</style>
+</head>
+<body>
+<div class="tv-wrap" id="root"></div>
+<div class="tv-bar" id="bar"></div>
+<script>
+const q = new URLSearchParams(location.search);
+const V = q.get('v') || 'a', P = Number(q.get('p') ?? 112), W = q.get('w') || '0', LANG = q.get('lang') || 'es', EMBED = q.has('embed');
+const L = (es, en) => (LANG === 'en' ? en : es);
+const num = (n) => String(n);
+const pct = (n) => (LANG === 'en' ? `${n}%` : `${n} %`);
+const sp = LANG === 'en' ? '' : ' ';
+const done = P >= 112 ? ' is-done' : '';
+const comp = L('Finalización', 'Completion');   // the site's pgCompletion
+
+const hero = `<div class="hmC-card">
+    <div class="hm-figs hmC-figs">
+      <div class="hm-fig is-big${done}"><span class="hm-fig-k">${comp}</span><span class="hm-fig-v"><b>${num(P)}</b><span class="u">${sp}% / 112</span></span></div>
+      <div class="hm-fig"><span class="hm-fig-k">${L('Tiempo', 'Time')}</span><span class="hm-fig-v">41<span class="u">h</span> 12<span class="u">min</span></span></div>
+      <div class="hm-fig"><span class="hm-fig-k">${L('Diario del Cazador', "Hunter's Journal")}</span><span class="hm-fig-v"><b>164</b><span class="u">/ 164</span></span></div>
+    </div>
+    <div class="hmC-bar${done}" aria-hidden="true"><i class="is-had" style="width: ${(P / 112 * 100).toFixed(2)}%"></i></div>
+  </div>`;
+const total = `<div class="pg-total${done}"><span class="pg-total-k">${comp}</span>
+    <span class="pg-total-v">${num(P)}<span class="u">${sp}% / 112</span></span></div>`;
+const nav = `<span class="mock-nav${done}"><span class="nav-lbl">${L('Progreso', 'Progress')}</span><span class="nav-num">${pct(P)}</span></span>`;
+
+const root = document.getElementById('root');
+if (W !== '0' && !EMBED) {
+  const u = new URL(location.href); u.searchParams.set('embed', '1');
+  root.innerHTML = `<iframe class="tv-frame" src="${u}" width="${W}" height="760"></iframe>`;
+} else {
+  if (EMBED) document.documentElement.classList.add('embed');
+  root.className += ' v-' + V;
+  root.innerHTML = `<p class="ctx">${L('Tu partida · la portada', 'Your game · the hero')}</p>${hero}
+    <p class="ctx">${L('Progreso · el total', 'Progress · the total')}</p>${total}
+    <p class="ctx">${L('La barra de pantallas', 'The screen bar')}</p>${nav}`;
+}
+const cur = { v: V, p: String(P), lang: LANG, w: W };
+const opt = (k, v, label) => `<button type="button" aria-pressed="${cur[k] === v}" onclick="const u=new window.URL(location.href);u.searchParams.set('${k}','${v}');u.searchParams.delete('embed');location.href=u">${label}</button>`;
+document.getElementById('bar').innerHTML = `
+  <div class="tv-grp"><span class="tv-lbl">Variant</span>${opt('v', 'a', 'A · green')}${opt('v', 'b', 'B · soul')}${opt('v', 'c', 'C · green, lit')}</div>
+  <div class="tv-grp"><span class="tv-lbl">Figure</span>${opt('p', '112', '112')}${opt('p', '104', '104')}</div>
+  <div class="tv-grp"><span class="tv-lbl">Lang</span>${opt('lang', 'es', 'ES')}${opt('lang', 'en', 'EN')}</div>
+  <div class="tv-grp"><span class="tv-lbl">Width</span>${opt('w', '0', 'full')}${opt('w', '390', '390')}</div>`;
+</script>
+</body>
+</html>
