@@ -20,7 +20,7 @@
    Hunter's Journal.
    Your scene mid-fight: &hits=3&take=2&focus=1&freeze=5000 (see below); &info=spell:dd,foe opens
    those arena explanations.
-   Pantheons: &tab=pantheon opens the tab (&binds=all|nail,soul picks the bindings); &run=master&room=5&masks=3&lb=3&cocoon=3&over=dead
+   Pantheons: &tab=pantheon opens the tab (&binds=all|nail,soul picks the bindings); &run=master&room=5&bnail=1
    seeds a half-done run (with a strong build) to capture the timeline and the rooms.
    Your game's Hunter's Journal: &journal=1 (or &view=journal) opens its screen (with an h of one
    screen, e.g. 900: its list and its page measure the window), &jread=<id> reads that entry, &jfilter=unseen|seen|done
@@ -51,7 +51,7 @@ localStorage.setItem('hollow.prefs', JSON.stringify({
   pgOpen: q.get('pgopen') || '',
   pgMissing: q.get('pgmissing') === '1',   // Progress's "Only what's missing"
   cocoon: Number(q.get('cocoon') || 0),
-  /* &binds=all or &binds=nail,soul: the bindings chosen on the choose-a-pantheon screen. */
+  /* &binds=all or &binds=nail,soul: the bindings chosen beside an open pantheon's Simulate. */
   bindings: Object.fromEntries(['nail', 'shell', 'charms', 'soul'].map((k) =>
     [k, q.get('binds') === 'all' || (q.get('binds') || '').split(',').includes(k)])),
 }));
@@ -96,15 +96,8 @@ if (q.get('marks')) {
 }
 if (q.get('run')) {
   localStorage.setItem('hollow.run', JSON.stringify({
-    pantheon: q.get('run'), room: Number(q.get('room') || 0), over: q.get('over') || null,
+    pantheon: q.get('run'), room: Number(q.get('room') || 0),
     bindings: { nail: q.get('bnail') === '1', shell: false, charms: false, soul: false },
-    cocoon: Number(q.get('cocoon') || 0),
-    build: { nail: 4, masks: 9, vessels: 3, notches: 11, spells: { vs: 2, dd: 2, hw: 2 },
-             arts: { cyclone: true, dash: true, great: true }, charms: ['ustrength', 'quickslash'] },
-    masks: Number(q.get('masks') || 9), lbCharm: 0, lbCocoon: Number(q.get('lb') || 0), soul: 99,
-    rest: {}, log: [],
-    // &cleared=0,1,2 says which ones are cleared; without it, all the ones before the current one.
-    ...(q.get('cleared') !== null ? { cleared: q.get('cleared').split(',').filter(Boolean).map(Number) } : {}),
   }));
 }
 /* The save slots: &saves=1 fills slot 2 with a game halfway through (and leaves 1, 3 and 4

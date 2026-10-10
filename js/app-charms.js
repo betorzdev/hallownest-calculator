@@ -140,17 +140,16 @@
      "info" is the cheap part —whether you wear it and what would happen if you touched it—:
      the full impact is only requested by the detail, one charm at a time. The sheet adds its
      own to the context (charmBand): the detail's charm, "Clear" and the overcharm notice. */
-  /* Two locks: the save's (App.saveLock: a save from the game is read, not changed; "held" in the
-     context, and the grid keeps its colour and its hover, which drives the detail) and a
-     pantheon's (App.charmLock: outside its benches, the grid goes grey). */
-  const anyLock = () => App.saveLock() || App.charmLock();
+  /* The lock: the save's (App.saveLock: a save from the game is read, not changed; "held" in the
+     context, and the grid keeps its colour and its hover, which drives the detail). */
+  const anyLock = () => App.saveLock();
   const pageCharms = () => {
     const held = !!App.saveLock(), locked = anyLock();
     return {
       st: App.state, notches: App.sheet.notches, act: 'quick', locked, held,
       info: (id) => ({ equipped: App.state.charms.includes(id), action: C.charmAction(App.state, id) }),
       // While some are missing, the hint also says they can be unlocked there (the grid carries no mark at rest).
-      hint: held ? t('saveLockShort') + (hoverable.matches ? '; ' + t('saveLockHover') : '') : locked ? t('runLockShort') : (hoverable.matches ? t('quickHintHover') : t('quickHintTouch'))
+      hint: held ? t('saveLockShort') + (hoverable.matches ? '; ' + t('saveLockHover') : '') : (hoverable.matches ? t('quickHintHover') : t('quickHintTouch'))
         + (D.CHARMS.some((c) => !isOwned(c.id) && !C.OWN_SLOT_OF[c.id]) || C.OWN_SLOTS.some((sl) => !C.ownState(App.owned, sl.id))
           ? '; ' + t('quickHintUnlock') : ''),
     };
@@ -393,7 +392,6 @@
     const many = imp.changes.length > rows;
     const shown = many ? imp.changes.slice(0, rows - 1) : imp.changes;
     const more = many ? `<li class="insp-more"><button type="button" data-act="detailMore" data-id="${id}">${esc(t('detailMore', { n: imp.changes.length - shown.length }))}</button></li>` : '';
-    const lock = App.charmLock();
     const over = imp.equipped ? App.sheet.notches.overcharmed : a.overcharm;
     const cost = c.notches
       ? `<span class="detail-cost" role="img" aria-label="${esc(notchText(c.notches))}" title="${esc(notchText(c.notches))}">${`<i class="notch ${over ? 'is-over' : 'is-used'}"></i>`.repeat(c.notches)}</span>`
@@ -406,7 +404,7 @@
         </div>
       </div>
       <p class="insp-blurb" title="${esc(pick(c.blurb))}">${esc(pick(c.blurb))}</p>
-      ${lock ? `<p class="insp-state cond" title="${esc(lock)}">${esc(lock)}</p>` : fragRow && away ? fragRow : (ownRow || state) + fragRow}
+      ${fragRow && away ? fragRow : (ownRow || state) + fragRow}
       <h3>${esc(imp.equipped ? t('inspEffectIn') : t('inspEffectIf'))}${imp.cond ? ' (' + esc(imp.cond.toLowerCase()) + ')' : ''}</h3>
       ${imp.changes.length ? `<ul class="insp-list">${shown.map(row).join('')}${more}</ul>` : App.emptyHtml(esc(t('inspEmpty')))}`;
   }
@@ -442,7 +440,7 @@
   App.previewId = '';
   function paintPreview() {
     let next = null;
-    if (App.previewId && !App.charmLock()) {
+    if (App.previewId) {
       const imp = impact(App.previewId);
       if (!imp.cond) {
         next = new Map(imp.changes.map((ch) => {
@@ -478,7 +476,7 @@
      back to white— and what goes, today's. No preview if the charm is blocked (the detail says
      why) or moves no notch (Void Heart without Kingsoul). */
   function notchPreview(id) {
-    if (!id || App.charmLock()) return null;
+    if (!id) return null;
     if (!App.state.charms.includes(id) && !isOwned(id)) return null;  // it can't be equipped
     const a = C.charmAction(App.state, id);
     /* No free notch for it: the game wouldn't let it on. The row says what's missing: the dots it

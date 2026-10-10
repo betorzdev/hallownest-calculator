@@ -22,7 +22,7 @@
                grimmChildLevel (5: the troupe banished, Carefree Melody).
      journal   killed<X> (encountered) and kills<X> (defeats left), as js/hunter.js keeps them.
      hall      statueState<X>.completedTier1 … 3 → Attuned, Ascended, Radiant.
-     bindings  bossDoorStateTier1 … 5: boundNail … boundSoul and allBindings.
+     bindings  bossDoorStateTier1 … 5: boundNail … boundSoul, allBindings and unlocked.
      progress  everything else a game has: equipment and key items, what you carry, the rest of
                the 112%, your bench and your shade (js/progress.js says which field is which).
    The pantheon in progress and the pinned build aren't in a real save: they're left empty. */
@@ -310,13 +310,16 @@
   }
 
   function door(pd) {
-    const raw = { done: {}, all: [] };
+    const raw = { done: {}, all: [], unlocked: [] };
     for (const [id, n] of Object.entries(DOOR_PD)) {
       const st = pd['bossDoorStateTier' + n];
       if (!st || typeof st !== 'object') continue;
       raw.done[id] = Object.keys(BIND_PD).filter((k) => st[BIND_PD[k]]);
       if (st.allBindings) raw.all.push(id);
+      if (st.unlocked || st.completed) raw.unlocked.push(id);
     }
+    // None open yet (Godhome not reached): left unknown, and the rules say what's missing.
+    if (!raw.unlocked.length) delete raw.unlocked;
     return PN.normalizeDoor(raw);
   }
 
@@ -331,7 +334,7 @@
     const book = journal(pd), marks = hall(pd), d = door(pd);
     if (Object.keys(book).length) snap['hollow.journal'] = JSON.stringify(book);
     if (Object.keys(marks).length) snap['hollow.hall'] = JSON.stringify(marks);
-    if (PN.doorNotches(d)) snap['hollow.bindings'] = JSON.stringify(d);
+    if (!PN.doorEmpty(d)) snap['hollow.bindings'] = JSON.stringify(d);
     // The Hall's statues unlocked (the boss beaten in the kingdom), when the save has the Hall.
     const states = Object.entries(HALL_PD).map(([id, x]) => [id, pd['statueState' + x]]).filter(([, st]) => st && typeof st === 'object');
     const prog = P.fromSave(pd, sd, states.length ? states.filter(([, st]) => st.isUnlocked).map(([id]) => id) : null);

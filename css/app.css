@@ -351,7 +351,7 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 }
 /* Notice (.banner): the level's rule on the left and a breath of its colour behind; the tag and
    the text in the level's inks. Three levels: danger (overcharm, the game's magenta, the
-   default), a condition (.is-run: in a pantheon, the conditions' ochre) and information
+   default), a condition (.is-run: the conditions' ochre) and information
    (.is-hint: your real game, bone). */
 .banner {
   --lv: var(--over-ink); --lv-ink: var(--over-ink-2);
@@ -1323,6 +1323,9 @@ button.plate.is-on:is(:hover, :focus-visible) .plate-art > img { filter: brightn
 .gplate-art { position: relative; isolation: isolate; width: 100%; height: 60px; display: grid; place-items: center; }
 .gplate-art::before { content: ''; position: absolute; z-index: -1; inset: -8% 2%; background: var(--halo-plate); opacity: 0; transition: opacity var(--dur) var(--ease), filter var(--dur) var(--ease); }
 .gplate-art img { width: auto; height: auto; max-width: min(100px, 92%); max-height: 50px; object-fit: contain; }
+/* The Tram Pass is a solid card that fills its whole box, where the others are shapes with air
+   around them: at the same height it weighs twice as much. Scaled to their ink. */
+.gplate[data-id="tram-pass"] .gplate-art img { max-height: 36px; }
 .gplate:not(.is-on) .gplate-art::before { background: var(--halo-plate-off); }
 .gplate:not(.is-on) .gplate-art :is(img, .pg-atlas) { filter: var(--missing-art); }
 /* A picture from the game's map pins (js/app-map.js, pinArtHtml): the Dreamers', the Colosseum's. */
@@ -2637,34 +2640,6 @@ button.gplate:is(:hover, :focus-visible) .gplate-art::before, .gplate:has(.lvlpi
 }
 
 /* ── Choosing a pantheon ────────────────────────────────────────────── */
-/* Each pantheon is its final boss in a doorway of Godhome's light: in the game a pantheon is
-   entered through a door, so its light fills an arch with a thin gold frame, rising from the
-   threshold (not the Hall's niche, whose halo sits behind a statue on its pedestal). The light
-   switches on on hover and on the chosen one, which also carries the accent. */
-/* auto-fit: the five fill the row on desktop and go two by two on mobile. */
-.pcards { display: grid; grid-template-columns: repeat(auto-fit, minmax(148px, 1fr)); gap: var(--sp-3); }
-.pcard {
-  display: flex; flex-direction: column; align-items: stretch; gap: var(--sp-2);
-  text-align: center; padding: 0 0 var(--sp-3); border: 1px solid transparent;
-  transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease);
-}
-.pcard:hover { background: var(--veil); }
-/* The chosen pantheon, like the Hall's statue: its door lit and its threshold in the accent, no frame. */
-.pcard.is-on { background: var(--picked); }
-.pcard.is-on .pcard-art { border-bottom-color: var(--accent); }
-.pcard-art {
-  display: block; width: 76%; height: 124px; margin: var(--sp-3) auto 0; padding: var(--sp-6) var(--sp-3) var(--sp-1);
-  object-fit: contain; object-position: 50% 100%;
-  background: var(--pantheon-door-rest); border: 1px solid var(--godhome-line); border-bottom-width: 2px;
-  border-radius: 999px 999px 0 0;
-}
-.pcard:hover .pcard-art, .pcard.is-on .pcard-art { background-image: var(--pantheon-door); }
-.pcard-body { display: flex; flex-direction: column; gap: var(--sp-half); min-width: 0; padding: 0 var(--sp-3); }
-.pcard-name { font-size: var(--fs-md); color: var(--ink); }
-.pcard.is-on .pcard-name { color: var(--ink-strong); }
-.pcard-motto { font-size: var(--fs-xs); color: var(--ink-2); font-style: italic; }
-.pcard-meta { font-size: var(--fs-2xs); color: var(--muted); }
-
 /* The bindings: switches with their game icon. Off, the icon in grey. */
 .binds { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: var(--sp-2); }
 .bind {
@@ -2687,55 +2662,98 @@ button.gplate:is(:hover, :focus-visible) .gplate-art::before, .gplate:has(.lvlpi
 }
 .binds.is-all .bind-name { color: var(--godhome); }
 .bind-note { font-size: var(--fs-2xs); color: var(--muted); }
-/* Under each pantheon, the bindings you've finished it with in your game (the lifeblood door's
-   notches): off in grey, done in their bronze, and with "×4" (all four at once) in
-   Godhome's gold, like the marks on the pantheon's door in the game. */
-.pcard-wrap { display: flex; flex-direction: column; gap: var(--sp-1); min-width: 0; }
-.pcard-wrap > .pcard { flex: 1 1 auto; }
-.pdone { display: flex; justify-content: center; align-items: center; gap: var(--sp-half); }
-.pdone-bind, .pdone-all { width: 32px; height: 32px; display: grid; place-items: center; }
-.pdone-bind img { width: 22px; height: 22px; filter: var(--missing-art); transition: filter var(--dur) var(--ease), opacity var(--dur) var(--ease); }
-.pdone-bind:hover img { filter: grayscale(1) brightness(0.8); }
-.pdone-bind.is-dark:not(.is-on) img { filter: var(--missing-art) var(--dark-art-rim-off); }   /* a black disc: its rim (design/21) */
-.pdone-bind.is-on img { filter: drop-shadow(0 0 4px var(--notch-used-glow)); opacity: 1; }
-.pdone-all { font-family: var(--font-num); font-size: var(--fs-xs); font-weight: 600; color: var(--muted); transition: color var(--dur) var(--ease); }
-.pdone-all:hover { color: var(--accent); }
-.pdone-all.is-on { color: var(--godhome); }
-.pdone.is-all .pdone-bind img { filter: sepia(0.35) saturate(0.9) brightness(1.9) drop-shadow(0 0 4px var(--godhome-glow)); }
+
+/* Your game (design/37, B): a summary strip and one row per pantheon, its marks in columns as on
+   the game's door. Off in grey, done in their bronze, and with "×4" (all four at once) in
+   Godhome's gold. A locked pantheon's door is dark. */
+.pt-sum { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--sp-3) var(--sp-8); }
+.pt-stat { display: flex; flex-direction: column; gap: var(--sp-half); }
+.pt-stat b { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-xl); color: var(--ink-strong); font-weight: 600; line-height: 1.1; }
+.pt-stat > span:last-child { font-size: var(--fs-2xs); color: var(--muted); letter-spacing: var(--track-label); text-transform: uppercase; }
+.pt-stat .door-seeds { min-height: calc(var(--fs-xl) * 1.1); align-items: flex-end; }
+.pl { display: flex; flex-direction: column; }
+.pl-row { display: grid; grid-template-columns: minmax(0, 1fr) repeat(4, 44px) 44px; align-items: center; column-gap: var(--sp-1);
+  padding: var(--sp-1) 0; border-bottom: 1px solid var(--line-row); }
+.pl-row.is-expanded { background: var(--picked); border-bottom-color: transparent; }
+.pl-head { padding-block: var(--sp-1); border-bottom-color: var(--line); }
+.pl-head > span { display: grid; place-items: center; font-size: var(--fs-2xs); color: var(--muted); letter-spacing: var(--track-label); text-transform: uppercase; text-align: center; }
+.pl-head > span:first-child { place-items: start; }
+.pl-head img { filter: grayscale(1) brightness(0.7); }
+.pl-open-btn { grid-column: 1; display: flex; align-items: center; gap: var(--sp-3); min-width: 0; text-align: left; padding: var(--sp-1) var(--sp-2); }
+/* The whole row lights under the pointer (its name opens it, its marks mark). */
+.pl-row:not(.pl-head, .is-expanded):hover { background: var(--veil); }
+.pl-row:hover .pl-name b { color: var(--ink-strong); }
+.pl-art { flex: none; width: 56px; height: 48px; object-fit: contain; object-position: 50% 100%; border-radius: 999px 999px 0 0;
+  background: var(--pantheon-door-rest); border-bottom: 2px solid var(--godhome-line); }
+.pl-row.is-done .pl-art { background-image: var(--pantheon-door); }
+.pl-row.is-locked .pl-art { background: none; filter: var(--missing-art); }
+.pl-name { display: flex; flex-direction: column; gap: var(--sp-half); min-width: 0; }
+.pl-name b { font-weight: 400; font-size: var(--fs-md); color: var(--ink); }
+.pl-row.is-done .pl-name b { color: var(--ink-strong); }
+.pl-state { font-size: var(--fs-2xs); color: var(--muted); letter-spacing: var(--track-label); text-transform: uppercase; }
+.pl-row.is-done .pl-state { color: var(--godhome); }
+.pl-cell { display: grid; place-items: center; height: 44px; }
+.pl-cell img { filter: var(--missing-art); transition: filter var(--dur) var(--ease), opacity var(--dur) var(--ease); }
+.pl-bind.is-dark:not(.is-on) img { filter: var(--missing-art) var(--dark-art-rim-off); }   /* a black disc: its rim (design/21) */
+.pl-bind.is-on img { filter: drop-shadow(0 0 4px var(--notch-used-glow)); }
+.pl-row.is-all .pl-bind.is-on img { filter: sepia(0.35) saturate(0.9) brightness(1.9) drop-shadow(0 0 4px var(--godhome-glow)); }
+.pl-x4 { font-family: var(--font-num); font-size: var(--fs-xs); font-weight: 600; color: var(--muted); transition: color var(--dur) var(--ease); }
+.pl-x4:not(.is-on) { opacity: 0.5; }
+.pl-x4.is-on { color: var(--godhome); }
+.pl-cell:disabled { cursor: default; }
+.pl-open { display: flex; flex-direction: column; gap: var(--sp-3); padding: var(--sp-2) var(--sp-2) var(--sp-4); background: var(--picked); border-bottom: 1px solid var(--line-row); }
+.pl-open-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-3) var(--sp-6); }
+/* The simulator is secondary, so small: the bindings to go in with and Simulate to their right,
+   the same switches with a small icon and no note (what each does, in its title). */
+.pl-sim { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-3); }
+.pl-binds { display: flex; flex-wrap: wrap; gap: var(--sp-1); }
+.pl-binds .bind { grid-template-rows: auto; column-gap: var(--sp-1); padding: var(--sp-1) var(--sp-2); }
+.pl-binds .bind-art { grid-row: auto; width: 20px; height: 20px; }
+.pl-binds .bind-name { font-size: var(--fs-xs); }
+.timeline .tl.is-locked .tl-art { filter: var(--missing-art); opacity: 0.5; }
 /* Right after marking (doorFx): the binding lights up from the dark; completing all four, they
-   light up one after another in Godhome's gold, and the final boss's light swells once. */
-.pdone-bind.is-lit img { animation: lit-in var(--dur-flash) var(--ease); }
-.pdone.is-sealing .pdone-bind img { animation: seal-pip var(--dur-slow) var(--ease) both; animation-delay: calc(var(--i) * 110ms); }
-.pdone.is-sealing .pdone-all { animation: title-in var(--dur-slow) var(--ease-fade) 440ms both; }
-.pcard-wrap.is-sealed .pcard-art { animation: seal-glow 1.4s var(--ease-fade) 300ms; }
+   light up one after another in Godhome's gold. */
+.pl-bind.is-lit img { animation: lit-in var(--dur-flash) var(--ease); }
+.pl-row.is-sealing .pl-bind img { animation: seal-pip var(--dur-slow) var(--ease) both; animation-delay: calc(var(--i) * 110ms); }
+.pl-row.is-sealing .pl-x4 { animation: title-in var(--dur-slow) var(--ease-fade) 440ms both; }
+.pl-row.is-sealing .pl-art { animation: seal-glow 1.4s var(--ease-fade) 300ms; }
 @keyframes seal-pip {
   from { filter: grayscale(1) brightness(0.3); }
   50% { filter: sepia(0.35) saturate(0.9) brightness(2.4) drop-shadow(0 0 8px var(--godhome-glow)) drop-shadow(0 0 18px var(--godhome-glow)); }
 }
 @keyframes seal-glow { 30% { filter: brightness(1.3) drop-shadow(0 0 12px var(--godhome-glow)); } }
-@media (pointer: coarse) { .pdone-bind, .pdone-all { width: 34px; height: 44px; } }
+/* On a phone the name takes its own line and the marks go under it. */
+@media (max-width: 640px) {
+  .pl-row { grid-template-columns: repeat(5, minmax(0, 1fr)); row-gap: 0; }
+  .pl-open-btn { grid-column: 1 / -1; }
+  .pl-head { display: none; }
+  .pl-art { width: 44px; height: 38px; }
+}
 
-/* The lifeblood door: its 20 notches in a row, lit in lifeblood blue, with the 8, 12 and 16
-   ones (those that open it and raise the germs) larger. Below, the cocoon. */
-.door { display: flex; flex-direction: column; gap: var(--sp-3); max-width: var(--measure); }
-.door-notches { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); }
-.dn { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--notch-free); }
+/* The lifeblood door (design/38, A): one track of 20 notches, lit in lifeblood blue, the 8th, 12th
+   and 16th larger, and over each of those the masks its step gives, grey until reached. */
+.door { display: flex; align-items: flex-end; gap: var(--sp-4); max-width: 760px; }
+.door-track { flex: 1 1 auto; min-width: 0; display: grid; grid-template-columns: repeat(20, minmax(0, 1fr)); grid-template-rows: auto auto; align-items: center; row-gap: var(--sp-2); }
+.dn { grid-row: 2; justify-self: center; width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--notch-free); }
 .dn.is-major { width: 16px; height: 16px; }
-@media (max-width: 599px) { .door-notches { gap: var(--sp-1); } }
 .dn.is-lit { border-color: var(--lifeblood-line); background: var(--lifeblood-line); box-shadow: 0 0 8px var(--lifeblood-line); }
-.door-state { font-size: var(--fs-sm); color: var(--ink); }
-.door-cocoon { display: flex; align-items: center; gap: var(--sp-4); }
-.door-cocoon-art { width: 128px; height: auto; flex: none; }
-.door-cocoon-body { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; font-size: var(--fs-sm); color: var(--ink); }
+.door-step { grid-row: 1; justify-self: center; display: flex; gap: 1px; white-space: nowrap; }
+.door-step img { height: 18px; width: auto; filter: grayscale(1) brightness(0.45); opacity: 0.6; transition: filter var(--dur) var(--ease), opacity var(--dur) var(--ease); }
+.door-step.is-on img { filter: none; opacity: 1; }
+.door-n { flex: none; font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-sm); color: var(--muted); }
+.door-n b { font-size: var(--fs-lg); font-weight: 600; color: var(--ink-strong); }
+@media (max-width: 599px) {
+  .dn { width: 8px; height: 8px; border-width: 1.5px; }
+  .dn.is-major { width: 12px; height: 12px; }
+  .door-step img { height: 13px; }
+}
+/* The summary's cocoon: its masks. */
 .door-seeds { display: flex; gap: var(--sp-1); }
 .door-seeds img { height: 26px; width: auto; }
 .run-go {
   display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--sp-3) var(--sp-6);
   margin: var(--sp-2) 0 var(--sp-4); padding: var(--sp-4) 0; border-top: 1px solid var(--inv-line); border-bottom: 1px solid var(--inv-line);
 }
-.run-sum { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--sp-1) var(--sp-3); font-size: var(--fs-sm); color: var(--muted); }
-.run-sum b { font-family: var(--font-display); font-size: var(--fs-lg); font-weight: 600; color: var(--ink-strong); }
-.run-sum span + span::before { content: '·'; margin-right: var(--sp-3); color: var(--line-ctl); }
 
 /* ── Inside the pantheon ────────────────────────────────────────────── */
 .run-head { display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; }
@@ -2789,10 +2807,6 @@ button.gplate:is(:hover, :focus-visible) .gplate-art::before, .gplate:has(.lvlpi
   position: absolute; top: -2px; right: -8px; z-index: 1;
   font-family: var(--font-num); font-size: var(--fs-2xs); font-weight: 600; color: var(--ink-2); text-shadow: 0 0 3px var(--bg);
 }
-.tl-tick { position: absolute; right: 8%; bottom: 8%; width: 34%; height: auto; color: var(--godhome); filter: drop-shadow(0 0 2px var(--scene-bg)); }
-/* Still to go: the boss in view, only a little quieter than the ones already behind you. */
-.timeline .tl.is-todo .tl-art { opacity: 0.75; filter: saturate(0.7); }
-.timeline .tl.is-done .tl-medal { box-shadow: inset 0 0 0 1px var(--godhome); }
 .timeline .tl.is-current { --tl: 54px; }
 .timeline .tl.is-current .tl-medal { background: var(--godhome-light-rest); box-shadow: inset 0 0 0 2px var(--accent), var(--glow); }
 .timeline .tl.is-current .tl-n { color: var(--accent-ink); font-weight: 600; }
@@ -2807,16 +2821,10 @@ button.gplate:is(:hover, :focus-visible) .gplate-art::before, .gplate:has(.lvlpi
 }
 @keyframes tl-you-float { 50% { transform: translate(-50%, -3px); } }
 @keyframes tl-here { to { box-shadow: inset 0 0 0 2px var(--accent), 0 0 18px 2px var(--accent-line); } }
-.timeline .tl.is-fail .tl-medal { box-shadow: inset 0 0 0 2px var(--bad); }
-/* Skipped: neither cleared nor pending. Grey and struck through. */
-.timeline .tl.is-skipped .tl-art { opacity: 0.3; filter: grayscale(1); }
-.timeline .tl.is-skipped .tl-medal::after {
-  content: ''; position: absolute; left: 12%; right: 12%; top: 50%; height: 1px; background: var(--muted); transform: rotate(-35deg);
-}
 /* The final boss: last and largest, in its doorway of light. */
 .timeline .tl.is-final { --tl: 62px; }
 .timeline .tl.is-final .tl-medal { background: var(--pantheon-door-rest); }
-.timeline .tl.is-final:is(.is-current, .is-done, .is-preview) .tl-medal { background: var(--pantheon-door); }
+.timeline .tl.is-final:is(.is-current, .is-preview) .tl-medal { background: var(--pantheon-door); }
 .timeline .tl.is-final .tl-thread { width: var(--sp-6); }
 /* A room that can be tapped lights up under the pointer. */
 @media (hover: hover) {
@@ -2824,57 +2832,11 @@ button.gplate:is(:hover, :focus-visible) .gplate-art::before, .gplate:has(.lvlpi
   button.tl-go:hover .tl-art { opacity: 1; filter: brightness(1.15); }
 }
 button.tl-go:focus-visible { outline-offset: 3px; }
-/* On the picker, the chosen pantheon's way through, under Enter. */
-.run-path { display: flex; flex-direction: column; gap: var(--sp-3); }
-.run-path .block-head { display: flex; align-items: baseline; gap: var(--sp-3); flex-wrap: wrap; }
-
-/* The rest: one card per station, and the whole card is the button, because you decide the
-   order. On top, its corner of the Godhome room —the only area of the game with golden
-   light—, which fades into the card at the bottom; below, what it would give you now with
-   the HUD icons. The figures in bone, like all of them; only what you lose goes in red.
-   Three in a row if they fit; if not, one below the other with the artwork on the left. */
-.rest-room { container-type: inline-size; }
-.rest-stations { --rs-ico: 18px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-3); }
-.rest-station {
-  display: flex; flex-direction: column; min-width: 0; padding: 0; text-align: left;
-  border: 1px solid var(--inv-line);
-  transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease);
-}
-.rest-station:hover:not(:disabled) { border-color: var(--accent-line); background: var(--veil); }
-.rs-art { position: relative; display: block; flex: none; aspect-ratio: 16 / 9; overflow: hidden; background: var(--scene-bg); }
-.rs-art img { display: block; width: 100%; height: 100%; object-fit: cover;
-  filter: brightness(0.8); transition: filter var(--dur) var(--ease); }
-.rest-station:hover:not(:disabled) .rs-art img { filter: none; }
-.rs-art::after { content: ''; position: absolute; inset: auto 0 0; height: 35%;
-  background: linear-gradient(transparent, var(--inv-bg)); }
-.rs-body { display: flex; flex-direction: column; gap: var(--sp-2); padding: var(--sp-2) var(--sp-3) var(--sp-3); min-width: 0; }
-.rs-name { font-size: var(--fs-sm); color: var(--ink); }
-.rs-fxs { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-1) var(--sp-3); }
-.rs-fx { display: inline-flex; align-items: center; gap: var(--sp-1); font-size: var(--fs-xs); color: var(--muted); }
-.rs-fx b { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: var(--fs-md); font-weight: 600; color: var(--ink-strong); }
-.rs-fx.is-loss b { color: var(--bad); }
-.rs-fx.is-note { font-style: italic; }
-.rs-rule { font-size: var(--fs-2xs); color: var(--muted); }
-/* The icons, fitted by their body like the panel's masks (.pip-mask): the slot is the body
-   and the sprite is scaled and shifted. Soul: soul.png, a 37 px disc in 45. */
-.rs-ico { position: relative; display: inline-block; flex: none; height: var(--rs-ico); width: calc(var(--rs-ico) * 51 / 66); }
-.rs-ico img { position: absolute; max-width: none; height: auto; width: 117.647%; left: -7.843%; top: -15.152%; }
-.rs-ico.is-lb img { width: 173.222%; left: -35.837%; top: -26.154%; }
-.rs-ico.is-soul { width: var(--rs-ico); }
-.rs-ico.is-soul img { width: 121.622%; left: -10.811%; top: -10.811%; }
-/* No cocoon, or already broken: the station dims, but the reason can still be read. */
-.rest-station:disabled { opacity: 1; }
-.rest-station:disabled .rs-art img { filter: grayscale(1) brightness(0.4); }
-.rest-station:disabled .rs-name { color: var(--muted); }
-
-@container (max-width: 559px) {
-  .rest-stations { grid-template-columns: minmax(0, 1fr); gap: var(--sp-2); }
-  .rest-station { flex-direction: row; }
-  .rs-art { width: 132px; aspect-ratio: auto; min-height: 88px; }
-  .rs-art::after { inset: 0 0 0 auto; width: 35%; height: auto;
-    background: linear-gradient(90deg, transparent, var(--inv-bg)); }
-  .rs-body { flex: 1; justify-content: center; padding: var(--sp-2) var(--sp-3); }
-}
+/* A rest or the Godseeker, only shown: its mark, its name and, apart below, the way on. */
+.pt-room { display: flex; flex-direction: column; align-items: center; gap: var(--sp-3); padding: var(--sp-8) 0 var(--sp-6); text-align: center; }
+.pt-room-art { width: 88px; height: 88px; border-radius: 50%; object-fit: cover; object-position: 0 70%; background: var(--godhome-light-rest); }
+.pt-room-name { font-size: var(--fs-lg); color: var(--ink-strong); }
+.pt-room .btn { margin-top: var(--sp-4); }
 
 @media (max-width: 899px) {
   /* In one column: your scene, the scoreboard in a row, the enemy on its stage; then their
@@ -3602,8 +3564,6 @@ button.tl-go:focus-visible { outline-offset: 3px; }
   .hj-state-lbl { flex: 1 1 100%; text-align: center; }
   .hj-state-lbl::after { content: none; }
   /* The pantheon's summary: the bindings on a line of their own, without the separator in front. */
-  .run-sum span:last-child { flex-basis: 100%; }
-  .run-sum span:last-child::before { content: none; }
   .hj-state button { font-size: var(--fs-sm); }
   .hj-index::before, .hj-index::after { display: none; }
   .hj-list { flex: none; max-height: 64vh; }
@@ -4085,7 +4045,8 @@ kbd {
   .hall-mark:hover .hall-badge:not(.is-on) { filter: grayscale(0.3) brightness(0.8); opacity: 0.9; }
   .ped-btn:hover .ped-niche > img:first-child { filter: brightness(1.15); }
   /* Pantheons: a binding not marked on the door previews its light; the switches light their icon. */
-  .pdone-bind:not(.is-on):hover img { filter: drop-shadow(0 0 4px var(--notch-used-glow)); opacity: 0.6; }
+  .pl-bind:not(.is-on, :disabled):hover img { filter: drop-shadow(0 0 4px var(--notch-used-glow)); opacity: 0.6; }
+  .pl-x4:not(.is-on, :disabled):hover { color: var(--accent); }
   .bind:not(.is-on):hover .bind-art { filter: grayscale(0.4) brightness(0.95); }
   /* The Journal: the row's medallion lights up. */
   .hj-medal img:first-child { transition: filter var(--dur) var(--ease); }
@@ -4096,8 +4057,6 @@ kbd {
   /* The Hunter's light and the Void Idol's breathe, very slowly, like a bench's lamp. */
   .hj-hunter-fig::before { animation: lamp-breathe 6s var(--ease-fade) infinite alternate; }
   .hall-idol:not(.is-off) .hall-idol-art { animation: idol-breathe 6s var(--ease-fade) infinite alternate; }
-  /* The chosen pantheon's final boss, on its light, too. */
-  .pcard-wrap:not(.is-sealed) .pcard.is-on .pcard-art { animation: idol-breathe 5s var(--ease-fade) infinite alternate; }
   /* The enemy on the arena's stage floats a few px, like the Shade (shade-float): the hit, the
      phase and the fall take over while they last. */
   .fstage:not(.is-dying, .is-hit, .is-over, .is-staggered) .fscene-art { animation: shade-float 4.2s ease-in-out infinite; }

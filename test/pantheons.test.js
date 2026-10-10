@@ -122,7 +122,28 @@ test('each binding of each pantheon counts once, and "all four at once" counts a
   d = P.toggleAll(P.toggleAll(d, 'sage'), 'sage');
   assert.equal(P.doorNotches(d), 7, 'removing "at once" leaves all four marked');
   assert.deepEqual(P.normalizeDoor({ done: { master: ['nail', 'nail', 'x'], nobody: ['soul'] }, all: ['zote'] }),
-    { done: { master: ['nail'] }, all: [] }, 'the unreadable is dropped');
+    { done: { master: ['nail'] }, all: [], unlocked: null }, 'the unreadable is dropped');
+});
+
+test("the save's unlocked list survives marking", () => {
+  assert.equal(P.doorEmpty({ unlocked: [] }), true);
+  assert.equal(P.doorEmpty({ unlocked: ['master'] }), false);
+  assert.deepEqual(P.toggleBind({ unlocked: ['master'] }, 'master', 'nail').unlocked, ['master']);
+});
+
+test('what keeps each pantheon shut (kb/05-godhome.md)', () => {
+  // By hand nothing is known of the statues: only the pantheons before and Void Heart.
+  assert.equal(P.lockOf('master'), null);
+  assert.deepEqual(P.lockOf('knight', { completed: ['master'] }), { godhome: false, bosses: [], pantheons: ['artist', 'sage'], voidHeart: false });
+  assert.deepEqual(P.lockOf('hallownest', { completed: ['master', 'artist', 'sage', 'knight'], voidHeart: false }),
+    { godhome: false, bosses: [], pantheons: [], voidHeart: true });
+  assert.equal(P.lockOf('hallownest', { completed: ['master', 'artist', 'sage', 'knight'] }), null);
+  // From a save: the bosses whose statue is still locked; Vengefly King, God Tamer and Grey Prince Zote never count.
+  const all = P.PANTHEONS.slice(0, 3).flatMap((p) => p.rooms.filter((r) => r.type === 'fight').map((r) => r.foe));
+  assert.equal(P.lockOf('sage', { statues: all.filter((f) => !['uumuu', 'god-tamer', 'grey-prince-zote'].includes(f)) }).bosses.join(), 'uumuu');
+  assert.equal(P.lockOf('master', { statues: all.filter((f) => f !== 'vengefly-king') }), null);
+  // No statue at all: Godhome not reached yet.
+  assert.deepEqual(P.lockOf('master', { statues: [] }), { godhome: true, bosses: [], pantheons: [], voidHeart: false });
 });
 
 test('the cocoon comes out as soon as the door opens, and goes if it closes', () => {

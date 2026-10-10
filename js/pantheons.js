@@ -159,8 +159,10 @@
      Its germs: 3 with 8 notches, 4 with 12 and 5 with 16. All 20 also open the crack in the
      Land of Storms.
      It's your real game, marked by hand like the Hall's symbols: the simulator doesn't touch it.
-     It's saved as { done: { master: ['nail', …] }, all: ['knight'] }; "all" means having
-     finished it with all four at once (in the game, its marks in gold), and it counts all four. */
+     It's saved as { done: { master: ['nail', …] }, all: ['knight'], unlocked: […] }; "all"
+     means having finished it with all four at once (in the game, its marks in gold), and it counts all
+     four. unlocked: the pantheons whose door
+     is open, only known from a save (null by hand: then nothing shows as locked). */
   const BINDS = ['nail', 'shell', 'charms', 'soul'];
   const DOOR_NOTCHES = PANTHEONS.length * BINDS.length;    // 20
   const DOOR_STEPS = [[16, 5], [12, 4], [8, 3]];             // notches → germs per cocoon
@@ -175,9 +177,12 @@
         : BINDS.filter((k) => o.done && Array.isArray(o.done[p.id]) && o.done[p.id].includes(k));
       if (got.length) done[p.id] = got.slice();
     }
-    return { done, all };
+    const ids = (l) => PANTHEONS.map((p) => p.id).filter((id) => Array.isArray(l) && l.includes(id));
+    return { done, all, unlocked: Array.isArray(o.unlocked) && o.unlocked.length ? ids(o.unlocked) : null };
   }
   const doorNotches = (door) => Object.values(normalizeDoor(door).done).reduce((n, l) => n + l.length, 0);
+  // Anything kept besides the notches (a save's unlocked list): the door is worth saving.
+  const doorEmpty = (door) => { const d = normalizeDoor(door); return !doorNotches(d) && !(d.unlocked && d.unlocked.length); };
   const doorOpen = (door) => doorNotches(door) >= DOOR_OPEN;
   // Germs per cocoon with n notches; 0 if the door is still shut.
   const lifeseedsFor = (n) => (DOOR_STEPS.find(([min]) => n >= min) || [0, 0])[1];
@@ -206,7 +211,29 @@
     return d;
   }
 
+  /* ── What keeps a pantheon's door shut ─────────────────────────────────
+     kb/05-godhome.md: the first three open when their bosses' statues are unlocked (the boss
+     beaten in the kingdom); God Tamer and Vengefly King always count, and Grey Prince Zote
+     is skipped if you never beat him. The Knight needs the three before; Hallownest the four
+     and Void Heart. All of them, Godhome itself: the game unlocks the statues on arriving there,
+     so before that a save has none (seen on a real save that had beaten False Knight).
+     → { godhome, bosses: [foe ids not beaten], pantheons: [ids not completed], voidHeart } or null
+     when nothing is missing. statues is the save's list (js/progress.js), or null by hand: then the
+     bosses can't be told and none are listed; an empty one is a save that hasn't reached Godhome. */
+  const ALWAYS = ['vengefly-king', 'god-tamer', 'grey-prince-zote'];
+  function lockOf(pid, { completed = [], statues = null, voidHeart = true } = {}) {
+    const p = PANTHEON_BY_ID[pid];
+    if (!p) return null;
+    if (Array.isArray(statues) && !statues.length) return { godhome: true, bosses: [], pantheons: [], voidHeart: false };
+    const i = PANTHEONS.indexOf(p);
+    const before = i >= 3 ? PANTHEONS.slice(0, i).map((x) => x.id).filter((id) => !completed.includes(id)) : [];
+    const bosses = i < 3 && Array.isArray(statues)
+      ? [...new Set(p.rooms.filter((r) => r.type === 'fight' && !ALWAYS.includes(r.foe) && !statues.includes(r.foe)).map((r) => r.foe))] : [];
+    const vh = pid === 'hallownest' && !voidHeart;
+    return before.length || bosses.length || vh ? { godhome: false, bosses, pantheons: before, voidHeart: vh } : null;
+  }
+
   HK.pantheons = { PANTHEONS, PANTHEON_BY_ID, BINDS, DOOR_NOTCHES, DOOR_OPEN, DOOR_STEPS,
-    normalizeDoor, doorNotches, doorOpen, lifeseedsFor, nextStep, cocoonOf, toggleBind, toggleAll };
+    normalizeDoor, doorNotches, doorEmpty, doorOpen, lifeseedsFor, nextStep, cocoonOf, toggleBind, toggleAll, lockOf };
   if (typeof module !== 'undefined' && module.exports) module.exports = HK.pantheons;
 })();

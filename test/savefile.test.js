@@ -105,10 +105,12 @@ test('the Journal, the Hall and the lifeblood door', () => {
     statueStateGruzMother: { completedTier1: true, completedTier2: true, completedTier3: false },
     statueStateFailedChampion: { completedTier1: false, completedTier2: false, completedTier3: false },
     bossDoorStateTier1: { completed: true, boundNail: true, boundSoul: true },
+    bossDoorStateTier2: { unlocked: true },
     bossDoorStateTier4: { completed: true, allBindings: true } };
   assert.deepEqual(F.journal(pd), { 'vengefly': 12, 'false-knight': 0 });
   assert.deepEqual(F.hall(pd), { 'gruz-mother': ['at', 'asra'] });
-  assert.deepEqual(F.door(pd), { done: { master: ['nail', 'soul'], knight: ['nail', 'shell', 'charms', 'soul'] }, all: ['knight'] });
+  assert.deepEqual(F.door(pd), { done: { master: ['nail', 'soul'], knight: ['nail', 'shell', 'charms', 'soul'] }, all: ['knight'],
+    unlocked: ['master', 'artist', 'knight'] });
   const snap = F.toSnapshot(pd);
   assert.deepEqual(Object.keys(snap).sort(), ['hollow.bindings', 'hollow.build', 'hollow.hall', 'hollow.journal', 'hollow.meta', 'hollow.owned', 'hollow.progress']);
   // The pantheons cleared are part of the 112%, not of the door (js/completion.js).

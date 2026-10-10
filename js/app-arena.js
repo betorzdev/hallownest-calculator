@@ -52,13 +52,12 @@
   /* ── Standalone combat, Hall statue or pantheon room ───────────────────
      The same arena serves all three tabs. Combat is the fight out in the world, on
      Normal. In the Hall of Gods the statue sets the enemy and the difficulty, and you go
-     in at full health, as in the game. In a pantheon room four things change: the room
-     sets the enemy, the difficulty is Attuned, the build is the one you had on entry
-     (frozen, with its bindings) and health and soul carry over from the previous
-     room. */
-  App.run = null;          // pantheon run in progress, or null
-  App.runSheet = null;     // its frozen build's sheet, with the bindings applied
-  const inRun = () => prefs.fightTab === 'pantheon' && !!App.run && !App.run.over;
+     in at full health, as in the game. In a pantheon room the room sets the enemy, the
+     difficulty is Attuned and the pantheon's bindings apply; you go in at full health too:
+     the rooms are looked at one by one, not played as a run. */
+  App.run = null;          // the pantheon being looked at, room by room: { pantheon, room, bindings }, or null
+  App.runSheet = null;     // the build's sheet with its bindings applied
+  const inRun = () => prefs.fightTab === 'pantheon' && !!App.run;
   const runRooms = () => (App.run ? PN.PANTHEON_BY_ID[App.run.pantheon].rooms : []);
   const runRoom = () => (App.run ? runRooms()[App.run.room] || null : null);
   const runFight = () => inRun() && !!runRoom() && runRoom().type === 'fight';
@@ -71,28 +70,7 @@
   function syncFightSheet() {
     fightSheet = App.sheet ? E.compute(fst(), prefs.lang, { bindings: runFight() ? App.run.bindings : null, fight: FT.health(fight) }) : null;
   }
-  /* The pantheon build: nail, masks, vessels, spells and arts freeze on entry, as in the
-     game; CHARMS don't, they're a single selection across the whole site —the sheet,
-     combat and the benches—, and with them the notches, which decide what fits:
-     otherwise the page and the pantheon could disagree on whether you're overcharmed.
-     Whatever run.build stores for charms and notches is not used. */
-  const runBuild = () => ({ ...App.run.build, charms: App.state.charms.slice(), notches: App.state.notches });
-  const fst = () => (runFight() ? runBuild() : App.state);  // combat build
-
-  /* While a pantheon lasts, charms can't be touched from ANYWHERE on the site —the grid,
-     the equipped ones, the presets or a link— except at its benches: the
-     game only lets you change them sitting on one, and here the benches are the rest
-     rooms. The notches go with them, since they decide what fits. With the Charms
-     binding, not even at the bench. It also holds from the Combat tab: the run is still
-     half-done. Returns the reason, or '' if they can be changed. */
-  function charmLock() {
-    if (!App.run || App.run.over) return '';
-    const name = pick(PN.PANTHEON_BY_ID[App.run.pantheon].name);
-    if (App.run.bindings.charms) return t('runLockBound', { name });
-    return runRoom() && runRoom().type === 'rest' ? '' : t('runLock', { name });
-  }
-  const touchesCharms = (next) => next.notches !== App.state.notches
-    || next.charms.length !== App.state.charms.length || next.charms.some((id, i) => id !== App.state.charms[i]);
+  const fst = () => App.state;  // combat build: the page's, also in a pantheon room
   const alive = () => FT.alive(fight);
 
   /* Fighting at a statue: with a difficulty chosen. Without one, the Hall shows. */
@@ -332,7 +310,7 @@
   const undoStack = [];
   const UNDO_MAX = 50;
   function snapshot() {
-    undoStack.push({ fight: structuredClone(fight), melody: prefs.melody, run: App.run ? structuredClone(App.run) : null });
+    undoStack.push({ fight: structuredClone(fight), melody: prefs.melody });
     if (undoStack.length > UNDO_MAX) undoStack.shift();
   }
   function undo() {
@@ -341,7 +319,6 @@
     for (const k of Object.keys(fight)) delete fight[k];
     Object.assign(fight, snap.fight);
     if (prefs.melody !== snap.melody) { prefs.melody = snap.melody; savePrefs(); }
-    if (snap.run && App.run) { App.run = snap.run; App.saveRun(); }
     hudEvent = '';            // going back isn't a hit: nothing flashes
     hudPrev = null; foePrev = null;
     App.endFresh = false;
@@ -352,8 +329,8 @@
   function fightReset() {
     undoStack.length = 0;
     const f = foe();
-    // In a pantheon you don't start topped up: you arrive with what you brought from the previous room.
-    FT.reset(fight, baseSheet(), runFight() ? App.run : null);
+    // Every fight starts at full health, a pantheon room too: they're looked at one by one.
+    FT.reset(fight, baseSheet(), null);
     fight.melody = prefs.melody;   // Carefree Melody's counter survives the fight, as in the game
     fight.started = false;
     fight.over = false;
@@ -618,8 +595,6 @@
                                   blocked: !!blocked && fightHas('dreamshield') && m.proj === 'block' }, fightCtx());
     hudEvent = 'hit';
     if (!alive()) App.endFresh = true;
-    // In a pantheon, falling ends the run.
-    if (!alive() && runFight()) { App.run.over = 'dead'; App.saveRun(); }
     afterAction(evs);
   }
 
@@ -630,15 +605,8 @@
   function fightSync() {
     const f = foe();
     if (!App.sheet) return;
-    if (App.run) {
-      // The pantheon's charms are the page's: if they change anywhere,
-      // its caps change. Sitting on a bench also leaves you at full health.
-      App.runSheet = E.compute(runBuild(), prefs.lang, { bindings: App.run.bindings });
-      const seated = !App.run.over && runRoom() && runRoom().type === 'rest' && App.run.rest.sat;
-      if (seated) App.runRefill(); else App.runClamp();
-      App.run.soul = Math.min(App.run.soul, App.runSheet.stats['soul.total'].value);
-      App.saveRun();
-    }
+    // A pantheon room fights with the page's build and the room's bindings: it follows the build.
+    if (App.run) App.runSheet = E.compute(App.state, prefs.lang, { bindings: App.run.bindings });
     if (!f || !fight.started) { fightReset(); return; }
     undoStack.length = 0;
     for (const p of fight.parts) p.hp = Math.min(p.hp, p.max);
@@ -845,8 +813,8 @@
     }
   }
 
-  /* ── Header: HALL OF GODS | PANTHEONS, or COMBAT ─────────────────────── */
-  /* Godhome's header: the screen's title is its two tabs —the Hall of Gods and the Pantheons, one
+  /* ── Header: PANTHEONS | HALL OF GODS, or COMBAT ─────────────────────── */
+  /* Godhome's header: the screen's title is its two tabs —the Pantheons and the Hall of Gods, one
      place in the game—, centred and with the rule below, like the other screens. Combat, the
      arena, is a screen of its own drawn in this section (design/10-restructure.md): its title alone. */
   function fightHead() {
@@ -862,7 +830,7 @@
     return `<header class="inv-head screen-head fight-head">${App.PLAQUE}
       <h2 class="sr-only screen-title" tabindex="-1">${esc(t('navGodhome'))}</h2>
       <div class="tabs" role="tablist" aria-label="${esc(t('navGodhome'))}">
-        ${tab('hall', 'fightTabHall', 'fightTabHallShort')}${sep}${tab('pantheon', 'fightTabPantheon')}
+        ${tab('pantheon', 'fightTabPantheon')}${sep}${tab('hall', 'fightTabHall', 'fightTabHallShort')}
       </div>
     </header>`;
   }
@@ -933,8 +901,8 @@
         ${sceneFloor}
       </div>`;
   }
-  /* The scene from a sheet and a health state: standalone combat ('fight') or the
-     pantheon run ('run'), which is a single life from room to room. */
+  /* The scene from a sheet and a health state: standalone combat ('fight') or a pantheon
+     room ('run'). */
   const sheetHas = (sh, id) => !(sh.bindings && sh.bindings.charms) && (sh.state.charms || []).includes(id);
   const knightSide = (sh, v, down, key) => knightSideHtml({
     key, masks: v.masks, lb: (v.lbJoni || 0) + v.lbCharm + v.lbCocoon, soul: v.soul, down,
@@ -1618,7 +1586,7 @@
     if (l) l.scrollTop = 0;
   });
 
-  Object.assign(App, { bandCheck, fight, runRooms, runRoom, runFight, baseSheet, fs, fst, charmLock, touchesCharms,
+  Object.assign(App, { bandCheck, fight, runRooms, runRoom, runFight, baseSheet, fs, fst,
     alive, hallFight, foe, phasesOf, totalHp, targetOf, fightReset, fightSync, plain, jrNarrow, enduranceOf,
     jrPage, paintJournal, paintPage, scrollToCur, stepCursor, jrScroll, jrKeepCursor, openJournal, setFightTab, jrMove,
     sheetHas, knightSide, fightEndHtml, fightSumHtml, wonNote, dealtOf, logHtml, arenaHtml, renderFight });

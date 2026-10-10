@@ -3,10 +3,9 @@
 <script>
 /* Lists what spills past the width at 390 px. With no parameters it measures the Charms screen.
    ?view=home|progress|map|journal|hall|charms|fight picks the screen (with ?tab= it's already Combat).
-   ?tab=pantheon&run=hallownest opens the Pantheons tab with a half-done Hallownest run: its
-   53-tile timeline is what's most at risk of overflowing.
-   ?tab=pantheon without run measures the choose-a-pantheon screen. With &view=charms it measures
-   instead the grid locked in the middle of a run (&room=2, a fight).
+   ?tab=pantheon&run=hallownest opens the Pantheons tab inside Hallownest: its 53-tile path is
+   what's most at risk of overflowing.
+   ?tab=pantheon without run measures the Pantheons' your-game ledger.
    ?tab=combat opens the Hunter's Journal (on its list), and
    &read=<id> moves to its page, which on mobile replaces the list.
    ?tab=hall measures the Hall of Gods: &statue=<id> picks the statue, &pick=1 taps it (on
@@ -31,8 +30,7 @@ try {
   }
   if (q.get('run')) {
     localStorage.setItem('hollow.run', JSON.stringify({
-      pantheon: q.get('run'), room: Number(q.get('room') || 5), over: null, bindings: {}, cocoon: 3,
-      build: {}, masks: 5, lbCharm: 0, lbCocoon: 3, soul: 99, rest: {}, log: [],
+      pantheon: q.get('run'), room: Number(q.get('room') || 5), bindings: {},
     }));
   }
 } catch (e) { /* no storage */ }

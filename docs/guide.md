@@ -19,7 +19,7 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
 
 - **Header**, in two lines (`design/30-top-variants.html`, chosen 6 Oct 2026). **The strip**,
   thin and at the right: what belongs to the site, the language and *Share*, which copies the
-  link to the page of the screen you're on ("State and link" below). The language is a
+  site's bare address (`https://hallownestcalculator.com/`). The language is a
   dropdown (`design/29-language-selector.html`): a text button with what's chosen and a chevron
   —its name on a wide screen, «Español ⌄», its code on a phone, «ES ⌄»— and under it a short
   list of the site's languages (`LANGS` in `js/i18n.js`), each by its own name as the game
@@ -312,7 +312,7 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
     what's missing: the dots it would need as dashed red rings and "0 free → 2 short" (the game
     wouldn't let it on, so no overcharm magenta). **In a save from the game too**: nothing is equipped there, but
     hovering still shows what it would change (the grid's note says so: *hover one to see what it
-    would change*); only a pantheon's lock, outside its benches, takes the preview away.
+    would change*).
     The **Notches** row too: the ones it would take come out as a lit ring with the centre at
     half tone, breathing —between the used one's full dot and the free one's dark ring, in the
     same slot—, in magenta and lengthening the row if it would overcharm you; over one you
@@ -434,8 +434,7 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   brightens; on the Pantheons a binding not marked on the door previews its light; and the Journal's
   rows light their medallion.
 - **What's only to look at moves by itself**, slowly, as the game's lights and objects do (and not
-  at all with `prefers-reduced-motion`): the Hunter's light and the Void Idol's breathe, and so
-  does the chosen pantheon's boss; the enemy on the arena's stage floats; the diamond of each
+  at all with `prefers-reduced-motion`): the Hunter's light and the Void Idol breathe; the enemy on the arena's stage floats; the diamond of each
   screen's rule glints now and then. On the HUD the soul's surface rises and falls a hair, a
   lifeblood mask breathes its blue, and the orb's rim glints while there's enough for a spell or a
   Focus.
@@ -443,7 +442,7 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   `design/11-components.html` shows them all). Everything that can be touched reads as such at
   rest, on a phone too, and **a frame means "press me"**, so what only informs carries none.
   - **Buttons**, four kinds: the **menu** one (`.btn`: the menu's capitals in a thin frame with the
-    panels' corner brackets in the accent; the one the screen leads to, *Enter the pantheon*,
+    panels' corner brackets in the accent; the one the screen leads to,
     *Import from the game*…, with longer brackets and a veil of the accent; *Give up* and the like
     in red), the **text** one (`.text-btn`: *Clear*, *Undo*, *All · None*, *← Saves*, underlined
     with the accent's line), the **icon** one (`.icon-btn`: ✕, − and +, in a thin accent ring) and
@@ -457,11 +456,11 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
     filled with the accent when on; a search (`.search`) is a sunken well with the lens in front.
   - **Showing**: a tag (`.tag`: *Example*, *Charm*…) is small capitals after the game's hollow
     diamond, with no box; a notice above the screen (`.banner`) carries its level's rule on the
-    left (overcharm in magenta, a pantheon in the conditions' ochre, your real game in bone); an
+    left (overcharm in magenta, a condition in the conditions' ochre, your real game in bone); an
     empty list says so under a short rule with its diamond, with the action that solves it.
   - **The open row** of a list (the Journal, the enemy picker, Progress) carries the accent's bar
-    on the left; the chosen statue or pantheon, its light on and its pedestal in the accent.
-- **The notices** (*Link copied*, a charm you can't touch in a pantheon, no soul for a spell…) are
+    on the left; the chosen statue, its light on and its pedestal in the accent.
+- **The notices** (*Link copied*, no soul for a spell…) are
   the game's on-screen messages, not a web card: the text in the game's face just under the
   screen bar —where the Journal's notice goes, and under the arena's band when it's out—, between two short rules with their diamond, over a soft dark veil so it reads on
   anything. It fades in, holds 2.4 s (a long one, 0.2 s more per word past ten) and fades out (`toast` in `js/app.js`). Every notice goes
@@ -586,9 +585,9 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   that empties, `'in'` the one that receives—, so "Masks 9 → 0" isn't painted red: the detail
   says "become lifeblood" and the balance shows in total health.
 - **Combat**: the second tool, the arena alone (further down, "Combat").
-- **Godhome**: the Hall of Gods and the Pantheons, one place in the game, as the two tabs of one
+- **Godhome**: the Pantheons and the Hall of Gods, one place in the game, as the two tabs of one
   screen (`view=godhome`; further down, "Hall of Gods" and "Pantheons"). It comes back to the
-  tab it was left on (`godTab`).
+  tab it was left on (`godTab`); the first time, the Pantheons.
 - **Journal**: your game's Hunter's Journal, to mark how far along its quest you are (further
   down, "The Hunter's Journal: your game").
 
@@ -629,8 +628,7 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   language selector goes to the other language's page ("Languages" below).
   On its own screen and language a page keeps its title and description; elsewhere the site
   writes them as always. A bare hash there means that page's screen (Charms on the homes), and
-  *Share* copies the address of the page the screen you're on has, or the language's home for a
-  screen with none (Your game, the Inventory, the saves). They're
+  *Share* copies the site's bare address, whatever the screen or language. They're
   generated with `npm run pages` (`tools/pages.js`, the texts in `tools/pages-text.js`), which
   also writes `index.html`'s own head fields, its About block, `sitemap.xml`, `robots.txt` and `CNAME` (the site lives at `hallownestcalculator.com`: `SITE` there); never edited by
   hand, and `test/pages.test.js` fails if one falls behind. `debug.html` and
@@ -764,7 +762,9 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   pure, with its test (`test/completion.test.js`). The Progress screen shows it.
 - `js/pantheons.js` — the five Pantheons room by room: fight (with its entry), rest or
   Godseeker, and the variation of the rooms that have one (two Vengefly Kings in Hallownest's
-  first, the Brooding Mawlek at 750). It comes from `kb/`, checked against the wiki.
+  first, the Brooding Mawlek at 750). It comes from `kb/`, checked against the wiki. Also the
+  lifeblood door (bindings, all at once, the save's unlocked) and `lockOf`, what keeps a
+  pantheon shut.
 - `js/hall.js` — the Hall of Gods: the 44 statues in the wiki's order, each with its title in
   both languages (the game's, from the two wikis) and what changes in its arena, grouped into
   35 pedestals (the lever ones and the dreamcatcher ones go in twos). It also cleans the saved
@@ -818,7 +818,7 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   - `js/app-arena.js` — Combat: the simulator, the combat Journal to pick an enemy and the arena;
     its section also draws Godhome, whose tabs it heads (`fightHead`).
   - `js/app-hall.js` — Godhome's Hall of Gods tab: marks, statues, plaque and tablet.
-  - `js/app-pantheons.js` — Godhome's Pantheons tab: the lifeblood door and the run room by room.
+  - `js/app-pantheons.js` — Godhome's Pantheons tab: your game's pantheons and the lifeblood door, then the simulator's run room by room.
   - `js/app-journal.js` — the Hunter's Journal screen: your game's book.
   - `js/app-progress.js` — the Progress screen: the 112% as a tablet, category by category, and
     the collectibles.
@@ -913,8 +913,8 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
     `hdiff`, on its plaque), `marks=at|asra|radiant|all|mix` seeds the won symbols,
     `pick=1` taps the statue, which on mobile opens its plaque, and `tablet=1` reads the tablet
     (`tablettop=<px>`, the same as `top`, scrolls the page up after opening it);
-    `tab=pantheon&run=<pantheon>&room=<n>&masks=<n>&lb=<n>&cocoon=<n>` seeds a half-done run
-    to capture the timeline and the rooms; `binds=all|nail,soul` picks the bindings, and
+    `tab=pantheon&run=<pantheon>&room=<n>` (`&bnail=1` for the Nail Binding) opens that
+    pantheon's room, to capture the path and the rooms; `binds=all|nail,soul` picks the bindings, and
     `bdone=<n>&ball=knight` seeds the lifeblood door. `hits=<n>&take=<n>&focus=<n>` hits, takes hits
     and focuses that many times, `click=restCocoon,restSit` presses those buttons in order (by
     their `data-act`), `info=spell:dd,foe` opens those arena explanations, and `freeze=<ms>` freezes the animations of your scene and of the sheet's HUD at
@@ -936,8 +936,7 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
     `--blink-settings=primaryHoverType=2,primaryPointerType=4,availableHoverTypes=2,availablePointerTypes=4`
     (with that it gives `(hover: hover) and (pointer: fine)`).
   - `debug-overflow.html` — lists the elements that spill past the width, for the mobile side
-    (`?view=inventory|fight` measures that screen; `?tab=pantheon&run=master&room=2&view=charms`
-    measures the charm grid locked halfway through a pantheon).
+    (`?view=inventory|fight` measures that screen).
     `?tab=pantheon&run=hallownest` measures the Pantheons tab with its 53 tiles;
     `?tab=combat` measures the Journal on its list and `&read=<id>`, on its page;
     `?tab=hall&lang=es` measures the Hall (with `&statue=<id>&pick=1`, its plaque; with
@@ -1245,11 +1244,11 @@ doesn't have its HUD icon, so it's the game's blue shell (`Baldur_Shell_Trigger.
 
 ### Godhome: Hall of Gods
 
-**Godhome** (`view=godhome`) is its own screen, in your game's group, with two tabs, **HALL OF GODS |
-PANTHEONS**, the rule between them over the diamond: in the game both are in the same place.
+**Godhome** (`view=godhome`) is its own screen, in your game's group, with two tabs, **PANTHEONS |
+HALL OF GODS**, the rule between them over the diamond: in the game both are in the same place.
 Combat, the arena, stays with the tools.
 
-The Hall of Gods is the first tab. As in the game: one
+The Hall of Gods is the second tab. As in the game: one
 statue per boss, and each is challenged at three difficulties. **Attuned** is the fight as in
 Hallownest, with Godhome's health; **Ascended**, more health and **double damage** (what dealt 2
 now deals 4) and sometimes a new arena; **Radiant**, Ascended and **a single hit kills you**.
@@ -1366,76 +1365,67 @@ it's for rehearsing a boss.
 
 ### Godhome: Pantheons
 
-Godhome's second tab. It's a real run: health, lifeblood and soul carry from one
-room to the next, and **the rests are the only thing that heals**.
+Godhome's first tab, and above all **your game**: it opens on how far you've got with the five
+pantheons. The simulator is behind it, one tap away (*Simulate this pantheon*).
 
-- **Before going in** you choose the pantheon (all five, with their motto and their final boss)
-  and the **bindings** you want —each with its icon and what it does; the ones on, lit and with
-  the chosen veil—. With all four at once they light up in gold, as in the game. Right under
-  them, **what you're about to enter** —the pantheon, its rooms and the bindings on— with
-  *Enter the pantheon* beside it; the door and its cocoon come after.
-- **Rooms and bosses.** Each pantheon's card and the summary say how many rooms it has and how
-  many of them are bosses (the fight rooms: two Vengefly Kings in one room are one boss). Inside
-  the run, the header says which room you're in and how many bosses are left: the fights still
-  ahead, the current one until you win it; the ones you skipped behind you don't count.
-- **The lifeblood door, from your game.** Under each pantheon you mark by hand the bindings you've
-  finished it with (and "×4" if it was with all four at once; in a save they're
-  read, inert: the lock, in [Saves](#saves)). They're the notches of Godhome's
-  door, next to the Hall of Gods: each binding of each pantheon counts once (20 in total) and
-  with 8 it opens: every pantheon bench carries a cocoon of 3, 4 or 5 germs (with 8, 12 or 16). The site deduces it and
-  the rest room uses it; the simulator marks nothing (it's saved in `hollow.bindings`). A binding
-  you mark lights up; completing the four, they light up one after another in Godhome's gold and
-  the final boss's light swells.
+- **Your game, one row per pantheon** (design/37, B). On top, a summary: pantheons completed
+  (of 5), bindings (of 20, the lifeblood door's notches) and the germs each bench's cocoon gives.
+  Each row is the final boss in its doorway, the pantheon's name and its state —*Completed* in
+  Godhome's gold, *Open*, or *Locked* with what's missing— and then its marks in columns, as on
+  the game's door: the four bindings it was finished with and ×4 (all four at once, in gold).
+  In free mode they're marked by hand, and a binding or ×4 also marks the pantheon completed
+  (only finishing it wins them). Completed is the 112%'s (`hollow.progress`), marked by hand on
+  Progress; the rest is the door (`hollow.bindings`). In a save it's all read, inert (the lock,
+  in [Saves](#saves)): the save carries each pantheon's door (`bossDoorStateTier1…5`:
+  unlocked, completed, the bindings and all at once).
+- **Locked, and why** (`PN.lockOf`, from `kb/05-godhome.md`): the first three open when their
+  bosses' statues are unlocked —beaten in the kingdom; Vengefly King and God Tamer always count,
+  Grey Prince Zote is skipped—; the Knight's needs the three before, and Hallownest's the four
+  and Void Heart. The game only unlocks the statues on arriving in Godhome, so a save that hasn't
+  reached it says *needs: Godhome*. With a save, its door says which are open; by hand, the
+  rules (and without a save the bosses can't be told, so none are listed). More than three bosses
+  missing go as a count on the row.
+- **A row opens** (one at a time, `prefs.pantheonOpen`) on its rooms, the same path as the run's,
+  with the bosses still to beat in the kingdom dimmed and named.
+  At its foot, small because the simulator is secondary: the four bindings (small icon and name;
+  what each does in its title; all four light up in gold) and, to their right, the *Simulate this
+  pantheon* button, which goes straight into the run; on the right, its rooms and bosses count. Tapping a room enters the run in that room (what's
+  before counts as skipped). There's no picker screen: leaving a run comes back to your game.
+- **The lifeblood door** goes under the rows (design/38, A), with no sentences: one track of its
+  20 notches, lit in lifeblood blue (each binding of each pantheon counts once), the 8th, 12th and
+  16th larger, and over each of those the lifeblood masks each pantheon bench's cocoon gives from
+  there (3, 4 and 5), grey until reached; «n/20» at its end. What it means is in its title, and
+  the state, said, in its aria-label. The simulator's rest room uses the cocoon; the simulator
+  marks nothing. A binding you mark lights up; completing the four at once, they light up one
+  after another in Godhome's gold and the final boss's light swells.
+
+**Simulate this pantheon** isn't a run: it's a way to see a pantheon's fights and try them a
+little, one by one, like the Hall's statues.
+
+- **Before going in**, on the open row: the bindings you want (with all four at once they light
+  up in gold, as in the game) and, to their right, *Simulate this pantheon*. Tapping one of the
+  row's rooms goes in at that room.
+- **Inside**: the pantheon's name, the room you're in («Sala 3 de 12»), the bindings on, and
+  *Back to your game*. There's no giving up and no ending: leaving is just going back, and the
+  browser's Back does the same (being in a pantheon is a place in the history, js/app.js
+  `navParts`; the rooms aren't).
+- **Every room starts at full health**: nothing carries from one room to the next. A fight is the
+  usual arena with Attuned health and the bindings applied; falling is the arena's usual end, with
+  *Again*; winning offers the next room. A rest or the Godseeker is only shown (its mark, its
+  name and *Continue*); in Hallownest the Godseeker says who is there (Unn, the White Lady, the
+  Pale King).
 - **The bindings really change your numbers**, because the engine applies them: the Nail
   Binding leaves the hit at 4/7/10/13/13 (6/10/15/20/20 with Strength) and the arts go on that
   value; the Shell Binding, 4 masks without touching Lifeblood Heart's +2; the Charms Binding,
   none; the Soul Binding, 33 and no extra vessels.
-- **The charms are a single selection across the whole site**: the sheet, combat and the
-  pantheon's benches show and change the same ones, and with them the notches. The rest brings
-  the equipped charms, the notches and the same charm grid as the page; whatever you put on
-  there stays equipped on *Charms* and in the link, and the other way round. Sitting on the
-  bench, changing charms leaves you at the new full health.
-- **Outside the benches, charms can't be touched from anywhere.** As in the game, which only
-  lets you change them sitting on a bench: while the run is still half-done (also from other
-  combat tabs), the grid, the equipped ones, "Clear", the presets and the
-  notch steps don't change them. A notice above the screen says which pantheon and which room
-  you're in, with a button that takes you there and another that abandons it without going
-  (it says so in a notice, and focus moves to the screen's title); on the Pantheons tab it
-  doesn't show, because you're already there. The grids
-  come out grey and a click on them explains why not. A link opened halfway changes the rest of
-  the build, but not the charms or the notches. With the Charms Binding they can't be changed
-  even at the bench, because that pantheon doesn't let you wear any. On finishing or abandoning
-  the run, everything responds again.
-- **The rest of the build freezes on entry** —nail, masks, vessels, spells and arts—, as in the
-  game: changing them on the *Inventory* halfway doesn't touch the pantheon.
-- **The timeline is a path through Godhome** (`pathHtml`): the rooms as round medallions on a
-  thin gold thread, which lights up as far as you've walked. The benches and the Godseeker's rooms
-  are larger marks on it, cutting it into the stretches the pantheon is played in, and the final
-  boss goes last and largest, in its doorway of light. The rooms still to go show their boss, a
-  little quieter, so you see everyone you have left; the cleared ones, a gold ring and a small tick; the current one, larger, with the accent's ring glowing and the Knight floating over it, like
-  his pin on the game's map, so you find it at a glance; the one
-  you fell in, in red. The number goes under each one. The pantheons of 12 rooms fill a row with
-  larger medallions; Hallownest's 53 wrap onto several.
-- **The way through, before going in**: on the picker, under *Enter the pantheon*, the chosen
-  pantheon's path with every room lit, to see who you'll face and where the benches are. Tapping
-  a room enters the pantheon straight into it (what's before counts as skipped).
-- **You can go straight to any room** by tapping it, to rehearse a fight or try a rest
-  without going through everything before it. You arrive with whatever you had —also if you
-  skip halfway through a fight—, and **what's skipped doesn't count as cleared**: those rooms
-  are struck through and, if you finish that way, the ending says "finished, with N rooms
-  skipped", not "completed".
-- **The fights** use the usual arena, with Attuned health, and on winning they offer the next room.
-- **At the rests you choose what to do and in what order**: bathing in the hot springs (soul and
-  masks to the maximum), sitting on the bench (all health and the charms' lifeblood; not soul;
-  **it wipes the cocoon's lifeblood and puts the cocoon back**), breaking the cocoon and
-  changing charms on the grid. That's why the order matters: breaking the cocoon before sitting
-  down wastes it. Each station is a card with its corner of the room and what it would give you
-  **at that moment**, with the HUD icons: "+6 masks · +99 soul", or in red "−3 cocoon
-  lifeblood" if you sit down wearing it. What's already full says so.
-- **The Godseeker** is a room with no fight; in Hallownest it says who is there (Unn, the White
-  Lady, the Pale King).
-- **Falling ends the attempt** and says in which room; the run is saved in `localStorage`, so a
-  53-room Hallownest survives a page reload.
+- **The build is the page's**, charms included, and it changes anywhere as usual: nothing locks
+  and no notice follows you round the site.
+- **The path is a walk through Godhome** (`pathHtml`): the rooms as round medallions on a thin
+  gold thread, the benches and the Godseeker's rooms as larger marks that cut it into stretches,
+  and the final boss last and largest, in its doorway of light. The room you're in is larger,
+  with the accent's ring glowing and the Knight floating over it, like his pin on the game's map;
+  any other is a tap away. The pantheons of 12 rooms fill a row; Hallownest's 53 wrap onto several.
+- The pantheon and room you're in are saved (`hollow.run`), so a reload stays there.
 
 ### The Hunter's Journal: your game
 
@@ -1938,7 +1928,7 @@ masks, the nails and the buttons line up from one slot to the next.
 - **What goes in a slot** is everything that describes one game: the build (`hollow.build`),
   the charms found (`hollow.owned`), the Journal (`hollow.journal`), the Hall's symbols
   (`hollow.hall`), the lifeblood door (`hollow.bindings`), the rest of what the game has
-  (`hollow.progress`: equipment, items, the rest of the 112%, bench and shade), the half-done pantheon (`hollow.run`)
+  (`hollow.progress`: equipment, items, the rest of the 112%, bench and shade), the pantheon you're looking at (`hollow.run`)
   the pinned build (`hollow.baseline`), what the game's profile screen shows (`hollow.meta`: time,
   completion, geo, the moment of the save) and the game as it was before the last sync
   (`hollow.prev`, for *Since last time*). **What doesn't** is yours, not the game's:
