@@ -1474,7 +1474,7 @@
       App.pickerOpen = false;
       App.pickerQuery = '';
       savePrefs();
-      if (isNewFoe) fightReset();
+      if (isNewFoe) { fightReset(); App.track('fight-foe', { foe: id }); }
       navTo(true);
       render();
       const b = el.fight.querySelector('.jr-toggle');   // focus goes back to the button, it isn't lost
