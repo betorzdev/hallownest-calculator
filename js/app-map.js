@@ -428,6 +428,9 @@
     for (const it of cats.bosses.items) add112('bosses', 'bosses', it.id, BOSS_AT[it.id]);
     for (const it of cats.colosseum.items) add112('trials', 'colosseum', it.id, BOSS_AT[it.id]);
     for (const id of ['troupe-master-grimm', 'nkg']) add112('grimm-troupe', 'grimm', id, BOSS_AT[id]);
+    // The King's point taken by the Banishment (js/app-progress.js): his fight closed, nothing to mark.
+    const nkg = App.pgGrimmEnd() === 'banishment' && out.find((th) => th.id === 'c:nkg');
+    if (nkg) Object.assign(nkg, { note: t('pgClosed'), act: null });
     for (const it of cats.dreams.items) add112('graves', 'dreams', it.id, GRAVE_AT[it.id], gamePin('grave', GRAVE_AT[it.id]));
     for (const it of cats.dreamers.items) {
       const pt = gamePin('dreamer', it.id), m = App.pgMeta('dreamers', it.id);
@@ -1075,9 +1078,9 @@
     return `<div class="pgm">
       <div class="pgm-bar">
         ${searchHtml()}
+        ${focusHtml()}
       </div>
       <div class="pgm-box">
-        ${focusHtml()}
         ${admin() ? adminHtml() : ''}
         <span class="pgm-zoom">
           <button type="button" class="step" data-act="pgmZoom" data-value="in" aria-label="${esc(t('pgZoomIn'))}" title="${esc(t('pgZoomIn'))}">+</button>
@@ -1104,8 +1107,9 @@
      A thing elsewhere on the site (a Progress plate, the Inventory, a Journal entry, Your game's
      lists) names what it is as a target, "kind:id"; mapTargets says which of the map's things
      those are. One: the map centres on it and opens its card. Several: focus, the map shows only
-     them, fitted, with a bar to step through them (the missing first, the nearest to your bench
-     first) and to leave. Nothing on the map: no button (mapPinHtml). */
+     them, fitted, the search field saying what they are (its × leaves) and ‹ › beside it to step
+     through them (the missing first, the nearest to your bench first). Nothing on the map: no
+     button (mapPinHtml). */
   let thingIds = null;   // every thing's id, once (they don't change with your game)
   function mapTargets(target) {
     if (!thingIds) thingIds = new Set([...allThings(), ...mineThings()].map((th) => th.id));
@@ -1117,7 +1121,7 @@
       ids = a === 'spells' ? (/\d$/.test(b) ? ['c:' + b] : ['c:' + b + '1', 'c:' + b + '2']) : a === 'masks' ? ofKind('mask-shard') : a === 'vessels' ? ofKind('vessel-fragment')
         : a === 'nail' ? [...ofKind('pale-ore'), 'people:nailsmith'] : b === 'godtuner' ? ['k:godtuner']
         : b === 'dreamgate' ? ['people:seer']   // the Seer gives the Dreamgate
-        : b === 'king' ? ['c:queen-fragment', 'c:king-fragment'] : ['c:' + b];   // Kingsoul: its two halves
+        : b === 'king' ? ['c:queen-fragment', 'c:king-fragment', 'c:voidheart'] : ['c:' + b];   // Kingsoul: its two halves, and the egg that makes it Void Heart
     } else if (kind === 'key') ids = ['k:' + a, 'c:' + a];   // the King's Brand is the 112%'s
     // A Grimmkin: the flames it guards.
     else if (kind === 'foe' && PHASES.includes(a)) ids = CO.ITEMS.filter((it) => FLAME_PHASE[it.scene] === a && it.kind === 'grimmkin-flame').map((it) => it.id);
@@ -1136,11 +1140,10 @@
     else if (kind === 'sources' && a === 'essence') ids = [...(b === 'seer' ? ['people:seer'] : []), ...ofKind('whispering-root'), ...Object.keys(GRAVE_AT).map((id) => 'c:' + id), ...Object.keys(DREAM_BOSS_AT).map((id) => 'd:' + id)];
     return ids.filter((id) => thingIds.has(id));
   }
-  // The view around some points, in the box's proportions (ratio: height / width), a room or two at
-  // least; a little more room below, where focus's bar lies.
+  // The view around some points, in the box's proportions (ratio: height / width), a room or two at least.
   function fitBox(pts, ratio) {
     const xs = pts.map((p) => p[0]), ys = pts.map((p) => -p[1]);
-    const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys) + 2.5;
+    const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
     const w = Math.min(FIT.w * 1.2, Math.max(6, x1 - x0 + 3, (y1 - y0 + 3) / ratio)), h = w * ratio;
     return { x: (x0 + x1) / 2 - w / 2, y: (y0 + y1) / 2 - h / 2, w, h };
   }
@@ -1149,7 +1152,7 @@
     if (!ids.length) return;
     const all = new Map([...allThings(), ...mineThings()].map((th) => [th.id, th]));
     const things = ids.map((id) => all.get(id)).filter(Boolean);
-    query = ''; found = []; route = null;
+    query = ''; found = []; route = null; editing = false;
     if (things.length === 1) {
       // Its layer shown, if you'd hidden it (as the search does).
       const l = things[0].layer;
@@ -1183,23 +1186,24 @@
   }
   // A plate with its pin beside it (css .gplate-wrap), or the plate as it was.
   const pinned = (plate, target, name) => { const pin = mapPinHtml(target, name); return pin ? `<span class="gplate-wrap">${plate}${pin}</span>` : plate; };
-  // The bar over the map while in focus: what it is, how many (and how many you're missing), ‹ i of n ›, and out.
-  function focusHtml() {
-    if (!focus) return '';
+  // In focus, how many are on the map and how many you're missing.
+  function focusCounts() {
     const all = new Map(allThings().map((th) => [th.id, th]));
     const things = focus.ids.map((id) => all.get(id)).filter(Boolean);
     const missing = things.filter((th) => th.on === false || th.found === false).length;
+    return esc(t('pgmFocusCount', { n: App.NF[0].format(things.length) })) + (missing ? ' · ' + esc(t('pgmFocusMissing', { n: App.NF[0].format(missing) })) : '');
+  }
+  /* Beside the field while in focus: ‹ i of n › («– of n» before the first step, so the arrows
+     never move), and the counts again, which the field drops on a phone (css .pgm-focus-n). */
+  function focusHtml() {
+    if (!focus) return '';
     const n = focus.order.length, i = focus.i;
-    return `<div class="pgm-focus" role="group" aria-label="${esc(focus.name)}">
-      <span class="pgm-card-art">${artHtml(focus.art)}</span>
-      <span class="pgm-focus-t"><b${NT}>${esc(focus.name)}</b><span>${esc(t('pgmFocusCount', { n: App.NF[0].format(things.length) }))}${missing ? ' · ' + esc(t('pgmFocusMissing', { n: App.NF[0].format(missing) })) : ''}</span></span>
-      <span class="pgm-focus-step">
+    return `<span class="pgm-focus-n">${focusCounts()}</span>
+      <span class="pgm-focus-step" role="group" aria-label="${esc(focus.name)}">
         <button type="button" class="icon-btn" data-act="pgmStep" data-value="-1" aria-label="${esc(t('pgmFocusPrev'))}">‹</button>
-        <span class="pgm-focus-i">${i < 0 ? '' : esc(t('pgmFocusOf', { i: App.NF[0].format(i + 1), n: App.NF[0].format(n) }))}</span>
+        <span class="pgm-focus-i">${esc(t('pgmFocusOf', { i: i < 0 ? '–' : App.NF[0].format(i + 1), n: App.NF[0].format(n) }))}</span>
         <button type="button" class="icon-btn" data-act="pgmStep" data-value="1" aria-label="${esc(t('pgmFocusNext'))}">›</button>
-      </span>
-      <button type="button" class="text-btn" data-act="pgmUnfocus">${esc(t('pgmFocusExit'))}</button>
-    </div>`;
+      </span>`;
   }
   Object.assign(actions, {
     toMap(node) { showOnMap(node.dataset.target, node.dataset.name); },
@@ -1211,7 +1215,7 @@
       if (th) { selected = th.id; lookAt(th.p); }
       render();
     },
-    pgmUnfocus() { focus = null; selected = ''; render(); },
+    pgmUnfocus() { focus = null; editing = false; selected = ''; render(); },
   });
 
   /* ── The search, over the map: everything it can show (the hidden layers' and what you have
@@ -1219,14 +1223,27 @@
      Typing repaints only the list (a repaint would take the focus); picking one shows its layer
      if hidden, centres the map on it close up and opens its card. A title only takes you there. */
   let query = '', found = [], cursor = 0;
+  let editing = false;   // in focus, typing a new search: the field is the input again until it's left empty
   const fold = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+  /* In focus, the field holds what you're seeing, as a map app keeps your search in its box: a tap
+     on it types a new one, its × leaves (Albert, 10 Oct 2026, design/42: the bar at the box's foot
+     was off screen on a computer). */
   function searchHtml() {
-    return `<div class="pgm-search" role="search">
+    const list = '<ul class="pgm-results" id="pgm-results" role="listbox" hidden></ul>';
+    if (focus && !editing) return `<div class="pgm-search is-focus" role="search">
+      <div class="search is-on">
+        <button type="button" class="pgm-fq" data-act="pgmEdit" aria-label="${esc(t('pgmSearch'))}"><span class="pgm-card-art">${artHtml(focus.art)}</span><b${NT}>${esc(focus.name)}</b><span class="pgm-fq-n">${focusCounts()}</span></button>
+        <button type="button" class="icon-btn" data-act="pgmUnfocus" aria-label="${esc(t('pgmFocusExit'))}" title="${esc(t('pgmFocusExit'))}">${App.cross}</button>
+      </div>${list}
+    </div>`;
+    return `<div class="pgm-search${focus ? ' is-focus' : ''}" role="search">
       <label class="search">${App.lens}<input type="search" class="pgm-q" value="${esc(query)}" placeholder="${esc(t('pgmSearch'))}" aria-label="${esc(t('pgmSearch'))}"
         autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="pgm-results" aria-autocomplete="list"></label>
-      <ul class="pgm-results" id="pgm-results" role="listbox" hidden></ul>
+      ${list}
     </div>`;
   }
+  // Only the field, repainted (the rest of the screen as it is): going in and out of typing.
+  const paintSearch = () => { const s = el.pg.querySelector('.pgm-search'); if (s) s.outerHTML = searchHtml(); };
   function searchPool() {
     const things = [...allThings(), ...mineThings()].map((th) => ({ th, name: th.name, where: th.where || '', art: th.art }));
     const areas = M.AREA_IDS.map((id, i) => (id && R.AREAS[id] ? { p: AREA_AT[i], name: pick(R.AREAS[id]), where: t('pgmSearchTitle') } : null));
@@ -1270,7 +1287,7 @@
     vb = { x: p[0] - w / 2, y: -p[1] - h / 2, w, h };
   }
   function go(r) {
-    query = ''; found = []; cursor = 0; focus = null;
+    query = ''; found = []; cursor = 0; focus = null; editing = false;
     if (r.th) {
       const l = r.th.layer;
       if (Array.isArray(prefs.pgMapOff) && prefs.pgMapOff.includes(l)) { prefs.pgMapOff = prefs.pgMapOff.filter((x) => x !== l); savePrefs(); }
@@ -1303,18 +1320,33 @@
       query = ''; found = []; cursor = 0;
       e.target.value = '';
       paintResults();
+    } else if (e.key === 'Escape' && editing) {
+      // Empty, in focus: back to what you were seeing, the keys on it.
+      e.preventDefault();
+      editing = false; paintSearch();
+      const fq = el.pg.querySelector('.pgm-fq');
+      if (fq) fq.focus({ preventScroll: true });
     }
   });
-  // A tap on the list keeps the focus in the box (the click then picks); leaving the box closes it.
+  // A tap on the list keeps the focus in the box (the click then picks); leaving the box closes it,
+  // and, empty in focus, gives the field back what you were seeing.
   el.pg.addEventListener('mousedown', (e) => { if (e.target.closest && e.target.closest('.pgm-results')) e.preventDefault(); });
   el.pg.addEventListener('focusout', (e) => {
     if (!e.target.matches || !e.target.matches('.pgm-q')) return;
     const list = el.pg.querySelector('.pgm-results');
-    if (list && !list.contains(e.relatedTarget)) { list.hidden = true; e.target.setAttribute('aria-expanded', 'false'); }
+    if (list && list.contains(e.relatedTarget)) return;
+    if (editing && !fold(query)) { editing = false; query = ''; paintSearch(); return; }
+    if (list) { list.hidden = true; e.target.setAttribute('aria-expanded', 'false'); }
   });
   el.pg.addEventListener('focusin', (e) => { if (e.target.matches && e.target.matches('.pgm-q') && fold(query)) { found = search(query); paintResults(); } });
   Object.assign(actions, {
     pgmGo(node) { const r = found[Number(node.dataset.i)]; if (r) go(r); },
+    pgmEdit() {
+      editing = true; query = ''; found = []; cursor = 0;
+      paintSearch();
+      const q = el.pg.querySelector('.pgm-q');
+      if (q) q.focus({ preventScroll: true });
+    },
   });
 
   /* ── Moving around ── */

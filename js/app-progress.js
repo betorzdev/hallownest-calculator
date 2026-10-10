@@ -38,14 +38,21 @@
   // Hornet's two fights are one Journal entry (its picture): each by its title (D.COMPLETION_NAMES).
   const HORNET = { 'hornet-protector': 1, 'hornet-sentinel': 1 };
   // The items that are a yes or no of something that isn't their own id.
-  const SPECIAL = { grimmchild: ['charm', 'grimm'], 'troupe-master-grimm': ['journal', 'grimm'], nkg: ['journal', 'nkg'] };
+  const SPECIAL = { grimmchild: ['charm', 'grimm'], 'troupe-master-grimm': ['journal', 'grimm'], nkg: ['journal', 'nkg'], banishment: ['progress', 'banishment'] };
+  /* The Troupe's last point is the Nightmare King or the Banishment (CP.CATEGORIES' nkg), and one
+     closes the other: 'nkg' | 'banishment' | '' while neither is done. The King first, should a
+     game marked by hand have both. */
+  const grimmEnd = () => (HJ.stateOf(App.hjBook(), 'nkg').seen ? 'nkg' : P.has(App.progress, 'banishment') ? 'banishment' : '');
+  // Each ending's place on the Map: the King's tent, and Brumm's meetings.
+  const END_TARGET = { nkg: 'c112:grimm:nkg', banishment: 'npc:brumm' };
 
   function meta(cat, id) {
     const b = App.state;
     if (HORNET[id]) return { name: pick(D.COMPLETION_NAMES[id]), art: D.art('journal', 'hornet-protector') };
     if (id === 'troupe-master-grimm') return { name: pick(D.COMPLETION_NAMES[id]), art: D.art('journal', 'grimm') };
-    // The Nightmare King's point is also the Troupe banished: the plate says so when that's how.
-    if (id === 'nkg') return { name: pick(D.COMPLETION_NAMES.nkg), art: D.art('journal', 'nkg'), note: P.has(App.progress, 'banishment') ? t('pgBanished') : '' };
+    if (id === 'nkg') return { name: pick(D.COMPLETION_NAMES.nkg), art: D.art('journal', 'nkg') };
+    // The other ending of the King's point: the Banishment, by its achievement's name and icon.
+    if (id === 'banishment' && cat === 'grimm') return { name: pick(A.BY_ID.banishment.name), art: D.art('achievements', 'banishment') };
     if (cat === 'bosses' || cat === 'dreams' || id === 'nkg') return { name: pick(bookName(id)), art: D.art('journal', id) };
     if (cat === 'charms' || ['dreamshield', 'sprintmaster', 'weaversong', 'grimmchild'].includes(id)) {
       const v = versionOf(id === 'grimmchild' ? 'grimm' : id);
@@ -103,27 +110,35 @@
   // equipment is worth 2 but it's one thing.
   const STEPPED = ['spells', 'masks', 'vessels', 'nail'];
 
-  function plate(cat, it) {
+  // closed: an ending the other one closed (the Troupe's pair): further back, it says so, no pin.
+  function plate(cat, it, { closed = false, target = `c112:${cat}:${it.id}` } = {}) {
     const m = meta(cat, it.id);
-    const st = stateOf(it), on = st === 'is-on';
+    const st = stateOf(it) + (closed ? ' is-closed' : ''), on = stateOf(it) === 'is-on';
     const where = whereOf(cat, it.id);
     // The masks as you have them (5 to 9): their points are the ones past the first five.
     // What's marked on the Inventory says so, unless the save is the game's (nothing's marked by hand).
     const val = cat === 'masks' ? `${App.state.masks}/${D.HEALTH.maxMasks}` : STEPPED.includes(cat) ? `${it.got}/${it.max}`
-      : on ? (m.note || '') : where === 'game' && !App.saveLock() ? t('pgInGame') : '';   // missing: its shadow says it
+      : closed ? t('pgClosed') : on ? (m.note || '') : where === 'game' && !App.saveLock() ? t('pgInGame') : '';   // missing: its shadow says it
     const body = `<span class="gplate-art${darkCls(m.art)}">${artHtml(m)}</span>
         <span class="gplate-name"${NT}>${esc(m.name)}</span>
-        <span class="gplate-val${on && !STEPPED.includes(cat) ? ' is-text' : ' is-none'}">${esc(val)}</span>`;
+        <span class="gplate-val${(on || closed) && !STEPPED.includes(cat) ? ' is-text' : ' is-none'}">${esc(val)}</span>`;
     // The build's things aren't marked here: the plate takes you to Your game.
     // Each with its pin to the Map, where it has a place there (js/app-map.js).
-    const target = `c112:${cat}:${it.id}`;
     if (where === 'game') {
       return App.pinned(`<button type="button" class="gplate is-far${st ? ' ' + st : ''}" data-act="view" data-value="inventory" title="${esc(t('pgInGameHint'))}">${body}</button>`, target, m.name);
     }
     // In a save from the game (App.saveLock, js/app.js) the plate only says what it is: nothing marks it.
     const held = !!App.saveLock();
-    return App.pinned(`<button type="button" class="gplate${st ? ' ' + st : ''}" data-act="pgMark" data-key="${cat}" data-id="${it.id}" aria-pressed="${on}" ${held ? 'disabled' : ''}
-        title="${esc(held ? m.name : m.name + ' · ' + t(on ? 'pgUnmark' : 'pgMark'))}">${body}</button>`, target, m.name);
+    const btn = `<button type="button" class="gplate${st ? ' ' + st : ''}" data-act="pgMark" data-key="${cat}" data-id="${it.id}" aria-pressed="${on}" ${held ? 'disabled' : ''}
+        title="${esc(held ? m.name : m.name + ' · ' + t(on ? 'pgUnmark' : 'pgMark'))}">${body}</button>`;
+    return closed ? btn : App.pinned(btn, target, m.name);
+  }
+  /* The Troupe's last point as the wiki writes it, «Nightmare King Grimm / Banishment» (design/41,
+     A): the two endings side by side with «o» between them; once one is done, the other is closed. */
+  function endsHtml() {
+    const end = grimmEnd();
+    const [king, ban] = ['nkg', 'banishment'].map((id) => plate('grimm', { id, got: +(end === id), max: 1 }, { closed: !!end && end !== id, target: END_TARGET[id] }));
+    return `<span class="pg-pair">${king}<span class="pg-or">${esc(t('pgOr'))}</span>${ban}</span>`;
   }
 
   /* ── The rows that count pieces (design/19, variant A): masks, vessels and the nail ──
@@ -228,10 +243,11 @@
     const open = prefs.pgOpen === c.id;
     const name = t('pgCat_' + c.id);
     const pieces = c.id === 'nail' || c.id === 'spells' || PIECES[c.id];
-    const pips = pieces ? piecePips(c.id) : c.items.map((it) => {
-      const m = meta(c.id, it.id);
-      return `<span class="pg-pip ${stateOf(it)}${darkCls(m.art)}">${artHtml(m)}</span>`;
-    }).join('');
+    const pipOf = (id, st) => { const m = meta(c.id, id); return `<span class="pg-pip ${st}${darkCls(m.art)}">${artHtml(m)}</span>`; };
+    // The Troupe's last point: both endings while neither is done, then the one you did.
+    const endPips = () => (grimmEnd() ? pipOf(grimmEnd(), 'is-on') : `<span class="pg-pip-pair">${pipOf('nkg', '')}<i>/</i>${pipOf('banishment', '')}</span>`);
+    const isEnds = (it) => c.id === 'grimm' && it.id === 'nkg';
+    const pips = pieces ? piecePips(c.id) : c.items.map((it) => (isEnds(it) ? endPips() : pipOf(it.id, stateOf(it)))).join('');
     return `<li class="pg-row${open ? ' is-open' : ''}${full ? ' is-full' : ''}">
       <button type="button" class="pg-head" data-act="pgRow" data-value="${c.id}" aria-expanded="${open}"
         aria-label="${esc(t('pgOpen', { cat: name, got: num(c.got), max: num(c.max) }))}">
@@ -241,7 +257,7 @@
         <span class="disc-ring" aria-hidden="true">${App.chevron(open)}</span>
       </button>
       ${!open ? '' : pieces ? `<div class="pg-open${App.saveLock() ? ' is-held' : ''}">${piecesOpen(c.id)}</div>`
-        : `<div class="pg-open"><div class="pg-plates${App.saveLock() ? ' is-held' : ''}">${c.items.map((it) => plate(c.id, it)).join('')}</div></div>`}
+        : `<div class="pg-open"><div class="pg-plates${App.saveLock() ? ' is-held' : ''}">${c.items.map((it) => (isEnds(it) ? endsHtml() : plate(c.id, it))).join('')}</div></div>`}
     </li>`;
   }
 
@@ -578,6 +594,20 @@
     const has = vs.some((v) => App.owned.includes(v));
     setOwned(has ? App.owned.filter((x) => !vs.includes(x)) : [...App.owned, vs[0]]);
   }
+  /* The Troupe's endings: marking one takes the other away, as in the game; tapping the one done
+     unmarks it. The King is the Journal's, the Banishment the progress'. */
+  function markEnd(id) {
+    const on = grimmEnd() !== id;
+    if (id === 'nkg') {
+      if (on) App.progress = P.toggle(App.progress, 'banishment', false);
+      App.hjMark('nkg', on);
+      App.saveProgress();
+      render();
+      return;
+    }
+    if (on && HJ.stateOf(App.hjBook(), 'nkg').seen) App.hjMark('nkg', false);
+    setProgress(P.toggle(App.progress, 'banishment', on));
+  }
   // What writes your game's record: refused in a save from the game (App.saveLock, js/app.js).
   App.edits('pgFind', 'pgMark', 'pgAch');
   Object.assign(actions, {
@@ -659,19 +689,17 @@
     },
     pgMark(node) {
       const cat = node.dataset.key, id = node.dataset.id;
+      if (cat === 'grimm' && END_TARGET[id]) { markEnd(id); return; }
       const it = count().categories.find((c) => c.id === cat).items.find((x) => x.id === id);
       const on = it.got >= it.max;
       const [where, key] = SPECIAL[id] || [whereOf(cat, id), id];
       if (where === 'progress') { setProgress(P.toggle(App.progress, key, !on)); return; }
       if (where === 'charm') { markCharm(key); return; }
-      // Nightmare King or the banishment: unmarking takes both away.
-      if (id === 'nkg' && on && P.has(App.progress, 'banishment')) App.progress = P.toggle(App.progress, 'banishment', false);
       App.hjMark(key, !on);
-      if (id === 'nkg') App.saveProgress();
       render();
     },
   });
 
   // The Map (js/app-map.js) shows the 112%'s things too: it reads them as the tablet does.
-  Object.assign(App, { renderProgress, paintPgNav, pgCount: count, pgMeta: meta, pgWhereOf: whereOf });
+  Object.assign(App, { renderProgress, paintPgNav, pgCount: count, pgMeta: meta, pgWhereOf: whereOf, pgGrimmEnd: grimmEnd });
 })();

@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Map's focus bar</title>
+<!-- Design material, not part of the site. Albert (10 Oct 2026), on the bar a "See on the map" pin
+     leaves over the Map when it points at several things (js/app-map.js, focusHtml): «aparece
+     debajo un banner con lo que has buscado y la opcion de salir. No me termina de gustar su
+     diseño, y creo que algunos usuarios pueden no verlo.»
+
+     Measured (design/42/now-*.png, captured from the site with a throwaway harness): on a
+     1280-wide computer the map's box runs from y 380 to 1100, so the bar sits at y 1028–1088,
+     ~230 px under the fold of an 800-px-tall window: it isn't on screen when you land. On a
+     390-wide phone it is, but it covers the lower third of a 362-px map, wraps to two lines, and
+     its way out is a quiet underlined «Salir» like any link.
+
+     The same content in all three (what, how many, how many you're missing, ‹ i of n ›, out);
+     what changes is where it lives and how it looks.
+       A · in the search     the search field holds what you're seeing, with its × to leave (the
+                             way a map app keeps your search in its box); ‹ › beside it.
+       B · strip on top      a header across the map's top, part of the box (it pushes the map
+                             down instead of covering it), with Exit as a real button.
+       C · pinned to window  the bar keeps its foot place but sticks to the window's bottom edge
+                             while the map is in sight, one line, Exit as a button.
+     The backgrounds are the site's own captures (design/42/bare-*.png: the bar and the search
+     hidden), the controls drawn on them with the site's classes. ?v=a&lang=es. -->
+<base href="../">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+body { background: var(--page-bg); background-attachment: fixed; margin: 0; }
+.tv-wrap { max-width: 1180px; margin: 0 auto; padding: var(--sp-8) var(--page-pad) 160px; }
+.tv-bar { position: fixed; z-index: 100; left: 0; right: 0; bottom: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-2) var(--sp-8);
+  padding: var(--sp-3) var(--sp-4); background: var(--card); border-top: 1px solid var(--line-panel); font-size: var(--fs-sm); }
+.tv-grp { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-1) var(--sp-3); }
+.tv-lbl { color: var(--muted); font-family: var(--font-num); font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; }
+.tv-bar button { color: var(--ink-2); padding: var(--sp-1) 0; border-bottom: 1px solid transparent; }
+.tv-bar button[aria-pressed="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.ctx { color: var(--muted); font-size: var(--fs-sm); margin: 0 0 var(--sp-4); max-width: 75ch; }
+.ctx b { color: var(--ink-strong); font-weight: 600; }
+.tv-h { font-family: var(--font-num); font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--muted); margin: var(--sp-8) 0 var(--sp-2); }
+
+/* A screen: the capture cut in slices, so a variant can open room in it (an insert), and the
+   controls laid over it in the capture's own pixels. The computer's is scaled to the column. */
+.scr { position: relative; overflow: hidden; border: 1px solid var(--line-panel); }
+.scr-in { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.slice { position: absolute; left: 0; background-repeat: no-repeat; }
+.gap { position: absolute; left: 0; overflow: hidden; }
+.gap > i { position: absolute; left: 0; top: 0; height: 1px; transform-origin: 0 0; background-repeat: no-repeat; }
+.ov { position: absolute; }
+/* The fold of an 800-px-tall window, and what's under it. */
+.fold { position: absolute; left: 0; right: 0; bottom: 0; border-top: 2px dashed var(--ink-2); background: color-mix(in oklab, var(--bg) 72%, transparent); }
+.fold span { position: absolute; right: var(--sp-4); top: var(--sp-2); font-family: var(--font-num); font-size: var(--fs-lg); color: var(--ink-strong); }
+.pair { display: grid; grid-template-columns: 392px 1fr; gap: var(--sp-8); align-items: start; }
+@media (max-width: 760px) { .pair { grid-template-columns: 1fr; } }
+.notes { font-size: var(--fs-sm); color: var(--ink-2); max-width: 60ch; }
+.notes h3 { font-family: var(--font-display); font-size: var(--fs-md); letter-spacing: var(--track-caps); color: var(--ink-strong); margin: 0 0 var(--sp-3); }
+.notes ul { margin: 0 0 var(--sp-4); padding-left: 1.1em; }
+.notes li { margin-bottom: var(--sp-2); }
+.notes .pro::marker { color: var(--good); }
+.notes .con::marker { color: var(--bad); }
+
+/* ── The variants' pieces (what would go into css/app.css) ── */
+.fx-art { display: inline-grid; place-items: center; width: 24px; height: 24px; flex: none; }
+.fx-art img { width: 24px; height: 24px; object-fit: contain; }
+.fx-art.is-lg, .fx-art.is-lg img { width: 32px; height: 32px; }
+.fx-name { color: var(--ink-strong); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.fx-n { color: var(--ink-2); font-size: var(--fs-sm); white-space: nowrap; }
+.fx-n .num { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
+.fx-step { display: inline-flex; align-items: center; gap: var(--sp-1); }
+.fx-step .pgm-focus-i { min-width: 3.5em; }
+.fx-exit .ic { width: 10px; height: 10px; }
+
+/* A: the search field holding the focus. Its rule takes the accent (there's something to undo
+   in it); the × at its end is the way out. */
+.fx-q { display: flex; align-items: center; gap: var(--sp-2); min-height: var(--ctl); padding: 0 var(--sp-1) 0 var(--sp-3);
+  background: var(--card); border-bottom: 1px solid var(--accent); box-shadow: inset 0 -1px 0 var(--accent); font-size: var(--fs-md); }
+.fx-q .fx-name { flex: 0 1 auto; }
+.fx-q .fx-n { flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; }
+.fx-q .fx-sp { flex: 1 1 auto; }
+.fx-a-row { display: flex; align-items: center; gap: var(--sp-4); }
+.fx-a-sub { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); }
+
+/* B: the map box's header, a strip of its own on the card's ground. */
+.fx-strip { display: flex; align-items: center; flex-wrap: wrap; gap: var(--sp-2) var(--sp-4); padding: var(--sp-2) var(--sp-3);
+  background: var(--card); border: 1px solid var(--line-panel); border-left: 3px solid var(--ink-2); box-sizing: border-box; }
+.fx-strip .fx-t { display: flex; align-items: baseline; gap: var(--sp-3); flex: 1 1 auto; min-width: 0; font-size: var(--fs-md); }
+.fx-strip.is-narrow .fx-t { flex-direction: column; gap: 0; }
+.fx-strip .fx-tools { display: flex; align-items: center; gap: var(--sp-4); }
+.fx-strip.is-narrow .fx-tools { flex-basis: 100%; justify-content: space-between; }
+
+/* C: the bar at the window's foot, raised over the map. */
+.fx-dock { display: flex; align-items: center; flex-wrap: wrap; gap: var(--sp-2) var(--sp-4); padding: var(--sp-2) var(--sp-3);
+  background: var(--card); border: 1px solid var(--line-panel); border-top: 2px solid var(--ink-2); box-shadow: var(--shadow-lg); box-sizing: border-box; }
+.fx-dock .fx-t { display: flex; align-items: baseline; gap: var(--sp-3); flex: 1 1 auto; min-width: 0; font-size: var(--fs-md); }
+.fx-dock.is-narrow .fx-t { flex-direction: column; gap: 0; }
+.fx-dock .fx-tools { display: flex; align-items: center; gap: var(--sp-4); }
+.fx-dock.is-narrow .fx-tools { flex-basis: 100%; justify-content: space-between; }
+</style>
+</head>
+<body>
+<div class="tv-wrap" id="app"></div>
+<nav class="tv-bar">
+  <span class="tv-grp"><span class="tv-lbl">Variante</span>
+    <button type="button" data-v="now">Hoy</button>
+    <button type="button" data-v="a">A · en el buscador</button>
+    <button type="button" data-v="b">B · franja arriba del mapa</button>
+    <button type="button" data-v="c">C · pegada al pie de la ventana</button></span>
+  <span class="tv-grp"><span class="tv-lbl">Idioma</span>
+    <button type="button" data-l="es">ES</button><button type="button" data-l="en">EN</button></span>
+</nav>
+<script>
+(() => {
+  const q = new URLSearchParams(location.search);
+  let v = q.get('v') || 'a', lang = q.get('lang') || 'es';
+  const L = (p) => p[lang];
+  // The site's strings (js/i18n.js: pgmFocus*, pgmSearch); the name is the game's (INV_NAME_HEARTPIECE_1).
+  const S = {
+    name:  { es: 'Fragmento de máscara', en: 'Mask Shard' },
+    count: { es: '<span class="num">16</span> en el mapa', en: '<span class="num">16</span> on the map' },
+    miss:  { es: 'te faltan <span class="num">16</span>', en: '<span class="num">16</span> missing' },
+    exit:  { es: 'Salir', en: 'Exit' },
+    prev:  { es: 'Anterior', en: 'Previous' },
+    next:  { es: 'Siguiente', en: 'Next' },
+    search: { es: 'Buscar en el mapa', en: 'Search the map' },
+  };
+  const ART = 'assets/hud/mask-shard.png';
+  const lens = '<svg class="ic" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="5" cy="5" r="3.6"/><path d="M7.8 7.8 L10.8 10.8"/></svg>';
+  const cross = '<svg class="ic" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M2 2 L10 10 M10 2 L2 10"/></svg>';
+
+  const art = (lg) => `<span class="fx-art${lg ? ' is-lg' : ''}"><img src="${ART}" alt=""></span>`;
+  const name = () => `<b class="fx-name" translate="no">${L(S.name)}</b>`;
+  const counts = () => `<span class="fx-n">${L(S.count)} · ${L(S.miss)}</span>`;
+  const step = () => `<span class="fx-step">
+      <button type="button" class="icon-btn" aria-label="${L(S.prev)}">‹</button>
+      <span class="pgm-focus-i"></span>
+      <button type="button" class="icon-btn" aria-label="${L(S.next)}">›</button></span>`;
+  const exitBtn = () => `<button type="button" class="btn fx-exit">${cross}${L(S.exit)}</button>`;
+  const searchField = (w) => `<div class="pgm-search" style="max-width:none;width:${w}px"><label class="search">${lens}<input type="search" placeholder="${L(S.search)}" tabindex="-1"></label></div>`;
+
+  // Where things are on the captures (measured on the site: .pgm-search, .pgm-box, .pgm-zoom).
+  const DK = { W: 1280, H: 1100, search: [96, 327, 352], box: [96, 380, 1088] };
+  const PH = { W: 390, H: 844, search: [32, 295, 326], box: [32, 348, 326, 362] };
+
+  /* A screen: the capture, opened at each insert ({ at, h, src: the row stretched to fill it }),
+     and the overlays ({ x, y, w, html }) in the opened screen's pixels. */
+  function screen(img, W, H, inserts = [], overlays = [], fold = 0) {
+    let html = '', off = 0, y0 = 0;
+    const url = `url(design/42/${img}.png)`;
+    const slice = (a, b) => `<div class="slice" style="top:${a + off}px;width:${W}px;height:${b - a}px;background-image:${url};background-size:${W}px auto;background-position:0 ${-a}px"></div>`;
+    for (const ins of inserts) {
+      html += slice(y0, ins.at);
+      html += `<div class="gap" style="top:${ins.at + off}px;width:${W}px;height:${ins.h}px"><i style="width:${W}px;transform:scaleY(${ins.h});background-image:${url};background-size:${W}px auto;background-position:0 ${-(ins.src ?? ins.at)}px"></i></div>`;
+      off += ins.h; y0 = ins.at;
+    }
+    html += slice(y0, H);
+    html += overlays.map((o) => `<div class="ov" style="left:${o.x}px;top:${o.y}px;${o.w ? `width:${o.w}px;` : ''}">${o.html}</div>`).join('');
+    if (fold) html += `<div class="fold" style="top:${fold}px"><span>↑ ${lang === 'es' ? 'una ventana de 800 px de alto' : 'an 800-px-tall window'}</span></div>`;
+    return `<div class="scr-in" style="width:${W}px;height:${H}px">${html}</div>`;
+  }
+
+  const img = (kind, w) => `${kind}-${w}${lang === 'en' ? '-en' : ''}`;
+  const VARIANTS = {
+    now: {
+      dk: () => screen(img('now', 1280), DK.W, DK.H, [], [], 800),
+      ph: () => screen(img('now', 390), PH.W, PH.H),
+      notes: {
+        es: `<h3>Hoy</h3><ul>
+          <li class="con">En un ordenador no se ve al llegar: la caja del mapa va de y 380 a 1100 y la barra queda en y 1028–1088, unos 230 px por debajo de una ventana de 800 px.</li>
+          <li class="con">En el móvil tapa el tercio de abajo del mapa y se parte en dos líneas.</li>
+          <li class="con">«Salir» es un enlace subrayado como cualquier otro: no se lee como «quitar este filtro».</li>
+          <li class="con">Es la misma tarjeta que la de un pin: no dice que el mapa está filtrado.</li></ul>`,
+        en: `<h3>Today</h3><ul>
+          <li class="con">On a computer it isn't on screen when you land: the map's box runs from y 380 to 1100, the bar sits at y 1028–1088, ~230 px under an 800-px window.</li>
+          <li class="con">On a phone it covers the map's lower third and wraps to two lines.</li>
+          <li class="con">«Exit» is an underlined link like any other.</li>
+          <li class="con">It looks like a pin's card: nothing says the map is filtered.</li></ul>`,
+      },
+    },
+    a: {
+      dk: () => {
+        const [x, y] = DK.search;
+        return screen(img('bare', 1280), DK.W, DK.H, [], [{ x, y, w: 1088, html: `<div class="fx-a-row">
+          <label class="fx-q" style="width:560px">${art()}${name()}${counts()}<span class="fx-sp"></span>
+            <button type="button" class="icon-btn" aria-label="${L(S.exit)}" title="${L(S.exit)}">${cross}</button></label>${step()}</div>` }], 800);
+      },
+      ph: () => {
+        const [x, y, w] = PH.search;
+        return screen(img('bare', 390), PH.W, PH.H, [{ at: 342, h: 40 }], [
+          { x, y, w, html: `<label class="fx-q">${art()}${name()}<span class="fx-sp"></span><button type="button" class="icon-btn" aria-label="${L(S.exit)}">${cross}</button></label>` },
+          { x: x + 4, y: 340, w: w - 4, html: `<div class="fx-a-sub">${counts()}${step()}</div>` }]);
+      },
+      notes: {
+        es: `<h3>A · en el buscador <span class="fx-n">(recomendada)</span></h3><ul>
+          <li class="pro">Arriba del todo, donde ya miras al llegar: se ve en cualquier pantalla sin bajar.</li>
+          <li class="pro">Es lo que hacen los mapas (Google Maps, Apple): lo que buscaste se queda en la caja de búsqueda y la × lo quita. Nadie tiene que aprender nada.</li>
+          <li class="pro">No tapa nada del mapa; en el móvil lo empuja 40 px.</li>
+          <li class="pro">Explica por qué solo se ven esos pines, y escribir otra búsqueda lo sustituye (como ya pasa al elegir un resultado).</li>
+          <li class="con">La × es pequeña: menos «botón» que una B o una C con su Salir.</li></ul>`,
+        en: `<h3>A · in the search <span class="fx-n">(recommended)</span></h3><ul>
+          <li class="pro">At the very top, where you look on landing: on screen on any window, no scrolling.</li>
+          <li class="pro">What map apps do: your search stays in its box and the × clears it.</li>
+          <li class="pro">Covers nothing of the map; on a phone it pushes it down 40 px.</li>
+          <li class="pro">Says why only those pins show; typing another search replaces it.</li>
+          <li class="con">The × is small: less of a button than B's or C's Exit.</li></ul>`,
+      },
+    },
+    b: {
+      dk: () => {
+        const [sx, sy, sw] = DK.search, [bx, by, bw] = DK.box;
+        return screen(img('bare', 1280), DK.W, DK.H, [{ at: by, h: 60, src: 374 }], [
+          { x: sx, y: sy, html: searchField(sw) },
+          { x: bx, y: by, w: bw, html: `<div class="fx-strip">${art(true)}<span class="fx-t">${name()}${counts()}</span><span class="fx-tools">${step()}${exitBtn()}</span></div>` }], 800);
+      },
+      ph: () => {
+        const [sx, sy, sw] = PH.search, [bx, by, bw] = PH.box;
+        return screen(img('bare', 390), PH.W, PH.H, [{ at: 342, h: 100 }], [
+          { x: sx, y: sy, html: searchField(sw) },
+          { x: bx, y: by - 2, w: bw, html: `<div class="fx-strip is-narrow">${art(true)}<span class="fx-t">${name()}${counts()}</span><span class="fx-tools">${step()}${exitBtn()}</span></div>` }]);
+      },
+      notes: {
+        es: `<h3>B · franja arriba del mapa</h3><ul>
+          <li class="pro">Arriba, se ve al llegar en cualquier pantalla.</li>
+          <li class="pro">Es la cabecera de la caja: empuja el mapa en vez de taparlo, y la raya de la izquierda dice «estás en un modo».</li>
+          <li class="pro">Salir es un botón de verdad, con su marco.</li>
+          <li class="con">Le quita alto al mapa: 60 px en el ordenador, 100 en el móvil (casi un tercio de sus 362).</li>
+          <li class="con">Dos cajas de texto arriba (buscador y franja) que dicen cosas parecidas.</li></ul>`,
+        en: `<h3>B · strip on top</h3><ul>
+          <li class="pro">On top, on screen when you land on any window.</li>
+          <li class="pro">The box's header: it pushes the map down instead of covering it; the rule on its left says «you're in a mode».</li>
+          <li class="pro">Exit is a real button, with its frame.</li>
+          <li class="con">The map loses height: 60 px on a computer, 100 on a phone (almost a third of its 362).</li>
+          <li class="con">Two boxes on top (search and strip) saying similar things.</li></ul>`,
+      },
+    },
+    c: {
+      dk: () => {
+        const [sx, sy, sw] = DK.search, [bx, , bw] = DK.box;
+        return screen(img('bare', 1280), DK.W, DK.H, [], [
+          { x: sx, y: sy, html: searchField(sw) },
+          { x: bx + 12, y: 800 - 12 - 54, w: bw - 24, html: `<div class="fx-dock">${art(true)}<span class="fx-t">${name()}${counts()}</span><span class="fx-tools">${step()}${exitBtn()}</span></div>` }], 800);
+      },
+      ph: () => {
+        const [sx, sy, sw] = PH.search, [bx, by, bw, bh] = PH.box;
+        return screen(img('bare', 390), PH.W, PH.H, [], [
+          { x: sx, y: sy, html: searchField(sw) },
+          { x: bx + 8, y: by + bh - 8 - 92, w: bw - 16, html: `<div class="fx-dock is-narrow">${art(true)}<span class="fx-t">${name()}${counts()}</span><span class="fx-tools">${step()}${exitBtn()}</span></div>` }]);
+      },
+      notes: {
+        es: `<h3>C · pegada al pie de la ventana</h3><ul>
+          <li class="pro">Se queda abajo, pero pegada al borde de la ventana mientras el mapa está a la vista: en el ordenador se ve al llegar.</li>
+          <li class="pro">En el móvil queda bajo el pulgar para ir ‹ › de uno en uno.</li>
+          <li class="pro">Salir es un botón de verdad.</li>
+          <li class="con">Sigue tapando el mapa: en el móvil, lo mismo que hoy (un cuarto de su alto).</li>
+          <li class="con">Lo de abajo de la pantalla es lo último que se mira: al llegar no explica por qué faltan pines.</li></ul>`,
+        en: `<h3>C · pinned to the window</h3><ul>
+          <li class="pro">It stays at the foot, but stuck to the window's edge while the map is in sight: on a computer it's on screen when you land.</li>
+          <li class="pro">On a phone it's under the thumb to step ‹ › one by one.</li>
+          <li class="pro">Exit is a real button.</li>
+          <li class="con">It still covers the map: on a phone as much as today (a quarter of its height).</li>
+          <li class="con">The screen's foot is where you look last: on landing it doesn't say why pins are missing.</li></ul>`,
+      },
+    },
+  };
+
+  const app = document.getElementById('app');
+  function paint() {
+    const V = VARIANTS[v];
+    document.documentElement.lang = lang;
+    app.innerHTML = `
+      <p class="ctx">${lang === 'es'
+        ? 'Un pin «Ver en el mapa» que apunta a <b>varias cosas</b> (aquí, desde la fila de los fragmentos de máscara) lleva al Mapa con solo ellas y una barra para recorrerlas y salir. Las mismas piezas en las tres; cambia dónde vive y cómo se ve. Fondo: capturas del propio sitio.'
+        : 'A «See on the map» pin pointing at <b>several things</b> (here, from the mask shards row) takes you to the Map with only them and a bar to step through them and leave. The same pieces in all three; what changes is where it lives and how it looks. Background: the site\'s own captures.'}</p>
+      <p class="tv-h">${lang === 'es' ? 'Ordenador · 1280 px de ancho' : 'Computer · 1280 px wide'}</p>
+      <div class="scr" id="dk" style="aspect-ratio:${DK.W} / ${DK.H}">${V.dk()}</div>
+      <p class="tv-h">${lang === 'es' ? 'Móvil · 390 px de ancho' : 'Phone · 390 px wide'}</p>
+      <div class="pair">
+        <div class="scr" style="width:${PH.W}px;height:${PH.H}px">${V.ph()}</div>
+        <div class="notes">${L(V.notes)}</div>
+      </div>`;
+    fit();
+    document.querySelectorAll('[data-v]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.v === v));
+    document.querySelectorAll('[data-l]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.l === lang));
+  }
+  // The computer's screen, scaled to the column's width.
+  function fit() {
+    const box = document.getElementById('dk');
+    if (box) box.firstElementChild.style.transform = `scale(${box.clientWidth / DK.W})`;
+  }
+  addEventListener('resize', fit);
+  document.querySelector('.tv-bar').addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    if (b.dataset.v) v = b.dataset.v;
+    if (b.dataset.l) lang = b.dataset.l;
+    paint();
+  });
+  paint();
+})();
+</script>
+</body>
+</html>

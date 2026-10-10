@@ -1555,8 +1555,14 @@ on Cornifer's map). It's the tablet chosen among three variants in
   boss or a warrior dream is its Hunter's Journal entry (as its first defeat; unmarking clears
   it), a charm is your collection (a two-version one, as its first version), and the rest
   —equipment, Dreamers, trials, Hornet Sentinel, the Awoken Dream Nail, the Seer, the
-  Godtuner, the pantheons cleared— is `hollow.progress`. Nightmare King Grimm is its Journal
-  entry *or* the banishment; unmarking takes both away. **The spells go one by one**: six pips and
+  Godtuner, the pantheons cleared— is `hollow.progress`. **The Troupe's last point has two
+  endings** (the wiki's «Nightmare King Grimm / Banishment», `design/41`, A): two plates with «o»
+  between them, the King (his Journal entry, his pin the tent) and *Destierro*, the Banishment
+  (its achievement's name and icon, `hollow.progress`, its pin Brumm), still one point and one pip
+  until you choose. Once one is done, the other is **Cerrado**: further back than what's missing,
+  its name struck, no pin. Marking one unmarks the other, as in the game, where one closes the
+  other; on the Map, the King's card says *Cerrado* when the Troupe was banished, with nothing to
+  mark. **The spells go one by one**: six pips and
   six plates, each level its own thing as in the game (Vengeful Spirit, Shade Soul, Desolate Dive,
   Descending Dark, Howling Wraiths, Abyss Shriek), with its name, picture and pin; a tap sets the
   spell's level, so marking an upgrade brings its first level and unmarking the first level takes
@@ -1771,7 +1777,8 @@ on Cornifer's map). It's the tablet chosen among three variants in
     goes once the save has it (`gotQueenFragment`, `gotKingFragment`) or has the whole charm;
     their cards only say whether you have them. And **Void Heart** where Kingsoul becomes it: the
     egg at the end of the Birthplace, which the map doesn't draw either, so its pin stands on the
-    floor that opens with Kingsoul at the bottom of the Abyss; done once you have it.
+    floor that opens with Kingsoul at the bottom of the Abyss; done once you have it. The charm's
+    plate on Progress (Kingsoul, or Void Heart once it is) opens the Map's focus on all three.
   - **Places**: benches, tram stations (open with their line: `openedTramLower`, `openedTramRestingGrounds`…),
     the lifts between areas (both ends; the game has no pin for them, so the site draws one, and its
     flags for them aren't clear enough to say which are working; Dirtmouth's, to Crystal Peak,
@@ -1842,9 +1849,12 @@ on Cornifer's map). It's the tablet chosen among three variants in
   *Since last time* rows and the *Missing nearby* cells (the cell itself). What has no place on
   the map (a pantheon's door, geo, essence) has no pin. One place: the map centres on it and
   opens its card, its layer shown if you'd hidden it. Several (a Mask Shard's sixteen, an
-  enemy's rooms): **focus** — only those on the map, fitted to them, and a bar at the box's foot
-  with its name, how many and how many you're missing, ‹ i of n › (the missing first, the
-  nearest to your bench first) and *Exit*. Either way, the pins you came to see ring out three
+  enemy's rooms): **focus** — only those on the map, fitted to them, and the search field over it
+  saying what they are (its picture, its name, how many and how many you're missing; on a phone
+  the counts go to the row under it), with a × to leave (*Exit*), as a map app keeps your search in
+  its box. A tap on the field types a new search: picking a result replaces the focus, and leaving
+  it empty (or Escape) brings the focus back. Beside it, ‹ i of n › steps through them (the missing
+  first, the nearest to your bench first), reading «– of n» before the first step. Either way, the pins you came to see ring out three
   times as you arrive (a ring in the pins' bone swelling out and fading, `--dur-arrive` each; with
   reduced motion, just the ring). Focus isn't saved (`js/app-map.js`: `mapTargets`,
   `showOnMap`, `mapPinHtml`).

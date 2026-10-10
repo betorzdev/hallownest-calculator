@@ -324,9 +324,11 @@
     pgUpgrades:     { es: 'Mejoras', en: 'Upgrades' },
     pgNailCost:     { es: '{geo} geo · {ore} de Mineral Pálido', en: '{geo} geo · {ore} Pale Ore' },   // the ore's name as the game's (pgmL_pale-ore)
     pgCat_dreamNail:{ es: 'Aguijón Onírico y esencia', en: 'Dream Nail and Essence' },
-    pgBanished:     { es: 'Compañía desterrada', en: 'Troupe banished' },
     pgCat_dreamers: { es: 'Soñadores', en: 'Dreamers' },
     pgCat_grimm:    { es: 'La Compañía de Grimm', en: 'The Grimm Troupe' },   // UI_MENU_STYLE_GRIMM
+    // The Troupe's two endings, one point: between them, and the one the other closed.
+    pgOr:           { es: 'o', en: 'or' },
+    pgClosed:       { es: 'Cerrado', en: 'Closed' },
     pgCat_godmaster:{ es: 'Buscador de Dioses', en: 'Godmaster' },   // UI_MENU_STYLE_GG
     // The achievements (js/achievements.js), Progress's second tab.
     pgFeats:        { es: 'Logros', en: 'Achievements' },   // SCREEN_ACHIEVEMENTS
