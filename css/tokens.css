@@ -287,6 +287,12 @@
   --godhome-line: #997464;
   --godhome-ink: #20181a;
   --godhome-glow: rgba(247, 217, 167, 0.55);   /* the halo for all four bindings at once (the icon measured: #f1e0bd) */
+  /* A binding done on its own lights in its bronze (--godhome-2): the icon is nearly black
+     (#4f372d at most), so it needs its own light to stand apart from the grey of not done. */
+  --bronze-glow: rgba(203, 161, 130, 0.7);
+  --bind-bronze: brightness(2.6) saturate(1.5) contrast(1.15) drop-shadow(0 0 4px var(--bronze-glow));
+  /* All four at once: pushed into saturated gold, or the dark icon only reaches a dull beige. */
+  --bind-gold: sepia(1) saturate(2.5) hue-rotate(-5deg) brightness(4) contrast(1.3) drop-shadow(0 0 4px rgba(247, 217, 167, 0.8)) drop-shadow(0 0 10px var(--godhome-glow));
   --godhome-light: radial-gradient(70% 78% at 50% 76%, var(--godhome) 0%, var(--godhome-2) 34%, var(--godhome-line) 60%, transparent 92%);
   --godhome-light-rest: radial-gradient(70% 78% at 50% 76%, var(--godhome-2) 0%, var(--godhome-line) 42%, transparent 88%);
   --godhome-light-off: radial-gradient(64% 64% at 50% 78%, var(--godhome-line) 0%, transparent 68%);
