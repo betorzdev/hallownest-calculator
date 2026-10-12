@@ -242,7 +242,7 @@
     if (s['nail.sharpShadow'].applies) {
       out.push({ id: 'dash', label: t('moveDash'), dmg: s['nail.sharpShadow'].value, note: t('noSoulNote'), art: D.art('charms', 'sharpshadow'), charm: true, group: 'charm' });
     }
-    if (s['soul.dreamNail'].applies) out.push({ id: 'dream', label: t('moveDream'), gain: s['soul.dreamNail'].value, needsFoe: true, art: D.art('abilities', 'dream2'), group: 'soul' });
+    if (s['soul.dreamNail'].applies) out.push({ id: 'dream', label: t('moveDream'), gain: s['soul.dreamNail'].value, needsFoe: true, art: D.art('abilities', 'dream1'), group: 'soul' });
     if (s['pet.weaverling'].applies) {
       const per = s['pet.weaverling'].value, soul = s['pet.weaverlingSoul'].value * D.PETS.weaverlings;
       out.push({ id: 'weavers', label: t('moveWeavers'), dmg: per * D.PETS.weaverlings, note: D.PETS.weaverlings + ' × ' + per,

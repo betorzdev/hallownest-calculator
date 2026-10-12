@@ -118,6 +118,10 @@ what the game says.
 
 ## When you finish
 
+`.claude/` carries this as skills: `/finish` runs what follows (and looks back on the session for
+a new skill or hook), `look` drives headless Chrome, `strings` sources every visible string. A
+hook refuses hand edits to the generated files and names the command that regenerates them.
+
 - `npm test` — `node --test`, no dependencies. `test/i18n.test.js` fails if a Spanish accent
   slips into the English or a string is left untranslated. If you've touched game names,
   `npm run text -- --audit`.
