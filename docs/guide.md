@@ -138,7 +138,7 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   on the link, breathing (the game's Idle at a third of its speed, there and back: at 12 frames a
   second it read as a fidget at her size): every 15–25 s (masthead in view, tab visible) she shakes out her cloak, looks up, plays
   the Needolin or sits; she watches the mouse over the masthead and spins into guard while it's on
-  the link. Clicking it (`track('sister')`) she leaves on Silk Soar as the game does it (the wiki:
+  the link. Clicking it (`track('sister', { to: 'pharloom' })`: `to` is the sister's Footworn id, drawn as a crossing to its quarter) she leaves on Silk Soar as the game does it (the wiki:
   charge, the needle thrown to the ceiling, and she shoots up to it): she crouches with the silk
   swirling round her, throws the needle to the top of the window on its thread, watches it, crouches
   and goes up after it, the thread shortening above her (Super Jump's clips; not its speed lines, which streaked down through the word), and
@@ -604,7 +604,7 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   the visit counter: no cookies, one visit per page load and, as events, the screen switches
   (`screen`, with the view and the language as properties), the language (`lang`), a part that
   failed to render (`error`, with the part), *Share*, a click on the Knight, who focuses soul (`knight`), the
-  sister site's link (`sister`), a game picked on Saves (`save-pick`, with `slot`: `free` for
+  sister site's link (`sister`, with `to`: the sister's Footworn id), a game picked on Saves (`save-pick`, with `slot`: `free` for
   free mode, `save` for a slot), the simulators (`fight-foe` with the enemy picked in Combat,
   `pantheon-run` with the pantheon entered, `hall-fight` with the statue's boss and difficulty)
   and the way into a save, as a funnel: the import opened (`import-open`), its system tab changed
