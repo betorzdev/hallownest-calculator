@@ -311,7 +311,7 @@
     addEventListener('resize', () => sync());
     el.masthead.addEventListener('click', (e) => {
       if (!e.target.closest('.mh-sister')) return;
-      track('sister');
+      track('sister', { to: 'pharloom' });   // `to`: the sister's Footworn id, drawn as a crossing
       ls.set(SEEN);
       if (hx.el && hx.state !== 'gone' && hx.state !== 'arriving') leave();
     });
