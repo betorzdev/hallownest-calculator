@@ -46,10 +46,15 @@ Before touching anything, check whether it's already solved:
   `js/hornet-moves.js` with `assets/hornet/` too: Hornet's moves from Silksong's own sprites
   (`tools/extract-hornet.py`), for the sister site's link, `js/app-sister.js` (shown since the
   sister was published: `SISTER = true`).
-  `js/people.js`, the characters' meetings, was read by hand from the game's scenes. And
-  `js/map-fixes.js`, where a pin really goes when all that places it wrong: written by the Map's
-  **admin mode** (`#view=map&admin=1`, dragging the pin; `npm run admin` serves the site and
-  saves it, `tools/admin.js`), never by hand. Fix a pin there, not in the formulas.
+  `js/people.js`, the characters' meetings, was read by hand from the game's scenes.
+  **Every mark of the Map goes where the game would put it**: a point of a scene by the game's
+  own rule (its compass's, `GameMap`: `js/walk.js mapPoint`, `BOXES` in `js/map.js`), on the
+  mark's own object (`MARKS`, from `tools/extract-map.py`: the save's object for a collectible,
+  the rest picked in its `HAND`, each with why). A mark in the wrong place is fixed there, by
+  finding its object, not by moving the pin. `js/map-fixes.js` (empty since 14 Oct 2026, by
+  Albert's choice) is the last resort: written by the Map's **admin mode** (`#view=map&admin=1`,
+  dragging the pin; `npm run admin` serves the site and saves it, `tools/admin.js`), never by
+  hand. `debug-marks.html` lists how every mark is placed and shows what a change moved.
 
 Neither folder is part of the page: `index.html` doesn't load them.
 
@@ -138,6 +143,9 @@ hook refuses hand edits to the generated files and names the command that regene
   `debug-since.html` lists every row «Since last time» can show, which has no picture, and at
   which widths a name runs into its tag;
   `debug-walk.html` plays the Knight's walk between two benches you tap, with the way drawn;
+  `debug-marks.html` lists every mark of the Map and how it's placed (its object, a game pin, a
+  door, its room's middle, a hand fix) and, with *Keep as before* (or `?keep=1`) before a change,
+  shows each mark that moved on the game's map, before and after;
   `debug-map.html` draws the whole Map and a click on a room locks, sketches or unlocks it (Shift:
   its second drawing), to check that every state fits its neighbours (no iframe: works over `file://`);
   `debug-hover.html` tests the mouse behaviour, and has to be run with

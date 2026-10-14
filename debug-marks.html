@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex"><title>debug: the map's marks</title>
+<style>
+  html, body { margin: 0; background: #07090e; color: #d8d4c8; font: 13px/1.4 system-ui, sans-serif; }
+  iframe { position: absolute; left: -9999px; width: 1280px; height: 900px; border: 0; }
+  main { padding: 12px 16px; }
+  table { border-collapse: collapse; margin: 8px 0 16px; }
+  td, th { padding: 2px 10px; border-bottom: 1px solid #2a3040; text-align: left; }
+  td.n { text-align: right; font-variant-numeric: tabular-nums; }
+  button { font: inherit; background: #1a2030; color: inherit; border: 1px solid #3a4258; border-radius: 4px; padding: 2px 8px; cursor: pointer; }
+  .tiles { display: flex; flex-wrap: wrap; gap: 8px; }
+  figure { margin: 0; width: 240px; }
+  figure svg { width: 240px; height: 240px; display: block; background: #080a10; }
+  figcaption { font-size: 11px; color: #aab; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  pre#out { display: none; }
+</style></head><body>
+<!-- debug-marks.html — every mark of the Map and how it's placed, not part of the site: its own
+     object (js/map.js MARKS, or a scene point by js/walk.js mapPoint), the object ItemChanger names
+     (SPOTS), a game pin, the door of a room the map doesn't draw (HOSTS), a room drawn inside
+     another (ANCHORS), its room's middle, or a hand fix (js/map-fixes.js). The site runs in a
+     hidden iframe in Free mode (no save). "Keep as before" stores every mark's point
+     (localStorage hollow.debugMarks); after a change, the page shows each mark that moved
+     (?min=<px>, 2 by default; ?max=<tiles>, 240) on the game's map around it: yellow before,
+     green now, a red ring for its hand fix (?keep=1 keeps them without a click, for headless runs). px are the map drawings' own, 100 a unit; a pin is
+     50 across. ?dump=1 writes the list as JSON in #out, for --dump-dom. Needs
+     --allow-file-access-from-files headless (the iframe), and the same --user-data-dir for runs
+     that share "before". -->
+<main>
+  <p><button id="keep">Keep as before</button> <button id="forget">Forget before</button> <span id="state"></span></p>
+  <div id="sum"></div>
+  <div id="moved"></div>
+</main>
+<svg width="0" height="0" style="position:absolute"><defs><g id="rooms"></g></defs></svg>
+<pre id="out"></pre>
+<iframe id="site" src="index.html#view=map"></iframe>
+<script>
+const q = new URLSearchParams(location.search);
+const MIN = Number(q.get('min') || 2), MAX = Number(q.get('max') || 240);
+const KEY = 'hollow.debugMarks';
+const store = { get() { try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { return null; } },
+  set(v) { try { v ? localStorage.setItem(KEY, JSON.stringify(v)) : localStorage.removeItem(KEY); } catch (e) { /* no storage */ } } };
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const near = (a, b) => !!a && !!b && Math.abs(a[0] - b[0]) < 1e-6 && Math.abs(a[1] - b[1]) < 1e-6;
+const px = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]) * 100;
+
+function run(w) {
+  const HK = w.HK, M = HK.map, App = HK.app, FIX = HK.mapFixes.FIXES;
+  const centres = Object.values(M.ROOMS).map((r) => [r[1], r[2]]);
+  const spots = Object.values(M.SPOTS);
+  // How a mark is placed (its point before any hand fix: p0).
+  const how = (th, p) => {
+    if (FIX[th.id]) return 'hand fix';
+    if (near(M.MARKS[th.id], p)) return 'own object (MARKS)';
+    if (M.PINS.some((x) => near([x[2], x[3]], p))) return 'game pin';
+    if (Object.values(M.HOSTS).some((x) => near(x, p))) return "door of a room the map doesn't draw";
+    if (Object.values(M.ANCHORS).some((x) => near(x, p))) return 'room drawn inside another';
+    if (centres.some((x) => near(x, p))) return "its room's middle";
+    if (spots.some((x) => near(x, p))) return 'the object ItemChanger names';
+    return 'own object (scene point)';
+  };
+  const marks = App.pgmThings().map((th) => { const p = th.p0 || th.p; return { id: th.id, layer: th.layer, scene: th.scene || '', p, how: how(th, p), fix: FIX[th.id] || null }; });
+  const count = {};
+  for (const m of marks) count[m.how] = (count[m.how] || 0) + 1;
+  document.getElementById('sum').innerHTML = `<b>${marks.length} marks</b> (Free mode)<table>${Object.entries(count).sort((a, b) => b[1] - a[1])
+    .map(([k, v]) => `<tr><td>${esc(k)}</td><td class="n">${v}</td></tr>`).join('')}</table>`;
+  document.getElementById('out').textContent = q.get('dump') ? JSON.stringify(marks) : '';
+  const before = store.get();
+  document.getElementById('state').textContent = before ? `before: ${Object.keys(before).length} marks kept` : 'no before kept';
+  document.getElementById('keep').onclick = () => { store.set(Object.fromEntries(marks.map((m) => [m.id, m.p]))); location.reload(); };
+  document.getElementById('forget').onclick = () => { store.set(null); location.reload(); };
+  if (q.get('keep')) { store.set(Object.fromEntries(marks.map((m) => [m.id, m.p]))); document.getElementById('state').textContent = 'kept as before'; return; }
+  if (!before) return;
+  document.getElementById('rooms').innerHTML = App.pgmRoomsSvg();
+  const moved = marks.filter((m) => before[m.id] && px(before[m.id], m.p) >= MIN).map((m) => ({ ...m, b: before[m.id], d: px(before[m.id], m.p) }))
+    .sort((a, b) => b.d - a.d);
+  const gone = Object.keys(before).filter((id) => !marks.some((m) => m.id === id));
+  const dot = ([x, y], attrs) => `<circle cx="${x}" cy="${-y}" ${attrs}/>`;
+  document.getElementById('moved').innerHTML = `<p><b>${moved.length} moved</b> by ${MIN} px or more; gone: ${esc(gone.join(', ') || 'none')}</p>
+    <div class="tiles">${moved.slice(0, MAX).map((m) => {
+      const cx = (m.b[0] + m.p[0]) / 2, cy = -(m.b[1] + m.p[1]) / 2, half = Math.max(1.2, Math.abs(m.b[0] - m.p[0]) / 2 + 0.4, Math.abs(m.b[1] - m.p[1]) / 2 + 0.4);
+      return `<figure><svg viewBox="${cx - half} ${cy - half} ${2 * half} ${2 * half}"><use href="#rooms"/>
+        <line x1="${m.b[0]}" y1="${-m.b[1]}" x2="${m.p[0]}" y2="${-m.p[1]}" stroke="#fff8" stroke-width="0.01"/>
+        ${dot(m.b, 'r="0.06" fill="none" stroke="#ffd200" stroke-width="0.025"')}${dot(m.p, 'r="0.05" fill="#00e65a"')}
+        ${m.fix ? dot(m.fix, 'r="0.09" fill="none" stroke="#ff3232" stroke-width="0.02"') : ''}</svg>
+        <figcaption title="${esc(m.id)}">${esc(m.id)} · ${m.d.toFixed(0)} px · ${esc(m.how)}</figcaption></figure>`;
+    }).join('')}</div>`;
+}
+const frame = document.getElementById('site');
+frame.addEventListener('load', () => {
+  const w = frame.contentWindow;
+  w.prompt = () => null;
+  // The site boots on its own; wait for its Map to be there.
+  const wait = (n) => (w.HK && w.HK.app && w.HK.app.pgmThings ? setTimeout(() => run(w), 500) : n > 0 && setTimeout(() => wait(n - 1), 200));
+  wait(50);
+});
+</script>
+</body></html>

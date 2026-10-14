@@ -8,11 +8,16 @@ reads every scene, some minutes):
     python3 tools/extract-scenes.py [path/to/hollow_knight_Data]
 
 What it reads, per scene (level<N>, in BuildSettings' order):
-  · its tile map's size (as tools/extract-map.py's Scenes): a point in the scene goes on the map
-    with the game's formula for it (GameMap.PositionCompass), done in js/app-map.js;
+  · its tile map's size, the tilemap the game reads (as tools/extract-map.py's Scenes): a point in
+    the scene goes on the map by the game's rule for it (GameMap's compass: js/walk.js mapPoint);
   · its enemies: every object with the game's EnemyDeathEffects, and its playerDataName, the
     Hunter's Journal entry it counts for (killed<X>); read with UnityPy's TypeTreeGenerator over
-    the game's own Managed/ assemblies. Grouped per entry: how many, and their middle;
+    the game's own Managed/ assemblies. Grouped per entry: how many, and their middle. One parked
+    off the scene (PARKED past its tilemap's edge: a gauntlet's waves at (200, 100), the hatchlings
+    a cage keeps at (100, 100) or (-100, 101) until their mother or hive lets them out) is moved
+    in at run time: it counts, but isn't where the group stands; a group with every one parked
+    stands at the scene's middle (a fight's own scene, Crossroads_10_boss…, has its room's
+    tilemap);
   · what breaks and stays broken, by the name the save keeps it under (sceneData's
     persistentBoolItems: the object's name): breakable walls, floors you break or that give way,
     one-way walls, and the masks over hidden places (they lift once you've found them);
@@ -48,6 +53,10 @@ TK2D_ART = {'chest': ('sharedassets6.assets', 'Chest', 'chest0000')}
 TEXT = os.path.join(ROOT, 'kb', 'data', 'all_text.json')
 IC_LOCATIONS = ('https://raw.githubusercontent.com/homothetyhk/HollowKnight.ItemChanger/'
                 'e57bc4e37bf7297f39b51b17af93f80c1ef8ce9e/ItemChanger/Resources/locations.json')
+
+# How far past its scene's tilemap an enemy may stand before it's taken as parked there (units).
+PARKED = 2
+HOST = lambda scene: re.sub(r'_boss(_defeated)?$', '', scene)
 
 # What breaks and stays broken, by the start of the object's name (a copy's " (2)" aside).
 SECRET = [
@@ -135,7 +144,10 @@ def main():
     gg = UnityPy.load(os.path.join(DATA, 'globalgamemanagers'))
     bs = next(o.read() for o in gg.objects if o.type.name == 'BuildSettings')
     gen = None
+    tags = next(o for o in gg.objects if o.type.name == 'TagManager').read_typetree()['tags']
+    TILEMAP_TAG = 20000 + tags.index('TileMap')   # a custom tag's id: 20000 + its index
     sizes, enemies, secrets, rocks, chests, totems, tablets = {}, {}, {}, {}, {}, {}, {}
+    foe_scenes = []   # (scene, {playerDataName: [points]}): placed once every tilemap is known
     for i, path in enumerate(bs.scenes):
         scene = os.path.splitext(os.path.basename(path))[0]
         env = UnityPy.load(os.path.join(DATA, 'level%d' % i))
@@ -170,7 +182,7 @@ def main():
                     continue
                 if g.m_Name not in named:
                     named[g.m_Name] = g
-        size, foes, inspect = None, [], []
+        foes, inspect, tiled = [], [], []
         seen_secret, seen_rock = set(), set()
         for o in env.objects:
             if o.type.name != 'MonoBehaviour':
@@ -180,8 +192,13 @@ def main():
                 cls = mb.m_Script.read().m_ClassName
             except Exception:
                 continue
-            if cls == 'tk2dTileMap' and size is None:
-                size = tilemap_size(o)
+            if cls == 'tk2dTileMap':
+                try:
+                    g = mb.m_GameObject.read()
+                    t = next(c for c in comps(g) if c.type.name in ('Transform', 'RectTransform'))
+                    tiled.append((g, not (trs.get(t.path_id) or t.read()).m_Father.path_id, o))
+                except Exception:
+                    pass
                 continue
             if cls not in ('PersistentBoolItem', 'GeoRock', 'PlayMakerFSM') and not cls.startswith('EnemyDeathEffects'):
                 continue
@@ -207,6 +224,14 @@ def main():
                 keys = {k for k in (m.decode() for m in re.findall(rb'[A-Z][A-Z0-9_]{3,40}', o.get_raw_data())) if '_' in k} & text
                 if keys:
                     inspect.append((where(g), sorted(keys)))
+        # The tilemap the game reads (GameManager.RefreshTilemapInfo, Assembly-CSharp, read on
+        # 14-Oct-2026): a root object's tagged TileMap, else any object's so tagged, else the one
+        # named TileMap.
+        size = None
+        for ok in (lambda g, r: r and g.m_Tag == TILEMAP_TAG, lambda g, r: g.m_Tag == TILEMAP_TAG, lambda g, r: g.m_Name == 'TileMap'):
+            size = next((sz for sz in (tilemap_size(o) for g, r, o in tiled if ok(g, r)) if sz), None)
+            if size:
+                break
         if size:
             sizes[scene] = size
         for key, (sc, sprite) in ART.items():
@@ -241,8 +266,7 @@ def main():
                 if pd:
                     group[pd].append(where(g))
             if group:
-                enemies[scene] = [[pd, len(ps), round(sum(p[0] for p in ps) / len(ps), 2), round(sum(p[1] for p in ps) / len(ps), 2)]
-                                  for pd, ps in sorted(group.items())]
+                foe_scenes.append((scene, group))
         # ItemChanger's places in this scene.
         for kind, loc in by_scene.get(scene, ()):
             name = loc.get('objectName')
@@ -264,6 +288,20 @@ def main():
             (chests if kind == 'chest' else totems).setdefault(scene, []).append([name, *where(g)])
         print(i, scene, len(enemies.get(scene, [])), len(secrets.get(scene, [])), flush=True)
 
+    # The enemies, per entry, at the middle of those standing in the scene (not parked off it).
+    parked_only = []
+    for scene, group in foe_scenes:
+        size = sizes.get(HOST(scene))
+        rows = []
+        for pd, ps in sorted(group.items()):
+            here = [p for p in ps if not size or (-PARKED <= p[0] <= size[0] + PARKED and -PARKED <= p[1] <= size[1] + PARKED)]
+            if not here:
+                parked_only.append(scene + ' ' + pd)
+                here = [[size[0] / 2, size[1] / 2]]
+            rows.append([pd, len(ps), round(sum(p[0] for p in here) / len(here), 2), round(sum(p[1] for p in here) / len(here), 2)])
+        enemies[scene] = rows
+    print('every one parked off the scene (at its middle):', ', '.join(parked_only))
+
     def block(name, obj, note):
         rows = ['    %s: %s,' % (json.dumps(k), json.dumps(v, separators=(',', ':'), ensure_ascii=False)) for k, v in sorted(obj.items())]
         return ['  // ' + note, '  const %s = {' % name, *rows, '  };']
@@ -271,7 +309,7 @@ def main():
     lines = [
         "/* js/scene-objects.js — GENERATED by tools/extract-scenes.py from the game's files: don't edit by hand.",
         "   What each room holds, in its scene's own units (x rightwards, y upwards from its bottom-left):",
-        "     SIZES    scene → [width, height] of its tile map (a point → the map: js/app-map.js)",
+        "     SIZES    scene → [width, height] of the tile map the game reads (a point → the map: js/walk.js mapPoint)",
         "     ENEMIES  scene → [[playerDataName, how many, x, y]]: the Hunter's Journal entry (killed<X>), at their middle",
         "     SECRETS  scene → [[kind, name, x, y]]: wall, floor, oneway, hidden (a hidden place's mask); by the",
         "              name the save keeps it under (sceneData.persistentBoolItems)",

@@ -225,7 +225,7 @@
       const p = App.pgmItemPoint(it.id), k = D.COLLECTIBLE_KINDS[it.kind];
       return p ? at(p, `<image href="${D.art(k.art[0], k.art[1])}" x="-0.3" y="-0.3" width="0.6" height="0.6"/>`, '', ` data-near="${it.id}" data-act="toMap" data-target="collect:${it.id}" data-name="${esc(pick(k))}"`) : '';
     }).join('');
-    const shade = pr.shade && pr.shade.x !== undefined && R.areaOf(pr.shade.scene) === area ? at([pr.shade.x, pr.shade.y], App.pgmAtlasSvg('shade', 0.8)) : '';
+    const shade = pr.shade && pr.shade.x !== undefined && R.areaOf(pr.shade.scene) === area ? at(App.pgmPlaced(pr.shade), App.pgmAtlasSvg('shade', 0.8)) : '';
     // Not a bench (js/progress.js, away): you standing there, with no bench under you.
     const seat = pr.away ? '' : App.pgmAtlasSvg('bench', 0.8);
     const here = bench ? at(bench, `<circle class="hmB-ring" r="0.4"/>${seat}<image href="${D.art('hud', 'knight')}" x="-0.3" y="-1.25" width="0.6" height="0.7"/>`, ' is-here') : '';

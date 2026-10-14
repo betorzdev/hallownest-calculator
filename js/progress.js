@@ -8,8 +8,11 @@
      found   the collectibles you have (js/collectibles.js): each grub, shard, relic, root…
      bench   the room of the bench you'd wake up at (its area: js/rooms.js)
      away    yes when that place isn't a bench: the save wakes you where a dreamer lay (see fromSave)
-     shade   where your shade waits (its room, and x, y on the game's map) and the geo it carries, or null
-     gate    where your Dreamgate is (its room, and x, y on the map), or null
+     shade   where your shade waits and the geo it carries, or null: its room, its place in the
+             room's scene (sx, sy: shadePositionX/Y) and x, y on the game's map (shadeMapPos,
+             which the game sets to the room's middle: GameMap.PositionCompass)
+     gate    where your Dreamgate is, or null: its room, sx, sy (dreamGateX/Y) and x, y on the map
+             (dreamgateMapPos, the room's middle too)
      statues the Hall of Gods' statues unlocked (statueState<X>.isUnlocked: the boss beaten in the
              kingdom), or null when it isn't known (no save): then none is shown locked
      markers the markers you've placed on the game's map (placedMarkers_r/b/y/w: its Shell,
@@ -128,6 +131,8 @@
   // A point on the game's map, in its units (js/map.js), or null.
   const num = (v) => (typeof v === 'number' && Number.isFinite(v) && Math.abs(v) < 1000 ? Math.round(v * 1000) / 1000 : null);
   const point = (o) => { const x = num(o && o.x), y = num(o && o.y); return x === null || y === null ? null : { x, y }; };
+  // A place in a scene, in its own units (sx, sy), or nothing.
+  const inScene = (x, y) => { const sx = num(x), sy = num(y); return sx === null || sy === null ? {} : { sx, sy }; };
 
   /* Anything → a valid progress: the known ids once each in IDS's order, the known counts
      clamped (a 0 isn't kept), the known collectibles in the catalogue's order, a room name for
@@ -140,10 +145,10 @@
     const c = o.counts && typeof o.counts === 'object' ? o.counts : {};
     for (const id of COUNT_LIST) { const v = clamp(id, c[id]); if (v) counts[id] = v; }
     const s = o.shade && typeof o.shade === 'object' ? o.shade : null;
-    const shade = s && scene(s.scene) ? { scene: scene(s.scene), geo: Math.max(0, int(s.geo)), ...point(s) } : null;
+    const shade = s && scene(s.scene) ? { scene: scene(s.scene), geo: Math.max(0, int(s.geo)), ...point(s), ...inScene(s.sx, s.sy) } : null;
     const g = o.gate && typeof o.gate === 'object' ? o.gate : null;
     const gp = g && point(g);
-    const gate = g && scene(g.scene) && gp ? { scene: scene(g.scene), ...gp } : null;
+    const gate = g && scene(g.scene) && gp ? { scene: scene(g.scene), ...gp, ...inScene(g.sx, g.sy) } : null;
     const mapped = Array.isArray(o.mapped) ? [...new Set(o.mapped.map(scene).filter(Boolean))].slice(0, 800) : [];
     const statues = Array.isArray(o.statues) ? [...new Set(o.statues.filter((x) => typeof x === 'string' && /^[a-z0-9-]{1,40}$/.test(x)))] : null;
     const markers = Array.isArray(o.markers)
@@ -191,8 +196,8 @@
     const ids = ID_LIST.filter((id) => (typeof IDS[id] === 'function' ? IDS[id](pd) : !!pd[IDS[id]]));
     const counts = {};
     for (const id of COUNT_LIST) counts[id] = pd[COUNTS[id][0]];
-    const shade = scene(pd.shadeScene) ? { scene: pd.shadeScene, geo: pd.geoPool, ...point(pd.shadeMapPos) } : null;
-    const gate = pd.hasDreamGate && scene(pd.dreamGateScene) ? { scene: pd.dreamGateScene, ...point(pd.dreamgateMapPos) } : null;
+    const shade = scene(pd.shadeScene) ? { scene: pd.shadeScene, geo: pd.geoPool, ...point(pd.shadeMapPos), sx: pd.shadePositionX, sy: pd.shadePositionY } : null;
+    const gate = pd.hasDreamGate && scene(pd.dreamGateScene) ? { scene: pd.dreamGateScene, ...point(pd.dreamgateMapPos), sx: pd.dreamGateX, sy: pd.dreamGateY } : null;
     const mapped = [...list('scenesVisited'), ...list('scenesMapped')];
     // Placed in the map's own frame, as the shade's (MapMarkerMenu.PlaceMarker: the map's local position).
     const markers = MARKERS.flatMap((c) => list('placedMarkers_' + c).map((m) => ({ c, ...point(m) })));
