@@ -50,9 +50,11 @@ Before touching anything, check whether it's already solved:
   **Every mark of the Map goes where the game would put it**: a point of a scene by the game's
   own rule (its compass's, `GameMap`: `js/walk.js mapPoint`, `BOXES` in `js/map.js`), on the
   mark's own object (`MARKS`, from `tools/extract-map.py`: the save's object for a collectible,
-  the rest picked in its `HAND`, each with why). A mark in the wrong place is fixed there, by
-  finding its object, not by moving the pin. `js/map-fixes.js` (empty since 14 Oct 2026, by
-  Albert's choice) is the last resort: written by the Map's **admin mode** (`#view=map&admin=1`,
+  the rest picked in its `HAND`, each with why), except what the game's map pins itself (grubs,
+  roots, stations, flames, graves: its own pin, as many drawings aren't to their scene's
+  scale). A mark in the wrong place is fixed there, by
+  finding its object, not by moving the pin. `js/map-fixes.js` is for the rooms drawn too
+  stylised for any scale (52 fixes, kept by Albert's choice on 15 Oct 2026): written by the Map's **admin mode** (`#view=map&admin=1`,
   dragging the pin; `npm run admin` serves the site and saves it, `tools/admin.js`), never by
   hand. `debug-marks.html` lists how every mark is placed and shows what a change moved.
 
