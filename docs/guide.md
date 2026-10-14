@@ -735,10 +735,18 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   `MARKS` is each mark of the Map on its own object, by that rule: a collectible the save keeps
   by its room's object, that object (its `PersistentBoolItem`); a Grimmkin flame, where its
   Grimmkin appears (`Flamebearer Spawn`); a stag station, its bell; and, picked by hand in the
-  tool (`HAND`, each with why), the Collector's grubs in their jars, the warriors' ghosts, where
+  tool (`HAND`, each with why), the Collector's grubs in their jars, where
   you dream into a dream boss's fight (its waking self's remains) or the White Palace, the
   Dreamers' plaque for the Dream Nail, the Hunter's Journal, Tuk's egg and who stands in a drawn
-  room (Leg Eater, Lemm, the Seer, the Grubfather, the Godseeker). The save's `shadeMapPos`
+  room (Leg Eater, Lemm, the Seer, the Grubfather, the Godseeker). **But what the game's map has
+  a pin of its own for goes on that pin** (15 Oct 2026): the grubs, the whispering roots, the stag
+  stations, the Grimmkin flames, the warriors' graves, the shops and characters with a pin (the
+  Hunter's, for his Journal). The Hive's root pin, 18 units off its room in the game's files, is
+  left out: that root goes on its object. Many of the map's drawings aren't drawn
+  to their scene's scale (169 of 302 rooms by more than a tenth, Howling Cliffs' Cliffs_02 by more
+  than twice), so the rule, which is the game's compass's, can put an object off its drawing (Gorb
+  under his ledge), while Team Cherry placed those pins by hand on it; two in one room take their
+  pins by nearness to their objects. The save's `shadeMapPos`
   and `dreamgateMapPos` are in the map's frame, and the game sets both to the room's middle. A room's drawing is kept
   whole, as big as its sprite's rect: the game's files trim the empty edges of 116 of them
   (`textureRect` and `textureRectOffset`), and the room's position is the middle of the whole
@@ -1790,8 +1798,8 @@ on Cornifer's map). It's the tablet chosen among three variants in
     the Elegant Key, 800), marked on the Inventory; the two only here just say whether you have them.
   - **Towards 112%**: the charms (the 36 of the category and the Troupe's four), the equipment,
     the spells (a pin per level: Vengeful Spirit and Shade Soul are two), the nail arts and the
-    Dream Nail's three steps, the bosses and the Colosseum's trials, the warrior dreams where each
-    warrior's ghost is, and the three Dreamers on the game's pins for them: only what the 112% counts
+    Dream Nail's three steps, the bosses and the Colosseum's trials, the warrior dreams on the
+    game's pins for their graves, and the three Dreamers on theirs: only what the 112% counts
     (*Bosses and trials* is 20: the 15 bosses, the 3 trials, Grimm and the Nightmare King). Each is where it's found (its
     object in the room ItemChanger's `locations.json` gives it, with whoever sells or gives it for
     what's bought or given, a boss at the middle of its own objects in its arena) and counts as
@@ -1813,8 +1821,10 @@ on Cornifer's map). It's the tablet chosen among three variants in
     springs and cocoons (the game's pins, named by its map key); and **shops and characters**
     (Sly, Iselda, Salubra, Leg Eater, Lemm, Jiji, the Nailsmith, the Seer, the Grubfather, the
     Colosseum of Fools, the Black Egg Temple and the Godseeker, Godhome's way in, in the Junk Pit):
-    each where they stand, or at their shop's door when the map doesn't draw it; the Colosseum and
-    the temple on the game's pins for them.
+    each on the game's own pin for them (the shops the map doesn't draw too: Sly's, Iselda's,
+    Salubra's, Jiji's, the Nailsmith's, the Seer's), else where they stand; the Colosseum and the
+    temple on the game's pins for them. What they sell or give goes with them, and so does what's
+    in a room the map doesn't draw that has such a pin (Mato's hut: his bench's).
   - **Enemies and bosses** (was *Journal enemies*): **other bosses**, every boss the 112% doesn't
     count (30 Sep 2026): the five dream bosses the Journal counts (Failed Champion, Soul Tyrant,
     Lost Kin, White Defender, Grey Prince Zote) where you dream into their fight, their waking

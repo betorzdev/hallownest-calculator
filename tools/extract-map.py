@@ -96,11 +96,6 @@ HAND = {
     # Kingsoul's right half: where you dream your way into the White Palace, the Palace Grounds'
     # "Dream Enter" (the Birthplace's, for Void Heart, is in a room the map doesn't draw).
     'c:king-fragment': ('Abyss_05', 'Dusk Knight\\Dream Enter 1'),
-    # The warrior dreams: each warrior's ghost, where you Dream Nail it (No Eyes' room isn't drawn).
-    'c:gorb': ('Cliffs_02_boss', 'Ghost Warrior NPC'), 'c:markoth': ('Deepnest_East_10', 'Ghost Warrior NPC'),
-    'c:no-eyes': ('Fungus1_35', 'Ghost Warrior NPC'), 'c:elder-hu': ('Fungus2_32', 'Ghost Warrior NPC'),
-    'c:marmu': ('Fungus3_40_boss', 'Ghost Warrior NPC'), 'c:galien': ('Deepnest_40', 'Ghost Warrior NPC'),
-    'c:xero': ('RestingGrounds_02_boss', 'Ghost Warrior NPC'),
     # The dream bosses: where you dream in, the waking boss's remains (Grey Prince Zote's is
     # Bretta's room, not drawn).
     'd:failed-champion': ('Crossroads_10_boss_defeated', 'FK Corpse\\Dream Enter'),
@@ -447,10 +442,10 @@ def main():
                 # Its place inside the room, stretched as the room is (some rooms are scaled).
                 px, py = gx + pt.m_LocalPosition.x * scale[0], gy + pt.m_LocalPosition.y * scale[1]
                 # A pin far outside its own room (the Hive's root, 18 units away in the game's
-                # files) goes to the room's centre.
+                # files) isn't kept: what it stands for goes on its own object.
                 if abs(px - gx) > w / 2 + 3 or abs(py - gy) > h / 2 + 3:
-                    print(f'  {kind} pin of {name} is outside its room: placed at its centre')
-                    px, py = gx, gy
+                    print(f'  {kind} pin of {name} is outside its room: left out')
+                    continue
                 pins.append({'kind': kind, 'scene': name, 'x': round(px, 3), 'y': round(py, 3)})
                 psr = of_type(pin, 'SpriteRenderer')
                 if kind not in pin_imgs and psr:
