@@ -20,6 +20,7 @@
     "rooms": "node tools/fetch-rooms.js",
     "walk": "node tools/extract-walk.js",
     "collectibles": "node tools/fetch-collectibles.js",
-    "admin": "node tools/admin.js"
+    "admin": "node tools/admin.js",
+    "site-icons": "python3 tools/site-icons.py"
   }
 }
