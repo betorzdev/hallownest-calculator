@@ -63,6 +63,16 @@
     const sc = ALIAS[scene] || scene, r = M.ROOMS[sc];
     return r ? [r[1], r[2]] : M.ANCHORS[sc] || M.HOSTS[sc] || null;
   };
+  /* A point of a scene (its own units, js/scene-objects.js) on the map, where the game puts it: as
+     its map places the Knight's compass (GameMap; tools/extract-map.py's BOXES): x / the scene's
+     tilemap width across its room's box, y / its height up it, unclamped. A fight's own scene
+     (Crossroads_10_boss, Cliffs_02_boss_defeated…) is loaded over its room's and stands in it.
+     A room the map doesn't draw: null. */
+  const HOST = (scene) => scene.replace(/_boss(_defeated)?$/, '');
+  const mapPoint = (scene, x, y) => {
+    const sc = HOST(scene), b = M.BOXES[sc], sz = HK.sceneObjects.SIZES[sc];
+    return b && sz ? [b[0] + (x / sz[0]) * b[2], b[1] + (y / sz[1]) * b[3]] : null;
+  };
   /* A door's point: on its room's edge, on the side its name says (js/rooms.js, DOORS: left1,
      right2, top1, bot1), halfway to the facing edge of the room across (the map's rooms overlap
      a little, or leave a gap: both sides of a door meet at one point), and at the middle of
@@ -350,6 +360,6 @@
     return legs.length ? legs : null;
   }
 
-  HK.walk = { RIDES, ALIAS, roomPoint, doorPoint, nodesOf, tableOf, find, grid, maskOf, cellAt, snap, astar, simplify };
+  HK.walk = { RIDES, ALIAS, roomPoint, mapPoint, doorPoint, nodesOf, tableOf, find, grid, maskOf, cellAt, snap, astar, simplify };
   if (typeof module !== 'undefined' && module.exports) module.exports = HK.walk;
 })();

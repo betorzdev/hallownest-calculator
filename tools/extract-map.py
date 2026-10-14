@@ -20,8 +20,20 @@ their position, and their pictures go into assets/map/pins.png.
 
 Coordinates are the map's own units, in Game_Map's frame: an area's position plus its room's.
 The save's shadeMapPos and dreamgateMapPos are in that same frame. y grows upwards, as in Unity.
+
+Where a point of a scene goes on the map is the game's own rule (BOXES, in_room; js/walk.js
+mapPoint does the same on the page), read in Assembly-CSharp 1.5.12620 on 14-Oct-2026: GameMap.
+Update moves the compass to x / the scene's tilemap width across its room's box and y / its
+height up it, the box the room's sprite bounds centred on its place (PositionCompass). Checked
+against the game's own pins for an object (121: benches, grubs, roots, stations, cocoons,
+flames, graves, trams; set by hand, about 0.1 unit off theirs): a median 0.135 units (0.140
+with the box this tool kept until then, Cornifer's sprite scaled by the room and the point
+clamped to it). The scenes' own walls (their TileMap Render Data colliders) placed so trace the
+drawings, and a room drawn in parts (_b, _c…) has one rect for all of them, each part cut out of
+it: the box is the whole rect, not the drawn part. Then each mark of the Map on its own object
+(MARKS: HAND and the collectibles').
 """
-import json, os, re, struct, sys, urllib.request
+import json, os, re, struct, subprocess, sys, urllib.request
 from collections import deque
 import UnityPy
 from PIL import Image, ImageChops
@@ -64,6 +76,42 @@ LIFTS = ['Crossroads_49', 'Crossroads_49b', 'Ruins2_10', 'Ruins2_10b',
          'Crossroads_45', 'Town', 'Ruins_Elevator']
 HOST_PIN = {'Room_Colosseum_Bronze': 'colosseum', 'Room_Colosseum_Silver': 'colosseum', 'Room_Colosseum_Gold': 'colosseum',
             'Deepnest_Spider_Town': ('dreamer', 'herrah')}
+
+# The Map's marks with no object of ItemChanger's (or whose place there is its coordinates, or
+# its room's middle), each on the object of the game's that stands for it: the site's id (as
+# js/app-map.js's allThings names the mark) → [scene, object] (its name, or its path's end).
+# Scenes named <room>_boss[_defeated] are a fight's, loaded over its room (HOST). Read on
+# 14-Oct-2026, patch 1.5.12620.
+HAND = {
+    # The Collector's three grubs, in their jars in his tower (ItemChanger has coordinates).
+    'grub-collector-1': ('Ruins2_11', 'Grubs Folder\\Grub Bottle'),
+    'grub-collector-2': ('Ruins2_11', 'Grubs Folder\\Grub Bottle 2'),
+    'grub-collector-3': ('Ruins2_11', 'Grubs Folder\\Grub Bottle 3'),
+    # Tuk gives the Rancid Egg she keeps for the Defender's Crest.
+    'rancid-egg-tuk-defenders-crest': ('Waterways_03', 'Alive_Tuk\\Tuk NPC'),
+    # The Hunter's Journal: the Hunter gives it, its shiny under his eyes.
+    'k:hunters-journal': ('Fungus1_08', 'Hunter Eyes\\Shiny Item'),
+    # The Dream Nail: the Dreamers' plaque at their statue, whose FSM checks hasDreamNail.
+    'c:dream-nail': ('RestingGrounds_04', 'Dreamer Plaque Inspect'),
+    # Kingsoul's right half: where you dream your way into the White Palace, the Palace Grounds'
+    # "Dream Enter" (the Birthplace's, for Void Heart, is in a room the map doesn't draw).
+    'c:king-fragment': ('Abyss_05', 'Dusk Knight\\Dream Enter 1'),
+    # The warrior dreams: each warrior's ghost, where you Dream Nail it (No Eyes' room isn't drawn).
+    'c:gorb': ('Cliffs_02_boss', 'Ghost Warrior NPC'), 'c:markoth': ('Deepnest_East_10', 'Ghost Warrior NPC'),
+    'c:no-eyes': ('Fungus1_35', 'Ghost Warrior NPC'), 'c:elder-hu': ('Fungus2_32', 'Ghost Warrior NPC'),
+    'c:marmu': ('Fungus3_40_boss', 'Ghost Warrior NPC'), 'c:galien': ('Deepnest_40', 'Ghost Warrior NPC'),
+    'c:xero': ('RestingGrounds_02_boss', 'Ghost Warrior NPC'),
+    # The dream bosses: where you dream in, the waking boss's remains (Grey Prince Zote's is
+    # Bretta's room, not drawn).
+    'd:failed-champion': ('Crossroads_10_boss_defeated', 'FK Corpse\\Dream Enter'),
+    'd:soul-tyrant': ('Ruins1_24_boss_defeated', 'Mage Lord Remains\\Dream Enter'),
+    'd:lost-kin': ('Abyss_19', 'IK Remains\\Dream Enter'),
+    'd:white-defender': ('Waterways_15', 'Dung Defender_Sleep\\Dream Enter'),
+    # Who stands in a drawn room, where they stand; what they sell or give goes with them.
+    'people:legeater': ('Fungus2_26', 'Leg Eater'), 'people:lemm': ('Ruins1_05b', 'Relic Dealer'),
+    'people:seer': ('RestingGrounds_07', 'Dream Moth'), 'people:grubfather': ('Crossroads_38', 'Grub King'),
+    'people:godseeker': ('GG_Waterways', 'Godseeker Waterways'),
+}
 
 # Top-level children of Game_Map that aren't areas. Some are pins placed in the map's frame, named
 # by their room (the flames) or by who they are (the Dreamers); the rest only lend their picture:
@@ -119,12 +167,19 @@ def whole(sprite):
 
 class Scenes:
     """The game's scenes (level<N>, their order is BuildSettings'), read one at a time: each
-    one's tile map size (its tk2dTileMap's width and height, in tiles = world units) and its
-    objects' world positions, by name and by path ("Parent\\Child")."""
+    one's tile map size and its objects: world position, by name and by path ("Parent\\Child"),
+    and the game's scripts each carries (PersistentBoolItem, PlayMakerFSM…).
+    The size is the tilemap the game reads for the scene (GameManager.RefreshTilemapInfo, read in
+    Assembly-CSharp on 14-Oct-2026): the tk2dTileMap of a root object tagged TileMap, else of any
+    object so tagged, else of the object named TileMap; its width and height, in tiles = world
+    units. A boss's own scene (Crossroads_10_boss, Cliffs_02_boss…) is loaded over its room's and
+    has no tilemap: its objects stand in the room's scene, and so does its size (HOST)."""
     def __init__(self):
         gg = UnityPy.load(os.path.join(DATA, 'globalgamemanagers'))
         bs = next(o.read() for o in gg.objects if o.type.name == 'BuildSettings')
         self.index = {os.path.splitext(os.path.basename(sc))[0]: i for i, sc in enumerate(bs.scenes)}
+        tags = next(o for o in gg.objects if o.type.name == 'TagManager').read_typetree()['tags']
+        self.tilemap_tag = 20000 + tags.index('TileMap')   # a custom tag's id: 20000 + its index
         self.cache = {}
 
     def get(self, scene):
@@ -134,7 +189,15 @@ class Scenes:
         if scene in self.index:
             env = UnityPy.load(os.path.join(DATA, 'level%d' % self.index[scene]))
             trs = {o.path_id: o.read() for o in env.objects if o.type.name in ('Transform', 'RectTransform')}
-            size, objs = None, []
+            classes = {}
+            for o in env.objects:
+                if o.type.name == 'MonoBehaviour':
+                    try:
+                        mb = o.read(check_read=False)
+                        classes.setdefault(mb.m_GameObject.path_id, set()).add(mb.m_Script.read().m_ClassName)
+                    except Exception:
+                        pass
+            objs, tiled = [], []
             def world(t):
                 chain = []
                 while t is not None:
@@ -146,7 +209,7 @@ class Scenes:
                     x, y = x + q.x * sx, y + q.y * sy
                     sx, sy = sx * u.m_LocalScale.x, sy * u.m_LocalScale.y
                     path.append(u.m_GameObject.read().m_Name)
-                return x, y, '\\'.join(path)
+                return x, y, '\\'.join(path), len(chain) == 1
             for o in env.objects:
                 if o.type.name != 'GameObject':
                     continue
@@ -154,30 +217,45 @@ class Scenes:
                 t = next((c for c in comps(g) if c.type.name in ('Transform', 'RectTransform')), None)
                 if t is None:
                     continue
-                x, y, path = world(trs.get(t.path_id) or t.read())
-                objs.append((g.m_Name, path, x, y))
-                if size is None and (g.m_Name == 'TileMap' or g.m_Name.endswith('-TileMap')):
-                    # tk2dTileMap: width, height, then its partition size (32, 32).
-                    for c in of_type(g, 'MonoBehaviour'):
-                        raw = c.deref().get_raw_data()
-                        ints = struct.unpack_from('<%di' % (min(len(raw), 2400) // 4), raw)
-                        for i in range(len(ints) - 3):
-                            if ints[i + 2] == ints[i + 3] == 32 and 4 <= ints[i] <= 3000 and 4 <= ints[i + 1] <= 3000:
-                                size = (ints[i], ints[i + 1]); break
-                        if size: break
+                x, y, path, is_root = world(trs.get(t.path_id) or t.read())
+                objs.append((g.m_Name, path, x, y, classes.get(o.path_id, set())))
+                if 'tk2dTileMap' in classes.get(o.path_id, ()):
+                    tiled.append((g, is_root))
+            def tile_size(g):
+                # tk2dTileMap: width, height, then its partition size (32, 32).
+                for c in of_type(g, 'MonoBehaviour'):
+                    raw = c.deref().get_raw_data()
+                    ints = struct.unpack_from('<%di' % (min(len(raw), 2400) // 4), raw)
+                    for i in range(len(ints) - 3):
+                        if ints[i + 2] == ints[i + 3] == 32 and 4 <= ints[i] <= 3000 and 4 <= ints[i + 1] <= 3000:
+                            return ints[i], ints[i + 1]
+            size = None
+            for ok in (lambda g, r: r and g.m_Tag == self.tilemap_tag, lambda g, r: g.m_Tag == self.tilemap_tag,
+                       lambda g, r: g.m_Name == 'TileMap'):
+                size = next((s for s in (tile_size(g) for g, r in tiled if ok(g, r)) if s), None)
+                if size:
+                    break
             out = (size, objs)
         self.cache[scene] = out
         return out
 
-    def find(self, scene, name):
-        """An object's world position: by its path's end ("Folder\\Heart Piece") or its name."""
+    def find(self, scene, name, has=None):
+        """An object's world position: by its path's end ("Folder\\Heart Piece") or its name, the
+        first one that carries the game's script has (a class name) when it's given."""
         got = self.get(scene)
         if not got or not name:
             return None
-        for n, path, x, y in got[1]:
-            if (path.endswith(name) if '\\' in name else n == name):
+        for n, path, x, y, cls in got[1]:
+            if (path.endswith(name) if '\\' in name else n == name) and (has is None or has in cls):
                 return x, y
         return None
+
+    def size(self, scene):
+        got = self.get(HOST(scene))
+        return got and got[0]
+
+# A boss's own scene, loaded over its room's (no tilemap of its own): its room.
+HOST = lambda scene: re.sub(r'_boss(_defeated)?$', '', scene)
 
 # The rooms' drawings carry a ring of their own edge pixels this wide (pack, js/app-map.js roomsSvg).
 BLEED = 1
@@ -317,8 +395,19 @@ def main():
             # drew it); the rest only once you've been there (GameMap.SetupMap).
             if g.m_IsActive:
                 sketched.append(g.m_Name)
+            # Where the game puts a point of the room's scene (GameMap.Update, which moves the
+            # compass, and PositionCompass: Assembly-CSharp, read on 14-Oct-2026): x / the scene's
+            # width across a box and y / its height up it (Scenes, its tilemap). The box is the
+            # sprite the room's renderer shows (its Sprite.bounds: the whole rect over its pixels
+            # per unit, the transparent margins in), centred on the area's position plus the
+            # room's, and neither is scaled (nor mirrored) by the room's localScale. The sprite is
+            # the full drawing once the room is mapped (RoughMapRoom.fullSprite), the only one in
+            # a room that has no other. → [left, bottom, width, height] in map units, to a tenth
+            # of the drawings' pixel (they're drawn at 100 pixels a unit, 64 for 38 rough ones).
+            bw, bh = full.m_Rect.width / fppu, full.m_Rect.height / fppu
             rooms[name] = {'area': len(areas), 'x': round(gx, 3), 'y': round(gy, 3),
-                           'w': round(w, 3), 'h': round(h, 3), 'rw': round(rw, 3), 'rh': round(rh, 3)}
+                           'w': round(w, 3), 'h': round(h, 3), 'rw': round(rw, 3), 'rh': round(rh, 3),
+                           'box': [round(gx - bw / 2, 3), round(gy - bh / 2, 3), round(bw, 3), round(bh, 3)]}
             full_imgs[name] = full_img
             rough_imgs[name] = rough_img
             # A second drawing the game swaps in when something changes in the world (its FSM
@@ -388,18 +477,18 @@ def main():
         r['rough'] = list(rough_rects[name])
         if name + '#alt' in full_rects:
             r['alt'] = list(full_rects[name + '#alt'])
-    # Where things are, exactly: the game's own formula for a point in a room (GameMap.
-    # PositionCompass): the room drawing's left edge plus (x / the scene's width) of the drawing's
-    # width, the same upwards. The scene's width is its tile map's (Scenes).
+    # Where things are, exactly: the game's own rule for a point of a room's scene (its box, as
+    # above): x / the scene's width across the box, y / its height up it, unclamped (a point
+    # past the tilemap's edge goes past the box's, as the compass does). A boss's own scene
+    # stands in its room's (HOST).
     scenes_ = Scenes()
     def in_room(scene, x, y):
-        r = rooms[scene]
-        got = scenes_.get(scene)
-        if not got or not got[0]:
+        r = rooms.get(HOST(scene))
+        size = r and scenes_.size(scene)
+        if not size:
             return None
-        W, H = got[0]
-        fx, fy = min(1, max(0, x / W)), min(1, max(0, y / H))
-        return [round(r['x'] - r['rw'] / 2 + fx * r['rw'], 3), round(r['y'] - r['rh'] / 2 + fy * r['rh'], 3)]
+        bx, by, bw, bh = r['box']
+        return [round(bx + x / size[0] * bw, 3), round(by + y / size[1] * bh, 3)]
 
     # What's in a room the map doesn't draw goes on the door you enter it by, in the nearest drawn
     # room through the game's doors (the community randomizer's transitions.json, pinned).
@@ -487,6 +576,38 @@ def main():
         if q: spots[name] = q
     print(f'  {len(spots)} places located ({len(missed)} at their room\'s centre: {", ".join(missed[:12])}…)')
 
+    # The Map's marks that stand for an object of the game's own, each from that object, by the
+    # rule above: the site's id of the mark → [x, y, scene]. A mark in a room the map doesn't
+    # draw has none (the site puts it on that room's door, HOSTS, as the game does its compass).
+    marks = {}
+    def mark(key, scene, obj, has=None):
+        w = scenes_.find(scene, obj, has)
+        q = w and in_room(scene, *w)
+        if q:
+            marks[key] = [q[0], q[1], HOST(scene)]
+        elif HOST(scene) in rooms:
+            print('  no', obj, 'in', scene, 'for', key)
+    # Each collectible the save keeps by its room's object (js/collectibles.js, ['o', name]: its
+    # sceneData.persistentBoolItems id): that object, the one with the PersistentBoolItem. A Grimmkin
+    # flame: where its Grimmkin appears (Flamebearer Spawn), who drops it. A stag station: the bell
+    # (or lever) that opens it, whose FSM sets the station's opened<Station>.
+    items = json.loads(subprocess.run(['node', '-p', "JSON.stringify(require('./js/collectibles.js').ITEMS)"],
+                                      cwd=ROOT, capture_output=True, text=True, check=True).stdout)
+    for it in items:
+        how = it['how']
+        if how[0] == 'o':
+            mark(it['id'], it['scene'], how[1], 'PersistentBoolItem')
+        elif how[0] == 'flame' or it['kind'] == 'stag':
+            for obj in (('Flamebearer Spawn',) if how[0] == 'flame' else ('Station Bell', 'Station Bell Lever')):
+                if scenes_.find(it['scene'], obj):
+                    mark(it['id'], it['scene'], obj); break
+            else:
+                if it['scene'] in rooms: print('  nothing for', it['id'])
+    # The rest, picked by hand: the object that is the thing, or whoever gives it or stands for it.
+    for key, (scene, obj) in HAND.items():
+        mark(key, scene, obj)
+    print(f'  {len(marks)} marks on their own object')
+
     xs = [r['x'] - r['w'] / 2 for r in rooms.values()] + [r['x'] + r['w'] / 2 for r in rooms.values()]
     ys = [r['y'] - r['h'] / 2 for r in rooms.values()] + [r['y'] + r['h'] / 2 for r in rooms.values()]
     bounds = [round(min(xs), 3), round(min(ys), 3), round(max(xs), 3), round(max(ys), 3)]
@@ -524,8 +645,12 @@ def main():
             "     ANCHORS scene → [x, y]: rooms the map draws inside another, only their place",
             "     HOSTS   scene → [x, y]: where an undrawn room goes: its door in the drawn room you enter",
             "             it from, through the game's doors (the Colosseum's and Beast's Den's: their pins)",
-            "     SPOTS   ItemChanger's place → [x, y, scene]: its object in its room, by the game's own",
-            "             formula (GameMap.PositionCompass: the room's drawing ∝ the scene's tile map)",
+            "     BOXES   scene → [left, bottom, width, height]: the box the game places a point of the",
+            "             room's scene by (GameMap's compass: x / the scene's tilemap width across it,",
+            "             y / its height up; js/walk.js mapPoint), its full drawing's whole sprite",
+            "     SPOTS   ItemChanger's place → [x, y, scene]: its object in its room, by that rule",
+            "     MARKS   a mark of the Map (js/app-map.js's id) → [x, y, scene]: its own object in its",
+            "             room, by that rule (a collectible's, the save's; the rest picked by hand)",
             "   The save's shadeMapPos and dreamgateMapPos are in this same frame. */",
             '(() => {',
             "  'use strict';",
@@ -550,9 +675,13 @@ def main():
             f"  const HOSTS = {js(hosts)};",
             '  // ItemChanger\'s places (its locations.json, by name), each where it is: [x, y, scene].',
             f"  const SPOTS = {js(spots)};",
+            '  // The box each room places a point of its scene by: [left, bottom, width, height].',
+            f"  const BOXES = {js({n: r['box'] for n, r in rooms.items()})};",
+            '  // The Map\'s marks on their own object (tools/extract-map.py HAND and the collectibles\'): [x, y, scene].',
+            f"  const MARKS = {js(dict(sorted(marks.items())))};",
             '  // The rooms Cornifer\'s map shows once bought (the rest only once you\'ve been there).',
             f"  const SKETCHED = {js(sketched)};",
-            '  HK.map = { AREAS, AREA_IDS, PLACE_LABELS, ROOMS, ANCHORS, HOSTS, SPOTS, SKETCHED, PINS, PIN_ART, ATLAS, BOUNDS };',
+            '  HK.map = { AREAS, AREA_IDS, PLACE_LABELS, ROOMS, BOXES, ANCHORS, HOSTS, SPOTS, MARKS, SKETCHED, PINS, PIN_ART, ATLAS, BOUNDS };',
             "  if (typeof module !== 'undefined' && module.exports) module.exports = HK.map;",
             '})();',
             '',

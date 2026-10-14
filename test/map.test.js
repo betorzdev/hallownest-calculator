@@ -82,6 +82,37 @@ test('the key items have their place on the map (js/app-map.js, KEY_AT)', () => 
     "Collector's_Map", "Hunter's_Journal"]) assert.ok(M.SPOTS[ic], ic);
 });
 
+// Where a point of a scene goes: the game's rule (js/walk.js mapPoint, tools/extract-map.py BOXES).
+test("a point goes on its room's box as the game puts its compass", () => {
+  require('../js/scene-objects.js'); require('../js/map-walk.js');
+  const SO = require('../js/scene-objects.js'), W = require('../js/walk.js');
+  for (const [name, r] of Object.entries(M.ROOMS)) {
+    const b = M.BOXES[name];
+    assert.ok(b && b[2] > 0 && b[3] > 0, name);
+    // Centred on the room's place, whatever the room's scale.
+    assert.ok(Math.abs(b[0] + b[2] / 2 - r[1]) < 0.002 && Math.abs(b[1] + b[3] / 2 - r[2]) < 0.002, name);
+  }
+  const [x0, y0, w, h] = M.BOXES.Crossroads_10, [sw, sh] = SO.SIZES.Crossroads_10;
+  assert.deepEqual(W.mapPoint('Crossroads_10', 0, 0), [x0, y0]);
+  const top = W.mapPoint('Crossroads_10', sw, sh);
+  assert.ok(Math.abs(top[0] - (x0 + w)) < 1e-9 && Math.abs(top[1] - (y0 + h)) < 1e-9);
+  // Unclamped, as the compass; a fight's own scene stands in its room's; a room not drawn has none.
+  assert.ok(W.mapPoint('Crossroads_10', -sw, 0)[0] < x0);
+  assert.deepEqual(W.mapPoint('Crossroads_10_boss', 10, 20), W.mapPoint('Crossroads_10', 10, 20));
+  assert.equal(W.mapPoint('Room_shop', 1, 1), null);
+});
+
+test('every mark on its own object sits in its room', () => {
+  assert.ok(Object.keys(M.MARKS).length > 140);
+  for (const [id, [x, y, scene]] of Object.entries(M.MARKS)) {
+    const b = M.BOXES[scene];
+    assert.ok(b, id + ' ' + scene);
+    assert.ok(x >= b[0] - 0.5 && x <= b[0] + b[2] + 0.5 && y >= b[1] - 0.5 && y <= b[1] + b[3] + 0.5, id);
+  }
+  // Every collectible kept by its room's object, in a room the map draws, has its mark.
+  for (const it of CO.ITEMS) if (it.how[0] === 'o' && M.ROOMS[it.scene]) assert.ok(M.MARKS[it.id], it.id);
+});
+
 // js/map-fixes.js: where the admin mode moved a pin (tools/admin.js writes it).
 test('every map fix is a point on the map, and the file keeps its shape', () => {
   const MF = require('../js/map-fixes.js');

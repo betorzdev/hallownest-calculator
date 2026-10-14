@@ -85,6 +85,12 @@ test('what you carry, your bench and your shade', () => {
     dreamgateMapPos: { x: 5.86, y: 7.281, z: 0 }, scenesVisited: ['Town', 'Crossroads_02'], scenesMapped: ['Town', 'Crossroads_01', '<x>'] }, null);
   assert.deepEqual(q.shade, { scene: 'Fungus3_02', geo: 750, x: -4.757, y: 2.672 });
   assert.deepEqual(q.gate, { scene: 'Mines_05', x: 5.86, y: 7.281 });
+  // …which the game sets to the room's middle; and where they are in their scene (sx, sy).
+  const e = P.fromSave({ ...pd, shadeMapPos: { x: -4.757, y: 2.672 }, shadePositionX: 31.25, shadePositionY: 8.5, hasDreamGate: true,
+    dreamGateScene: 'Mines_05', dreamgateMapPos: { x: 5.86, y: 7.281 }, dreamGateX: 22.1699, dreamGateY: 6.408123 }, null);
+  assert.deepEqual(e.shade, { scene: 'Fungus3_02', geo: 750, x: -4.757, y: 2.672, sx: 31.25, sy: 8.5 });
+  assert.deepEqual(e.gate, { scene: 'Mines_05', x: 5.86, y: 7.281, sx: 22.17, sy: 6.408 });
+  assert.deepEqual(P.normalize({ shade: { scene: 'Town', geo: 1, x: 0, y: 0, sx: 'a', sy: 2 } }).shade, { scene: 'Town', geo: 1, x: 0, y: 0 });
   assert.deepEqual(q.mapped, ['Town', 'Crossroads_02', 'Crossroads_01']);
   // The markers placed on the game's map, in its frame; a broken one is dropped.
   const m = P.fromSave({ ...pd, placedMarkers_r: [{ x: 1.5, y: -2, z: 0 }], placedMarkers_w: [{ x: 3, y: 4 }, { x: 'a' }] });
