@@ -1597,6 +1597,8 @@
     pinArtHtml: (key) => atlasSvg(key, null, ' pg-atlas'),
     // Your game's map of the area you rest in (js/app-home.js): the same rooms, pins and places.
     pgmRoomsSvg: roomsSvg, pgmAtlasSvg: atlasSvg, pgmItemPoint: (id) => fixOf(id) || COL_POS[id] || null, pgmPlaced: placed,
+    // Every mark the Map can show, as allThings gives them (debug-marks.html lists how each is placed).
+    pgmThings: () => allThings(),
     // Whether the filter shows a collectible's kind (Your game's area map follows it).
     pgmKindShown: (kind) => shownLayers().has(layerOfKind(kind)) });
 })();
