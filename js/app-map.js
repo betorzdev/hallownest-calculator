@@ -5,9 +5,9 @@
    Cornifer's rough drawing where you've only bought the area's map, and barely there where you
    don't know them yet. Without a save (nothing mapped), the whole map, whole: it's a reference.
    (Always the whole map, if you choose so: prefs.pgMapWhole, which no save touches.)
-   On it, in layers the filter under it shows or hides (prefs.pgMapOff): each collectible where
-   it is (the game's own pin for grubs, roots, stations and flames; its room's centre for the
-   rest), the 112%'s things where they're found, the places (the map's titles, benches, shops
+   On it, in layers the filter under it shows or hides (prefs.pgMapOff): each collectible on its
+   own object, where the game would put it on its map (js/walk.js mapPoint, js/map.js MARKS), the
+   112%'s things where they're found, the places (the map's titles, benches, shops
    and characters, trams, springs, cocoons) and yours (your bench, shade, Dreamgate and markers).
    Pins that would overlap gather in a ring around their middle. A tap on one opens its card, to
    mark it as the tablet does.
@@ -30,49 +30,62 @@
   const GAME_PIN = { 'grub': 'grub', 'whispering-root': 'root', 'stag': 'stag', 'grimmkin-flame': 'flame' };
   /* Where a room is (its centre, or its place on a neighbour: ALIAS, for the rooms the map doesn't
      draw) and where a door is on its edge: js/walk.js, which walks them. */
-  const { ALIAS, roomPoint, doorPoint } = HK.walk;
-  /* A point in a scene's own units (js/scene-objects.js, js/people.js) → the map, by the game's
-     formula (GameMap.PositionCompass, as tools/extract-map.py places things): the room's rough
-     drawing stands for the scene's tile map. A room the map doesn't draw: its place (roomPoint). */
-  const unit = (v) => Math.min(1, Math.max(0, v));
-  function scenePoint(scene, x, y) {
-    const r = !ALIAS[scene] && M.ROOMS[scene], sz = SO.SIZES[scene];
-    if (!r || !sz) return roomPoint(scene);
-    return [r[1] - r[5] / 2 + unit(x / sz[0]) * r[5], r[2] - r[6] / 2 + unit(y / sz[1]) * r[6]];
-  }
+  const { ALIAS, roomPoint, mapPoint, doorPoint } = HK.walk;
+  /* A point in a scene's own units (js/scene-objects.js, js/people.js) → the map, where the game
+     puts it (js/walk.js mapPoint). A room the map doesn't draw: its place (roomPoint). */
+  const scenePoint = (scene, x, y) => (!ALIAS[scene] && mapPoint(scene, x, y)) || hostPoint(scene);
+  const gamePin = (kind, scene) => { const p = M.PINS.find((x) => x[0] === kind && x[1] === scene); return p ? [p[2], p[3]] : null; };
+  /* What the game's map has a pin of its own for goes on it (Team Cherry placed them by hand on the
+     drawing, and many drawings aren't to their scene's scale): a room the map doesn't draw, on the
+     pin of whoever is in it (a shop's, a bench's); a character, on theirs. Else, a room the map
+     doesn't draw on its door (roomPoint). */
+  const ROOM_PIN = { Room_shop: ['vendor', 'Town'], Room_mapper: ['npc', 'mapper'], Room_Charm_Shop: ['vendor', 'Crossroads_04'],
+    Room_Ouiji: ['npc', 'jiji'], Room_nailsmith: ['npc', 'nailsmith'], RestingGrounds_07: ['npc', 'dream_moth'],
+    Room_nailmaster: ['bench', 'Cliffs_02'], Room_Slug_Shrine: ['bench', 'Fungus1_26'] };
+  const PERSON_PIN = { legeater: ['npc', 'leg_eater'], lemm: ['npc', 'relic_dealer'], grubfather: ['grubfather', 'Crossroads_38'],
+    godseeker: ['vendor', 'GG_Waterways'], seer: ['npc', 'dream_moth'] };
+  const hostPoint = (scene) => { const pin = ROOM_PIN[ALIAS[scene] || scene]; return (pin && gamePin(...pin)) || roomPoint(scene); };
+  const personPoint = (who) => (PERSON_PIN[who] && gamePin(...PERSON_PIN[who])) || markOf('people:' + who);
+  // A mark on its own object (js/map.js MARKS, from the game's scenes by tools/extract-map.py): [x, y].
+  const markOf = (id) => { const m = M.MARKS[id]; return m ? [m[0], m[1]] : null; };
   /* Where a place of ItemChanger's is (js/map.js's SPOTS, from the game's scenes): the characters
-     with a pin of their own on the game's map stand there, and what they sell with them. The
-     storeroom behind Sly's shop is Sly's. → { p: [x, y], scene } or null */
-  const NPC_OF = { Iselda: 'mapper', Leg_Eater: 'leg_eater', Seer: 'dream_moth', Lemm: 'relic_dealer' };
+     who sell or give it stand where the game has them (MARKS, or their shop's door), and it goes
+     with them. The storeroom behind Sly's shop is Sly's. → { p: [x, y], scene } or null */
+  const PERSON_OF = { Leg_Eater: 'legeater', Seer: 'seer', Lemm: 'lemm', Grubfather: 'grubfather' };
   const SPOT_ALIAS = { "Nailmaster's_Glory": 'Sly', Grubsong: 'Grubfather', Dream_Wielder: 'Seer', Awoken_Dream_Nail: 'Seer' };
-  const npcPin = (who) => { const p = M.PINS.find((x) => x[0] === 'npc' && x[1] === who); return p ? [p[2], p[3]] : null; };
-  // The Grubfather's and the Seer's rewards are theirs: around their pin.
+  // The Grubfather's and the Seer's rewards are theirs: around them.
   const aliasOf = (ic) => SPOT_ALIAS[ic] || (/-(5_)?Grubs$/.test(ic) ? 'Grubfather' : /-Seer$/.test(ic) ? 'Seer' : ic);
   function spotOf(ic) {
     const name = aliasOf(ic), sp = M.SPOTS[name];
     if (!sp) return null;
-    const pin = name === 'Grubfather' ? pinsOf('grubfather')[0] : null;
-    return { p: (pin && [pin[2], pin[3]]) || (NPC_OF[name] && npcPin(NPC_OF[name])) || [sp[0], sp[1]], scene: sp[2] };
+    const pin = ROOM_PIN[ALIAS[sp[2]] || sp[2]];
+    return { p: (PERSON_OF[name] && personPoint(PERSON_OF[name])) || (pin && gamePin(...pin)) || [sp[0], sp[1]], scene: sp[2] };
   }
-  /* A collectible: its own spot; the Grimmkin flames, which ItemChanger doesn't place, on the game's pins.
-     Brumm's, in his room off Distant Village, is the game's pin in the village. */
-  const PIN_ROOM = { Room_spider_small: 'Deepnest_10' };
+  /* A collectible: the game's own pin for it when its map has one (grubs, whispering roots, stag
+     stations, Grimmkin flames: Team Cherry placed them by hand on the drawing, which in many rooms
+     isn't drawn to the scene's scale, so the rule, the compass's, can put the object off it);
+     else its own object (MARKS), else its ItemChanger spot. Two in one room take its pins by
+     nearness to their objects. A room the map doesn't draw has its pin on the room you enter it
+     from: Brumm's flame in the Distant Village, Dirtmouth's station on the town, the Stag Nest's
+     on the cliffs. */
+  const PIN_ROOM = { Room_spider_small: 'Deepnest_10', Room_Town_Stag_Station: 'Town', Cliffs_03: 'Cliffs_02_b' };
   const COL_POS = (() => {
-    const out = {}, used = {};
+    const out = {}, groups = {};
     for (const it of CO.ITEMS) {
       const sp = it.ic && spotOf(it.ic);
-      let pt = sp && sp.scene === it.scene ? sp.p : null;
+      const own = markOf(it.id) || (sp && sp.scene === it.scene ? sp.p : null);
+      out[it.id] = own || (sp && sp.p) || hostPoint(it.scene);
       const kind = GAME_PIN[it.kind];
-      if (!pt && kind) {
-        // The game's pins in that room, in order: two in one room are its two pins.
-        const room = PIN_ROOM[it.scene] || it.scene;
-        const list = pinsOf(kind).filter((p) => p[1] === room);
-        const k = kind + '|' + room;
-        const i = used[k] || 0;
-        used[k] = i + 1;
-        if (list[i]) pt = [list[i][2], list[i][3]];
-      }
-      out[it.id] = pt || (sp && sp.p) || roomPoint(it.scene);
+      if (kind) (groups[kind + '|' + (PIN_ROOM[it.scene] || it.scene)] ||= []).push(it);
+    }
+    for (const [key, items] of Object.entries(groups)) {
+      const [kind, room] = key.split('|');
+      const pins = pinsOf(kind).filter((p) => p[1] === room).map((p) => [p[2], p[3]]);
+      // Nearest first: each pin to the item whose own point it's closest to.
+      const pairs = items.flatMap((it) => pins.map((p, j) => [Math.hypot(p[0] - out[it.id][0], p[1] - out[it.id][1]), it.id, j]))
+        .sort((x, y) => x[0] - y[0]);
+      const done = new Set(), taken = new Set();
+      for (const [, id, j] of pairs) if (!done.has(id) && !taken.has(j)) { out[id] = pins[j]; done.add(id); taken.add(j); }
     }
     return out;
   })();
@@ -104,7 +117,7 @@
     'hunters-journal': "Hunter's_Journal",
   };
   // An ItemChanger place, or a room's name when there's none (the Dream Nail's is a dream).
-  const placeAt = (key) => spotOf(key) || (roomPoint(key) && { p: roomPoint(key), scene: key });
+  const placeAt = (key) => spotOf(key) || (hostPoint(key) && { p: hostPoint(key), scene: key });
   const BOSS_AT = {
     'false-knight': 'Crossroads_10', 'gruz-mother': 'Crossroads_04', 'brooding-mawlek': 'Crossroads_09',
     'hornet-protector': 'Fungus1_04', 'mantis-lords': 'Fungus2_15', 'soul-master': 'Ruins1_24', 'dung-defender': 'Waterways_05',
@@ -119,10 +132,10 @@
   const DREAM_BOSS_AT = { 'failed-champion': 'Crossroads_10', 'soul-tyrant': 'Ruins1_24', 'lost-kin': 'Abyss_19',
     'white-defender': 'Waterways_15', 'grey-prince-zote': 'Room_Bretta' };
   /* Foes no room places (js/scene-objects.js reads what a scene holds; these come some other way),
-     on the game's pin for where they're fought, with their layer: the Hollow Knight and the
-     Radiance, behind the Black Egg, are other bosses. */
+     where they're fought, with their layer: the Hollow Knight and the Radiance, behind the Black
+     Egg, are other bosses, in its inner chamber (not drawn: on the temple's door). */
   const SPAWNED_BOSS_AT = [
-    ['hollow-knight', 'blackegg', 'Crossroads_02', 'other-bosses'], ['the-radiance', 'blackegg', 'Crossroads_02', 'other-bosses'],
+    ['hollow-knight', 'Room_Final_Boss_Core', 'other-bosses'], ['the-radiance', 'Room_Final_Boss_Core', 'other-bosses'],
   ];
   /* The Grimmkin aren't pins of their own: in the game you beat one and it gives you its flame, so
      the flame is the thing (Albert, 10 Oct 2026; design/40, A). Each flame is of its phase, the
@@ -136,18 +149,30 @@
   const PHASES = ['grimmkin-novice', 'grimmkin-master', 'grimmkin-nightmare', 'brumm'];
   // A phase's name: its Grimmkin's, as the Journal names it (NAME_FLAMEBEARER_*); Brumm's, his.
   const phaseName = (k) => (k === 'brumm' ? pick(PE.PEOPLE.find((w) => w.id === 'brumm')) : foeName(k));
-  /* Two fights load their own copy of a room the map doesn't draw: the Crystal Guardian's, on its
-     bench room, and Flukemarm's, where she leaves Flukenest. */
-  const BOSS_SCENE = { Mines_18_boss: () => ({ p: roomPoint('Mines_18'), scene: 'Mines_18' }), Waterways_12_boss: () => spotOf('Flukenest') };
   // A second fight that counts for another's Journal entry (killedMegaBeamMiner): named by its room.
   const FOE_IN = { Mines_32: { 'crystal-guardian': 'enraged-guardian' } };
   // Three the site has no Journal medal for (assets/journal): their Journal picture instead.
   const NO_MEDAL = ['failed-champion', 'soul-tyrant', 'lost-kin'];
-  // The warrior dreams, each on the game's pin for its grave.
+  /* The warrior dreams, each on the game's pin for its grave (by its room; No Eyes', in Fungus1_35,
+     which the map doesn't draw, is on the Stone Sanctuary's), else where its ghost is (MARKS). */
   const GRAVE_AT = { gorb: 'Cliffs_02', markoth: 'Deepnest_East_10', 'no-eyes': 'Fungus1_34', 'elder-hu': 'Fungus2_32',
     marmu: 'Fungus3_40', galien: 'Deepnest_40', xero: 'RestingGrounds_02' };
-  const gamePin = (kind, scene) => { const p = M.PINS.find((x) => x[0] === kind && x[1] === scene); return p ? [p[2], p[3]] : null; };
-  // Who you buy from or deal with, where they are (their room, or the game's own pin).
+  /* A boss of the 112%, in its arena: the middle of its own objects (js/scene-objects.js ENEMIES,
+     its Journal entry's), in the fight's scene or its room's; null with none there. */
+  /* Three fights' objects count for no entry of their own: the Mantis Lords' and the Watcher Knights'
+     carry 'Dummy' (the game records them once all are down), and Hornet's second fight counts for
+     her first entry. */
+  const BOSS_PD = { 'mantis-lords': 'Dummy', 'watcher-knights': 'Dummy', 'hornet-sentinel': 'Hornet' };
+  const bossAt = (id, scene) => {
+    const pd = BOSS_PD[id] || HK.savefile.JOURNAL_PD[id];
+    for (const sc of [scene + '_boss', scene]) {
+      const row = pd && (SO.ENEMIES[sc] || []).find((r) => r[0] === pd);
+      const p = row && mapPoint(sc, row[2], row[3]);
+      if (p) return p;
+    }
+    return null;
+  };
+  // Who you buy from or deal with: the game's pin for them, or where they stand (MARKS), or their shop's (ROOM_PIN, hostPoint); the Black Egg and the Colosseum, the game's own pins.
   const PEOPLE = [
     ['sly', 'Room_shop', { pin: 'vendor' }], ['iselda', 'Room_mapper', { pin: 'vendor' }],
     ['salubra', 'Room_Charm_Shop', { pin: 'vendor' }], ['legeater', 'Fungus2_26', { pin: 'vendor' }],
@@ -158,12 +183,6 @@
     // Godhome's way in (wiki, "Godhome"): the Godseeker in the Junk Pit, Dream Nailed.
     ['godseeker', 'GG_Waterways', { pin: 'vendor' }],
   ];
-  // Where each stands: their ItemChanger place (a shop's, on its door or on their own pin).
-  const PEOPLE_AT = { sly: 'Sly', iselda: 'Iselda', salubra: 'Salubra', legeater: 'Leg_Eater', lemm: 'Lemm', jiji: 'Egg_Shop', seer: 'Seer' };
-  // …or the game's own pin for them, when it has one.
-  const PEOPLE_NPC = { iselda: 'mapper', legeater: 'leg_eater', lemm: 'relic_dealer', jiji: 'jiji', nailsmith: 'nailsmith', seer: 'dream_moth' };
-  // …or the game's pin of another kind in their room (the Godseeker's is a vendor's).
-  const PEOPLE_GAME = { godseeker: ['vendor', 'GG_Waterways'] };
   // The Dreamers' pins are named by who they are; their rooms, for where they sleep.
   const DREAMER_ROOM = { lurien: 'Ruins2_Watcher_Room', monomon: 'Fungus3_archive_02', herrah: 'Deepnest_Spider_Town' };
 
@@ -287,7 +306,7 @@
     // No save: nothing's known broken or opened, but nothing's known either way; shown as not yet.
     for (const [scene, rows] of Object.entries(SO.ENEMIES)) {
       for (const [pd, n, x, y] of rows) {
-        const id = FOE_OF[pd], at = id && (BOSS_SCENE[scene] ? BOSS_SCENE[scene]() : { p: scenePoint(scene, x, y), scene });
+        const id = FOE_OF[pd], at = id && { p: scenePoint(scene, x, y), scene: mapPoint(scene, x, y) ? scene.replace(/_boss(_defeated)?$/, '') : scene };
         if (!at || !at.p) continue;
         const boss = (F.FOE_BY_ID[id] || {}).kind === 'boss';
         // A 112% boss is on its layer already, and a dream boss has its pin in its dream's room.
@@ -299,8 +318,8 @@
           act: { journal: id } });
       }
     }
-    for (const [id, kind, scene, layer] of SPAWNED_BOSS_AT) {
-      const p = gamePin(kind, scene), s = HJ.stateOf(book, id);
+    for (const [id, scene, layer] of SPAWNED_BOSS_AT) {
+      const p = roomPoint(scene), s = HJ.stateOf(book, id);
       if (p) out.push({ id: `f:${scene}:${id}`, layer, p, scene, art: { src: D.art('journal', id) }, name: foeName(id), where: where(scene),
         on: s.done, note: t(s.done ? 'hjDone' : s.seen ? 'pgmFoeLeft' : 'hjUnseen', { n: App.NF[0].format(s.left || 0) }), act: { journal: id } });
     }
@@ -371,7 +390,7 @@
     const mark = (cat, id) => (App.pgWhereOf(cat, id) === 'game' ? { game: true } : { cat, id });
     const add112 = (layer, cat, id, key, p) => {
       const it = item(cat, id), m = App.pgMeta(cat, id);
-      const at = p ? { p, scene: key } : placeAt(key);
+      const at = p ? { p, scene: key } : markOf('c:' + id) ? { p: markOf('c:' + id), scene: key } : placeAt(key);
       if (!it || !at) return;
       const pt = at.p, scene = at.scene;
       out.push({ id: 'c:' + id, layer, p: pt, scene, art: m.art ? { src: m.art } : { pin: 'colosseum' }, name: m.name, where: where(scene),
@@ -385,7 +404,7 @@
        gone once you have it, or the whole charm. */
     const king = item('charms', 'king'), whole = !!king && king.got >= king.max;
     for (const [half, side, at, note] of [['queen-fragment', 'left', spotOf('Queen_Fragment'), 'pgmFragQueen'],
-      ['king-fragment', 'right', { p: scenePoint('Abyss_05', 128.53, 18.33), scene: 'Abyss_05' }, 'pgmFragKing']]) {
+      ['king-fragment', 'right', { p: markOf('c:king-fragment'), scene: 'Abyss_05' }, 'pgmFragKing']]) {
       if (at && at.p) out.push({ id: 'c:' + half, layer: 'charms', p: at.p, scene: at.scene, art: { src: D.art('items', 'white-fragment-' + side) },
         name: pick(D.WHITE_FRAGMENT), where: where(at.scene), note: t(note), on: whole || P.has(App.progress, half), act: { state: true } });
     }
@@ -393,7 +412,7 @@
        Birthplace, Dream Nailed ("Dream Enter Abyss" in Abyss_15, the game's scene). The map doesn't
        draw the Birthplace: it goes on its door, the floor at the bottom of the Abyss that opens
        with Kingsoul equipped. */
-    const vh = scenePoint('Abyss_15', 144.9, 12.58);
+    const vh = roomPoint('Abyss_15');
     if (vh) out.push({ id: 'c:voidheart', layer: 'charms', p: vh, scene: 'Abyss_15', art: { src: 'assets/charms/voidheart.png' },
       name: pick(D.CHARM_BY_ID.voidheart), where: where('Abyss_15'), on: App.isOwned('voidheart'), act: { state: true } });
     add112('charms', 'grimm', 'grimmchild', CHARM_AT.grimmchild);
@@ -412,7 +431,9 @@
     }
     // The key items: marked on the Inventory; the two it doesn't list only say whether you have them.
     for (const it of [...D.KEY_ITEMS, ...D.MAP_ITEMS]) {
-      const at = placeAt(KEY_AT[it.id]);
+      // The Hunter's Journal: the Hunter gives it, on his pin.
+      const own = (it.id === 'hunters-journal' && gamePin('npc', 'hunter')) || markOf('k:' + it.id);
+      const at = own ? { p: own, scene: KEY_AT[it.id] } : placeAt(KEY_AT[it.id]);
       if (!at) continue;
       const inInv = D.KEY_ITEMS.includes(it);
       out.push({ id: 'k:' + it.id, layer: 'keys', p: at.p, scene: at.scene, art: { src: D.art('items', it.id) }, name: pick(it), where: where(at.scene),
@@ -421,11 +442,11 @@
         act: inInv ? { game: true } : { state: true } });
     }
     for (const [id, scene] of Object.entries(DREAM_BOSS_AT)) {
-      const p = roomPoint(scene), foe = F.FOE_BY_ID[id];
+      const p = markOf('d:' + id) || roomPoint(scene), foe = F.FOE_BY_ID[id];
       if (p && foe) out.push({ id: 'd:' + id, layer: 'other-bosses', p, scene, art: { src: D.art(NO_MEDAL.includes(id) ? 'enemies' : 'journal', id) }, name: pick(foe.name), where: where(scene),
         on: P.IDS[id] ? P.has(App.progress, id) : HJ.stateOf(App.hjBook(), id).done, act: { state: true } });
     }
-    for (const it of cats.bosses.items) add112('bosses', 'bosses', it.id, BOSS_AT[it.id]);
+    for (const it of cats.bosses.items) add112('bosses', 'bosses', it.id, BOSS_AT[it.id], bossAt(it.id, BOSS_AT[it.id]));
     for (const it of cats.colosseum.items) add112('trials', 'colosseum', it.id, BOSS_AT[it.id]);
     for (const id of ['troupe-master-grimm', 'nkg']) add112('grimm-troupe', 'grimm', id, BOSS_AT[id]);
     // The King's point taken by the Banishment (js/app-progress.js): his fight closed, nothing to mark.
@@ -452,8 +473,7 @@
       });
     }
     for (const [who, scene, art, pin] of PEOPLE) {
-      const pt = (PEOPLE_GAME[who] && gamePin(...PEOPLE_GAME[who])) || npcPin(PEOPLE_NPC[who]) || (pin && pinsOf(pin)[0] && pinsOf(pin)[0].slice(2))
-        || (PEOPLE_AT[who] && placeAt(PEOPLE_AT[who]).p) || roomPoint(scene);
+      const pt = personPoint(who) || (pin && gamePin(pin, scene)) || hostPoint(scene);
       if (pt) out.push({ id: 'people:' + who, layer: 'people', p: pt, scene, art, name: t('pgmW_' + who), where: where(scene), on: null });
     }
     // Last of all, the corrections (js/map-fixes.js, and the admin mode's unsaved moves).
@@ -725,6 +745,10 @@
     const room = BENCH_HOST[scene] || scene, b = pinsOf('bench').find((x) => sceneOf(x[1]) === room);
     return b ? [b[2], b[3]] : dreamerAt(scene) || roomPoint(scene);
   };
+  /* Your shade and your Dreamgate where they are in their room (the save's place in its scene,
+     js/progress.js sx, sy), by the game's rule; the save's point on the map, which the game sets
+     to the room's middle, where the room isn't drawn or the slot was kept before that was read. */
+  const placed = (o) => (o.sx !== undefined && !ALIAS[o.scene] && mapPoint(o.scene, o.sx, o.sy)) || [o.x, o.y];
   function mineThings() {
     const pr = App.progress, out = [];
     if (pr.bench) {
@@ -733,9 +757,9 @@
       if (pt) out.push({ id: 'mine:bench', layer: 'my-bench', p: pt, art: pr.away ? { src: D.art('hud', 'knight') } : { pin: 'bench' }, bare: pr.away,
         name: t(pr.away ? 'pgmRespawn' : 'pgmL_my-bench'), where: where(pr.bench), on: null });
     }
-    if (pr.shade && pr.shade.x !== undefined) out.push({ id: 'mine:shade', layer: 'shade', p: [pr.shade.x, pr.shade.y], scene: pr.shade.scene, art: { pin: 'shade' },
+    if (pr.shade && pr.shade.x !== undefined) out.push({ id: 'mine:shade', layer: 'shade', p: placed(pr.shade), scene: pr.shade.scene, art: { pin: 'shade' },
       name: t('shadeTag'), where: [where(pr.shade.scene), `${App.NF[0].format(pr.shade.geo)} geo`].filter(Boolean).join(' · '), on: null });
-    if (pr.gate && pr.gate.x !== undefined) out.push({ id: 'mine:gate', layer: 'gate', p: [pr.gate.x, pr.gate.y], scene: pr.gate.scene, art: { pin: 'dreamgate' },
+    if (pr.gate && pr.gate.x !== undefined) out.push({ id: 'mine:gate', layer: 'gate', p: placed(pr.gate), scene: pr.gate.scene, art: { pin: 'dreamgate' },
       name: pick(D.EQUIPMENT.find((x) => x.id === 'dreamgate')), where: where(pr.gate.scene), on: null });
     (pr.markers || []).forEach((m, i) => out.push({ id: 'mine:m' + i, layer: 'markers', sub: m.c, p: [m.x, m.y], art: { pin: 'marker-' + m.c },
       name: t('pgmM_' + m.c), where: '', on: null }));
@@ -1593,7 +1617,9 @@
     // One of the game's map pins as a picture (the Progress plates of the Dreamers and the Colosseum).
     pinArtHtml: (key) => atlasSvg(key, null, ' pg-atlas'),
     // Your game's map of the area you rest in (js/app-home.js): the same rooms, pins and places.
-    pgmRoomsSvg: roomsSvg, pgmAtlasSvg: atlasSvg, pgmItemPoint: (id) => fixOf(id) || COL_POS[id] || null,
+    pgmRoomsSvg: roomsSvg, pgmAtlasSvg: atlasSvg, pgmItemPoint: (id) => fixOf(id) || COL_POS[id] || null, pgmPlaced: placed,
+    // Every mark the Map can show, as allThings gives them (debug-marks.html lists how each is placed).
+    pgmThings: () => allThings(),
     // Whether the filter shows a collectible's kind (Your game's area map follows it).
     pgmKindShown: (kind) => shownLayers().has(layerOfKind(kind)) });
 })();

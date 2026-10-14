@@ -54,6 +54,8 @@ time over CDP (`--remote-debugging-port`, Node's WebSocket), modelled on `tools/
 
 `debug-overflow.html` (what spills past the width), `debug-benches.html` (`?seat=1`),
 `debug-since.html`, `debug-walk.html`, `debug-map.html` (lock/sketch/unlock rooms),
+`debug-marks.html` (how every mark of the Map is placed; `?keep=1` on a run before a change and
+the same `--user-data-dir` on the run after show what moved),
 `debug-hover.html` (with the mouse flags). See CLAUDE.md, "When you finish".
 
 ## Writing a harness
@@ -61,3 +63,10 @@ time over CDP (`--remote-debugging-port`, Node's WebSocket), modelled on `tools/
 - Stub `prompt` in the iframe (`w.prompt = () => null`): it hangs `--dump-dom` forever.
 - No top-level `const top`, `name`, `status`, `parent`, `self`, `length`: they collide with `window` and kill the script silently.
 - Keep it inside the project folder: from outside, errors arrive as opaque «Script error.».
+
+## In a git worktree
+
+`kb/data/all_text.json` is git-ignored, so a new worktree hasn't got it and `npm test` fails
+(`test/savefile.test.js`, `test/achievements.test.js`): symlink it from the main tree. The
+game extractors run in a `uv venv` with UnityPy; `tools/extract-scenes.py` also needs
+`TypeTreeGeneratorAPI` (`ImportError: TypeTreeGeneratorAPI isn't installed!` otherwise).

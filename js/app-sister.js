@@ -25,7 +25,7 @@
   const H = HK.HORNET, M = H.MOVES;
 
   const SISTER = true;           // ../pharloom-calculator is published
-  const HOME = 'https://betorzdev.github.io/pharloom-calculator/';
+  const HOME = 'https://pharloomcalculator.com/';
   const SHOWN = 'hollow.sisterShown', SEEN = 'hollow.sisterSeen';
   const K = 0.5;                 // the strips are at a third of the game's size; she's shown at half that
   const FLOOR = H.FLOOR * K;     // her feet below her pivot, standing
@@ -311,7 +311,7 @@
     addEventListener('resize', () => sync());
     el.masthead.addEventListener('click', (e) => {
       if (!e.target.closest('.mh-sister')) return;
-      track('sister');
+      track('sister', { to: 'pharloom' });   // `to`: the sister's Footworn id, drawn as a crossing
       ls.set(SEEN);
       if (hx.el && hx.state !== 'gone' && hx.state !== 'arriving') leave();
     });

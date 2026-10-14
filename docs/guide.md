@@ -138,7 +138,7 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   on the link, breathing (the game's Idle at a third of its speed, there and back: at 12 frames a
   second it read as a fidget at her size): every 15–25 s (masthead in view, tab visible) she shakes out her cloak, looks up, plays
   the Needolin or sits; she watches the mouse over the masthead and spins into guard while it's on
-  the link. Clicking it (`track('sister')`) she leaves on Silk Soar as the game does it (the wiki:
+  the link. Clicking it (`track('sister', { to: 'pharloom' })`: `to` is the sister's Footworn id, drawn as a crossing to its quarter) she leaves on Silk Soar as the game does it (the wiki:
   charge, the needle thrown to the ceiling, and she shoots up to it): she crouches with the silk
   swirling round her, throws the needle to the top of the window on its thread, watches it, crouches
   and goes up after it, the thread shortening above her (Super Jump's clips; not its speed lines, which streaked down through the word), and
@@ -604,7 +604,7 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   the visit counter: no cookies, one visit per page load and, as events, the screen switches
   (`screen`, with the view and the language as properties), the language (`lang`), a part that
   failed to render (`error`, with the part), *Share*, a click on the Knight, who focuses soul (`knight`), the
-  sister site's link (`sister`), a game picked on Saves (`save-pick`, with `slot`: `free` for
+  sister site's link (`sister`, with `to`: the sister's Footworn id), a game picked on Saves (`save-pick`, with `slot`: `free` for
   free mode, `save` for a slot), the simulators (`fight-foe` with the enemy picked in Combat,
   `pantheon-run` with the pantheon entered, `hall-fight` with the statue's boss and difficulty)
   and the way into a save, as a funnel: the import opened (`import-open`), its system tab changed
@@ -718,8 +718,36 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   the rooms the map draws inside another (`ANCHORS`) and where to place what's in a room that
   isn't drawn (`HOSTS`: its door, in the room you enter it from through the game's doors) and
   where each of ItemChanger's places is (`SPOTS`, from the game's scenes: each `level<N>` file,
-  its tile map's size and its objects' positions). The characters' own pins (`npc`) come too. The save's `shadeMapPos` and `dreamgateMapPos` are in its
-  frame (checked on the 51 saves: every Dreamgate falls in its room). A room's drawing is kept
+  its tile map's size and its objects' positions). The characters' own pins (`npc`) come too.
+  **Where a point goes** is the game's own rule (14 Oct 2026, read in Assembly-CSharp: `GameMap`'s
+  compass, `Update` and `PositionCompass`): a point of a scene goes x / its width across its
+  room's box and y / its height up it, the scene's size being the tilemap the game reads
+  (`GameManager.RefreshTilemapInfo`: a root object tagged `TileMap`, else any so tagged, else
+  the one named so), unclamped. The box (`BOXES`) is the sprite the room shows, its whole rect
+  over its pixels per unit (a room drawn in parts, `_b`, `_c`, shares that rect, each part cut
+  out of it), centred on the area's position plus the room's, not scaled by the room. Against
+  the game's own 121 pins for an object (benches, grubs, roots, stations, cocoons, flames,
+  graves, trams, all placed by hand) it puts the object a median 13.5 px off (14.0 with the old
+  box, Cornifer's sprite scaled by the room and clamped; px are the drawings' own, 100 a unit,
+  a pin 50 across); the walls of the scenes' tilemaps, placed so, trace the drawings.
+  `js/walk.js mapPoint` does it on the page. A fight's own scene (`Crossroads_10_boss`,
+  `Cliffs_02_boss`…) is loaded over its room's and has no tilemap: it stands in its room.
+  `MARKS` is each mark of the Map on its own object, by that rule: a collectible the save keeps
+  by its room's object, that object (its `PersistentBoolItem`); a Grimmkin flame, where its
+  Grimmkin appears (`Flamebearer Spawn`); a stag station, its bell; and, picked by hand in the
+  tool (`HAND`, each with why), the Collector's grubs in their jars, where
+  you dream into a dream boss's fight (its waking self's remains) or the White Palace, the
+  Dreamers' plaque for the Dream Nail, the Hunter's Journal, Tuk's egg and who stands in a drawn
+  room (Leg Eater, Lemm, the Seer, the Grubfather, the Godseeker). **But what the game's map has
+  a pin of its own for goes on that pin** (15 Oct 2026): the grubs, the whispering roots, the stag
+  stations, the Grimmkin flames, the warriors' graves, the shops and characters with a pin (the
+  Hunter's, for his Journal). The Hive's root pin, 18 units off its room in the game's files, is
+  left out: that root goes on its object. Many of the map's drawings aren't drawn
+  to their scene's scale (169 of 302 rooms by more than a tenth, Howling Cliffs' Cliffs_02 by more
+  than twice), so the rule, which is the game's compass's, can put an object off its drawing (Gorb
+  under his ledge), while Team Cherry placed those pins by hand on it; two in one room take their
+  pins by nearness to their objects. The save's `shadeMapPos`
+  and `dreamgateMapPos` are in the map's frame, and the game sets both to the room's middle. A room's drawing is kept
   whole, as big as its sprite's rect: the game's files trim the empty edges of 116 of them
   (`textureRect` and `textureRectOffset`), and the room's position is the middle of the whole
   rect, so a trimmed one drawn as it comes sits off its place (by up to a third of a room).
@@ -733,7 +761,11 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   patch: it needs the game installed and UnityPy (`python3 -m pip install UnityPy`, in a venv).
 - `js/map-fixes.js` — written by the Map's admin mode (below, `tools/admin.js`), not edited by
   hand: where a pin really goes when the data's place is off, its id → `[x, y]` in the map's
-  units. `js/app-map.js` applies them last of all, over whatever the data and its formulas say,
+  units. On 14 Oct 2026 its 83 fixes went once every mark was placed from its own object; on 15
+  Oct, by Albert's choice, the 52 that the data still missed by more than 15 px came back: many
+  rooms are drawn stylised (Hive_05, the Hive Knight's: a short corridor and two big chambers,
+  where no scale of its scene places both him and Hiveblood), and there only a hand puts a mark
+  on its drawing. `js/app-map.js` applies them last of all, over whatever the data and its formulas say,
   so the Map, its search, "see it on the map" and Your game's area map all agree.
 - `js/map-walk.js` — generated by `npm run walk` (`tools/extract-walk.js`) from the map's own
   drawings (`assets/map/rooms-full.png`, `js/map.js`), not edited by hand: where the Knight can
@@ -1770,9 +1802,10 @@ on Cornifer's map). It's the tablet chosen among three variants in
     the spells (a pin per level: Vengeful Spirit and Shade Soul are two), the nail arts and the
     Dream Nail's three steps, the bosses and the Colosseum's trials, the warrior dreams on the
     game's pins for their graves, and the three Dreamers on theirs: only what the 112% counts
-    (*Bosses and trials* is 20: the 15 bosses, the 3 trials, Grimm and the Nightmare King). Each is where it's found (the
-    room ItemChanger's `locations.json` gives it, the shop for what's bought, the fight's room for
-    a boss) and counts as the 112% tablet counts it; its card marks it as the tablet does, or, for
+    (*Bosses and trials* is 20: the 15 bosses, the 3 trials, Grimm and the Nightmare King). Each is where it's found (its
+    object in the room ItemChanger's `locations.json` gives it, with whoever sells or gives it for
+    what's bought or given, a boss at the middle of its own objects in its arena) and counts as
+    the 112% tablet counts it; its card marks it as the tablet does, or, for
     what's marked on the Inventory (spells, arts, cloaks, the Dream Nail), takes you there.
     Kingsoul is its two White Fragments, each where it's picked up: the left from the White Lady
     (Queen's Gardens), the right from the Pale King's body at the end of the White Palace, which
@@ -1789,18 +1822,22 @@ on Cornifer's map). It's the tablet chosen among three variants in
     the pin would hang over nothing), tram stations, hot
     springs and cocoons (the game's pins, named by its map key); and **shops and characters**
     (Sly, Iselda, Salubra, Leg Eater, Lemm, Jiji, the Nailsmith, the Seer, the Grubfather, the
-    Colosseum of Fools, the Black Egg Temple and the Godseeker, Godhome's way in, in the Junk Pit).
+    Colosseum of Fools, the Black Egg Temple and the Godseeker, Godhome's way in, in the Junk Pit):
+    each on the game's own pin for them (the shops the map doesn't draw too: Sly's, Iselda's,
+    Salubra's, Jiji's, the Nailsmith's, the Seer's), else where they stand; the Colosseum and the
+    temple on the game's pins for them. What they sell or give goes with them, and so does what's
+    in a room the map doesn't draw that has such a pin (Mato's hut: his bench's).
   - **Enemies and bosses** (was *Journal enemies*): **other bosses**, every boss the 112% doesn't
     count (30 Sep 2026): the five dream bosses the Journal counts (Failed Champion, Soul Tyrant,
-    Lost Kin, White Defender, Grey Prince Zote) in the room of their waking fight (Zote's, Bretta's
-    house), beaten once the Journal has them complete, and the bosses placed in the rooms
+    Lost Kin, White Defender, Grey Prince Zote) where you dream into their fight, their waking
+    self's remains (Zote's, Bretta's house), beaten once the Journal has them complete, and the bosses placed in the rooms
     (`kind: 'boss'` in `js/enemies.js`: Vengefly King, Massive Moss Charger, Flukemarm, Oblobbles,
     Crystal Guardian, Pale Lurker, God Tamer, Soul Warrior…), which leave *enemies*; a 112% boss
-    placed in a room isn't pinned twice. Two fights load their own copy of a room the map doesn't
-    draw: the Crystal Guardian goes on its bench room and Flukemarm where she leaves Flukenest; the
+    placed in a room isn't pinned twice. A fight's own scene stands in its room (the Crystal
+    Guardian's on its bench room, Flukemarm's in her chamber); the
     Crystal Guardian's second fight, at the top of the Peak, is named *Enraged Guardian* (same
-    Journal entry). The Hollow Knight and the Radiance, which no room places, go on the game's pin
-    for the Black Egg. The nine **Grimmkin** have no pin of their own: in the game you beat one
+    Journal entry). The Hollow Knight and the Radiance, which no room places, go on the door of
+    the Black Egg Temple, whose inner chamber the map doesn't draw. The nine **Grimmkin** have no pin of their own: in the game you beat one
     and it gives you its flame, so the flame is the thing (10 Oct 2026, `design/40`, A). *Grimmkin
     Flames*, in *Quests*, opens like the sets into its four phases, each a switch with its count
     and its Grimmkin's portrait, in the ritual's order: *Grimmkin Novice* (Greenpath, Crystal
@@ -1810,7 +1847,10 @@ on Cornifer's map). It's the tablet chosen among three variants in
     carries *See in the Journal* beside *Mark*; the Journal's *See on the map* on a Grimmkin
     shows its three flames. The Godhome-only bosses have no place on the map. The **enemies**, each entry where it lives, one pin per room with how many
     there are (`js/scene-objects.js`, read from the game's scenes: every object with the game's
-    `EnemyDeathEffects` counts for the entry its `playerDataName` names), saying what's left of it
+    `EnemyDeathEffects` counts for the entry its `playerDataName` names; one parked off its scene,
+    a gauntlet's waves or a cage's hatchlings, which the game moves in as they come, counts but
+    doesn't pull the pin out of the room, and an entry with every one parked stands at the room's
+    middle), saying what's left of it
     in your Journal and with *See in the Journal*; complete entries hide like what you have. And
     **meetings with characters** (`js/people.js`): Quirrel, Sly, Bretta, Zote, Cloth, Tiso,
     Hornet and the Nailsmith, at each place the game puts them to talk (their object in the
@@ -1836,8 +1876,10 @@ on Cornifer's map). It's the tablet chosen among three variants in
     (`respawnType` other than 1, or that marker: `js/progress.js`, `away`) the pin is only the
     Knight, by the Dreamer, named *You'll wake up here*. The save has no position of the Knight's own: the game saves at a bench
     (and on dying or quitting), and the map's compass is only live. The shade and the Dreamgate
-    are at their room's centre: the game stores `shadeMapPos` and `dreamgateMapPos` so
-    (`GameMap.PositionCompass`), not the exact spot. They go on top of the other pins, where they
+    go where they are in their room (14 Oct 2026): the save's `shadePositionX/Y` and
+    `dreamGateX/Y` in their scene, by the game's rule; the game's own map draws their icons at the
+    room's middle (`shadeMapPos`, `dreamgateMapPos`, `GameMap.PositionCompass`), which stays for a
+    room the map doesn't draw and for a slot kept before. They go on top of the other pins, where they
     are; one that would cover a pin at that zoom (the room's centre is where many things stand)
     steps aside, the nearest way that covers nothing (`placeMarks`; your bench stays on its pin).
   - **The areas' and the places' names**, as the game's map titles them (the areas' from afar,
