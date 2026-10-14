@@ -17,6 +17,13 @@ test('the link is shown: the sister is published', () => {
   assert.match(src, /const SISTER = true;/);
 });
 
+test('the link goes to the sister\'s own domain', () => {
+  assert.match(src, /const HOME = 'https:\/\/pharloomcalculator\.com\/';/);
+  for (const f of ['js/app-sister.js', 'design/26-sister-hornet.html', 'design/27-sister-hornet-moves.html', 'design/28-sister-hornet-clawline.html']) {
+    assert.doesNotMatch(fs.readFileSync(path.join(ROOT, f), 'utf8'), /betorzdev\.github\.io\/pharloom-calculator/, f);
+  }
+});
+
 test('every move she plays is in js/hornet-moves.js, with its strip', () => {
   const names = new Set([...src.matchAll(/\b(?:play|loop|show)\('([\w-]+)'/g)].map((m) => m[1]));
   assert.ok(names.size >= 10, 'found her moves in the script');
