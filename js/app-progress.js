@@ -523,9 +523,22 @@
         ${rows(f.groups.map((g) => featRow(g, acc)))}` : `${pgTabs(r, acc ? acc.done : f.done)}<div class="pg-total${r.total >= r.max ? ' is-done' : ''}">
           <span class="pg-total-k">${esc(t('pgCompletion'))}</span>
           <span class="pg-total-v">${num(r.total)}<span class="u">${esc(pctSpace())} / ${num(r.max)}</span></span>
+          ${startHtml(r)}
         </div>${opts}
         ${rows(r.categories.map(row))}`;
     el.pg.innerHTML = `<div class="gear-body pg-body${missingOnly() ? ' is-missing' : ''}">${head}${body}</div>`;
+  }
+
+  /* The two starting points under the figure it changes, as Your game's (design/43, B): only in
+     free mode (a save is read, not changed), and the one that would change nothing disabled. */
+  function startHtml(r) {
+    if (App.saveLock()) return '';
+    const btn = (v, label, hint, off) => `<button type="button" class="text-btn" data-act="pgStart" data-value="${v}" title="${esc(t(hint))}" ${off ? 'disabled' : ''}>${esc(t(label))}</button>`;
+    return `<div class="presets"><span class="lbl">${esc(t('presetsLbl'))}</span>
+      ${btn('zero', 'pgStartZero', 'pgStartZeroHint', r.total === 0)}
+      <span class="presets-sep" aria-hidden="true">·</span>
+      ${btn('all', 'pgStartAll', 'pgStartAllHint', r.total >= r.max)}
+    </div>`;
   }
 
   // The screen bar's tab carries the figure, as the Journal's carries its entries.
@@ -608,9 +621,19 @@
     if (on && HJ.stateOf(App.hjBook(), 'nkg').seen) App.hjMark('nkg', false);
     setProgress(P.toggle(App.progress, 'banishment', on));
   }
+  /* What the starting points set besides Your game's (App.startFrom): the 112%'s Journal entries
+     (the Troupe's two Grimms among them) and its marks in hollow.progress. */
+  const BOOK_IDS = CP.CATEGORIES.flatMap((c) => c.items.filter((it) => it[1] === 'journal').map((it) => it[0])).concat(['grimm', 'nkg']);
+  const PROGRESS_IDS = CP.CATEGORIES.flatMap((c) => c.items.filter((it) => it[1] === 'progress').map((it) => it[0]));
   // What writes your game's record: refused in a save from the game (App.saveLock, js/app.js).
-  App.edits('pgFind', 'pgMark', 'pgAch');
+  App.edits('pgFind', 'pgMark', 'pgAch', 'pgStart');
   Object.assign(actions, {
+    // Everything done takes the Troupe's last point by its King: the Banishment goes.
+    pgStart(node) {
+      const all = node.dataset.value === 'all';
+      App.hjBulk(BOOK_IDS, all ? 'seen' : 'none');
+      App.startFrom(all, (p) => PROGRESS_IDS.reduce((q, id) => P.toggle(q, id, all), P.toggle(p, 'banishment', false)));
+    },
     pgFind(node) {
       const id = node.dataset.id, next = P.toggleFound(App.progress, id);
       const it = CO.ITEMS.find((x) => x.id === id), pc = it && PIECE_OF[it.kind];
