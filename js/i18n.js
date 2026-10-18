@@ -333,6 +333,12 @@
     // The achievements (js/achievements.js), Progress's second tab.
     pgFeats:        { es: 'Logros', en: 'Achievements' },   // SCREEN_ACHIEVEMENTS
     pgOnlyMissing:  { es: 'Solo lo que falta', en: "Only what's missing" },
+    // The starting points under the figure (free mode), after presetsLbl: a new game, or all of it.
+    pgStartZero:    { es: 'Partida nueva', en: 'New Game' },   // PROFILE_NEW_GAME
+    pgStartZeroHint:{ es: 'Como al empezar la partida: nada de lo que cuenta para el 112 %, ni amuletos, ni entradas del Diario, ni mejoras',
+                      en: 'As at the start of the game: nothing the 112% counts, no charms, no Journal entries, no upgrades' },
+    pgStartAll:     { es: 'Todo conseguido', en: 'Everything done' },
+    pgStartAllHint: { es: 'Todo lo que cuenta para el 112 % conseguido', en: 'Everything the 112% counts, done' },
     pgNothingMissing: { es: 'No te falta nada', en: 'Nothing missing' },
     featSecret:     { es: 'Secreto', en: 'Secret' },   // HIDDEN_ACHIEVEMENT_TITLE
     featSecretHint: { es: 'Este logro está oculto', en: 'This achievement is hidden' },   // HIDDEN_ACHIEVEMENT

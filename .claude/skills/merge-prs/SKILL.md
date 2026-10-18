@@ -7,8 +7,8 @@ description: Review and merge the open PRs against dev one at a time - bring dev
 
 Brought from pharloom-calculator's skill and fitted to this repo. Albert reviews each PR in the
 browser and says "luz verde" or what to change. Nothing is merged without his green light for
-that PR. Asking for this skill is his leave to commit the merges and push them (the exception
-to "never commit" in `finish`); nothing else gets committed.
+that PR. Asking for this skill is his leave to commit the merges and the fixes he asks for on
+each PR's branch, and push them; nothing else gets committed.
 
 ## Order
 
