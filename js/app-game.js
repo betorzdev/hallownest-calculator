@@ -396,22 +396,25 @@
       const value = Number(node.dataset.value);
       commit(C.set(App.state, 'hp', value));
     },
-    /* No notice: what each one does is said by its title, and the change shows on screen. The
-       charms found go with them: a new game has none, and everything maxed out, all of
-       them. */
-    preset(node) {
-      const max = node.dataset.value === 'max';
-      const next = max ? C.normalize({ ...C.PRESETS.max, charms: App.state.charms, hp: App.state.hp }) : C.normalize(C.PRESETS.base);
-      const was = App.owned, wasP = App.progress;
-      App.was = { state: App.state, owned: was, progress: wasP };   // so the repaint lights up what the preset brings
-      App.owned = max ? C.OWN_MAX.slice() : [];  // before commit(), so its repaint already carries it
-      // The Knight's own things go with it: equipment, key items and the Dream Nail awoken; and a
-      // new game carries nothing (the loose pieces, geo, relics…). The rest of the 112% stays.
-      App.progress = KNIGHT_IDS.reduce((p, id) => PR.toggle(p, id, max), App.progress);
-      if (!max) App.progress = PR.COUNT_LIST.reduce((p, id) => PR.setCount(p, id, 0), App.progress);
-      if (commit(next)) { saveOwned(); App.saveProgress(); } else { App.owned = was; App.progress = wasP; App.was = null; render(); }
-    },
+    preset(node) { startFrom(node.dataset.value === 'max'); },
   });
 
-  Object.assign(App, { renderGear });
+  /* The two starting points, here and on Progress (js/app-progress.js, whose more() adds the rest
+     of the 112% to the progress). No notice: what each one does is said by its title, and the
+     change shows on screen. The charms found go with them: a new game has none, and everything
+     maxed out, all of them. */
+  function startFrom(max, more = (p) => p) {
+    const next = max ? C.normalize({ ...C.PRESETS.max, charms: App.state.charms, hp: App.state.hp }) : C.normalize(C.PRESETS.base);
+    const was = App.owned, wasP = App.progress;
+    App.was = { state: App.state, owned: was, progress: wasP };   // so the repaint lights up what the preset brings
+    App.owned = max ? C.OWN_MAX.slice() : [];  // before commit(), so its repaint already carries it
+    // The Knight's own things go with it: equipment, key items and the Dream Nail awoken; and a
+    // new game carries nothing (the loose pieces, geo, relics…). The rest of the 112% stays,
+    // unless more() takes it.
+    App.progress = more(KNIGHT_IDS.reduce((p, id) => PR.toggle(p, id, max), App.progress));
+    if (!max) App.progress = PR.COUNT_LIST.reduce((p, id) => PR.setCount(p, id, 0), App.progress);
+    if (commit(next)) { saveOwned(); App.saveProgress(); } else { App.owned = was; App.progress = wasP; App.was = null; render(); }
+  }
+
+  Object.assign(App, { renderGear, startFrom });
 })();
