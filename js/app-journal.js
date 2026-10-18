@@ -407,6 +407,14 @@
     const kind = HJ.change(prev, book, id);
     if (kind) hjNotify(t(kind === 'full' ? 'hjUpdated' : 'hjNewEntry'), id);
   };
+  // Several at once, as the list's bulk buttons (HJ.bulk: 'seen' | 'none'), with no notice:
+  // Progress's starting points. The caller repaints.
+  App.hjBulk = (ids, what) => {
+    book = HJ.bulk(book, ids, what);
+    hjUndo = null;
+    saveJournal();
+    paintHjNav();
+  };
 
   /* Moves the entry being read through the list, like the combat Journal. */
   function hjMove(step, origin) {

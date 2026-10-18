@@ -4098,6 +4098,8 @@ kbd {
 .pg-total-k { font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); }
 .pg-total-v { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; line-height: 1; color: var(--ink-strong); font-size: calc(var(--fs-xl) * 2.2); }
 .pg-total-v .u { font-size: 0.38em; font-weight: 400; color: var(--muted); }
+/* The starting points in free mode, under the figure they change (design/43, B). */
+.pg-total .presets { margin-top: var(--sp-3); }
 .pg-rows { list-style: none; margin: 0 auto; padding: 0; max-width: 900px; border-top: 1px solid var(--inv-line); }
 .pg-row { border-bottom: 1px solid var(--inv-line); }
 .pg-head {

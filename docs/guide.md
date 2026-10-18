@@ -1565,6 +1565,15 @@ on Cornifer's map). It's the tablet chosen among three variants in
   `js/completion.js` from what the site keeps, and it was checked against the game's own in 51
   real saves: all match. The screen bar's tab carries it too. At 112 it lights up: the figure
   with the soul's white glow, the tab's in full bone (here and on Your game, its bar too).
+- **Two starting points under the figure**, in free mode only (a save is read, not changed), as
+  Your game's and with its label, *Start from* (`design/43-progress-presets.html`, B): *New Game*
+  (the game's «Partida nueva», `PROFILE_NEW_GAME`) and *Everything done*. Free mode starts with
+  everything unlocked, so a first visit already reads 65 % with nothing marked: whoever ticks a
+  console game by hand starts from New Game. Since a thing is marked where the site keeps it,
+  each one is Your game's same starting point (`App.startFrom`: the build, the charms found, the
+  equipment) plus the rest of the 112%: its Hunter's Journal entries (`App.hjBulk`, no notice) and
+  its marks in `hollow.progress`. Everything done takes the Troupe's last point by its King. The
+  one that would change nothing (at 0 or at 112) is disabled.
 - **One row per category**, fourteen (bosses 15, warrior dreams 7, Colosseum 3, charms 39,
   equipment 14, spells 6, nail arts 3, mask shards 4, vessel fragments 3, nail upgrades 4, Dream
   Nail and essence 3, Dreamers 3, the Grimm Troupe 3, Godmaster 5). The wiki's are fifteen, by
