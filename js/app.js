@@ -969,9 +969,9 @@
     }
   }
   /* What the counter gets of it, enough to find it: the part, the message's first 64 characters
-     (all Footworn keeps of a value) and the script and line it was thrown from. */
+     (all Footworn keeps of a value) and the script and line it was thrown from (past its ?v=). */
   function errorProps(part, e) {
-    const at = /([\w.-]+\.js):(\d+)/.exec(String((e && e.stack) || ''));
+    const at = /([\w.-]+\.js)(?:\?[^:\s)]*)?:(\d+)/.exec(String((e && e.stack) || ''));
     return { part, msg: String((e && e.message) || e).slice(0, 64), at: at ? at[1] + ':' + at[2] : '' };
   }
   function render() {
