@@ -28,6 +28,10 @@
     presetMaxHint:  { es: 'Todas las mejoras permanentes al máximo, todos los amuletos conseguidos y todo el equipo y los objetos clave; conserva los amuletos que llevas', en: 'Every permanent upgrade maxed, every charm found and all the equipment and key items; keeps the charms you wear' },
     share:          { es: 'Compartir', en: 'Share' },
     shareHint:      { es: 'Copia el enlace a la web', en: 'Copy the link to the site' },
+    // The donation link after Share (as the sister site, its design/03-redesign.md step 1d): the full
+    // label on a wide screen, Ko-fi alone on a phone.
+    support:        { es: 'Apoya la web', en: 'Support the site' },
+    supportHint:    { es: 'Donar en Ko-fi', en: 'Donate on Ko-fi' },
     // The sister site's link (js/app-sister.js): the game's title, as it's sold in both languages; its
     // hint names the sister in each (Telalejana is Pharloom in the game's Spanish: HEART_OF_PHARLOOM_NAME).
     sister:         { es: 'Silksong', en: 'Silksong' },
@@ -36,15 +40,22 @@
     /* Footer: the fan-project notice, the sources and the author (docs/guide.md, "Credits and licences",
        "Contact") */
     footLabel:      { es: 'Aviso, fuentes y contacto', en: 'Notice, sources and contact' },
-    footFan:        { es: 'Proyecto de fans no oficial, gratuito y sin ánimo de lucro, sin relación con {tc}. Hollow Knight y su arte son © Team Cherry.',
-                      en: 'Unofficial fan project, free and non-commercial, not affiliated with {tc}. Hollow Knight and its artwork are © Team Cherry.' },
+    footFan:        { es: 'Proyecto de fans no oficial y gratuito, sin relación con {tc}. Hollow Knight y su arte son © Team Cherry.',
+                      en: 'Unofficial, free fan project, not affiliated with {tc}. Hollow Knight and its artwork are © Team Cherry.' },
     footData:       { es: 'Datos de {wiki} y de la {wikiEs}, bajo {lic}.',
                       en: 'Data from {wiki} and the {wikiEs}, under {lic}.' },
     footWikiEs:     { es: 'wiki en español', en: 'Spanish wiki' },
     footMade:       { es: 'Hecho por Albert. ¿Un número mal, una traducción rara o un fallo? Escribe a {mail}.',
                       en: 'Made by Albert. A wrong number, an odd translation or a bug? Write to {mail}.' },
+    footSupport:    { es: '¿Te es útil? Puedes apoyarla en {kofi}.', en: 'Is it useful to you? You can support it on {kofi}.' },
     // The privacy notice under it, folded (docs/guide.md, "Privacy"). No game source: written for context.
     footPrivacy:    { es: 'Privacidad', en: 'Privacy' },
+    // The legal notice, folded beside it (LSSI art. 10; docs/guide.md, "Privacy"): who runs the site, now that it takes donations.
+    footLegal:      { es: 'Aviso legal', en: 'Legal notice' },
+    footLegalOwner: { es: 'Responsable de esta web: {name}, España. Contacto: {mail}.',
+                      en: 'This site is run by {name}, Spain. Contact: {mail}.' },
+    footLegalKofi:  { es: 'Las donaciones en {kofi} son voluntarias y no dan acceso a nada más: la web es la misma para todos.',
+                      en: 'Donations on {kofi} are voluntary and unlock nothing: the site is the same for everyone.' },
     footPrivNone:   { es: 'Esta web no usa cookies ni rastreadores.',
                       en: 'This site uses no cookies and no trackers.' },
     footPrivLocal:  { es: 'Lo que marcas (partidas, amuletos, diario, preferencias) se guarda solo en este navegador; si pones «Seguir al juego», también el acceso a tu archivo de guardado.',

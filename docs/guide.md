@@ -604,7 +604,8 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   the visit counter: no cookies, one visit per page load and, as events, the screen switches
   (`screen`, with the view and the language as properties), the language (`lang`), a part that
   failed to render (`error`, with the part), *Share*, a click on the Knight, who focuses soul (`knight`), the
-  sister site's link (`sister`, with `to`: the sister's Footworn id), a game picked on Saves (`save-pick`, with `slot`: `free` for
+  sister site's link (`sister`, with `to`: the sister's Footworn id), a donation link (`support`,
+  with `at`: `header`, `footer` or `about`, the one clicked; the same as the sister site's), a game picked on Saves (`save-pick`, with `slot`: `free` for
   free mode, `save` for a slot), the simulators (`fight-foe` with the enemy picked in Combat,
   `pantheon-run` with the pantheon entered, `hall-fight` with the statue's boss and difficulty)
   and the way into a save, as a funnel: the import opened (`import-open`), its system tab changed
@@ -2183,13 +2184,19 @@ from the wikis. The rules are in `CLAUDE.md`, "Translations".
 
 ## Credits and licences
 
-**Unofficial fan project**, free and non-commercial, not affiliated with or endorsed by
+**Unofficial fan project**, free, not affiliated with or endorsed by
 [Team Cherry](https://www.teamcherry.com.au/). *Hollow Knight*, its artwork, sprites, texts and
 names are © Team Cherry; they're used here only to show the game's own information, and
 belong to their owners.
 The site says so too, with the wikis, their licence and the contact (the mail and a GitHub mark
 linking to the repo), in the footer under every screen
 (`renderColophon` in `js/app.js`).
+
+- **Donations**: a plain link to [Ko-fi](https://ko-fi.com/betorzdev), "Support the site" in the
+  header after Share ("Ko-fi" alone on a phone), a line in the footer and the end of the About
+  block's "Is it free?" answer (`KOFI` in `js/app.js`, `tools/pages-text.js`; as the sister site
+  decided, its design/03-redesign.md step 1d). Never Ko-fi's widget: it loads third-party scripts,
+  and the privacy notice says there are none.
 
 - **Numbers and data**: [hollowknight.wiki](https://hollowknight.wiki/) and the
   [Spanish wiki on Fandom](https://hollowknight.fandom.com/es/), both under
@@ -2244,8 +2251,10 @@ what it stores is at footworn.betorzdev.workers.dev/privacy. That fits the AEPD'
 audience measurement ("Guía uso de cookies para herramientas de medición de audiencia", January
 2024), whose one condition that falls on the site is to **inform** visitors: that's what the
 notice is for. GitHub Pages, the host, keeps technical logs (GDPR art. 13), which the notice also
-says. If the site ever adds ads, donations or a counter that stores something, this changes: a
-legal notice (LSSI art. 10) and, for ads, a consent banner.
+says. Since it takes donations (Ko-fi, "Credits and licences"), the footer also carries a folded
+**legal notice** (LSSI art. 10): who runs the site (`OWNER` in `js/app.js`), Spain, the contact
+address, and that donations are voluntary and unlock nothing. If the site ever adds ads or a
+counter that stores something, this changes again: for ads, a consent banner.
 
 ## Contact
 
