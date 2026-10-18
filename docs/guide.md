@@ -138,13 +138,10 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   on the link, breathing (the game's Idle at a third of its speed, there and back: at 12 frames a
   second it read as a fidget at her size): every 15–25 s (masthead in view, tab visible) she shakes out her cloak, looks up, plays
   the Needolin or sits; she watches the mouse over the masthead and spins into guard while it's on
-  the link. Clicking it (`track('sister', { to: 'pharloom' })`: `to` is the sister's Footworn id, drawn as a crossing to its quarter) she leaves on Silk Soar as the game does it (the wiki:
-  charge, the needle thrown to the ceiling, and she shoots up to it): she crouches with the silk
-  swirling round her, throws the needle to the top of the window on its thread, watches it, crouches
-  and goes up after it, the thread shortening above her (Super Jump's clips; not its speed lines, which streaked down through the word), and
-  never comes again (localStorage `hollow.sisterSeen`): the link and its thread stay. Reloading in
+  the link. Clicking it (`track('sister', { to: 'pharloom' })`: `to` is the sister's Footworn id, drawn as a crossing to its quarter) opens the sister and she
+  stays, as the sister's Knight does on its link to here. Reloading in
   the same visit, she's just standing there. With `prefers-reduced-motion` there's no arrival and no
-  life: she stands on the link and fades on the click. Her moves are the game's own
+  life: she stands on the link. Her moves are the game's own
   (`js/hornet-moves.js`, `assets/hornet/`, by `tools/extract-hornet.py`): strips at a third of the
   game's size shown at half that (~36 px standing), each placed by her pivot; one-shot moves step on
   animation frames (only while there are any) and repeating ones are a CSS `steps()` animation. She's

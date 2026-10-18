@@ -610,7 +610,6 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 .sis-hornet.is-loop.is-calm { animation-name: sis-breathe; animation-timing-function: steps(var(--n), jump-none); animation-direction: alternate; }
 @keyframes sis-cycle { from { background-position-x: 0; } to { background-position-x: calc(-1 * var(--cell) * var(--n)); } }
 @keyframes sis-breathe { from { background-position-x: 0; } to { background-position-x: calc(-1 * var(--cell) * (var(--n) - 1)); } }
-.sis-fx { position: absolute; left: 0; top: 0; background-repeat: no-repeat; }
 .sis-dust { position: absolute; width: var(--sp-half); height: var(--sp-half); border-radius: 50%; background: var(--ink-strong); box-shadow: 0 0 4px var(--focus-glow); }
 .sis-note { position: absolute; font-size: var(--fs-md); color: var(--ink-strong); text-shadow: 0 0 6px var(--focus-glow); }
 

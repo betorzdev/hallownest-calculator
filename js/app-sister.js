@@ -5,13 +5,13 @@
    game on one side, your save on the other (js/app.js, renderMasthead, asks linkHtml); on a phone,
    in the strip under the title, on the left. A silk thread underlines it, under the masthead's
    letters, for as long as it's there.
-   Hornet comes once per visit (sessionStorage) until the link is clicked (localStorage: never again):
-   she floats down on her Drifter's Cloak onto the word, closes it, sweeps her needle, and the thread
+   Hornet comes once per visit (sessionStorage): she floats down on her Drifter's Cloak onto the word, closes it, sweeps her needle, and the thread
    weaves through the letters and cinches into that underline. Then she stays on it: now and then (15–25
    s, only with the masthead in view) she shakes out her cloak, looks up, plays the Needolin or sits;
-   she watches the mouse, and spins into guard while it's on the link. On the click she leaves on Silk
-   Soar, up and out on her thread. Her moves are the game's own (js/hornet-moves.js, assets/hornet/,
-   by tools/extract-hornet.py). With reduced motion she only stands on the link, and fades on the click.
+   she watches the mouse, and spins into guard while it's on the link. On the click she stays, as the
+   sister's Knight does on its link to here (Albert's choice, 18 Oct 2026; she used to leave on Silk
+   Soar and never come back). Her moves are the game's own (js/hornet-moves.js, assets/hornet/,
+   by tools/extract-hornet.py). With reduced motion she only stands on the link.
    Decorative: hidden from screen readers and never in the way of a click; the link is the control.
    Shown since the sister site went public (SISTER below; false hides it again, and #…&sister=1 still
    shows it then: App.sisterPreview).
@@ -26,14 +26,13 @@
 
   const SISTER = true;           // ../pharloom-calculator is published
   const HOME = 'https://pharloomcalculator.com/';
-  const SHOWN = 'hollow.sisterShown', SEEN = 'hollow.sisterSeen';
+  const SHOWN = 'hollow.sisterShown';
   const K = 0.5;                 // the strips are at a third of the game's size; she's shown at half that
   const FLOOR = H.FLOOR * K;     // her feet below her pivot, standing
 
   const on = () => SISTER || !!App.sisterPreview;
   const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
   const ss = { get(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }, set(k) { try { sessionStorage.setItem(k, '1'); } catch (e) { /* no memory: she comes again */ } } };
-  const ls = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k) { try { localStorage.setItem(k, '1'); } catch (e) { /* no memory */ } } };
 
   /* The link, for the masthead: in the brand row, or the strip's copy for a phone (`strip`); the
      CSS shows one of the two. The sister's page in your language. */
@@ -51,7 +50,7 @@
   }
   const addTask = (f) => { tasks.add(f); if (!ticking) { ticking = true; requestAnimationFrame(tick); } };
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-  const easeOut = (p) => 1 - (1 - p) * (1 - p), easeIn = (p) => p * p, easeInOut = (p) => p < 0.5 ? 2 * p * p : 1 - 2 * (1 - p) * (1 - p);
+  const easeOut = (p) => 1 - (1 - p) * (1 - p), easeInOut = (p) => p < 0.5 ? 2 * p * p : 1 - 2 * (1 - p) * (1 - p);
   function tween(ms, fn, ease = (p) => p) {
     return new Promise((res) => {
       const t0 = performance.now();
@@ -170,46 +169,6 @@
     n.animate([{ transform: 'translate(-50%, 0) scale(0.8)', opacity: 0 }, { opacity: 1, offset: 0.2 }, { transform: 'translate(-50%, -30px)', opacity: 0 }],
       { duration: 1600, easing: 'ease-out', fill: 'forwards' }).onfinish = () => n.remove();
   }
-  /* An effect of hers, by her pivot (the silk round her as Silk Soar charges): once, then gone. */
-  function aura(name) {
-    const m = M[name], e = Object.assign(document.createElement('div'), { className: 'sis-hornet' });
-    Object.assign(e.style, { width: m.w * K + 'px', height: m.h * K + 'px', backgroundImage: `url(assets/hornet/${name}.png)`, backgroundSize: `${m.w * K * m.n}px ${m.h * K}px`,
-      transform: `translate(${hx.x - m.px * K}px, ${hx.y - m.py * K}px)` + (hx.dir > 0 ? ' scaleX(-1)' : ''), transformOrigin: `${m.px * K}px ${m.py * K}px` });
-    front.append(e);
-    return tween(m.n / m.fps * 1000, (p) => { e.style.backgroundPosition = `${-Math.min(m.n - 1, Math.floor(p * m.n)) * m.w * K}px 0`; }).then(() => e.remove());
-  }
-  /* A frame of an effect strip by its drawn box (js/hornet-moves.js, boxes): the needle turned to
-     point up with its tip at (x, y); a thread stood upright from y down, `len` long. */
-  function piece() {
-    const e = Object.assign(document.createElement('div'), { className: 'sis-fx' });
-    front.append(e);
-    const paint = (name, i, w, h, sx, sy) => {
-      const m = M[name], b = m.boxes[i];
-      Object.assign(e.style, { width: w + 'px', height: h + 'px', backgroundImage: `url(assets/hornet/${name}.png)`,
-        backgroundSize: `${m.n * m.w * K * sx}px ${m.h * K * sy}px`, backgroundPosition: `${-(i * m.w + b[0]) * K * sx}px ${-b[1] * K * sy}px` });
-      return b;
-    };
-    return {
-      needleUp(i, x, y) {
-        // The thrown needle's sprite is a little longer than the one in her hand (its motion streak):
-        // scaled to the held one's length (64 of 72 px in the strips), so it reads as the same needle.
-        const b = M['harpoon-needle'].boxes[i], k = 0.89;
-        paint('harpoon-needle', i, b[2] * K * k, b[3] * K * k, k, k);
-        e.style.transformOrigin = `0 50%`;
-        e.style.transform = `translate(${x}px, ${y - b[3] * K * k / 2}px) rotate(90deg)`;
-        return b[2] * K * k;
-      },
-      upright(name, i, x, y, len) {
-        const b = M[name].boxes[i];
-        if (!b || len <= 0) { e.style.display = 'none'; return; }
-        e.style.display = '';
-        const sy = len / (b[3] * K);
-        paint(name, i, b[2] * K, len, 1, sy);
-        e.style.transformOrigin = ''; e.style.transform = `translate(${x - b[2] * K / 2}px, ${y}px)`;
-      },
-      remove() { e.remove(); },
-    };
-  }
   function called() {
     const a = link(); if (!a) return;
     a.classList.add('is-called');
@@ -254,7 +213,7 @@
   let lifeTimer = 0, inView = true;
   function life() {
     clearTimeout(lifeTimer);
-    if (still() || hx.state === 'gone') return;
+    if (still()) return;
     lifeTimer = setTimeout(async () => {
       if (hx.state !== 'idle' || !inView || document.hidden) return life();
       hx.state = 'busy';
@@ -262,42 +221,6 @@
       if (hx.state === 'busy') hx.idle();
       life();
     }, 15000 + Math.random() * 10000);
-  }
-
-  /* ── The click: she leaves on Silk Soar, as the game does it (the wiki: charge, the needle thrown
-     to the ceiling, and she shoots up to it); here the ceiling is the top of the window. The link and
-     its thread stay. ── */
-  async function leave() {
-    hx.state = 'gone'; clearTimeout(lifeTimer);
-    if (still()) { hx.el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: 'forwards' }).onfinish = () => hx.el.remove(); return; }
-    const ceil = -el.page.getBoundingClientRect().top + 2;
-    // Charging: she crouches, the needle up, and the silk swirls round her.
-    hx.play('soar-antic');
-    await aura('soar-charge');
-    // The throw: the needle flies up on its thread while she watches it go.
-    hx.play('soar-throw');
-    await wait(170);
-    const needle = piece(), line = piece();
-    const x = hx.x, hand = hx.y - 26 * K / 0.5;
-    let ny = hand, t0 = performance.now();
-    const threadFrame = () => Math.min(15, 2 + Math.floor((performance.now() - t0) / 1000 * M['soar-thread'].fps));
-    hx.loop('soar-wait');
-    await tween(Math.max(160, (hand - ceil) / 2.4), (p) => {
-      ny = hand + (ceil - hand) * p;
-      const len = needle.needleUp(p < 0.7 ? 0 : 2, x, ny);
-      line.upright('soar-thread', threadFrame(), x, ny + len * 0.8, hand - ny - len * 0.8);
-    }, easeOut);
-    // Stuck at the top; she crouches and goes, the thread pulling her up and shortening above her.
-    // (No speed lines: drawn under her, they streaked down through the word.)
-    const len = needle.needleUp(2, x, ceil);
-    await hx.play('soar-jump');
-    hx.loop('soar');
-    const y0 = hx.y, top = ceil + len * 0.8;
-    await tween(Math.max(220, (y0 - ceil) / 1.6), (p) => {
-      hx.at(x, y0 + (ceil - 40 - y0) * p);
-      line.upright('soar-thread', threadFrame(), x, top, hx.y - 20 - top);
-    }, easeIn);
-    hx.el.remove(); line.remove(); needle.remove();
   }
 
   /* ── Wiring ── */
@@ -312,8 +235,6 @@
     el.masthead.addEventListener('click', (e) => {
       if (!e.target.closest('.mh-sister')) return;
       track('sister', { to: 'pharloom' });   // `to`: the sister's Footworn id, drawn as a crossing
-      ls.set(SEEN);
-      if (hx.el && hx.state !== 'gone' && hx.state !== 'arriving') leave();
     });
     el.masthead.addEventListener('mousemove', (e) => {
       if (hx.state !== 'idle' && hx.state !== 'guard') return;
@@ -329,9 +250,7 @@
       if (hx.state === 'guard') hx.idle();
     });
 
-    const seen = !!ls.get(SEEN);
-    if (seen || still()) { woven = true; thread(1, 1); }
-    if (seen) return;                       // clicked once: only the link and its thread
+    if (still()) { woven = true; thread(1, 1); }
     hx.make();
     const a = link(), go = !ss.get(SHOWN) && !still();
     if (!go) {                              // already came this visit, or no motion: she's just there
@@ -357,7 +276,7 @@
     if (!a) { if (svg) svg.setAttribute('d', ''); if (hx.el) hx.el.hidden = true; return; }
     if (hx.el) hx.el.hidden = false;
     if (woven) thread(1, 1);
-    if (hx.el && hx.state !== 'arriving' && hx.state !== 'gone') { const s = spot(box(a)); hx.feet(s.x, s.f); }
+    if (hx.el && hx.state !== 'arriving') { const s = spot(box(a)); hx.feet(s.x, s.f); }
   }
 
   App.sister = { on, start, sync, linkHtml };
