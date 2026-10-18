@@ -18,8 +18,9 @@ google-chrome --headless --allow-file-access-from-files --virtual-time-budget=90
 ```
 
 With a smaller budget the output never arrives. **Known FAILs at HEAD, not regressions:** the
-3 `[held]` checks (Inventory inert, Progress lead, Journal howto) and «the Knight moved along
-the bar…» / «the Knight is on the bar…» (flaky, about 1 run in 3). Anything else that fails is
+3 `[held]` checks (Inventory inert, Progress lead, Journal howto), «Purity's plate warns that it
+rules out Happy Couple» (seen 16 Oct 2026) and «the Knight moved along the bar…» / «the Knight
+is on the bar…» (flaky, about 1 run in 3). Anything else that fails is
 yours: compare with `git stash` if unsure.
 
 ## Screenshots

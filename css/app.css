@@ -617,7 +617,6 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 .sis-hornet.is-loop.is-calm { animation-name: sis-breathe; animation-timing-function: steps(var(--n), jump-none); animation-direction: alternate; }
 @keyframes sis-cycle { from { background-position-x: 0; } to { background-position-x: calc(-1 * var(--cell) * var(--n)); } }
 @keyframes sis-breathe { from { background-position-x: 0; } to { background-position-x: calc(-1 * var(--cell) * (var(--n) - 1)); } }
-.sis-fx { position: absolute; left: 0; top: 0; background-repeat: no-repeat; }
 .sis-dust { position: absolute; width: var(--sp-half); height: var(--sp-half); border-radius: 50%; background: var(--ink-strong); box-shadow: 0 0 4px var(--focus-glow); }
 .sis-note { position: absolute; font-size: var(--fs-md); color: var(--ink-strong); text-shadow: 0 0 6px var(--focus-glow); }
 
@@ -4108,6 +4107,8 @@ kbd {
 .pg-total-k { font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); }
 .pg-total-v { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; line-height: 1; color: var(--ink-strong); font-size: calc(var(--fs-xl) * 2.2); }
 .pg-total-v .u { font-size: 0.38em; font-weight: 400; color: var(--muted); }
+/* The starting points in free mode, under the figure they change (design/43, B). */
+.pg-total .presets { margin-top: var(--sp-3); }
 .pg-rows { list-style: none; margin: 0 auto; padding: 0; max-width: 900px; border-top: 1px solid var(--inv-line); }
 .pg-row { border-bottom: 1px solid var(--inv-line); }
 .pg-head {
