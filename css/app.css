@@ -426,13 +426,20 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 }
 /* The language and Share, as loose text like a game menu: small, unboxed and in one type, so
    the title rules; what can be touched lights up in the accent. */
-.mh-tools { display: flex; align-items: center; gap: var(--sp-6); flex-wrap: nowrap; }
+.mh-tools { --tools-gap: var(--sp-6); display: flex; align-items: center; gap: var(--tools-gap); flex-wrap: nowrap; }
 .lang-btn, .mh-link { min-height: var(--ctl-sm); font-size: var(--fs-sm); letter-spacing: var(--track-label); white-space: nowrap; }
 /* The language (design/29-language-selector.html): what's chosen and a chevron —its name on a
    wide screen, its code on a phone— and, under it, a short list: each language by its own name,
    the chosen one in bone behind the screen bar's diamond. */
 .langsel { position: relative; }
 .lang-btn { gap: var(--sp-2); }
+/* The donation link after Share, set apart by a thin rule in the middle of the gap (as the sister site's). */
+.mh-support { position: relative; }
+.mh-support::before {
+  content: ''; position: absolute; top: 50%; left: calc(var(--tools-gap) / -2 - 0.5px);
+  width: 1px; height: var(--sp-4); transform: translateY(-50%); background: var(--line-ctl);
+}
+.support-short { display: none; }
 .lang-btn[aria-expanded="true"] { color: var(--ink-strong); text-decoration-color: var(--accent); }
 .lang-code { display: none; }
 .lang-menu {
@@ -610,7 +617,6 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
 .sis-hornet.is-loop.is-calm { animation-name: sis-breathe; animation-timing-function: steps(var(--n), jump-none); animation-direction: alternate; }
 @keyframes sis-cycle { from { background-position-x: 0; } to { background-position-x: calc(-1 * var(--cell) * var(--n)); } }
 @keyframes sis-breathe { from { background-position-x: 0; } to { background-position-x: calc(-1 * var(--cell) * (var(--n) - 1)); } }
-.sis-fx { position: absolute; left: 0; top: 0; background-repeat: no-repeat; }
 .sis-dust { position: absolute; width: var(--sp-half); height: var(--sp-half); border-radius: 50%; background: var(--ink-strong); box-shadow: 0 0 4px var(--focus-glow); }
 .sis-note { position: absolute; font-size: var(--fs-md); color: var(--ink-strong); text-shadow: 0 0 6px var(--focus-glow); }
 
@@ -1576,9 +1582,11 @@ button.gplate:is(:hover, :focus-visible) .gplate-art::before, .gplate:has(.lvlpi
   .brand .mh-hdr { display: none; }
   .title { font-size: var(--fs-lg); text-align: left; letter-spacing: var(--track-title); }
   .mh-strip { justify-content: space-between; }
-  .mh-tools { margin-left: auto; gap: var(--sp-4); }
+  .mh-tools { margin-left: auto; --tools-gap: var(--sp-4); }
   .lang-name { display: none; }
   .lang-code { display: inline; }
+  .support-long { display: none; }
+  .support-short { display: inline; }
   /* The two starting points: the label above, and both on one line. */
   .presets .lbl { flex: 1 1 100%; text-align: center; }
   /* The bar, on a phone: the sliding line's tabs (the ≤899 px block below), a little smaller and
@@ -4099,6 +4107,8 @@ kbd {
 .pg-total-k { font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--label); }
 .pg-total-v { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; line-height: 1; color: var(--ink-strong); font-size: calc(var(--fs-xl) * 2.2); }
 .pg-total-v .u { font-size: 0.38em; font-weight: 400; color: var(--muted); }
+/* The starting points in free mode, under the figure they change (design/43, B). */
+.pg-total .presets { margin-top: var(--sp-3); }
 .pg-rows { list-style: none; margin: 0 auto; padding: 0; max-width: 900px; border-top: 1px solid var(--inv-line); }
 .pg-row { border-bottom: 1px solid var(--inv-line); }
 .pg-head {

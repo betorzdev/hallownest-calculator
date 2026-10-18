@@ -138,13 +138,10 @@ The site is made of **screens, like the pages of the game's pause menu**: one sh
   on the link, breathing (the game's Idle at a third of its speed, there and back: at 12 frames a
   second it read as a fidget at her size): every 15–25 s (masthead in view, tab visible) she shakes out her cloak, looks up, plays
   the Needolin or sits; she watches the mouse over the masthead and spins into guard while it's on
-  the link. Clicking it (`track('sister', { to: 'pharloom' })`: `to` is the sister's Footworn id, drawn as a crossing to its quarter) she leaves on Silk Soar as the game does it (the wiki:
-  charge, the needle thrown to the ceiling, and she shoots up to it): she crouches with the silk
-  swirling round her, throws the needle to the top of the window on its thread, watches it, crouches
-  and goes up after it, the thread shortening above her (Super Jump's clips; not its speed lines, which streaked down through the word), and
-  never comes again (localStorage `hollow.sisterSeen`): the link and its thread stay. Reloading in
+  the link. Clicking it (`track('sister', { to: 'pharloom' })`: `to` is the sister's Footworn id, drawn as a crossing to its quarter) opens the sister and she
+  stays, as the sister's Knight does on its link to here. Reloading in
   the same visit, she's just standing there. With `prefers-reduced-motion` there's no arrival and no
-  life: she stands on the link and fades on the click. Her moves are the game's own
+  life: she stands on the link. Her moves are the game's own
   (`js/hornet-moves.js`, `assets/hornet/`, by `tools/extract-hornet.py`): strips at a third of the
   game's size shown at half that (~36 px standing), each placed by her pivot; one-shot moves step on
   animation frames (only while there are any) and repeating ones are a CSS `steps()` animation. She's
@@ -603,8 +600,9 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
 - `index.html` — the page; forty classic scripts (it works over `file://`) and Footworn's,
   the visit counter: no cookies, one visit per page load and, as events, the screen switches
   (`screen`, with the view and the language as properties), the language (`lang`), a part that
-  failed to render (`error`, with the part), *Share*, a click on the Knight, who focuses soul (`knight`), the
-  sister site's link (`sister`, with `to`: the sister's Footworn id), a game picked on Saves (`save-pick`, with `slot`: `free` for
+  failed to render (`error`, with the part, `msg`: the first 64 characters of what went wrong, and `at`: the script and line), *Share*, a click on the Knight, who focuses soul (`knight`), the
+  sister site's link (`sister`, with `to`: the sister's Footworn id), a donation link (`support`,
+  with `at`: `header`, `footer` or `about`, the one clicked; the same as the sister site's), a game picked on Saves (`save-pick`, with `slot`: `free` for
   free mode, `save` for a slot), the simulators (`fight-foe` with the enemy picked in Combat,
   `pantheon-run` with the pantheon entered, `hall-fight` with the statue's boss and difficulty)
   and the way into a save, as a funnel: the import opened (`import-open`), its system tab changed
@@ -1568,6 +1566,15 @@ on Cornifer's map). It's the tablet chosen among three variants in
   `js/completion.js` from what the site keeps, and it was checked against the game's own in 51
   real saves: all match. The screen bar's tab carries it too. At 112 it lights up: the figure
   with the soul's white glow, the tab's in full bone (here and on Your game, its bar too).
+- **Two starting points under the figure**, in free mode only (a save is read, not changed), as
+  Your game's and with its label, *Start from* (`design/43-progress-presets.html`, B): *New Game*
+  (the game's «Partida nueva», `PROFILE_NEW_GAME`) and *Everything done*. Free mode starts with
+  everything unlocked, so a first visit already reads 65 % with nothing marked: whoever ticks a
+  console game by hand starts from New Game. Since a thing is marked where the site keeps it,
+  each one is Your game's same starting point (`App.startFrom`: the build, the charms found, the
+  equipment) plus the rest of the 112%: its Hunter's Journal entries (`App.hjBulk`, no notice) and
+  its marks in `hollow.progress`. Everything done takes the Troupe's last point by its King. The
+  one that would change nothing (at 0 or at 112) is disabled.
 - **One row per category**, fourteen (bosses 15, warrior dreams 7, Colosseum 3, charms 39,
   equipment 14, spells 6, nail arts 3, mask shards 4, vessel fragments 3, nail upgrades 4, Dream
   Nail and essence 3, Dreamers 3, the Grimm Troupe 3, Godmaster 5). The wiki's are fifteen, by
@@ -2183,13 +2190,19 @@ from the wikis. The rules are in `CLAUDE.md`, "Translations".
 
 ## Credits and licences
 
-**Unofficial fan project**, free and non-commercial, not affiliated with or endorsed by
+**Unofficial fan project**, free, not affiliated with or endorsed by
 [Team Cherry](https://www.teamcherry.com.au/). *Hollow Knight*, its artwork, sprites, texts and
 names are © Team Cherry; they're used here only to show the game's own information, and
 belong to their owners.
 The site says so too, with the wikis, their licence and the contact (the mail and a GitHub mark
 linking to the repo), in the footer under every screen
 (`renderColophon` in `js/app.js`).
+
+- **Donations**: a plain link to [Ko-fi](https://ko-fi.com/betorzdev), "Support the site" in the
+  header after Share ("Ko-fi" alone on a phone), a line in the footer and the end of the About
+  block's "Is it free?" answer (`KOFI` in `js/app.js`, `tools/pages-text.js`; as the sister site
+  decided, its design/03-redesign.md step 1d). Never Ko-fi's widget: it loads third-party scripts,
+  and the privacy notice says there are none.
 
 - **Numbers and data**: [hollowknight.wiki](https://hollowknight.wiki/) and the
   [Spanish wiki on Fandom](https://hollowknight.fandom.com/es/), both under
@@ -2244,8 +2257,10 @@ what it stores is at footworn.betorzdev.workers.dev/privacy. That fits the AEPD'
 audience measurement ("Guía uso de cookies para herramientas de medición de audiencia", January
 2024), whose one condition that falls on the site is to **inform** visitors: that's what the
 notice is for. GitHub Pages, the host, keeps technical logs (GDPR art. 13), which the notice also
-says. If the site ever adds ads, donations or a counter that stores something, this changes: a
-legal notice (LSSI art. 10) and, for ads, a consent banner.
+says. Since it takes donations (Ko-fi, "Credits and licences"), the footer also carries a folded
+**legal notice** (LSSI art. 10): who runs the site (`OWNER` in `js/app.js`), Spain, the contact
+address, and that donations are voluntary and unlock nothing. If the site ever adds ads or a
+counter that stores something, this changes again: for ads, a consent banner.
 
 ## Contact
 

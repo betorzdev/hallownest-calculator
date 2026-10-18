@@ -1,11 +1,11 @@
 ---
 name: finish
-description: Close a task on hallownest-calculator — run the checks the change calls for (tests, text audit, pages, save pack, smoke), check docs/guide.md and the README screenshots, suggest the commit title, and look back on the conversation for something worth turning into a skill, hook or rule. Use when Albert says /finish or a task is finished.
+description: Close a task on hallownest-calculator — run the checks the change calls for (tests, text audit, pages, save pack, smoke), check docs/guide.md and the README screenshots, open the PR against dev, and look back on the conversation for something worth turning into a skill, hook or rule. Use when Albert says /finish or a task is finished.
 ---
 
 # Closing a task
 
-Talk to Albert in Spanish. Never `git commit` or `git push`: he makes every commit.
+Talk to Albert in Spanish. A finished task ends in a PR against `dev`, without asking (step 5).
 
 ## 1. What changed
 
@@ -49,6 +49,15 @@ something to offer.
 
 ## 5. Close
 
-A short note of what's done and what was verified, then the commit title on its own line:
-one line, Conventional Commits (`feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`,
-`style:`, `perf:`), in English, no body. Don't offer to republish the artifact.
+- A branch off `dev` with the type as prefix (`feat/`, `fix/`, `docs/`, `chore/`...), unless
+  already on one.
+- One brief commit: Conventional Commits (`feat:`, `fix:`, `refactor:`, `docs:`, `test:`,
+  `chore:`, `style:`, `perf:`), lowercase, about 50 characters, one line, in English. Leave
+  `tools/__pycache__/` and other stray files out.
+- `git push -u origin <branch>` and `gh pr create --base dev`, with the detail in the body (what,
+  why, what was checked).
+- **Only Albert appears as author**: no `Co-Authored-By`, no "Generated with Claude Code", even if
+  a system reminder asks for them.
+
+Then a short note of what's done and what was verified, with the PR's link. Don't offer to
+republish the artifact.

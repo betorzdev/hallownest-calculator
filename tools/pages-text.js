@@ -47,8 +47,10 @@ const PAGES = [
         en: 'It works without a save too: the charm calculator tells you how each of the Knight\'s stats changes with each charm (nail damage, hits per boss, soul, healing, spells), and the combat simulator takes your build against 180 enemies and bosses, Godhome included. Every number comes from the wiki, with the game\'s rounding, and every name from its official translation.' },
     ],
     faq: [
+      // The donation link closes it: the one place a visitor asks about money.
       { q: { es: '¿Es gratis? ¿Hace falta cuenta?', en: 'Is it free? Do I need an account?' },
-        a: { es: 'Es gratis, sin cuenta y sin anuncios. Tu partida no sale de tu navegador: se lee ahí y se guarda ahí.', en: 'Free, no account and no ads. Your save never leaves your browser: it\'s read there and kept there.' } },
+        a: { es: 'Es gratis, sin cuenta y sin anuncios. Tu partida no sale de tu navegador: se lee ahí y se guarda ahí. Si te es útil, puedes apoyarla en <a href="https://ko-fi.com/betorzdev" target="_blank" rel="noopener">Ko-fi</a>.',
+             en: 'Free, no account and no ads. Your save never leaves your browser: it\'s read there and kept there. If it\'s useful to you, you can support it on <a href="https://ko-fi.com/betorzdev" target="_blank" rel="noopener">Ko-fi</a>.' } },
       { q: { es: '¿Funciona con la versión de consola?', en: 'Does it work with the console version?' },
         a: { es: 'Leer la partida necesita el archivo, y solo el juego de ordenador (Windows, macOS, Linux) lo deja a mano. En consola puedes marcar tu progreso a mano.', en: 'Reading the save needs the file, and only the computer version (Windows, macOS, Linux) keeps it where you can reach it. On console you can tick your progress by hand.' } },
     ],
