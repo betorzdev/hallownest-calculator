@@ -600,7 +600,7 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
 - `index.html` — the page; forty classic scripts (it works over `file://`) and Footworn's,
   the visit counter: no cookies, one visit per page load and, as events, the screen switches
   (`screen`, with the view and the language as properties), the language (`lang`), a part that
-  failed to render (`error`, with the part), *Share*, a click on the Knight, who focuses soul (`knight`), the
+  failed to render (`error`, with the part, `msg`: the first 64 characters of what went wrong, and `at`: the script and line), *Share*, a click on the Knight, who focuses soul (`knight`), the
   sister site's link (`sister`, with `to`: the sister's Footworn id), a game picked on Saves (`save-pick`, with `slot`: `free` for
   free mode, `save` for a slot), the simulators (`fight-foe` with the enemy picked in Combat,
   `pantheon-run` with the pantheon entered, `hall-fight` with the statue's boss and difficulty)
