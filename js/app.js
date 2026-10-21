@@ -327,11 +327,22 @@
     if (!cur || cur.key !== key) writeUrl(true);
   }
 
-  /* A Footworn event (index.html loads it): a name and, at most, a few short properties. Only
-     those travel, never the hash with the build. Without the script (blocked, offline, file://)
-     it does nothing. */
+  /* A Footworn event (index.html loads it): a name and, at most, a few short properties (Footworn
+     keeps 10). Only those travel, never the hash with the build. Without the script (blocked,
+     offline, file://) it does nothing. With a real save loaded every event also carries `pct`,
+     its completion as Home and Progress show it (an integer out of 112); in free mode, which is
+     nobody's game, it goes without. A caller's own `pct` wins. The Silksong sibling sends the
+     same `pct` and also `act` (the Act, Silksong only). */
   function track(name, props) {
-    try { if (window.footworn && footworn.event) footworn.event(name, props); } catch (e) {}
+    try {
+      if (!(window.footworn && footworn.event)) return;
+      let extra = null;
+      if (App.activeSlot && App.activeSlot()) {
+        const pct = Math.round(HK.completion.count({ build: App.state, owned: App.owned, book: App.hjBook(), progress: App.progress }).total);
+        if (Number.isFinite(pct)) extra = { pct };
+      }
+      footworn.event(name, extra ? { ...extra, ...props } : props);
+    } catch (e) {}
   }
 
   function persist() {
