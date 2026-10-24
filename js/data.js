@@ -340,6 +340,7 @@
       map:        'Map_(Hollow_Knight).png',
       geo:        'Geo.png',
       grub:       'Grub.png',
+      'grub-free': 'Grub_No_Jar.png',   // the same grub out of its jar: sits on the Ko-fi links (js/app.js, renderPerch)
     },
   };
 

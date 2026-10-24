@@ -614,13 +614,16 @@
     const sister = !!(App.sister && App.sister.on());
     el.masthead.classList.toggle('has-sister', sister);
     el.masthead.classList.toggle('is-lang-open', langOpen);
+    // The grub on the donation link hops once, when the page opens; repainted later, it stays still.
+    const hop = !grubSettled;
+    grubSettled = true;
     el.masthead.innerHTML = `
       <div class="mh-strip">
         ${sister ? App.sister.linkHtml(true) : ''}
         <div class="mh-tools">
           ${language}
           <button type="button" class="text-btn mh-link" data-act="share" title="${esc(t('shareHint'))}">${esc(t('share'))}</button>
-          <a class="text-btn mh-link mh-support" href="${KOFI}" target="_blank" rel="noopener" title="${esc(t('supportHint'))}" aria-label="${esc(t('support'))}"><span class="support-long">${esc(t('support'))}</span><span class="support-short">Ko-fi</span></a>
+          <a class="text-btn mh-link mh-support" href="${KOFI}" target="_blank" rel="noopener" title="${esc(t('supportHint'))}" aria-label="${esc(t('support'))}"><span class="support-long">${esc(t('support'))}</span><span class="support-short">Ko-fi</span><img class="support-grub${hop ? ' is-hop' : ''}" src="${GRUB}" alt="" width="26" height="27"></a>
         </div>
       </div>
       <div class="mh-brand">
@@ -706,6 +709,29 @@
 
   // Where donations go: a plain link, never Ko-fi's widget (it loads third-party scripts; docs/guide.md, "Privacy").
   const KOFI = 'https://ko-fi.com/betorzdev';
+  /* The grub out of its jar (assets/effects/grub-free.png, the Map's grubs): on the header's link, as Hornet on
+     the sister's, and on every screen's frame by its top-right corner, a plain link to Ko-fi as
+     well, sitting on the frame's line. Each hops once (the header's when the page opens, the
+     frame's when a screen is arrived at) and on hover; still otherwise (css/app.css, .support-perch).
+     The sister site's is its caravan flea. */
+  const GRUB = 'assets/effects/grub-free.png';
+  let grubSettled = false, perchView = null, perchHopUntil = 0;
+  function renderPerch() {
+    const sec = screenOf(prefs.view);
+    const line = sec && sec.querySelector(':scope > .frame-line, :scope > * > .frame-line');   // the frame's own box: the section, or the body in it
+    const body = line && line.parentElement;
+    if (!body) return;
+    const arrived = perchView !== prefs.view;   // a screen the paint left alone (the Journal's) keeps its grub: it hops again
+    perchView = prefs.view;
+    if (arrived) perchHopUntil = performance.now() + 1600;   // a repaint right after arriving (the Saves screen's) doesn't cut the hop short
+    const perch = body.querySelector(':scope > .support-perch');
+    if (perch) {
+      if (arrived) { perch.classList.remove('is-hop'); void perch.offsetWidth; perch.classList.add('is-hop'); }
+      return;
+    }
+    body.insertAdjacentHTML('beforeend', `<a class="support-perch${performance.now() < perchHopUntil ? ' is-hop' : ''}" href="${KOFI}" target="_blank" rel="noopener" title="${esc(t('supportHint'))}" aria-label="${esc(t('support'))}">
+      <img src="${GRUB}" alt="" width="44" height="46"><span class="support-say" aria-hidden="true"><span class="support-long">${esc(t('support'))}</span><span class="support-short">Ko-fi</span></span></a>`);
+  }
   // Who runs the site, for the legal notice (LSSI art. 10).
   const OWNER = 'betorzdev';
   // GitHub's mark (Octicons mark-github), in currentColor so it takes the links' accent.
@@ -1014,6 +1040,7 @@
     safely('progress', App.renderProgress);
     if (prefs.view === 'journal') safely('journal', () => { if (App.hjSec.querySelector('.hj-list')) App.paintHunter(); else App.renderHunter(); });
     showScreen();
+    safely('perch', renderPerch);          // the grub on the frame of the screen just shown
     App.bandCheck();                       // the arena's band measures the stage once it's visible
     App.hjFit();
     // On entering the Journal, the entry you're reading shows in its list (already visible, so it can be measured).
@@ -1147,9 +1174,11 @@
   // The language's list is one: a tap anywhere else closes it (and still does what it was for).
   document.addEventListener('click', (ev) => {
     if (langOpen && !ev.target.closest('.langsel')) langMenu(false);
-    // The donation link, wherever it is (header, footer, the About block's answer): `at` says which.
+    /* The donation link, wherever it is: `at` says which (header, frame: the grub on the screen's
+       frame, footer, about: the About block's answer), and `other` one placed nowhere of those. */
     const kofi = ev.target.closest(`a[href="${KOFI}"]`);
-    if (kofi) track('support', { at: kofi.closest('#masthead') ? 'header' : kofi.closest('#colophon') ? 'footer' : 'about' });
+    if (kofi) track('support', { at: kofi.closest('#masthead') ? 'header' : kofi.closest('.support-perch') ? 'frame'
+      : kofi.closest('#colophon') ? 'footer' : kofi.closest('#about') ? 'about' : 'other' });
     const node = ev.target.closest('[data-act]');
     if (!node) { heldClick(ev); return; }
     // A link with Ctrl, Shift or the middle button opens wherever the browser asks.

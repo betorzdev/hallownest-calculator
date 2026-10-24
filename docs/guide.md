@@ -602,7 +602,8 @@ least one free; you become *overcharmed* (double damage taken) and can't equip a
   (`screen`, with the view and the language as properties), the language (`lang`), a part that
   failed to render (`error`, with the part, `msg`: the first 64 characters of what went wrong, and `at`: the script and line), *Share*, a click on the Knight, who focuses soul (`knight`), the
   sister site's link (`sister`, with `to`: the sister's Footworn id), a donation link (`support`,
-  with `at`: `header`, `footer` or `about`, the one clicked; the same as the sister site's), a game picked on Saves (`save-pick`, with `slot`: `free` for
+  with `at`: `header`, `frame` (the grub on the screen's frame), `footer`, `about` (the About
+  block's answer) or `other`, the one clicked; the same as the sister site's), a game picked on Saves (`save-pick`, with `slot`: `free` for
   free mode, `save` for a slot), the simulators (`fight-foe` with the enemy picked in Combat,
   `pantheon-run` with the pantheon entered, `hall-fight` with the statue's boss and difficulty)
   and the way into a save, as a funnel: the import opened (`import-open`), its system tab changed
@@ -2201,8 +2202,14 @@ linking to the repo), in the footer under every screen
 - **Donations**: a plain link to [Ko-fi](https://ko-fi.com/betorzdev), "Support the site" in the
   header after Share ("Ko-fi" alone on a phone), a line in the footer and the end of the About
   block's "Is it free?" answer (`KOFI` in `js/app.js`, `tools/pages-text.js`; as the sister site
-  decided, its design/03-redesign.md step 1d). Never Ko-fi's widget: it loads third-party scripts,
-  and the privacy notice says there are none.
+  decided, its design/03-redesign.md step 1d). A grub (the game's own picture, out of its jar,
+  `assets/effects/grub-free.png`) perches on the header's link, as Hornet on the sister's, and on
+  every screen's frame by its top-right corner, sitting on the frame's line, a link to Ko-fi too:
+  it hops once when the page opens (the header's) or a screen is arrived at (the frame's) and on
+  hover, never with reduced motion; on hover the frame's shows the link's name beside it, on the
+  frame's line ("Ko-fi" under 1100 px, none on a phone) (`renderPerch` in `js/app.js`; the sister
+  site's is its caravan flea). Never Ko-fi's widget: it loads third-party scripts, and the privacy
+  notice says there are none.
 
 - **Numbers and data**: [hollowknight.wiki](https://hollowknight.wiki/) and the
   [Spanish wiki on Fandom](https://hollowknight.fandom.com/es/), both under
