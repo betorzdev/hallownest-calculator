@@ -404,7 +404,7 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
    filigree from the Hall's screen (tablet-hdr, the game's white stroke), small; on its left the
    way to the sister site and on its right the save selector, which is yours. Behind it, like
    behind the whole page, the dust motes from the main menu (.atmos). */
-.masthead { display: flex; flex-direction: column; padding: var(--sp-2) 0 0; }
+.masthead { display: flex; flex-direction: column; padding: var(--sp-4) 0 0; }   /* room above the header's grub */
 .mh-strip { display: flex; align-items: center; justify-content: flex-end; gap: var(--sp-6); min-height: var(--ctl); }
 /* The brand row, three columns: the title in the centre of the page and one side on each flank.
    The two side columns grow equally, so the title lands dead centre; if a side doesn't fit in its
@@ -440,6 +440,45 @@ html { scroll-padding-block-start: calc(var(--sticky-h) + var(--sp-3)); }
   width: 1px; height: var(--sp-4); transform: translateY(-50%); background: var(--line-ctl);
 }
 .support-short { display: none; }
+/* The grub out of its jar (assets/effects/grub-free.png; js/app.js, renderPerch): perched on the donation link,
+   as Hornet on the sister's, and on every screen's frame by its top-right corner, sitting on the
+   frame's line. The sister site's is its caravan flea. */
+.support-grub { position: absolute; right: calc(var(--sp-1) * -1); bottom: 60%; width: 26px; height: auto; pointer-events: none; transform-origin: 50% 100%; }
+.support-perch { position: absolute; z-index: 3; bottom: calc(100% - var(--frame-inset)); right: calc(var(--frame-corner) + var(--sp-4)); line-height: 0; text-decoration: none; }
+.support-perch img { position: relative; width: 44px; height: auto; transform-origin: 50% 100%; filter: drop-shadow(0 0 var(--sp-2) color-mix(in oklab, var(--lamp) 18%, transparent)); }
+/* Its halo: the soft light the game's interactables carry. */
+.support-perch::before {
+  content: ''; position: absolute; left: 50%; top: 50%; width: calc(var(--sp-16) * 2); height: calc(var(--sp-16) * 2); translate: -50% -50%;
+  border-radius: 50%; background: radial-gradient(circle, color-mix(in oklab, var(--lamp) 16%, transparent) 0%, transparent 65%); pointer-events: none;
+}
+/* Its name, on hover or focus: a small plaque left of it, centred on the frame's line (the
+   perch's foot), so it clears every screen's controls (they start under the line) and the title's
+   plaque (centred); in front of all of them. Shorter under 1100px, where the title comes closer. */
+.support-say {
+  position: absolute; z-index: 5; top: 100%; right: calc(100% + var(--sp-1)); translate: 0 -50%;
+  padding: var(--sp-1) var(--sp-3); border: 1px solid color-mix(in oklab, var(--lamp) 55%, transparent); background: var(--inv-bg);
+  font-size: var(--fs-xs); line-height: 1.4; letter-spacing: var(--track-label); white-space: nowrap; color: var(--ink-strong);
+  opacity: 0; pointer-events: none; transition: opacity var(--dur) var(--ease);
+}
+.support-perch:is(:hover, :focus-visible) .support-say { opacity: 1; }
+@media (max-width: 1099px) {
+  .support-say .support-long { display: none; }
+  .support-say .support-short { display: inline; }
+}
+/* Smaller where the screen bar comes closer to the frame (the Inventory's second row, under 900px). */
+@media (max-width: 899px) {
+  .support-grub { width: 22px; }
+  .support-perch img { width: 34px; }
+  .support-perch::before { width: var(--sp-16); height: var(--sp-16); }
+}
+/* It hops once (the header's when the page opens, the frame's when a screen is arrived at) and on
+   hover; still otherwise, and always with reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .support-grub.is-hop, .support-perch.is-hop img { animation: grub-hop 0.9s var(--ease) 0.6s 1; }
+  .mh-support:is(:hover, :focus-visible) .support-grub, .support-perch:is(:hover, :focus-visible) img { animation: grub-hop-again 0.9s var(--ease) 1; }
+}
+@keyframes grub-hop { 0%, 100% { transform: none; } 20% { transform: translateY(1px) scale(1.08, 0.9); } 50% { transform: translateY(calc(var(--sp-2) * -1)) scale(0.95, 1.06); } 78% { transform: scale(1.05, 0.95); } }
+@keyframes grub-hop-again { 0%, 100% { transform: none; } 20% { transform: translateY(1px) scale(1.08, 0.9); } 50% { transform: translateY(calc(var(--sp-2) * -1)) scale(0.95, 1.06); } 78% { transform: scale(1.05, 0.95); } }
 .lang-btn[aria-expanded="true"] { color: var(--ink-strong); text-decoration-color: var(--accent); }
 .lang-code { display: none; }
 .lang-menu {
@@ -1587,6 +1626,14 @@ button.gplate:is(:hover, :focus-visible) .gplate-art::before, .gplate:has(.lvlpi
   .lang-code { display: inline; }
   .support-long { display: none; }
   .support-short { display: inline; }
+  /* The grub at the frame's corner, smaller, so the longest title's plaque (the Journal's, the
+     Godhome's tabs) clears it; no name beside it: a phone has no hover, and on the line it would
+     meet that plaque (the link keeps its title and label). The header's one rides higher: the
+     link is taller here. */
+  .support-perch { right: 0; }
+  .support-perch img { width: 28px; }
+  .support-grub { bottom: 78%; }
+  .support-say { display: none; }
   /* The two starting points: the label above, and both on one line. */
   .presets .lbl { flex: 1 1 100%; text-align: center; }
   /* The bar, on a phone: the sliding line's tabs (the ≤899 px block below), a little smaller and
