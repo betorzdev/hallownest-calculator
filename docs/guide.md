@@ -2258,7 +2258,8 @@ The visit counter is [Footworn](https://github.com/betorzdev/footworn) (`track()
 `404.html` loads it too, to see which broken addresses people land on), Albert's own, on a
 Cloudflare Worker in Western Europe. It sets no cookies, keeps no IP, and stores one row per
 visit with nothing that names you: the page, referrer host, browser and system families, screen
-width, language, country and the events above. The owner sees them as daily counts
+width, language, country and the events above (with a real save loaded, each event also
+carries `pct`, its completion as an integer out of 112; free mode sends none). The owner sees them as daily counts
 and, for today only, one by one, rounded (the minute, phone/tablet/desktop); its own record of
 what it stores is at footworn.betorzdev.workers.dev/privacy. That fits the AEPD's exemption for
 audience measurement ("Guía uso de cookies para herramientas de medición de audiencia", January
